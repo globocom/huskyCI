@@ -47,7 +47,7 @@ type Payload struct {
 
 // CreateContainer creates a container and returns its ID
 func (d Docker) CreateContainer(image string, cmd string) (string, error) {
-	// change image and cmd in jsonPayload
+
 	dockerHost := os.Getenv("DOCKER_HOST")
 	payload := Payload{
 		Image: image,
