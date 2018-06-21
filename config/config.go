@@ -12,14 +12,13 @@ type Config struct {
 	MongoCollection string
 }
 
-// SetConfigs set all needed env variables
-// retornar erro!
-func (c Config) SetConfigs() {
-	// check https://github.com/spf13/viper
+// SetConfigs set all needed environment variables
+func (c Config) SetConfigs() error {
 	c.DockerHost = os.Getenv("DOCKER_HOST")
 	c.MongoHost = os.Getenv("MONGO_HOST")
 	c.MongoName = os.Getenv("MONGO_NAME")
 	c.MongoUser = os.Getenv("MONGO_USER")
 	c.MongoPass = os.Getenv("MONGO_PASS")
-	c.MongoCollection = os.Getenv("MONGO_COLLECTION")
+	c.MongoCollection = os.Getenv("MONGO_COLLECTION_REPOSITORY")
+	return nil
 }
