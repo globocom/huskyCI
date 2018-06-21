@@ -12,14 +12,13 @@ import (
 func main() {
 
 	confEnv := new(config.Config)
-	confEnv.SetConfigs()
 
 	echoInstance := echo.New()
 
 	echoInstance.Use(middleware.Logger())
 	echoInstance.Use(middleware.Recover())
 	echoInstance.Use(middleware.RequestID())
-	echoInstance.Use(configMiddleware.RequestConfigMiddleware())
+	echoInstance.Use(configMiddleware.RequestConfigMiddleware(confEnv))
 
 	echoInstance.GET("/healthcheck", analysis.HealthCheck)
 	//echoInstance.GET("/analyze/:id", analysis.StatusAnalysis)
