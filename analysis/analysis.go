@@ -11,14 +11,6 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-// ResultDB represents all data retreived from mongo
-type ResultDB struct {
-	ID    bson.ObjectId `bson:"_id,omitempty"`
-	URL   string        `bson:"URL"`
-	VM    string        `bson:"VM"`
-	Tests []string      `bson:"tests"`
-}
-
 // HealthCheck is the heath check function
 func HealthCheck(c echo.Context) error {
 	return c.String(http.StatusOK, "WORKING!\n")
@@ -27,59 +19,62 @@ func HealthCheck(c echo.Context) error {
 // StartAnalysis starts the analysis
 func StartAnalysis(c echo.Context) error {
 
-	repo := new(types.Repository)
-	if err := c.Bind(repo); err != nil {
-		fmt.Println("Error binding repositoryURL:", err)
+	repository := types.Repository{}
+
+	if err := c.Bind(&repository); err != nil {
+		fmt.Println("Error binding repository:", err)
+		return err
 	}
 
-	tests, err := GetRepoTests(repo.URL)
-
+	repositoryChecked, err := CheckRepository(repository)
 	if err != nil {
-		fmt.Println("Error checking Mongo for repositoryURL.", err)
-	}
-	if tests != nil {
-		for i, teste := range tests {
-			fmt.Println("Teste:", i, teste)
+		repositoryInserted, err := InsertRepository(repositoryChecked)
+		if err != nil {
+			fmt.Println("Error inserting ", repositoryInserted.URL, " into mongodb:", err)
+			return err
 		}
 	} else {
-		fmt.Println("Nenhum teste encontrado! Associa o primeiro testo ao respositório: ENRY:", tests)
-
+		fmt.Println(repositoryChecked.URL, "found! Have to execute:", repositoryChecked.SecurityTest)
 	}
-
-	// err = d.PullImage("ubuntu")
-	// if err != nil {
-	// 	fmt.Println("ERROR:", err)
-	// }
-
-	// cmd := "whoami"
-	// err = d.RunContainer(c, "ubuntu", cmd)
-	// if err != nil {
-	// 	fmt.Println("ERROR:", err)
-	// }
-
-	// d := new(docker.Docker)
-	// images := d.ListImages()
-	// fmt.Println(images)
 
 	return c.String(http.StatusOK, "Request received!\n")
 }
 
-// GetRepoTests will query mongo to check if repositoryURL is present. If it is not, it will include it.
-func GetRepoTests(repositoryURL string) ([]string, error) {
+// CheckRepository will check if repositoryURL is present in BD.
+func CheckRepository(r types.Repository) (types.Repository, error) {
 
 	session := db.Connect()
-	query := bson.M{"URL": repositoryURL}
-	result := ResultDB{}
 	collection := os.Getenv("MONGO_COLLECTION_REPOSITORY")
+	query := bson.M{"URL": r.URL}
 
-	err := session.SearchOne(query, nil, collection, &result)
+	err := session.SearchOne(query, nil, collection, &r)
 	if err != nil {
-		fmt.Println("Error SearchOne():", repositoryURL, err)
-		result.URL = repositoryURL
-		_, err = session.Upsert(query, &result, collection)
-		if err != nil {
-			fmt.Println("Error Upser():", err)
-		}
+		fmt.Println("Error SearchOne():", r.URL, err)
+		return r, err
 	}
-	return result.Tests, err
+
+	return r, err
+}
+
+// InsertRepository will insert repositoryURL received from POST into DB.
+func InsertRepository(r types.Repository) (types.Repository, error) {
+
+	session := db.Connect()
+	collection := os.Getenv("MONGO_COLLECTION_REPOSITORY")
+	initialTests := []string{"123", "4321"}
+	r.SecurityTest = initialTests
+	query := bson.M{
+		"URL":          r.URL,
+		"VM":           r.VM,
+		"createdAt":    r.CreatedAt,
+		"deletedAt":    r.DeletedAt,
+		"securityTest": r.SecurityTest,
+	}
+
+	_, err := session.Upsert(query, &r, collection)
+	if err != nil {
+		fmt.Println("Error Upsert():", err)
+		return r, err
+	}
+	return r, err
 }
