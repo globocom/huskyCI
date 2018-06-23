@@ -17,6 +17,7 @@ echo "[*] Installing mongodb-org-3.6 via yum:"
 sudo yum install -y mongodb-org
 echo "[*] Starting mongodb-org-3.6 via systemctl:"
 sudo systemctl start mongod
+# echo "[*] Exposing mongo-db by edting /etc/mongod.conf (bindIP: 127.0.0.1,192.168.50.5)"
 SCRIPT
 
 $vm3DockerConfig = <<-SCRIPT
