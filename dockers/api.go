@@ -16,6 +16,12 @@ type Docker struct {
 	Container string `json:"Id"`
 }
 
+// Payload is a struct
+type Payload struct {
+	Image string   `json:"Image"`
+	Cmd   []string `json:"Cmd"`
+}
+
 // RunContainer runs a container
 func (d Docker) RunContainer(c echo.Context, image string, cmd string) error {
 
@@ -37,12 +43,6 @@ func (d Docker) RunContainer(c echo.Context, image string, cmd string) error {
 	output := d.ReadOutput(containerID)
 
 	return c.String(http.StatusOK, "Container Output: "+output)
-}
-
-// Payload is a struct
-type Payload struct {
-	Image string   `json:"Image"`
-	Cmd   []string `json:"Cmd"`
 }
 
 // CreateContainer creates a container and returns its ID
