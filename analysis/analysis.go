@@ -20,24 +20,24 @@ func HealthCheck(c echo.Context) error {
 func StartAnalysis(c echo.Context) error {
 
 	repository := types.Repository{}
+	requestID := c.Response().Header()["X-Request-Id"][0]
 
 	if err := c.Bind(&repository); err != nil {
-		fmt.Println("Error binding repository:", err)
-		return err
+		c.Logger()
+		return c.JSON(http.StatusBadRequest, map[string]string{"RID": requestID, "result": "error", "details": "Error binding repository."})
 	}
 
 	repositoryChecked, err := CheckRepository(repository)
 	if err != nil {
-		repositoryInserted, err := InsertRepository(repositoryChecked)
+		_, err := InsertRepository(repositoryChecked)
 		if err != nil {
-			fmt.Println("Error inserting ", repositoryInserted.URL, " into mongodb:", err)
-			return err
+			return c.JSON(http.StatusInternalServerError, map[string]string{"RID": requestID, "result": "error", "details": "Internal error."})
 		}
 	} else {
 		fmt.Println(repositoryChecked.URL, "found! Have to execute:", repositoryChecked.SecurityTest)
 	}
 
-	return c.String(http.StatusOK, "Request received!\n")
+	return c.JSON(http.StatusOK, map[string]string{"RID": requestID, "result": "received", "details": "Request received."})
 }
 
 // CheckRepository will check if repositoryURL is present in BD.
