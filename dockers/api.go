@@ -16,8 +16,8 @@ type Docker struct {
 	Container string `json:"Id"`
 }
 
-// Payload is a struct
-type Payload struct {
+// CreateContainerPayload is a struct that represents all data need to create a container.
+type CreateContainerPayload struct {
 	Image string   `json:"Image"`
 	Cmd   []string `json:"Cmd"`
 }
@@ -49,11 +49,11 @@ func (d Docker) RunContainer(c echo.Context, image string, cmd string) error {
 func (d Docker) CreateContainer(image string, cmd string) (string, error) {
 
 	dockerHost := os.Getenv("DOCKER_HOST")
-	payload := Payload{
+	createContainerPayload := CreateContainerPayload{
 		Image: image,
 		Cmd:   []string{"/bin/sh", "-c", cmd},
 	}
-	jsonPayload, err := json.Marshal(payload)
+	jsonPayload, err := json.Marshal(createContainerPayload)
 	if err != nil {
 		fmt.Println("Error in JSON Marshal.")
 		return "", err

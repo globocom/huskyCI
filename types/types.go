@@ -15,7 +15,7 @@ type Repository struct {
 // SecurityTest is the struct of all data from the security tests to be executed.
 type SecurityTest struct {
 	ID    bson.ObjectId `bson:"_id,omitempty"`
-	Name  string        `bson:"name"`
+	Name  string        `bson:"name" json:"securityTestName"`
 	Image string        `bson:"image"`
-	Cmd   []string      `bson:"cmd"`
+	Cmd   []string      `bson:"cmd" json:"cmd"`
 }
