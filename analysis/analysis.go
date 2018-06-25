@@ -3,7 +3,6 @@ package analysis
 import (
 	"fmt"
 	"net/http"
-	"os"
 
 	db "github.com/globocom/husky/db/mongo"
 	"github.com/globocom/husky/types"
@@ -40,27 +39,38 @@ func StartAnalysis(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]string{"RID": requestID, "result": "received", "details": "Request received."})
 }
 
-// CheckRepository will check if repositoryURL is present in BD.
+// CheckRepository checks if repository.URL is present in db.
 func CheckRepository(r types.Repository) (types.Repository, error) {
 
 	session := db.Connect()
-	collection := os.Getenv("MONGO_COLLECTION_REPOSITORY")
 	query := bson.M{"URL": r.URL}
 
-	err := session.SearchOne(query, nil, collection, &r)
+	err := session.SearchOne(query, nil, db.RepositoryCollection, &r)
 	if err != nil {
-		fmt.Println("Error SearchOne():", r.URL, err)
+		fmt.Println("Error SearchOne() - CheckRepository:", r.URL, err)
 		return r, err
 	}
-
 	return r, err
 }
 
-// InsertRepository will insert repositoryURL received from POST into DB.
+// CheckSecurityTest checks if securityTest.Name is present in db.
+func CheckSecurityTest(t types.SecurityTest) (types.SecurityTest, error) {
+
+	session := db.Connect()
+	query := bson.M{"name": t.Name}
+
+	err := session.SearchOne(query, nil, db.SecurityTestCollection, &t)
+	if err != nil {
+		fmt.Println("Error SearchOne() - CheckSecurityTest:", t.Name, err)
+		return t, err
+	}
+	return t, err
+}
+
+// InsertRepository inserts repositoryURL received from POST into DB.
 func InsertRepository(r types.Repository) (types.Repository, error) {
 
 	session := db.Connect()
-	collection := os.Getenv("MONGO_COLLECTION_REPOSITORY")
 	initialTests := []string{"123", "4321"}
 	r.SecurityTest = initialTests
 	query := bson.M{
@@ -71,10 +81,34 @@ func InsertRepository(r types.Repository) (types.Repository, error) {
 		"securityTest": r.SecurityTest,
 	}
 
-	_, err := session.Upsert(query, &r, collection)
+	_, err := session.Upsert(query, &r, db.RepositoryCollection)
 	if err != nil {
-		fmt.Println("Error Upsert():", err)
+		fmt.Println("Error Upsert() - InsertRepository:", err)
 		return r, err
 	}
 	return r, err
+}
+
+// InitSecurityTestCollection initiates SecurityTestCollection
+func InitSecurityTestCollection() error {
+
+	session := db.Connect()
+
+	securityTestEnry := types.SecurityTest{Name: "enry", Image: "huskyci/enry", Cmd: []string{"ls", "whoami"}}
+	queryEnry := bson.M{"name": securityTestEnry.Name, "image": securityTestEnry.Image, "cmd": securityTestEnry.Cmd}
+	_, err := session.Upsert(queryEnry, &securityTestEnry, db.SecurityTestCollection)
+	if err != nil {
+		fmt.Println("Error Upsert() - queryEnry - InitSecurityTestCollection:", err)
+		return err
+	}
+
+	securityTestGAS := types.SecurityTest{Name: "gas", Image: "huskyci/gas", Cmd: []string{"command1", "ls"}}
+	queryGAS := bson.M{"name": securityTestGAS.Name, "image": securityTestGAS.Image, "cmd": securityTestGAS.Cmd}
+	_, err = session.Upsert(queryGAS, &securityTestGAS, db.SecurityTestCollection)
+	if err != nil {
+		fmt.Println("Error Upsert() - queryGAS - InitSecurityTestCollection:", err)
+		return err
+	}
+
+	return err
 }
