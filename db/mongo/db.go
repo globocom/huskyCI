@@ -9,7 +9,14 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-//DB is the struct that represents mongo session.
+// Collections names inside Mongo
+var (
+	RepositoryCollection   = "repository"
+	SecurityTestCollection = "securityTest"
+	AnalysisCollection     = "analysis"
+)
+
+// DB is the struct that represents mongo session.
 type DB struct {
 	Session *mgo.Session
 }
@@ -39,7 +46,7 @@ var config = &mongoConfig{
 	Password:     os.Getenv("MONGO_PASS"),
 }
 
-//Connect connects to mongo and returns the session.
+// Connect connects to mongo and returns the session.
 func Connect() *DB {
 	dialInfo := &mgo.DialInfo{
 		Addrs:    []string{config.Address},
@@ -83,7 +90,7 @@ func autoReconnect(session *mgo.Session) {
 	}
 }
 
-//Insert inserts a new document.
+// Insert inserts a new document.
 func (db *DB) Insert(obj interface{}, collection string) error {
 	session := db.Session.Clone()
 	c := session.DB("").C(collection)
@@ -91,7 +98,7 @@ func (db *DB) Insert(obj interface{}, collection string) error {
 	return c.Insert(obj)
 }
 
-//Update updates a single document.
+// Update updates a single document.
 func (db *DB) Update(query bson.M, updateQuery interface{}, collection string) error {
 	session := db.Session.Clone()
 	c := session.DB("").C(collection)
@@ -100,7 +107,7 @@ func (db *DB) Update(query bson.M, updateQuery interface{}, collection string) e
 	return err
 }
 
-//UpdateAll updates all documents that match the query.
+// UpdateAll updates all documents that match the query.
 func (db *DB) UpdateAll(query, updateQuery bson.M, collection string) error {
 	session := db.Session.Clone()
 	c := session.DB("").C(collection)
@@ -109,7 +116,7 @@ func (db *DB) UpdateAll(query, updateQuery bson.M, collection string) error {
 	return err
 }
 
-//Search searchs all documents that match the query. If selectors are present, the return will be only the chosen fields.
+// Search searchs all documents that match the query. If selectors are present, the return will be only the chosen fields.
 func (db *DB) Search(query bson.M, selectors []string, collection string, obj interface{}) error {
 	session := db.Session.Clone()
 	defer session.Close()
@@ -131,7 +138,7 @@ func (db *DB) Search(query bson.M, selectors []string, collection string, obj in
 	return err
 }
 
-//SearchOne searchs for the first element that matchs with the given query.
+// SearchOne searchs for the first element that matchs with the given query.
 func (db *DB) SearchOne(query bson.M, selectors []string, collection string, obj interface{}) error {
 	session := db.Session.Clone()
 	defer session.Close()
@@ -153,7 +160,7 @@ func (db *DB) SearchOne(query bson.M, selectors []string, collection string, obj
 	return err
 }
 
-//Upsert inserts a document or update it if it already exists.
+// Upsert inserts a document or update it if it already exists.
 func (db *DB) Upsert(query bson.M, obj interface{}, collection string) (*mgo.ChangeInfo, error) {
 	session := db.Session.Clone()
 	c := session.DB("").C(collection)
