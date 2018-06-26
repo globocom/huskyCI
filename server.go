@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/globocom/husky/analysis"
-	"github.com/globocom/husky/types"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 )
@@ -32,8 +31,7 @@ func main() {
 
 // checkAndInitMongo will check and initiate SecurityTestCollecion
 func checkAndInitMongo() error {
-	s := types.SecurityTest{Name: "enry"}
-	_, err := analysis.CheckSecurityTest(s)
+	_, err := analysis.FindSecurityTest("enry")
 	if err != nil {
 		fmt.Println("First time running Husky? Error:", err)
 		err = analysis.InitSecurityTestCollection()
