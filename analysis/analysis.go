@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"time"
 
+	"gopkg.in/mgo.v2"
+
 	db "github.com/globocom/husky/db/mongo"
 	"github.com/globocom/husky/types"
 	"github.com/labstack/echo"
@@ -68,8 +70,7 @@ func FindRepository(repository types.Repository) (types.Repository, error) {
 	repositoryResponse := types.Repository{}
 	err := session.SearchOne(repositoryQuery, nil, db.RepositoryCollection, &repositoryResponse)
 	if err != nil {
-		fmt.Println("FindRepository() - Error finding ", repositoryResponse.URL, ":", err)
-		return repositoryResponse, err
+		return repositoryResponse, mgo.ErrNotFound
 	}
 	return repositoryResponse, err
 }
@@ -86,8 +87,7 @@ func FindSecurityTest(securityTest types.SecurityTest) (types.SecurityTest, erro
 	securityTestResponse := types.SecurityTest{}
 	err := session.SearchOne(securityTestQuery, nil, db.SecurityTestCollection, &securityTestResponse)
 	if err != nil {
-		fmt.Println("FindSecurityTest() - Error finding ", securityTest.Name, ":", err)
-		return securityTestResponse, err
+		return securityTestResponse, mgo.ErrNotFound
 	}
 	return securityTestResponse, err
 }
@@ -110,7 +110,6 @@ func InsertNewRepository(repository types.Repository) error {
 	}
 	err = session.Insert(newRepository, db.RepositoryCollection)
 	if err != nil {
-		fmt.Println("InsertNewRepository() - Error inserting repository:", err)
 		return err
 	}
 	return err
