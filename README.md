@@ -2,7 +2,7 @@
 
 Husky will make security tests inside a CI.
 
-## Archeture draft
+## Architecture draft
 
 ![architecture](images/architecture-draft.png)
 
