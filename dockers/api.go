@@ -7,8 +7,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-
-	"github.com/labstack/echo"
 )
 
 // Docker is the docker struct
@@ -23,35 +21,35 @@ type CreateContainerPayload struct {
 }
 
 // RunContainer runs a container
-func (d Docker) RunContainer(c echo.Context, image string, cmd string) error {
+func (d Docker) RunContainer(image string, cmd []string) error {
 
 	containerID, err := d.CreateContainer(image, cmd)
 	if err != nil {
-		fmt.Println("Error creating the container:", err)
+		return err
 	}
 
 	err = d.StartContainer(containerID)
 	if err != nil {
-		fmt.Println("Error starting the container:", err)
+		return err
 	}
 
-	err = d.WaitContainer(containerID)
-	if err != nil {
-		fmt.Println("Error waiting the container:", err)
-	}
+	// err = d.WaitContainer(containerID)
+	// if err != nil {
+	// 	fmt.Println("Error waiting the container:", err)
+	// }
 
-	output := d.ReadOutput(containerID)
+	//output := d.ReadOutput(containerID)
 
-	return c.String(http.StatusOK, "Container Output: "+output)
+	return err
 }
 
 // CreateContainer creates a container and returns its ID
-func (d Docker) CreateContainer(image string, cmd string) (string, error) {
+func (d Docker) CreateContainer(image string, cmd []string) (string, error) {
 
 	dockerHost := os.Getenv("DOCKER_HOST")
 	createContainerPayload := CreateContainerPayload{
 		Image: image,
-		Cmd:   []string{"/bin/sh", "-c", cmd},
+		Cmd:   []string{"/bin/sh", "-c", cmd[0]},
 	}
 	jsonPayload, err := json.Marshal(createContainerPayload)
 	if err != nil {
