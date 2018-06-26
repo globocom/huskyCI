@@ -18,84 +18,99 @@ func HealthCheck(c echo.Context) error {
 
 // StartAnalysis starts the analysis.
 func StartAnalysis(c echo.Context) error {
-
 	RID := c.Response().Header()["X-Request-Id"][0]
 	repository := types.Repository{}
-
 	err := c.Bind(&repository)
 	if err != nil {
 		c.Logger()
 		return c.JSON(http.StatusBadRequest, map[string]string{"RID": RID, "result": "error", "details": "Error binding repository."})
 	}
-
-	_, err = FindRepository(repository.URL)
+	_, err = FindRepository(repository)
 	if err != nil {
-		err := InsertNewRepository(repository.URL)
+		err := InsertNewRepository(repository)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"RID": RID, "result": "error", "details": "Internal error."})
 		}
 	} else {
-		fmt.Println(repository.URL, "found! Have to execute:", repository.SecurityTest)
+		for _, securityTestID := range repository.SecurityTestID {
+			err = StartSecurityTest(RID, securityTestID, repository)
+			if err != nil {
+				fmt.Println("StartSecurityTest() - Could not start ", string(securityTestID), ":", err)
+			}
+		}
 	}
-
 	return c.JSON(http.StatusOK, map[string]string{"RID": RID, "result": "received", "details": "Request received."})
 }
 
-// FindRepository checks if repository.URL is present in db.
-func FindRepository(repositoryURL string) (types.Repository, error) {
-
-	session := db.Connect()
-	query := bson.M{"URL": repositoryURL}
-	r := types.Repository{URL: repositoryURL}
-
-	err := session.SearchOne(query, nil, db.RepositoryCollection, &r)
-	if err != nil {
-		fmt.Println("Error SearchOne() - CheckRepository:", r.URL, err)
-		return r, err
-	}
-	return r, err
+// StartSecurityTest starts a given securityTestID in a given repository.
+func StartSecurityTest(RID string, securityTestID bson.ObjectId, r types.Repository) error {
+	// securityTestQuery := types.SecurityTest{ID: securityTestID}
+	// securityTestReponse, err := FindSecurityTest(securityTestQuery)
+	// docker := dockerapi.Docker{}
+	// err = docker.RunContainer(securityTestReponse.Image, securityTestReponse.Cmd)
+	// if err != nil {
+	// 	return err
+	// }
+	return nil
 }
 
-// FindSecurityTest checks if securityTest.Name is present in db.
-func FindSecurityTest(securityTestName string) (types.SecurityTest, error) {
-
+// FindRepository checks if a given repository is present in db.
+func FindRepository(repository types.Repository) (types.Repository, error) {
 	session := db.Connect()
-	query := bson.M{"name": securityTestName}
-	t := types.SecurityTest{Name: securityTestName}
-
-	err := session.SearchOne(query, nil, db.SecurityTestCollection, &t)
-	if err != nil {
-		fmt.Println("Error SearchOne() - CheckSecurityTest:", t.Name, err)
-		return t, err
+	repositoryQuery := bson.M{
+		"ID":             repository.ID,
+		"URL":            repository.URL,
+		"VM":             repository.VM,
+		"SecurityTestID": repository.SecurityTestID,
+		"CreatedAt":      repository.CreatedAt,
+		"DeletedAt":      repository.DeletedAt,
 	}
-	return t, err
+	repositoryResponse := types.Repository{}
+	err := session.SearchOne(repositoryQuery, nil, db.RepositoryCollection, &repositoryResponse)
+	if err != nil {
+		fmt.Println("FindRepository() - Error finding ", repositoryResponse.URL, ":", err)
+		return repositoryResponse, err
+	}
+	return repositoryResponse, err
 }
 
-// InsertNewRepository inserts a new repository with the default tests into DB.
-func InsertNewRepository(repositoryURL string) error {
-
+// FindSecurityTest checks if a given securityTest is present in DB.
+func FindSecurityTest(securityTest types.SecurityTest) (types.SecurityTest, error) {
 	session := db.Connect()
-
-	// Getting objectID of enry.
-	securityTest, err := FindSecurityTest("enry")
+	securityTestQuery := bson.M{
+		"ID":    securityTest.ID,
+		"Name":  securityTest.Name,
+		"Image": securityTest.Image,
+		"Cmd":   securityTest.Cmd,
+	}
+	securityTestResponse := types.SecurityTest{}
+	err := session.SearchOne(securityTestQuery, nil, db.SecurityTestCollection, &securityTestResponse)
 	if err != nil {
-		fmt.Println("Could not find enry in MongoDB:", err)
+		fmt.Println("FindSecurityTest() - Error finding ", securityTest.Name, ":", err)
+		return securityTestResponse, err
+	}
+	return securityTestResponse, err
+}
+
+// InsertNewRepository inserts a new repository with default securityTests into DB.
+func InsertNewRepository(repository types.Repository) error {
+	session := db.Connect()
+	securityTestQueryEnry := types.SecurityTest{Name: "enry"}
+	securityTestResponse, err := FindSecurityTest(securityTestQueryEnry)
+	if err != nil {
 		return err
 	}
-
-	r := types.Repository{URL: repositoryURL, CreatedAt: time.Now().Format(time.RFC850)}
-
+	repository.CreatedAt = time.Now().Format(time.RFC850)
 	newRepository := bson.M{
-		"URL":          r.URL,
-		"VM":           r.VM,
-		"createdAt":    r.CreatedAt,
-		"deletedAt":    r.DeletedAt,
-		"securityTest": []bson.ObjectId{securityTest.ID},
+		"URL":          repository.URL,
+		"VM":           repository.VM,
+		"createdAt":    repository.CreatedAt,
+		"deletedAt":    repository.DeletedAt,
+		"securityTest": []bson.ObjectId{securityTestResponse.ID},
 	}
-
 	err = session.Insert(newRepository, db.RepositoryCollection)
 	if err != nil {
-		fmt.Println("Error Insert() - InsertRepository:", err)
+		fmt.Println("InsertNewRepository() - Error inserting repository:", err)
 		return err
 	}
 	return err
@@ -103,22 +118,18 @@ func InsertNewRepository(repositoryURL string) error {
 
 // InitSecurityTestCollection initiates SecurityTestCollection.
 func InitSecurityTestCollection() error {
-
 	session := db.Connect()
-
 	securityTestEnry := types.SecurityTest{Name: "enry", Image: "huskyci/enry", Cmd: []string{"ls", "whoami"}}
 	err := session.Insert(securityTestEnry, db.SecurityTestCollection)
 	if err != nil {
-		fmt.Println("Error Upsert() - queryEnry - InitSecurityTestCollection:", err)
+		fmt.Println("InitSecurityTestCollection() - Error inserting securityTest ", securityTestEnry.Name, ":", err)
 		return err
 	}
-
 	securityTestGAS := types.SecurityTest{Name: "gas", Image: "huskyci/gas", Cmd: []string{"command1", "ls"}}
 	err = session.Insert(securityTestGAS, db.SecurityTestCollection)
 	if err != nil {
-		fmt.Println("Error Upsert() - queryGAS - InitSecurityTestCollection:", err)
+		fmt.Println("InitSecurityTestCollection() - Error inserting securityTest ", securityTestEnry.Name, ":", err)
 		return err
 	}
-
 	return err
 }

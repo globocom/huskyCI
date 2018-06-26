@@ -9,11 +9,12 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-// Collections names inside Mongo
+// Collections names used in MongoDB.
 var (
 	RepositoryCollection   = "repository"
 	SecurityTestCollection = "securityTest"
 	AnalysisCollection     = "analysis"
+	ContainerCollection    = "container"
 )
 
 // DB is the struct that represents mongo session.
@@ -29,7 +30,7 @@ type mongoConfig struct {
 	Password     string
 }
 
-// Database is the interface's database
+// Database is the interface's database.
 type Database interface {
 	Insert(obj interface{}, collection string) error
 	Search(query bson.M, selectors []string, collection string, obj interface{}) error
@@ -61,13 +62,10 @@ func Connect() *DB {
 		fmt.Println("Error connecting to Mongo:", err)
 	}
 	session.SetSafe(&mgo.Safe{WMode: "majority"})
-
 	if err := session.Ping(); err != nil {
 		fmt.Println("Error pinging Mongo after connection:", err)
 	}
-
 	go autoReconnect(session)
-
 	return &DB{Session: session}
 }
 
