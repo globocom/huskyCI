@@ -22,8 +22,9 @@ func main() {
 	echoInstance.Use(middleware.RequestID())
 
 	echoInstance.GET("/healthcheck", analysis.HealthCheck)
-	//echoInstance.GET("/analyze/:id", analysis.StatusAnalysis)
+	echoInstance.GET("/status/:id", analysis.StatusAnalysis)
 	echoInstance.POST("/analyze", analysis.StartAnalysis)
+	echoInstance.POST("/createSecurityTest", analysis.CreateNewSecurityTest)
 
 	echoInstance.Logger.Fatal(echoInstance.Start(":9999"))
 
@@ -31,13 +32,13 @@ func main() {
 
 // checkAndInitMongo will check and initiate SecurityTestCollecion
 func checkAndInitMongo() error {
-	_, err := analysis.FindSecurityTest("enry")
-	if err != nil {
-		fmt.Println("First time running Husky? Error:", err)
-		err = analysis.InitSecurityTestCollection()
-		if err != nil {
-			fmt.Println("Could not initiate SecurityTestCollection. Is MongoDB running? Error:", err)
-		}
-	}
-	return err
+	// _, err := analysis.FindSecurityTest("enry")
+	// if err != nil {
+	// 	fmt.Println("First time running Husky? Error:", err)
+	// 	err = analysis.InitSecurityTestCollection()
+	// 	if err != nil {
+	// 		fmt.Println("Could not initiate SecurityTestCollection. Is MongoDB running? Error:", err)
+	// 	}
+	// }
+	return nil
 }

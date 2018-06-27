@@ -21,16 +21,16 @@ type CreateContainerPayload struct {
 }
 
 // RunContainer runs a container
-func (d Docker) RunContainer(image string, cmd []string) error {
+func (d Docker) RunContainer(image string, cmd []string) (string, error) {
 
 	containerID, err := d.CreateContainer(image, cmd)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	err = d.StartContainer(containerID)
 	if err != nil {
-		return err
+		return containerID + "NOT STARTED", err
 	}
 
 	// err = d.WaitContainer(containerID)
@@ -40,7 +40,7 @@ func (d Docker) RunContainer(image string, cmd []string) error {
 
 	//output := d.ReadOutput(containerID)
 
-	return err
+	return containerID, err
 }
 
 // CreateContainer creates a container and returns its ID
