@@ -34,7 +34,7 @@ vagrant up vm2-db
 vagrant up vm3-docker
 ```
 
-#### Setting up environment variables (user your own configuration):
+#### Setting up environment variables (use your own configuration):
 
 ```
 echo 'export DOCKER_HOST="192.168.50.6:2376"' > .env
@@ -48,7 +48,7 @@ echo 'export MONGO_PASS="superENVPassword"' >> .env
 source .env
 ```
 
-#### Inserting a new MongoDB user:
+#### Inserting new MongoDB user:
 
 ```
 vagrant ssh vm2-db
@@ -66,7 +66,7 @@ use huskyDB
 db.createUser({user:"husky", pwd:"superENVPassword", roles: ["readWrite"]})
 ```
 
-#### Inserting securityTests examples:
+#### Inserting new securityTests examples:
 
 ```
 go run server.go
