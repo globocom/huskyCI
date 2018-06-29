@@ -1,6 +1,7 @@
 package analysis
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -88,24 +89,49 @@ func FindAllDBAnalysis(mapParams map[string]interface{}) ([]types.Analysis, erro
 }
 
 // InsertDBRepository inserts a new repository with default securityTests into RepositoryCollection.
-func InsertDBRepository(repository types.Repository) (types.Repository, error) {
+func InsertDBRepository(repository types.Repository) error {
 	session := db.Connect()
 	repository.CreatedAt = time.Now()
+	securityTestList := []types.SecurityTest{}
+	err := errors.New("")
 
-	// checking default and generic securityTests in SecurityTestCollection
-	securityTestDefaultIDs := []bson.ObjectId{}
-	securityTestDefaultQuery := map[string]interface{}{"default": true, "language": "generic"}
-	securityTestDefaultResult, err := FindAllDBSecurityTest(securityTestDefaultQuery)
-	if err != nil {
-		fmt.Println("Err:", err)
-	}
-	for _, securityTest := range securityTestDefaultResult {
-		securityTestDefaultIDs = append(securityTestDefaultIDs, securityTest.ID)
+	if len(repository.SecurityTestName) == 0 {
+		// checking default and generic securityTests in SecurityTestCollection
+		securityTestQuery := map[string]interface{}{"default": true, "language": "generic"}
+		securityTestList, err = FindAllDBSecurityTest(securityTestQuery)
+		if err != nil {
+			fmt.Println("Could not find default securityTests:", err)
+		}
+	} else {
+		// checking if a given securityTestName matches a securityTest
+		repository.SecurityTestName = removeDuplicates(repository.SecurityTestName)
+		// 8 is the maximum allowed to query db
+		if len(repository.SecurityTestName) > 8 {
+			for _, securityTestName := range repository.SecurityTestName[:8] {
+				securityTestQuery := map[string]interface{}{"name": securityTestName}
+				securityTestResult, err := FindOneDBSecurityTest(securityTestQuery)
+				if err != nil {
+					fmt.Println("Could not find securityTestName:", securityTestName)
+				} else {
+					securityTestList = append(securityTestList, securityTestResult)
+				}
+			}
+		} else {
+			for _, securityTestName := range repository.SecurityTestName {
+				securityTestQuery := map[string]interface{}{"name": securityTestName}
+				securityTestResult, err := FindOneDBSecurityTest(securityTestQuery)
+				if err != nil {
+					fmt.Println("Could not find securityTestName:", securityTestName)
+				} else {
+					securityTestList = append(securityTestList, securityTestResult)
+				}
+			}
+		}
 	}
 
 	newRepository := bson.M{
 		"URL":          repository.URL,
-		"securityTest": securityTestDefaultIDs,
+		"securityTest": securityTestList,
 		"VM":           repository.VM,
 		"createdAt":    repository.CreatedAt,
 		"deletedAt":    repository.DeletedAt,
@@ -113,11 +139,11 @@ func InsertDBRepository(repository types.Repository) (types.Repository, error) {
 	}
 
 	err = session.Insert(newRepository, db.RepositoryCollection)
-	return repository, err
+	return err
 }
 
 // InsertDBSecurityTest inserts a new securityTest into SecurityTestCollection.
-func InsertDBSecurityTest(securityTest types.SecurityTest) (types.SecurityTest, error) {
+func InsertDBSecurityTest(securityTest types.SecurityTest) error {
 	session := db.Connect()
 	newSecurityTest := bson.M{
 		"name":     securityTest.Name,
@@ -127,11 +153,11 @@ func InsertDBSecurityTest(securityTest types.SecurityTest) (types.SecurityTest, 
 		"default":  securityTest.Default,
 	}
 	err := session.Insert(newSecurityTest, db.SecurityTestCollection)
-	return securityTest, err
+	return err
 }
 
 // InsertDBAnalysis inserts a new analysis into AnalysisCollection.
-func InsertDBAnalysis(analysis types.Analysis) (types.Analysis, error) {
+func InsertDBAnalysis(analysis types.Analysis) error {
 	session := db.Connect()
 	newAnalysis := bson.M{
 		"RID":          analysis.RID,
@@ -142,7 +168,7 @@ func InsertDBAnalysis(analysis types.Analysis) (types.Analysis, error) {
 		"container":    analysis.Container,
 	}
 	err := session.Insert(newAnalysis, db.AnalysisCollection)
-	return analysis, err
+	return err
 }
 
 // UpdateOneDBRepository checks if a given repository is present into RepositoryCollection and update it.
@@ -179,4 +205,18 @@ func UpdateOneDBAnalysis(mapParams map[string]interface{}, updatedAnalysis types
 	analysisFinalQuery := bson.M{"$and": analysisQuery}
 	err := session.Update(analysisFinalQuery, updatedAnalysis, db.AnalysisCollection)
 	return updatedAnalysis, err
+}
+
+// removeDuplicates remove duplicated itens from a slice.
+func removeDuplicates(s []string) []string {
+	mapS := make(map[string]string, len(s))
+	i := 0
+	for _, v := range s {
+		if _, ok := mapS[v]; !ok {
+			mapS[v] = v
+			s[i] = v
+			i++
+		}
+	}
+	return s[:i]
 }
