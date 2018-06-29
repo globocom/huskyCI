@@ -16,8 +16,9 @@ func main() {
 
 	echoInstance.GET("/healthcheck", analysis.HealthCheck)
 	echoInstance.GET("/husky/:id", analysis.StatusAnalysis)
-	echoInstance.POST("/husky", analysis.StartAnalysis)
+	echoInstance.POST("/husky", analysis.ReceiveRequest)
 	echoInstance.POST("/securitytest", analysis.CreateNewSecurityTest)
+	echoInstance.POST("/repository", analysis.CreateNewRepository)
 
 	echoInstance.Logger.Fatal(echoInstance.Start(":9999"))
 
