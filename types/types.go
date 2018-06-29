@@ -11,7 +11,7 @@ type Repository struct {
 	ID               bson.ObjectId  `bson:"_id,omitempty"`
 	URL              string         `bson:"URL" json:"repositoryURL"`
 	SecurityTest     []SecurityTest `bson:"securityTest" json:"securityTest"`
-	SecurityTestName string         `json:"securityTestName"`
+	SecurityTestName []string       `json:"securityTestName"`
 	VM               string         `bson:"VM" json:"vm"`
 	CreatedAt        time.Time      `bson:"createdAt" json:"createdAt"`
 	DeletedAt        time.Time      `bson:"deletedAt" json:"deletedAt"`
