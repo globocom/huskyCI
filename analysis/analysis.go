@@ -22,14 +22,14 @@ func ReceiveRequest(c echo.Context) error {
 	repository := types.Repository{}
 	err := c.Bind(&repository)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"RID": RID, "result": "error", "details": "Error binding repository."})
+		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Error binding repository."})
 	}
 
 	// check-02: is this repository in MongoDB?
 	repositoryQuery := map[string]interface{}{"URL": repository.URL}
 	repositoryResult, err := FindOneDBRepository(repositoryQuery)
 	if err != nil {
-		return c.JSON(http.StatusNotFound, map[string]string{"RID": RID, "result": "error", "details": "Repository not found."})
+		return c.JSON(http.StatusNotFound, map[string]string{"result": "error", "details": "Repository not found."})
 	}
 
 	// check-03: does this repository have a running status analysis? (for the future: check commits and not URLs?)
@@ -37,13 +37,13 @@ func ReceiveRequest(c echo.Context) error {
 	analysisResult, err := FindOneDBAnalysis(analysisQuery)
 	if err != mgo.ErrNotFound {
 		if analysisResult.Status == "running" {
-			return c.JSON(http.StatusConflict, map[string]string{"RID": RID, "result": "error", "details": "An analysis is already in place for this URL."})
+			return c.JSON(http.StatusConflict, map[string]string{"result": "error", "details": "An analysis is already in place for this URL."})
 		}
 	}
 
 	err = StartAnalysis(repositoryResult)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"RID": RID, "result": "error", "details": "Could not start analysis. Internal error."})
+		return c.JSON(http.StatusInternalServerError, map[string]string{"result": "error", "details": "Could not start analysis. Internal error."})
 	}
 
 	return c.JSON(http.StatusOK, map[string]string{"RID": RID, "result": "ok", "details": "Request received."})
@@ -60,7 +60,7 @@ func StatusAnalysis(c echo.Context) error {
 	analysisQuery := map[string]interface{}{"RID": RID}
 	analysisResult, err := FindOneDBAnalysis(analysisQuery)
 	if err == mgo.ErrNotFound {
-		return c.JSON(http.StatusNotFound, map[string]string{"RID": RID, "result": "error", "details": "Analysis not found."})
+		return c.JSON(http.StatusNotFound, map[string]string{"result": "error", "details": "Analysis not found."})
 	} else {
 		// What if DB is not reachable!?
 	}
@@ -81,7 +81,7 @@ func CreateNewSecurityTest(c echo.Context) error {
 		return c.JSON(http.StatusConflict, map[string]string{"result": "error", "details": "This securityTest is already in MongoDB."})
 	}
 
-	_, err = InsertDBSecurityTest(securityTest)
+	err = InsertDBSecurityTest(securityTest)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"result": "error", "details": "Error creating new securityTest."})
 	}
@@ -103,7 +103,7 @@ func CreateNewRepository(c echo.Context) error {
 		return c.JSON(http.StatusConflict, map[string]string{"result": "error", "details": "Repository found."})
 	}
 
-	_, err = InsertDBRepository(repository)
+	err = InsertDBRepository(repository)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"result": "error", "details": "Error creating new repository."})
 	}
