@@ -144,3 +144,39 @@ func InsertDBAnalysis(analysis types.Analysis) (types.Analysis, error) {
 	err := session.Insert(newAnalysis, db.AnalysisCollection)
 	return analysis, err
 }
+
+// UpdateOneDBRepository checks if a given repository is present into RepositoryCollection and update it.
+func UpdateOneDBRepository(mapParams map[string]interface{}, updatedRepository types.Repository) (types.Repository, error) {
+	session := db.Connect()
+	repositoryQuery := []bson.M{}
+	for k, v := range mapParams {
+		repositoryQuery = append(repositoryQuery, bson.M{k: v})
+	}
+	repositoryFinalQuery := bson.M{"$and": repositoryQuery}
+	err := session.Update(repositoryFinalQuery, updatedRepository, db.RepositoryCollection)
+	return updatedRepository, err
+}
+
+// UpdateOneDBSecurityTest checks if a given securityTest is present into SecurityTestCollection and update it.
+func UpdateOneDBSecurityTest(mapParams map[string]interface{}, updatedSecurityTest types.SecurityTest) (types.SecurityTest, error) {
+	session := db.Connect()
+	securityTestQuery := []bson.M{}
+	for k, v := range mapParams {
+		securityTestQuery = append(securityTestQuery, bson.M{k: v})
+	}
+	securityTestFinalQuery := bson.M{"$and": securityTestQuery}
+	err := session.Update(securityTestFinalQuery, updatedSecurityTest, db.SecurityTestCollection)
+	return updatedSecurityTest, err
+}
+
+// UpdateOneDBAnalysis checks if a given analysis is present into AnalysisCollection and update it.
+func UpdateOneDBAnalysis(mapParams map[string]interface{}, updatedAnalysis types.Analysis) (types.Analysis, error) {
+	session := db.Connect()
+	analysisQuery := []bson.M{}
+	for k, v := range mapParams {
+		analysisQuery = append(analysisQuery, bson.M{k: v})
+	}
+	analysisFinalQuery := bson.M{"$and": analysisQuery}
+	err := session.Update(analysisFinalQuery, updatedAnalysis, db.AnalysisCollection)
+	return updatedAnalysis, err
+}
