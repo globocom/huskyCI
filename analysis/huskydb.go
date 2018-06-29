@@ -48,19 +48,6 @@ func FindOneDBAnalysis(mapParams map[string]interface{}) (types.Analysis, error)
 	return analysisResponse, err
 }
 
-// FindOneDBContainer checks if a given container is present into ContainerCollection.
-func FindOneDBContainer(mapParams map[string]interface{}) (types.Container, error) {
-	session := db.Connect()
-	containerQuery := []bson.M{}
-	for k, v := range mapParams {
-		containerQuery = append(containerQuery, bson.M{k: v})
-	}
-	containerFinalQuery := bson.M{"$and": containerQuery}
-	containerResponse := types.Container{}
-	err := session.SearchOne(containerFinalQuery, nil, db.ContainerCollection, &containerResponse)
-	return containerResponse, err
-}
-
 // FindAllDBRepository returns all Repository of a given query present into RepositoryCollection.
 func FindAllDBRepository(mapParams map[string]interface{}) ([]types.Repository, error) {
 	session := db.Connect()
@@ -98,19 +85,6 @@ func FindAllDBAnalysis(mapParams map[string]interface{}) ([]types.Analysis, erro
 	analysisResponse := []types.Analysis{}
 	err := session.Search(analysisFinalQuery, nil, db.AnalysisCollection, &analysisResponse)
 	return analysisResponse, err
-}
-
-// FindAllDBContainer returns all Containers of a given query present into ContainerCollection.
-func FindAllDBContainer(mapParams map[string]interface{}) ([]types.Container, error) {
-	session := db.Connect()
-	containerQuery := []bson.M{}
-	for k, v := range mapParams {
-		containerQuery = append(containerQuery, bson.M{k: v})
-	}
-	containerFinalQuery := bson.M{"$and": containerQuery}
-	containerResponse := []types.Container{}
-	err := session.Search(containerFinalQuery, nil, db.ContainerCollection, &containerResponse)
-	return containerResponse, err
 }
 
 // InsertDBRepository inserts a new repository with default securityTests into RepositoryCollection.
@@ -169,19 +143,4 @@ func InsertDBAnalysis(analysis types.Analysis) (types.Analysis, error) {
 	}
 	err := session.Insert(newAnalysis, db.AnalysisCollection)
 	return analysis, err
-}
-
-// InsertDBContainer inserts a new container into ContainerCollection's db.
-func InsertDBContainer(container types.Container) (types.Container, error) {
-	session := db.Connect()
-	newContainer := bson.M{
-		"CID":          container.CID,
-		"RID":          container.RID,
-		"VM":           container.VM,
-		"securityTest": container.SecurityTestID,
-		"cStatus":      container.CStatus,
-		"cOutput":      container.COuput,
-	}
-	err := session.Insert(newContainer, db.ContainerCollection)
-	return container, err
 }
