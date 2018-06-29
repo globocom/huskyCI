@@ -48,19 +48,6 @@ func FindOneDBAnalysis(mapParams map[string]interface{}) (types.Analysis, error)
 	return analysisResponse, err
 }
 
-// FindOneDBContainer checks if a given container is present into ContainerCollection.
-func FindOneDBContainer(mapParams map[string]interface{}) (types.Container, error) {
-	session := db.Connect()
-	containerQuery := []bson.M{}
-	for k, v := range mapParams {
-		containerQuery = append(containerQuery, bson.M{k: v})
-	}
-	containerFinalQuery := bson.M{"$and": containerQuery}
-	containerResponse := types.Container{}
-	err := session.SearchOne(containerFinalQuery, nil, db.ContainerCollection, &containerResponse)
-	return containerResponse, err
-}
-
 // FindAllDBRepository returns all Repository of a given query present into RepositoryCollection.
 func FindAllDBRepository(mapParams map[string]interface{}) ([]types.Repository, error) {
 	session := db.Connect()
@@ -100,19 +87,6 @@ func FindAllDBAnalysis(mapParams map[string]interface{}) ([]types.Analysis, erro
 	return analysisResponse, err
 }
 
-// FindAllDBContainer returns all Containers of a given query present into ContainerCollection.
-func FindAllDBContainer(mapParams map[string]interface{}) ([]types.Container, error) {
-	session := db.Connect()
-	containerQuery := []bson.M{}
-	for k, v := range mapParams {
-		containerQuery = append(containerQuery, bson.M{k: v})
-	}
-	containerFinalQuery := bson.M{"$and": containerQuery}
-	containerResponse := []types.Container{}
-	err := session.Search(containerFinalQuery, nil, db.ContainerCollection, &containerResponse)
-	return containerResponse, err
-}
-
 // InsertDBRepository inserts a new repository with default securityTests into RepositoryCollection.
 func InsertDBRepository(repository types.Repository) (types.Repository, error) {
 	session := db.Connect()
@@ -131,11 +105,11 @@ func InsertDBRepository(repository types.Repository) (types.Repository, error) {
 
 	newRepository := bson.M{
 		"URL":          repository.URL,
+		"securityTest": securityTestDefaultIDs,
 		"VM":           repository.VM,
 		"createdAt":    repository.CreatedAt,
 		"deletedAt":    repository.DeletedAt,
 		"language":     repository.Language,
-		"securityTest": securityTestDefaultIDs,
 	}
 
 	err = session.Insert(newRepository, db.RepositoryCollection)
@@ -165,23 +139,44 @@ func InsertDBAnalysis(analysis types.Analysis) (types.Analysis, error) {
 		"securityTest": analysis.SecurityTestID,
 		"status":       analysis.Status,
 		"result":       analysis.Result,
-		"container":    analysis.CID,
+		"container":    analysis.Container,
 	}
 	err := session.Insert(newAnalysis, db.AnalysisCollection)
 	return analysis, err
 }
 
-// InsertDBContainer inserts a new container into ContainerCollection's db.
-func InsertDBContainer(container types.Container) (types.Container, error) {
+// UpdateOneDBRepository checks if a given repository is present into RepositoryCollection and update it.
+func UpdateOneDBRepository(mapParams map[string]interface{}, updatedRepository types.Repository) (types.Repository, error) {
 	session := db.Connect()
-	newContainer := bson.M{
-		"CID":          container.CID,
-		"RID":          container.RID,
-		"VM":           container.VM,
-		"securityTest": container.SecurityTestID,
-		"cStatus":      container.CStatus,
-		"cOutput":      container.COuput,
+	repositoryQuery := []bson.M{}
+	for k, v := range mapParams {
+		repositoryQuery = append(repositoryQuery, bson.M{k: v})
 	}
-	err := session.Insert(newContainer, db.ContainerCollection)
-	return container, err
+	repositoryFinalQuery := bson.M{"$and": repositoryQuery}
+	err := session.Update(repositoryFinalQuery, updatedRepository, db.RepositoryCollection)
+	return updatedRepository, err
+}
+
+// UpdateOneDBSecurityTest checks if a given securityTest is present into SecurityTestCollection and update it.
+func UpdateOneDBSecurityTest(mapParams map[string]interface{}, updatedSecurityTest types.SecurityTest) (types.SecurityTest, error) {
+	session := db.Connect()
+	securityTestQuery := []bson.M{}
+	for k, v := range mapParams {
+		securityTestQuery = append(securityTestQuery, bson.M{k: v})
+	}
+	securityTestFinalQuery := bson.M{"$and": securityTestQuery}
+	err := session.Update(securityTestFinalQuery, updatedSecurityTest, db.SecurityTestCollection)
+	return updatedSecurityTest, err
+}
+
+// UpdateOneDBAnalysis checks if a given analysis is present into AnalysisCollection and update it.
+func UpdateOneDBAnalysis(mapParams map[string]interface{}, updatedAnalysis types.Analysis) (types.Analysis, error) {
+	session := db.Connect()
+	analysisQuery := []bson.M{}
+	for k, v := range mapParams {
+		analysisQuery = append(analysisQuery, bson.M{k: v})
+	}
+	analysisFinalQuery := bson.M{"$and": analysisQuery}
+	err := session.Update(analysisFinalQuery, updatedAnalysis, db.AnalysisCollection)
+	return updatedAnalysis, err
 }
