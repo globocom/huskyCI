@@ -1,19 +1,12 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/globocom/husky/analysis"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 )
 
 func main() {
-
-	err := checkAndInitMongo()
-	if err != nil {
-		fmt.Println("Check MongoDB. Something went wrong:", err)
-	}
 
 	echoInstance := echo.New()
 
@@ -22,23 +15,10 @@ func main() {
 	echoInstance.Use(middleware.RequestID())
 
 	echoInstance.GET("/healthcheck", analysis.HealthCheck)
-	echoInstance.GET("/status/:id", analysis.StatusAnalysis)
-	echoInstance.POST("/analyze", analysis.StartAnalysis)
-	echoInstance.POST("/createSecurityTest", analysis.CreateNewSecurityTest)
+	echoInstance.GET("/husky/:id", analysis.StatusAnalysis)
+	echoInstance.POST("/husky", analysis.StartAnalysis)
+	echoInstance.POST("/securitytest", analysis.CreateNewSecurityTest)
 
 	echoInstance.Logger.Fatal(echoInstance.Start(":9999"))
 
-}
-
-// checkAndInitMongo will check and initiate SecurityTestCollecion
-func checkAndInitMongo() error {
-	// _, err := analysis.FindSecurityTest("enry")
-	// if err != nil {
-	// 	fmt.Println("First time running Husky? Error:", err)
-	// 	err = analysis.InitSecurityTestCollection()
-	// 	if err != nil {
-	// 		fmt.Println("Could not initiate SecurityTestCollection. Is MongoDB running? Error:", err)
-	// 	}
-	// }
-	return nil
 }
