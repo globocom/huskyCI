@@ -96,7 +96,7 @@ func (db *DB) Insert(obj interface{}, collection string) error {
 }
 
 // Update updates a single document.
-func (db *DB) Update(query bson.M, updateQuery interface{}, collection string) error {
+func (db *DB) Update(query, updateQuery interface{}, collection string) error {
 	session := db.Session.Clone()
 	c := session.DB("").C(collection)
 	defer session.Close()
@@ -105,7 +105,7 @@ func (db *DB) Update(query bson.M, updateQuery interface{}, collection string) e
 }
 
 // UpdateAll updates all documents that match the query.
-func (db *DB) UpdateAll(query, updateQuery bson.M, collection string) error {
+func (db *DB) UpdateAll(query, updateQuery interface{}, collection string) error {
 	session := db.Session.Clone()
 	c := session.DB("").C(collection)
 	defer session.Close()
