@@ -14,14 +14,18 @@ brew install vagrant
 
 ## Installing
 
+#### Fork Husky's repository:
+
+Fork this repository to your github!
+
 #### Cloning Husky's repository:
 
 ```
-cd $GOPATH && cd src/ && mkdir github.com && cd github.com && mkdir globocom && cd globocom
+cd $GOPATH && cd src/ && mkdir github.com && cd github.com && mkdir yourGitHubName && cd yourGitHubName
 ```
 
 ```
-git clone https://github.com/globocom/husky.git && cd husky
+git clone https://github.com/yourGitHubName/husky.git && cd husky
 ```
 
 #### Starting up VMs:
@@ -35,6 +39,8 @@ vagrant up vm3-docker
 ```
 
 #### Setting up environment variables (use your own configuration):
+
+Don't forget to change this password!
 
 ```
 echo 'export DOCKER_HOST="192.168.50.6:2376"' > .env
@@ -66,11 +72,13 @@ use huskyDB
 db.createUser({user:"husky", pwd:"superENVPassword", roles: ["readWrite"]})
 ```
 
-#### Inserting new securityTests examples:
+#### Starting Husky:
 
 ```
 go run server.go
 ```
+
+#### Adding new securityTests examples:
 
 ```
 curl -H "Content-Type: application/json" -d '{"name":"brakeman", "image": "huskyci/brakeman", "cmd": ["ifconfig", "whoami", "ls"], "language": "ruby", "default":true}' http://localhost:9999/securitytest
@@ -82,6 +90,20 @@ curl -H "Content-Type: application/json" -d '{"name":"enry", "image": "huskyci/e
 
 ```
 curl -H "Content-Type: application/json" -d '{"name":"gas", "image": "huskyci/gas", "cmd": ["ifconfig", "whoami", "ls"], "language": "golang", "default":true}' http://localhost:9999/securitytest
+```
+
+```
+curl -H "Content-Type: application/json" -d '{"name":"bandit", "image": "huskyci/bandit", "cmd": ["ifconfig", "whoami", "ls"], "language": "python", "default":true}' http://localhost:9999/securitytest
+```
+
+#### Adding new repositories examples:
+
+```
+curl -H "Content-Type: application/json" -d '{"repositoryURL":"https://github.com/yourSuperPythonProject/yourSuperPythonProject.git"}' http://localhost:9999/repository 
+```
+
+```
+curl -H "Content-Type: application/json" -d '{"repositoryURL":"https://github.com/yourSuperGOProject/yourSuperGOProject.git", "securityTestName":["gas"], "VM":"10.10.10.1", "language":"golang"}' http://localhost:9999/repository 
 ```
 
 ## Architecture draft
