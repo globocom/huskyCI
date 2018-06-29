@@ -10,11 +10,11 @@ import (
 type Repository struct {
 	ID             bson.ObjectId   `bson:"_id,omitempty"`
 	URL            string          `bson:"URL" json:"repositoryURL"`
-	VM             string          `bson:"VM" json:"vm"`
 	SecurityTestID []bson.ObjectId `bson:"securityTest" json:"securityTestID"`
-	Language       string          `bson:"language" json:"language"`
+	VM             string          `bson:"VM" json:"vm"`
 	CreatedAt      time.Time       `bson:"createdAt" json:"createdAt"`
 	DeletedAt      time.Time       `bson:"deletedAt" json:"deletedAt"`
+	Language       string          `bson:"language" json:"language"`
 }
 
 // SecurityTest is the struct of all data from the security tests to be executed.
@@ -35,16 +35,16 @@ type Analysis struct {
 	SecurityTestID []bson.ObjectId `bson:"securityTest" json:"securityTestID"`
 	Status         string          `bson:"status" json:"status"`
 	Result         string          `bson:"result" json:"result"`
-	CID            []string        `bson:"container" json:"container"`
+	Container      []Container     `bson:"container" json:"container"`
 }
 
 // Container is the struct of all data from a container run.
 type Container struct {
-	ID             bson.ObjectId `bson:"_id,omitempty"`
 	CID            string        `bson:"CID" json:"CID"`
-	RID            string        `bson:"RID" json:"RID"`
 	VM             string        `bson:"VM" json:"VM"`
 	SecurityTestID bson.ObjectId `bson:"securityTest" json:"securityTestID"`
 	CStatus        string        `bson:"cStatus" json:"cStatus"`
 	COuput         []string      `bson:"cOutput" json:"cOutput"`
+	StartedAt      time.Time     `bson:"startedAt" json:"startedAt"`
+	FinishedAt     time.Time     `bson:"finishedAt" json:"finishedAt"`
 }
