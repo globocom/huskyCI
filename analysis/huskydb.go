@@ -105,11 +105,11 @@ func InsertDBRepository(repository types.Repository) (types.Repository, error) {
 
 	newRepository := bson.M{
 		"URL":          repository.URL,
+		"securityTest": securityTestDefaultIDs,
 		"VM":           repository.VM,
 		"createdAt":    repository.CreatedAt,
 		"deletedAt":    repository.DeletedAt,
 		"language":     repository.Language,
-		"securityTest": securityTestDefaultIDs,
 	}
 
 	err = session.Insert(newRepository, db.RepositoryCollection)
@@ -139,7 +139,7 @@ func InsertDBAnalysis(analysis types.Analysis) (types.Analysis, error) {
 		"securityTest": analysis.SecurityTestID,
 		"status":       analysis.Status,
 		"result":       analysis.Result,
-		"container":    analysis.CID,
+		"container":    analysis.Container,
 	}
 	err := session.Insert(newAnalysis, db.AnalysisCollection)
 	return analysis, err
