@@ -25,9 +25,12 @@ func StartAnalysis(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"RID": RID, "result": "error", "details": "Error binding repository."})
 	}
 
+	// essa URL é um repositorio git? verificar bibliotecas default.
+
 	// does this URL have already a running status analysis?
+	// same commit ok! check this
 	analysisQuery := map[string]interface{}{"URL": repository.URL}
-	analysisResult, err := FindDBAnalysis(analysisQuery)
+	analysisResult, err := FindOneDBAnalysis(analysisQuery)
 	if err != mgo.ErrNotFound {
 		// found an analysis for this URL. Is it running?
 		if analysisResult.Status == "running" {
@@ -37,15 +40,16 @@ func StartAnalysis(c echo.Context) error {
 
 	// does this URL have already a document in MongoDB?
 	repositoryQuery := map[string]interface{}{"URL": repository.URL}
-	repositoryResult, err := FindDBRepository(repositoryQuery)
+	repositoryResult, err := FindOneDBRepository(repositoryQuery)
 	if err == mgo.ErrNotFound {
 		// inserting a new document for this URL.
-		repositoryResult, err = InsertDBNewRepository(repository)
+		repositoryResult, err = InsertDBRepository(repository)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"RID": RID, "result": "error", "details": "Internal error. InsertDBNewRepository()."})
 		}
 	} else {
 		// what if MongoDB is not reachable!?
+		// case! check this
 		//return c.JSON(http.StatusInternalServerError, map[string]string{"RID": RID, "result": "error", "details": "Internal error. Check MongoDB. FindBDRepository()."})
 	}
 
@@ -56,21 +60,21 @@ func StartAnalysis(c echo.Context) error {
 		SecurityTestID: repositoryResult.SecurityTestID,
 		Status:         "running",
 		Result:         "",
-		Output:         []string{},
 	}
 
-	// starting each securityTest associated with this URL.
+	// starting each securityTest for URL
 	for _, securityTestID := range repositoryResult.SecurityTestID {
-		CID, err := StartSecurityTest(securityTestID, repository)
+		CID, err := StartSecurityTest(RID, securityTestID, repository)
 		if err != nil {
+			// change this! if one fails, try again. maxTries
+			// glbgelf include!!!! https://gitlab.globoi.com/supseg/glbgelf
+			c.Logger().Info("e")
 			return c.JSON(http.StatusInternalServerError, map[string]string{"RID": RID, "result": "error", "details": "Internal error. StartSecurityTest()."})
 		}
-		// storing each container started.
 		newAnalysis.CID = append(newAnalysis.CID, CID)
 	}
 
-	// registering analysis into MongoDB.
-	_, err = InsertDBNewAnalysis(newAnalysis)
+	_, err = InsertDBAnalysis(newAnalysis)
 	if err != nil {
 		fmt.Print("Error", err)
 	}
@@ -79,7 +83,7 @@ func StartAnalysis(c echo.Context) error {
 }
 
 // StartSecurityTest starts a given securityTestID in a given repository and returns the containerID.
-func StartSecurityTest(securityTestID bson.ObjectId, r types.Repository) (string, error) {
+func StartSecurityTest(RID string, securityTestID bson.ObjectId, r types.Repository) (string, error) {
 	// securityTestQuery := map[string]interface{}{"_id": securityTestID}
 	// securityTestReponse, err := FindSecurityTest(securityTestQuery)
 	// if err != nil {
@@ -102,7 +106,7 @@ func StartSecurityTest(securityTestID bson.ObjectId, r types.Repository) (string
 		COuput:         []string{},
 	}
 
-	_, err := InsertDBNewContainer(newContainer)
+	_, err := InsertDBContainer(newContainer)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
@@ -112,18 +116,54 @@ func StartSecurityTest(securityTestID bson.ObjectId, r types.Repository) (string
 
 // StatusAnalysis returns the status of a given analysis (via RID).
 func StatusAnalysis(c echo.Context) error {
+
+	// checking if given RID is present into AnalysisCollection.
 	RID := c.Param("id")
 	analysisQuery := map[string]interface{}{"RID": RID}
-	analysisResult, err := FindDBAnalysis(analysisQuery)
+	analysisResult, err := FindOneDBAnalysis(analysisQuery)
 	if err == mgo.ErrNotFound {
 		return c.JSON(http.StatusNotFound, map[string]string{"RID": RID, "result": "error", "details": "Analysis not found."})
 	} else {
 		// What if DB is not reachable!?
 	}
-	return c.JSON(http.StatusFound, map[string]string{"RID": RID, "result": "found", "status": analysisResult.Status})
+
+	// checking all securityTests associated with this analysis into SecurityTestCollection.
+	securityTestList := []types.SecurityTest{}
+	for _, securityID := range analysisResult.SecurityTestID {
+		securityTestQuery := map[string]interface{}{"_id": securityID}
+		securityTestResult, err := FindOneDBSecurityTest(securityTestQuery)
+		if err != nil {
+			fmt.Println("Error", err)
+			return err
+		}
+		securityTestList = append(securityTestList, securityTestResult)
+	}
+
+	// checking all containers associated with this analysis into ContainerCollection
+	containerList := []types.Container{}
+	for _, CID := range analysisResult.CID {
+		containerQuery := map[string]interface{}{"CID": CID}
+		containerResult, err := FindOneDBContainer(containerQuery)
+		if err != nil {
+			fmt.Println("Error", err)
+			return err
+		}
+		containerList = append(containerList, containerResult)
+	}
+
+	statusFound := map[string]interface{}{
+		"RID":          RID,
+		"URL":          analysisResult.URL,
+		"result":       analysisResult.Result,
+		"status":       analysisResult.Status,
+		"securityTest": securityTestList,
+		"container":    containerList,
+	}
+
+	return c.JSON(http.StatusFound, statusFound)
 }
 
-// CreateNewSecurityTest inserts into SecutiryTestCollection the given SecurityTest.
+// CreateNewSecurityTest inserts the given securityTest into SecurityTestCollection.
 func CreateNewSecurityTest(c echo.Context) error {
 	RID := c.Response().Header()["X-Request-Id"][0]
 	securityTest := types.SecurityTest{}
@@ -133,15 +173,15 @@ func CreateNewSecurityTest(c echo.Context) error {
 	}
 
 	securityTestQuery := map[string]interface{}{"name": securityTest.Name}
-	_, err = FindDBSecurityTest(securityTestQuery)
+	_, err = FindOneDBSecurityTest(securityTestQuery)
 	if err != mgo.ErrNotFound {
 		return c.JSON(http.StatusConflict, map[string]string{"RID": RID, "result": "error", "details": "This securityTest is already in MongoDB."})
 	}
 
-	_, err = InsertDBNewSecurityTest(securityTest)
+	_, err = InsertDBSecurityTest(securityTest)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"RID": RID, "result": "error", "details": "Error creating new securityTest."})
 	}
 
-	return c.JSON(http.StatusCreated, map[string]string{"RID": RID, "result": "created", "details": "SecurityTest sucessfully created."})
+	return c.JSON(http.StatusCreated, map[string]string{"RID": RID, "result": "created", "details": "securityTest sucessfully created."})
 }

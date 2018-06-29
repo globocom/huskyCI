@@ -44,6 +44,7 @@ func (d Docker) RunContainer(image string, cmd []string) (string, error) {
 }
 
 // CreateContainer creates a container and returns its ID
+// use docker as a parameter?
 func (d Docker) CreateContainer(image string, cmd []string) (string, error) {
 
 	dockerHost := os.Getenv("DOCKER_HOST")

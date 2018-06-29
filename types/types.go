@@ -9,40 +9,42 @@ import (
 // Repository is the struct of all data from repository to be analyzed.
 type Repository struct {
 	ID             bson.ObjectId   `bson:"_id,omitempty"`
-	URL            string          `json:"repositoryURL" bson:"URL"`
-	VM             string          `bson:"VM"`
-	SecurityTestID []bson.ObjectId `bson:"securityTest"`
-	CreatedAt      time.Time       `bson:"createdAt"`
-	DeletedAt      time.Time       `bson:"deletedAt"`
+	URL            string          `bson:"URL" json:"repositoryURL"`
+	VM             string          `bson:"VM" json:"vm"`
+	SecurityTestID []bson.ObjectId `bson:"securityTest" json:"securityTestID"`
+	Language       string          `bson:"language" json:"language"`
+	CreatedAt      time.Time       `bson:"createdAt" json:"createdAt"`
+	DeletedAt      time.Time       `bson:"deletedAt" json:"deletedAt"`
 }
 
 // SecurityTest is the struct of all data from the security tests to be executed.
 type SecurityTest struct {
-	ID    bson.ObjectId `bson:"_id,omitempty"`
-	Name  string        `bson:"name" json:"name"`
-	Image string        `bson:"image" json:"image"`
-	Cmd   []string      `bson:"cmd" json:"cmd"`
+	ID       bson.ObjectId `bson:"_id,omitempty"`
+	Name     string        `bson:"name" json:"name"`
+	Image    string        `bson:"image" json:"image"`
+	Cmd      []string      `bson:"cmd" json:"cmd"`
+	Language string        `bson:"language" json:"language"`
+	Default  bool          `bson:"default" json:"default"`
 }
 
 // Analysis is the struct of all data from analysis performed.
 type Analysis struct {
 	ID             bson.ObjectId   `bson:"_id,omitempty"`
-	RID            string          `bson:"RID"`
-	URL            string          `bson:"URL"`
-	SecurityTestID []bson.ObjectId `bson:"securityTest"`
-	Status         string          `bson:"status"`
-	Result         string          `bson:"result"`
-	Output         []string        `bson:"output"`
-	CID            []string        `bson:"container"`
+	RID            string          `bson:"RID" json:"RID"`
+	URL            string          `bson:"URL" json:"URL"`
+	SecurityTestID []bson.ObjectId `bson:"securityTest" json:"securityTestID"`
+	Status         string          `bson:"status" json:"status"`
+	Result         string          `bson:"result" json:"result"`
+	CID            []string        `bson:"container" json:"container"`
 }
 
 // Container is the struct of all data from a container run.
 type Container struct {
 	ID             bson.ObjectId `bson:"_id,omitempty"`
-	CID            string        `bson:"CID"`
-	RID            string        `bson:"RID"`
-	VM             string        `bson:"VM"`
-	SecurityTestID bson.ObjectId `bson:"securityTest"`
-	CStatus        string        `bson:"cStatus"`
-	COuput         []string      `bson:"cOutput"`
+	CID            string        `bson:"CID" json:"CID"`
+	RID            string        `bson:"RID" json:"RID"`
+	VM             string        `bson:"VM" json:"VM"`
+	SecurityTestID bson.ObjectId `bson:"securityTest" json:"securityTestID"`
+	CStatus        string        `bson:"cStatus" json:"cStatus"`
+	COuput         []string      `bson:"cOutput" json:"cOutput"`
 }
