@@ -81,7 +81,7 @@ func CreateNewSecurityTest(c echo.Context) error {
 		return c.JSON(http.StatusConflict, map[string]string{"result": "error", "details": "This securityTest is already in MongoDB."})
 	}
 
-	_, err = InsertDBSecurityTest(securityTest)
+	err = InsertDBSecurityTest(securityTest)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"result": "error", "details": "Error creating new securityTest."})
 	}
@@ -103,7 +103,7 @@ func CreateNewRepository(c echo.Context) error {
 		return c.JSON(http.StatusConflict, map[string]string{"result": "error", "details": "Repository found."})
 	}
 
-	_, err = InsertDBRepository(repository)
+	err = InsertDBRepository(repository)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"result": "error", "details": "Error creating new repository."})
 	}
