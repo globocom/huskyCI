@@ -6,18 +6,19 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-// Repository is the struct of all data from repository to be analyzed.
+// Repository is the struct that stores all data from repository to be analyzed.
 type Repository struct {
-	ID             bson.ObjectId   `bson:"_id,omitempty"`
-	URL            string          `bson:"URL" json:"repositoryURL"`
-	SecurityTestID []bson.ObjectId `bson:"securityTest" json:"securityTestID"`
-	VM             string          `bson:"VM" json:"vm"`
-	CreatedAt      time.Time       `bson:"createdAt" json:"createdAt"`
-	DeletedAt      time.Time       `bson:"deletedAt" json:"deletedAt"`
-	Language       string          `bson:"language" json:"language"`
+	ID               bson.ObjectId  `bson:"_id,omitempty"`
+	URL              string         `bson:"URL" json:"repositoryURL"`
+	SecurityTest     []SecurityTest `bson:"securityTest" json:"securityTest"`
+	SecurityTestName string         `json:"securityTestName"`
+	VM               string         `bson:"VM" json:"vm"`
+	CreatedAt        time.Time      `bson:"createdAt" json:"createdAt"`
+	DeletedAt        time.Time      `bson:"deletedAt" json:"deletedAt"`
+	Language         string         `bson:"language" json:"language"`
 }
 
-// SecurityTest is the struct of all data from the security tests to be executed.
+// SecurityTest is the struct that stores all data from the security tests to be executed.
 type SecurityTest struct {
 	ID       bson.ObjectId `bson:"_id,omitempty"`
 	Name     string        `bson:"name" json:"name"`
@@ -27,7 +28,7 @@ type SecurityTest struct {
 	Default  bool          `bson:"default" json:"default"`
 }
 
-// Analysis is the struct of all data from analysis performed.
+// Analysis is the struct that stores all data from analysis performed.
 type Analysis struct {
 	ID             bson.ObjectId   `bson:"_id,omitempty"`
 	RID            string          `bson:"RID" json:"RID"`
@@ -38,7 +39,7 @@ type Analysis struct {
 	Container      []Container     `bson:"container" json:"container"`
 }
 
-// Container is the struct of all data from a container run.
+// Container is the struct that stores all data from a container run.
 type Container struct {
 	CID            string        `bson:"CID" json:"CID"`
 	VM             string        `bson:"VM" json:"VM"`
