@@ -130,12 +130,12 @@ func InsertDBRepository(repository types.Repository) error {
 	}
 
 	newRepository := bson.M{
-		"URL":          repository.URL,
-		"securityTest": securityTestList,
-		"VM":           repository.VM,
-		"createdAt":    repository.CreatedAt,
-		"deletedAt":    repository.DeletedAt,
-		"language":     repository.Language,
+		"URL":           repository.URL,
+		"securityTests": securityTestList,
+		"VM":            repository.VM,
+		"createdAt":     repository.CreatedAt,
+		"deletedAt":     repository.DeletedAt,
+		"language":      repository.Language,
 	}
 
 	err = session.Insert(newRepository, db.RepositoryCollection)
@@ -162,17 +162,17 @@ func InsertDBAnalysis(analysis types.Analysis) error {
 	newAnalysis := bson.M{
 		"RID":          analysis.RID,
 		"URL":          analysis.URL,
-		"securityTest": analysis.SecurityTestID,
+		"securityTest": analysis.SecurityTests,
 		"status":       analysis.Status,
 		"result":       analysis.Result,
-		"container":    analysis.Container,
+		"containers":   analysis.Containers,
 	}
 	err := session.Insert(newAnalysis, db.AnalysisCollection)
 	return err
 }
 
 // UpdateOneDBRepository checks if a given repository is present into RepositoryCollection and update it.
-func UpdateOneDBRepository(mapParams map[string]interface{}, updatedRepository types.Repository) (types.Repository, error) {
+func UpdateOneDBRepository(mapParams map[string]interface{}, updatedRepository types.Repository) error {
 	session := db.Connect()
 	repositoryQuery := []bson.M{}
 	for k, v := range mapParams {
@@ -180,11 +180,11 @@ func UpdateOneDBRepository(mapParams map[string]interface{}, updatedRepository t
 	}
 	repositoryFinalQuery := bson.M{"$and": repositoryQuery}
 	err := session.Update(repositoryFinalQuery, updatedRepository, db.RepositoryCollection)
-	return updatedRepository, err
+	return err
 }
 
 // UpdateOneDBSecurityTest checks if a given securityTest is present into SecurityTestCollection and update it.
-func UpdateOneDBSecurityTest(mapParams map[string]interface{}, updatedSecurityTest types.SecurityTest) (types.SecurityTest, error) {
+func UpdateOneDBSecurityTest(mapParams map[string]interface{}, updatedSecurityTest types.SecurityTest) error {
 	session := db.Connect()
 	securityTestQuery := []bson.M{}
 	for k, v := range mapParams {
@@ -192,11 +192,11 @@ func UpdateOneDBSecurityTest(mapParams map[string]interface{}, updatedSecurityTe
 	}
 	securityTestFinalQuery := bson.M{"$and": securityTestQuery}
 	err := session.Update(securityTestFinalQuery, updatedSecurityTest, db.SecurityTestCollection)
-	return updatedSecurityTest, err
+	return err
 }
 
 // UpdateOneDBAnalysis checks if a given analysis is present into AnalysisCollection and update it.
-func UpdateOneDBAnalysis(mapParams map[string]interface{}, updatedAnalysis types.Analysis) (types.Analysis, error) {
+func UpdateOneDBAnalysis(mapParams map[string]interface{}, updatedAnalysis types.Analysis) error {
 	session := db.Connect()
 	analysisQuery := []bson.M{}
 	for k, v := range mapParams {
@@ -204,7 +204,7 @@ func UpdateOneDBAnalysis(mapParams map[string]interface{}, updatedAnalysis types
 	}
 	analysisFinalQuery := bson.M{"$and": analysisQuery}
 	err := session.Update(analysisFinalQuery, updatedAnalysis, db.AnalysisCollection)
-	return updatedAnalysis, err
+	return err
 }
 
 // removeDuplicates remove duplicated itens from a slice.
