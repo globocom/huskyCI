@@ -10,7 +10,7 @@ import (
 type Repository struct {
 	ID               bson.ObjectId  `bson:"_id,omitempty"`
 	URL              string         `bson:"URL" json:"repositoryURL"`
-	SecurityTest     []SecurityTest `bson:"securityTest" json:"securityTest"`
+	SecurityTests    []SecurityTest `bson:"securityTests" json:"securityTests"`
 	SecurityTestName []string       `json:"securityTestName"`
 	VM               string         `bson:"VM" json:"vm"`
 	CreatedAt        time.Time      `bson:"createdAt" json:"createdAt"`
@@ -23,29 +23,29 @@ type SecurityTest struct {
 	ID       bson.ObjectId `bson:"_id,omitempty"`
 	Name     string        `bson:"name" json:"name"`
 	Image    string        `bson:"image" json:"image"`
-	Cmd      []string      `bson:"cmd" json:"cmd"`
+	Cmd      string        `bson:"cmd" json:"cmd"`
 	Language string        `bson:"language" json:"language"`
 	Default  bool          `bson:"default" json:"default"`
 }
 
 // Analysis is the struct that stores all data from analysis performed.
 type Analysis struct {
-	ID             bson.ObjectId   `bson:"_id,omitempty"`
-	RID            string          `bson:"RID" json:"RID"`
-	URL            string          `bson:"URL" json:"URL"`
-	SecurityTestID []bson.ObjectId `bson:"securityTest" json:"securityTestID"`
-	Status         string          `bson:"status" json:"status"`
-	Result         string          `bson:"result" json:"result"`
-	Container      []Container     `bson:"container" json:"container"`
+	ID            bson.ObjectId  `bson:"_id,omitempty"`
+	RID           string         `bson:"RID" json:"RID"`
+	URL           string         `bson:"URL" json:"URL"`
+	SecurityTests []SecurityTest `bson:"securityTests" json:"securityTests"`
+	Status        string         `bson:"status" json:"status"`
+	Result        string         `bson:"result" json:"result"`
+	Containers    []Container    `bson:"containers" json:"containers"`
 }
 
 // Container is the struct that stores all data from a container run.
 type Container struct {
-	CID            string        `bson:"CID" json:"CID"`
-	VM             string        `bson:"VM" json:"VM"`
-	SecurityTestID bson.ObjectId `bson:"securityTest" json:"securityTestID"`
-	CStatus        string        `bson:"cStatus" json:"cStatus"`
-	COuput         []string      `bson:"cOutput" json:"cOutput"`
-	StartedAt      time.Time     `bson:"startedAt" json:"startedAt"`
-	FinishedAt     time.Time     `bson:"finishedAt" json:"finishedAt"`
+	CID          string       `bson:"CID" json:"CID"`
+	VM           string       `bson:"VM" json:"VM"`
+	SecurityTest SecurityTest `bson:"securityTest" json:"securityTest"`
+	CStatus      string       `bson:"cStatus" json:"cStatus"`
+	COuput       string       `bson:"cOutput" json:"cOutput"`
+	StartedAt    time.Time    `bson:"startedAt" json:"startedAt"`
+	FinishedAt   time.Time    `bson:"finishedAt" json:"finishedAt"`
 }
