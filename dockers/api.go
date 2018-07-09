@@ -7,6 +7,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
+
+	"github.com/globocom/husky/types"
 )
 
 // Docker is the docker struct
@@ -20,37 +23,21 @@ type CreateContainerPayload struct {
 	Cmd   []string `json:"Cmd"`
 }
 
-// RunContainer runs a container
-func (d Docker) RunContainer(image string, cmd []string) (string, error) {
-
-	containerID, err := d.CreateContainer(image, cmd)
-	if err != nil {
-		return "", err
-	}
-
-	err = d.StartContainer(containerID)
-	if err != nil {
-		return containerID + "NOT STARTED", err
-	}
-
-	// err = d.WaitContainer(containerID)
-	// if err != nil {
-	// 	fmt.Println("Error waiting the container:", err)
-	// }
-
-	//output := d.ReadOutput(containerID)
-
-	return containerID, err
+func handleCmd(analysis types.Analysis, cmd string) string {
+	cmdReplaced := strings.Replace(cmd, "%GIT_REPO%", analysis.URL, -1)
+	return cmdReplaced
 }
 
 // CreateContainer creates a container and returns its ID
 // use docker as a parameter?
-func (d Docker) CreateContainer(image string, cmd []string) (string, error) {
+func (d Docker) CreateContainer(analysis types.Analysis, image string, cmd string) (string, error) {
 
 	dockerHost := os.Getenv("DOCKER_HOST")
+	cmd = handleCmd(analysis, cmd)
+
 	createContainerPayload := CreateContainerPayload{
 		Image: image,
-		Cmd:   []string{"/bin/sh", "-c", cmd[0]},
+		Cmd:   []string{"/bin/sh", "-c", cmd},
 	}
 	jsonPayload, err := json.Marshal(createContainerPayload)
 	if err != nil {
@@ -71,7 +58,6 @@ func (d Docker) CreateContainer(image string, cmd []string) (string, error) {
 		fmt.Println("Error reading the body response of POST to create the container:", err)
 		return "", err
 	}
-
 	err = json.Unmarshal(body, &d)
 	if err != nil {
 		fmt.Println("Error reading container ID:", err)
@@ -99,7 +85,7 @@ func (d Docker) WaitContainer(containerID string) error {
 	URL := "http://" + dockerHost + "/v1.24/containers/" + containerID + "/wait"
 	resp, err := http.Post(URL, "", nil)
 	if err != nil {
-		fmt.Println("Error in GET /wait:", err)
+		fmt.Println("Error in POST /wait:", err)
 	}
 	defer resp.Body.Close()
 	return err

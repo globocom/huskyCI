@@ -1,10 +1,13 @@
 package analysis
 
 import (
+	"fmt"
 	"net/http"
+	"time"
 
 	"gopkg.in/mgo.v2"
 
+	docker "github.com/globocom/husky/dockers"
 	"github.com/globocom/husky/types"
 	"github.com/labstack/echo"
 )
@@ -30,6 +33,12 @@ func ReceiveRequest(c echo.Context) error {
 	repositoryResult, err := FindOneDBRepository(repositoryQuery)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, map[string]string{"result": "error", "details": "Repository not found."})
+	} else {
+		// ok let's insert into MongoDB the repository with default securityTests
+		err = InsertDBRepository(repositoryResult)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"result": "error", "details": "Internal error."})
+		}
 	}
 
 	// check-03: does this repository have a running status analysis? (for the future: check commits and not URLs?)
@@ -41,17 +50,75 @@ func ReceiveRequest(c echo.Context) error {
 		}
 	}
 
-	err = StartAnalysis(repositoryResult)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"result": "error", "details": "Could not start analysis. Internal error."})
-	}
+	go StartAnalysis(RID, repositoryResult)
 
 	return c.JSON(http.StatusOK, map[string]string{"RID": RID, "result": "ok", "details": "Request received."})
 }
 
-// StartAnalysis starts the analysis given a repository.
-func StartAnalysis(repository types.Repository) error {
-	return nil
+// StartAnalysis starts the analysis given a RID and a repository.
+func StartAnalysis(RID string, repository types.Repository) {
+
+	newAnalysis := types.Analysis{
+		RID:           RID,
+		URL:           repository.URL,
+		SecurityTests: repository.SecurityTests,
+		Status:        "started",
+		Containers:    make([]types.Container, 0),
+	}
+
+	err := InsertDBAnalysis(newAnalysis)
+	if err != nil {
+		fmt.Println("Error inserting new analysis.", err)
+	}
+
+	for _, securityTest := range repository.SecurityTests {
+		go dockerRun(RID, &newAnalysis, securityTest)
+	}
+
+	// worker will check if the jobs are done to set newAnalysis.Status = "finished"
+}
+
+func dockerRun(RID string, newAnalysis *types.Analysis, securityTest types.SecurityTest) {
+
+	d := docker.Docker{}
+
+	newContainer := types.Container{
+		SecurityTest: securityTest,
+		StartedAt:    time.Now(),
+		CStatus:      "started",
+	}
+
+	CID, err := d.CreateContainer(*newAnalysis, securityTest.Image, securityTest.Cmd)
+	if err != nil {
+		fmt.Println("Error creating new container:", err)
+	}
+
+	newContainer.CID = CID
+	newContainer.CStatus = "running"
+
+	err = d.StartContainer(CID)
+	if err != nil {
+		fmt.Println("Error starting the container", CID, ":", err)
+		newContainer.CStatus = "error"
+	}
+
+	err = d.WaitContainer(CID)
+	if err != nil {
+		fmt.Println("Error waiting the container", CID, ":", err)
+	}
+
+	newContainer.COuput = d.ReadOutput(CID)
+	newContainer.CStatus = "finished"
+	newContainer.FinishedAt = time.Now()
+
+	newAnalysis.Containers = append(newAnalysis.Containers, newContainer)
+
+	analysisQuery := map[string]interface{}{"RID": RID}
+	err = UpdateOneDBAnalysis(analysisQuery, *newAnalysis)
+	if err != nil {
+		fmt.Println("Error updating Analysis", err)
+	}
+
 }
 
 // StatusAnalysis returns the status of a given analysis (via RID).
