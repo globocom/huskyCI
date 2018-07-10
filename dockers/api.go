@@ -92,19 +92,19 @@ func (d Docker) WaitContainer(containerID string) error {
 }
 
 // ReadOutput returns the command ouput of a given containerID
-func (d Docker) ReadOutput(containerID string) string {
+func (d Docker) ReadOutput(containerID string) (string, error) {
 	dockerHost := os.Getenv("DOCKER_HOST")
 	URL := "http://" + dockerHost + "/v1.24/containers/" + containerID + "/logs?stdout=1"
 	resp, err := http.Get(URL)
 	if err != nil {
-		fmt.Println("Error in GET to get the command output of the container:", err)
+		return "", err
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println("Error reading the body response of GET to read the command output:", err)
+		return "", err
 	}
-	return string(body)
+	return string(body), err
 }
 
 // PullImage pulls an image, like docker pull

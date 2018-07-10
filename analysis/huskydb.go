@@ -207,6 +207,18 @@ func UpdateOneDBAnalysis(mapParams map[string]interface{}, updatedAnalysis types
 	return err
 }
 
+// UpdateOneDBContainerAnalysis checks if a given analysis is present into AnalysisCollection and update the container associated in it.
+func UpdateOneDBContainerAnalysis(mapParams map[string]interface{}, containerQuery map[string]interface{}) error {
+	session := db.Connect()
+	analysisQuery := []bson.M{}
+	for k, v := range mapParams {
+		analysisQuery = append(analysisQuery, bson.M{k: v})
+	}
+	analysisFinalQuery := bson.M{"$and": analysisQuery}
+	err := session.Update(analysisFinalQuery, containerQuery, db.AnalysisCollection)
+	return err
+}
+
 // removeDuplicates remove duplicated itens from a slice.
 func removeDuplicates(s []string) []string {
 	mapS := make(map[string]string, len(s))
