@@ -78,22 +78,10 @@ db.createUser({user:"husky", pwd:"superENVPassword", roles: ["readWrite"]})
 go run server.go
 ```
 
-#### Adding new securityTests examples:
+#### Adding a new securityTest example:
 
 ```
-curl -H "Content-Type: application/json" -d '{"name":"brakeman", "image": "huskyci/brakeman", "cmd": ["ifconfig", "whoami", "ls"], "language": "ruby", "default":true}' http://localhost:9999/securitytest
-```
-
-```
-curl -H "Content-Type: application/json" -d '{"name":"enry", "image": "huskyci/enry", "cmd": ["ifconfig", "whoami", "ls"], "language": "generic", "default":true}' http://localhost:9999/securitytest
-```
-
-```
-curl -H "Content-Type: application/json" -d '{"name":"gas", "image": "huskyci/gas", "cmd": ["ifconfig", "whoami", "ls"], "language": "golang", "default":true}' http://localhost:9999/securitytest
-```
-
-```
-curl -H "Content-Type: application/json" -d '{"name":"bandit", "image": "huskyci/bandit", "cmd": ["ifconfig", "whoami", "ls"], "language": "python", "default":true}' http://localhost:9999/securitytest
+curl -H "Content-Type: application/json" -d '{"name":"enry", "image": "huskyci/enry", "cmd": "git clone %GIT_REPO% code; cd code; enry" , "language": "generic", "default":true}' http://localhost:9999/securitytest
 ```
 
 #### Adding new repositories examples:

@@ -3,9 +3,11 @@ package analysis
 import (
 	"fmt"
 	"net/http"
+	"regexp"
 	"time"
 
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 
 	docker "github.com/globocom/husky/dockers"
 	"github.com/globocom/husky/types"
@@ -21,32 +23,46 @@ func HealthCheck(c echo.Context) error {
 func ReceiveRequest(c echo.Context) error {
 	RID := c.Response().Header()["X-Request-Id"][0]
 
-	// check-01: is this a valid JSON?
+	// check-00: is this a valid JSON?
 	repository := types.Repository{}
 	err := c.Bind(&repository)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Error binding repository."})
 	}
 
+	// check-01: is this a git repository URL?
+	regexpGit := `^(?:git|https?|ssh|git@[-\w.]+):(//)?(.*?)(\.git)(/?|#[-\d\w._]+?)$`
+	valid, err := regexp.MatchString(regexpGit, repository.URL)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Internal error."})
+	}
+	if !valid {
+		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "URL received is not a git repository."})
+	}
+
 	// check-02: is this repository in MongoDB?
 	repositoryQuery := map[string]interface{}{"URL": repository.URL}
 	repositoryResult, err := FindOneDBRepository(repositoryQuery)
-	if err != nil {
-		return c.JSON(http.StatusNotFound, map[string]string{"result": "error", "details": "Repository not found."})
-	} else {
-		// ok let's insert into MongoDB the repository with default securityTests
-		err = InsertDBRepository(repositoryResult)
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, map[string]string{"result": "error", "details": "Internal error."})
+	if err == nil {
+		// check-03: does this repository have a running status analysis? (for the future: check commits and not URLs?)
+		analysisQuery := map[string]interface{}{"URL": repository.URL}
+		analysisResult, err := FindOneDBAnalysis(analysisQuery)
+		if err != mgo.ErrNotFound {
+			if analysisResult.Status == "running" {
+				return c.JSON(http.StatusConflict, map[string]string{"result": "error", "details": "An analysis is already in place for this URL."})
+			}
 		}
-	}
-
-	// check-03: does this repository have a running status analysis? (for the future: check commits and not URLs?)
-	analysisQuery := map[string]interface{}{"URL": repository.URL}
-	analysisResult, err := FindOneDBAnalysis(analysisQuery)
-	if err != mgo.ErrNotFound {
-		if analysisResult.Status == "running" {
-			return c.JSON(http.StatusConflict, map[string]string{"result": "error", "details": "An analysis is already in place for this URL."})
+	} else {
+		// ok let's then insert it into MongoDB with default securityTests
+		err = InsertDBRepository(repository)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"result": "error", "details": "Internal error inserting repository."})
+		}
+		repositoryQuery := map[string]interface{}{"URL": repository.URL}
+		repositoryResult, err = FindOneDBRepository(repositoryQuery)
+		if err != nil {
+			// well it was supposed to be there, after all, we just inserted it.
+			return c.JSON(http.StatusInternalServerError, map[string]string{"result": "error", "details": "Internal error finding repository."})
 		}
 	}
 
@@ -78,47 +94,85 @@ func StartAnalysis(RID string, repository types.Repository) {
 	// worker will check if the jobs are done to set newAnalysis.Status = "finished"
 }
 
-func dockerRun(RID string, newAnalysis *types.Analysis, securityTest types.SecurityTest) {
+// dockerRun starts a new container, runs a given securityTest in it and then updates AnalysisCollection.
+func dockerRun(RID string, analysis *types.Analysis, securityTest types.SecurityTest) {
 
+	// step 0: adding a new container to the analysis.
+	newContainer := types.Container{SecurityTest: securityTest}
+	analysisQuery := map[string]interface{}{"RID": RID}
+
+	// step 1: create a new container.
 	d := docker.Docker{}
-
-	newContainer := types.Container{
-		SecurityTest: securityTest,
-		StartedAt:    time.Now(),
-		CStatus:      "started",
-	}
-
-	CID, err := d.CreateContainer(*newAnalysis, securityTest.Image, securityTest.Cmd)
+	CID, err := d.CreateContainer(*analysis, securityTest.Image, securityTest.Cmd)
 	if err != nil {
-		fmt.Println("Error creating new container:", err)
+		// error creating container. maxRetry?
+		newContainer.CStatus = "error"
+		analysis.Containers = append(analysis.Containers, newContainer)
+		err := UpdateOneDBAnalysis(analysisQuery, *analysis)
+		if err != nil {
+			fmt.Println("Error updating AnalysisCollection (step 1-err):", err)
+		}
+	} else {
+		newContainer.CID = CID
+		newContainer.CStatus = "created"
+		analysis.Containers = append(analysis.Containers, newContainer)
+		err := UpdateOneDBAnalysis(analysisQuery, *analysis)
+		if err != nil {
+			fmt.Println("Error updating AnalysisCollection (step 1):", err)
+		}
+		analysisQuery = map[string]interface{}{"containers.CID": CID}
 	}
 
-	newContainer.CID = CID
-	newContainer.CStatus = "running"
-
+	// step 2: start created container.
 	err = d.StartContainer(CID)
 	if err != nil {
-		fmt.Println("Error starting the container", CID, ":", err)
-		newContainer.CStatus = "error"
+		// error starting container. maxRetry?
+		updateContainerAnalysisQuery := bson.M{
+			"$set": bson.M{
+				"containers.$.cStatus": "error",
+			},
+		}
+		err = UpdateOneDBContainerAnalysis(analysisQuery, updateContainerAnalysisQuery)
+		if err != nil {
+			fmt.Println("Error updating AnalysisCollection (step 2-err):", err)
+		}
+	} else {
+		updateContainerAnalysisQuery := bson.M{
+			"$set": bson.M{
+				"containers.$.cStatus":   "running",
+				"containers.$.startedAt": time.Now(),
+			},
+		}
+		err = UpdateOneDBContainerAnalysis(analysisQuery, updateContainerAnalysisQuery)
+		if err != nil {
+			fmt.Println("Error updating AnalysisCollection (step 2):", err)
+		}
 	}
 
+	// step 3: wait container finish running.
 	err = d.WaitContainer(CID)
 	if err != nil {
 		fmt.Println("Error waiting the container", CID, ":", err)
 	}
 
-	newContainer.COuput = d.ReadOutput(CID)
-	newContainer.CStatus = "finished"
-	newContainer.FinishedAt = time.Now()
-
-	newAnalysis.Containers = append(newAnalysis.Containers, newContainer)
-
-	analysisQuery := map[string]interface{}{"RID": RID}
-	err = UpdateOneDBAnalysis(analysisQuery, *newAnalysis)
+	// step 4: read cmd output from container.
+	newContainer.COuput, err = d.ReadOutput(CID)
 	if err != nil {
-		fmt.Println("Error updating Analysis", err)
+		// error reading container's output. maxRetry?
+		fmt.Println("Error reading output from container", CID, ":", err)
+	} else {
+		updateContainerAnalysisQuery := bson.M{
+			"$set": bson.M{
+				"containers.$.cStatus":    "finished",
+				"containers.$.finishedAt": time.Now(),
+				"containers.$.cOutput":    newContainer.COuput,
+			},
+		}
+		err = UpdateOneDBContainerAnalysis(analysisQuery, updateContainerAnalysisQuery)
+		if err != nil {
+			fmt.Println("Error updating AnalysisCollection (step 4).", err)
+		}
 	}
-
 }
 
 // StatusAnalysis returns the status of a given analysis (via RID).
