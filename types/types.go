@@ -46,6 +46,7 @@ type Container struct {
 	SecurityTest SecurityTest `bson:"securityTest" json:"securityTest"`
 	CStatus      string       `bson:"cStatus" json:"cStatus"`
 	COuput       string       `bson:"cOutput" json:"cOutput"`
+	CResult      string       `bson:"cResult" json:"cResult"`
 	StartedAt    time.Time    `bson:"startedAt" json:"startedAt"`
 	FinishedAt   time.Time    `bson:"finishedAt" json:"finishedAt"`
 }

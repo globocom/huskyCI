@@ -100,6 +100,7 @@ func dockerRun(RID string, analysis *types.Analysis, securityTest types.Security
 	// step 0: adding a new container to the analysis.
 	newContainer := types.Container{SecurityTest: securityTest}
 	analysisQuery := map[string]interface{}{"RID": RID}
+	startedAt := time.Now()
 
 	// step 1: create a new container.
 	d := docker.Docker{}
@@ -137,10 +138,11 @@ func dockerRun(RID string, analysis *types.Analysis, securityTest types.Security
 			fmt.Println("Error updating AnalysisCollection (step 2-err):", err)
 		}
 	} else {
+		startedAt = time.Now()
 		updateContainerAnalysisQuery := bson.M{
 			"$set": bson.M{
 				"containers.$.cStatus":   "running",
-				"containers.$.startedAt": time.Now(),
+				"containers.$.startedAt": startedAt,
 			},
 		}
 		err = UpdateOneDBContainerAnalysis(analysisQuery, updateContainerAnalysisQuery)
@@ -161,10 +163,11 @@ func dockerRun(RID string, analysis *types.Analysis, securityTest types.Security
 		// error reading container's output. maxRetry?
 		fmt.Println("Error reading output from container", CID, ":", err)
 	} else {
+		finishedAt := time.Now()
 		updateContainerAnalysisQuery := bson.M{
 			"$set": bson.M{
 				"containers.$.cStatus":    "finished",
-				"containers.$.finishedAt": time.Now(),
+				"containers.$.finishedAt": finishedAt,
 				"containers.$.cOutput":    newContainer.COuput,
 			},
 		}
