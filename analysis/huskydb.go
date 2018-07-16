@@ -208,7 +208,7 @@ func UpdateOneDBAnalysis(mapParams map[string]interface{}, updatedAnalysis types
 }
 
 // UpdateOneDBContainerAnalysis checks if a given analysis is present into AnalysisCollection and update the container associated in it.
-func UpdateOneDBContainerAnalysis(mapParams map[string]interface{}, containerQuery map[string]interface{}) error {
+func UpdateOneDBContainerAnalysis(mapParams, containerQuery map[string]interface{}) error {
 	session := db.Connect()
 	analysisQuery := []bson.M{}
 	for k, v := range mapParams {
