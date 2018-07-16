@@ -38,6 +38,24 @@ vagrant up vm2-db
 vagrant up vm3-docker
 ```
 
+#### Downloading docker images:
+
+The images below are already installed via Vagrant! These are only some examples on how to download your own docker image if desired.
+
+huskyci/enry:
+
+```
+curl -X POST http://192.168.50.6:2376/v1.24/images/create?fromImage=huskyci/enry
+```
+
+huskyci/gas:
+
+```
+curl -X POST http://192.168.50.6:2376/v1.24/images/create?fromImage=huskyci/gas
+```
+
+For more Docker API examples, refer to: https://docs.docker.com/develop/sdk/examples/
+
 #### Setting up environment variables (use your own configuration):
 
 Don't forget to change this password!
@@ -78,20 +96,40 @@ db.createUser({user:"husky", pwd:"superENVPassword", roles: ["readWrite"]})
 go run server.go
 ```
 
-#### Adding a new securityTest example:
+#### Adding securityTests:
+
+ENRY:
 
 ```
-curl -H "Content-Type: application/json" -d '{"name":"enry", "image": "huskyci/enry", "cmd": "git clone %GIT_REPO% code; cd code; enry" , "language": "generic", "default":true}' http://localhost:9999/securitytest
+curl -H "Content-Type: application/json" -d '{"name":"enry", "image": "huskyci/enry", "cmd": "echo [ENRY]; git clone %GIT_REPO% code; cd code; enry --json" , "language": "generic", "default":true}' http://localhost:9999/securitytest
 ```
 
-#### Adding new repositories examples:
+GAS:
 
 ```
-curl -H "Content-Type: application/json" -d '{"repositoryURL":"https://github.com/yourSuperPythonProject/yourSuperPythonProject.git"}' http://localhost:9999/repository 
+curl -H "Content-Type: application/json" -d '{"name":"enry", "image": "huskyci/enry", "cmd": "echo [GAS]; cd src; git clone %GIT_REPO% code; cd code; /go/bin/gas -fmt=json -log=log.txt -out=results.json ./... ; cat results.json" , "language": "generic", "default":true}' http://localhost:9999/securitytest
+```
+
+
+#### Adding new repository example:
+
+
+```
+curl -H "Content-Type: application/json" -d '{"repositoryURL":"https://github.com/tsuru/cst.git", "securityTestName":["gas"]}' http://localhost:9999/repository 
 ```
 
 ```
-curl -H "Content-Type: application/json" -d '{"repositoryURL":"https://github.com/yourSuperGOProject/yourSuperGOProject.git", "securityTestName":["gas"], "VM":"10.10.10.1", "language":"golang"}' http://localhost:9999/repository 
+{"RID":"eZVxfYH7W6XOdjuQbNV5I7l5XJ8puTUo","details":"Request received.","result":"ok"}
+```
+
+#### Checking analysis status:
+
+```
+curl -s localhost:9999/husky/eZVxfYH7W6XOdjuQbNV5I7l5XJ8puTUo
+```
+
+```
+{"ID":"5b4c9795a118cc8f953f2042","RID":"CQsXAjvgVwtKVfUarkCDgHJoZpEI3kz9","URL":"https://github.com/tsuru/cst.git","securityTests":[{"ID":"5b470d9c3406984e4b27009d","name":"gas","image":"huskyci/gas","cmd":"echo -n [GAS]; cd src; git clone %GIT_REPO% code; cd code; /go/bin/gas -quiet -fmt=json -log=log.txt -out=results.json ./... ; cat results.json","language":"generic","default":true}],"status":"started","result":"","containers":[{"CID":"f0fb8ae1c5edd4fed8a62a4554be3d57804e4803b872b762f58af10d94b226e7","VM":"","securityTest":{"ID":"5b470d9c3406984e4b27009d","name":"gas","image":"huskyci/gas","cmd":"echo -n [GAS]; cd src; git clone %GIT_REPO% code; cd code; /go/bin/gas -quiet -fmt=json -log=log.txt -out=results.json ./... ; cat results.json","language":"generic","default":true},"cStatus":"finished","cOutput":"\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0005[GAS]","cResult":"","startedAt":"2018-07-16T10:03:18.515-03:00","finishedAt":"2018-07-16T10:03:21.958-03:00"}]}
 ```
 
 ## Architecture draft
