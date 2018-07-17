@@ -15,7 +15,7 @@ type Repository struct {
 	VM               string         `bson:"VM" json:"vm"`
 	CreatedAt        time.Time      `bson:"createdAt" json:"createdAt"`
 	DeletedAt        time.Time      `bson:"deletedAt" json:"deletedAt"`
-	Language         string         `bson:"language" json:"language"`
+	Languages        []string       `bson:"languages" json:"languages"`
 }
 
 // SecurityTest is the struct that stores all data from the security tests to be executed.
