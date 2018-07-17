@@ -94,10 +94,11 @@ func InsertDBRepository(repository types.Repository) error {
 	repository.CreatedAt = time.Now()
 	securityTestList := []types.SecurityTest{}
 	err := errors.New("")
+	maxQueryAllowed := 8
 
 	if len(repository.SecurityTestName) == 0 {
-		// checking default and generic securityTests in SecurityTestCollection
-		securityTestQuery := map[string]interface{}{"default": true, "language": "generic"}
+		// checking default and Generic securityTests in SecurityTestCollection
+		securityTestQuery := map[string]interface{}{"default": true, "language": "Generic"}
 		securityTestList, err = FindAllDBSecurityTest(securityTestQuery)
 		if err != nil {
 			fmt.Println("Could not find default securityTests:", err)
@@ -105,9 +106,8 @@ func InsertDBRepository(repository types.Repository) error {
 	} else {
 		// checking if a given securityTestName matches a securityTest
 		repository.SecurityTestName = removeDuplicates(repository.SecurityTestName)
-		// 8 is the maximum allowed to query db
-		if len(repository.SecurityTestName) > 8 {
-			for _, securityTestName := range repository.SecurityTestName[:8] {
+		if len(repository.SecurityTestName) > maxQueryAllowed {
+			for _, securityTestName := range repository.SecurityTestName[:maxQueryAllowed] {
 				securityTestQuery := map[string]interface{}{"name": securityTestName}
 				securityTestResult, err := FindOneDBSecurityTest(securityTestQuery)
 				if err != nil {
@@ -135,7 +135,7 @@ func InsertDBRepository(repository types.Repository) error {
 		"VM":            repository.VM,
 		"createdAt":     repository.CreatedAt,
 		"deletedAt":     repository.DeletedAt,
-		"language":      repository.Language,
+		"languages":     repository.Languages,
 	}
 
 	err = session.Insert(newRepository, db.RepositoryCollection)
@@ -172,14 +172,14 @@ func InsertDBAnalysis(analysis types.Analysis) error {
 }
 
 // UpdateOneDBRepository checks if a given repository is present into RepositoryCollection and update it.
-func UpdateOneDBRepository(mapParams map[string]interface{}, updatedRepository types.Repository) error {
+func UpdateOneDBRepository(mapParams, updateQuery map[string]interface{}) error {
 	session := db.Connect()
 	repositoryQuery := []bson.M{}
 	for k, v := range mapParams {
 		repositoryQuery = append(repositoryQuery, bson.M{k: v})
 	}
 	repositoryFinalQuery := bson.M{"$and": repositoryQuery}
-	err := session.Update(repositoryFinalQuery, updatedRepository, db.RepositoryCollection)
+	err := session.Update(repositoryFinalQuery, updateQuery, db.RepositoryCollection)
 	return err
 }
 
@@ -207,15 +207,15 @@ func UpdateOneDBAnalysis(mapParams map[string]interface{}, updatedAnalysis types
 	return err
 }
 
-// UpdateOneDBContainerAnalysis checks if a given analysis is present into AnalysisCollection and update the container associated in it.
-func UpdateOneDBContainerAnalysis(mapParams, containerQuery map[string]interface{}) error {
+// UpdateOneDBAnalysisContainer checks if a given analysis is present into AnalysisCollection and update the container associated in it.
+func UpdateOneDBAnalysisContainer(mapParams, updateQuery map[string]interface{}) error {
 	session := db.Connect()
 	analysisQuery := []bson.M{}
 	for k, v := range mapParams {
 		analysisQuery = append(analysisQuery, bson.M{k: v})
 	}
 	analysisFinalQuery := bson.M{"$and": analysisQuery}
-	err := session.Update(analysisFinalQuery, containerQuery, db.AnalysisCollection)
+	err := session.Update(analysisFinalQuery, updateQuery, db.AnalysisCollection)
 	return err
 }
 
