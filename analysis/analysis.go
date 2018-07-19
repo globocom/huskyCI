@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"strings"
 	"time"
 
 	"gopkg.in/mgo.v2"
@@ -97,7 +98,7 @@ func StartAnalysis(RID string, repository types.Repository) {
 // dockerRun starts a new container, runs a given securityTest in it and then updates AnalysisCollection.
 func dockerRun(RID string, analysis *types.Analysis, securityTest types.SecurityTest) {
 
-	// step 0: adding a new container to the analysis.
+	// step 0: add a new container to the analysis.
 	newContainer := types.Container{SecurityTest: securityTest}
 	analysisQuery := map[string]interface{}{"RID": RID}
 	startedAt := time.Now()
@@ -133,7 +134,7 @@ func dockerRun(RID string, analysis *types.Analysis, securityTest types.Security
 				"containers.$.cStatus": "error",
 			},
 		}
-		err = UpdateOneDBContainerAnalysis(analysisQuery, updateContainerAnalysisQuery)
+		err = UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
 			fmt.Println("Error updating AnalysisCollection (step 2-err):", err)
 		}
@@ -145,7 +146,7 @@ func dockerRun(RID string, analysis *types.Analysis, securityTest types.Security
 				"containers.$.startedAt": startedAt,
 			},
 		}
-		err = UpdateOneDBContainerAnalysis(analysisQuery, updateContainerAnalysisQuery)
+		err = UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
 			fmt.Println("Error updating AnalysisCollection (step 2):", err)
 		}
@@ -171,10 +172,21 @@ func dockerRun(RID string, analysis *types.Analysis, securityTest types.Security
 				"containers.$.cOutput":    newContainer.COuput,
 			},
 		}
-		err = UpdateOneDBContainerAnalysis(analysisQuery, updateContainerAnalysisQuery)
+		err = UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
 			fmt.Println("Error updating AnalysisCollection (step 4).", err)
 		}
+	}
+
+	// step 5: send output to the proper analysis result function.
+	cOutput := RemoveUnicodeOutput(newContainer.COuput)
+	switch securityTest.Name {
+	case "enry":
+		EnryStartAnalysis(CID, cOutput, analysis.RID)
+	case "gas":
+		GasStartAnalysis(CID, cOutput)
+	default:
+		fmt.Println("Error: Could not find securityTest.Name.")
 	}
 }
 
@@ -233,4 +245,17 @@ func CreateNewRepository(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusCreated, map[string]string{"result": "created", "details": "repository sucessfully created."})
+}
+
+// RemoveUnicodeOutput removes unicode and others chars from a string.
+func RemoveUnicodeOutput(s string) string {
+	s2 := strings.Replace(s, `\n`, " ", -1)
+	s3 := strings.Replace(s2, `\t`, " ", -1)
+
+	reg, err := regexp.Compile(`.u\d\d\d\d`)
+	if err != nil {
+		fmt.Println("Error regexp:", err)
+	}
+	processedString := reg.ReplaceAllString(s3, "")
+	return processedString
 }
