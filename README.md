@@ -101,13 +101,13 @@ go run server.go
 ENRY:
 
 ```
-curl -H "Content-Type: application/json" -d '{"name":"enry", "image": "huskyci/enry", "cmd": "echo [ENRY]; git clone %GIT_REPO% code; cd code; enry --json" , "language": "generic", "default":true}' http://localhost:9999/securitytest
+curl -H "Content-Type: application/json" -d '{"name":"enry", "image": "huskyci/enry", "cmd": "echo [ENRY]; git clone %GIT_REPO% code; cd code; enry --json" , "language": "Generic", "default":true}' http://localhost:9999/securitytest
 ```
 
 GAS:
 
 ```
-curl -H "Content-Type: application/json" -d '{"name":"enry", "image": "huskyci/enry", "cmd": "echo [GAS]; cd src; git clone %GIT_REPO% code; cd code; /go/bin/gas -fmt=json -log=log.txt -out=results.json ./... ; cat results.json" , "language": "generic", "default":true}' http://localhost:9999/securitytest
+curl -H "Content-Type: application/json" -d '{"name":"enry", "image": "huskyci/enry", "cmd": "echo [GAS]; cd src; git clone %GIT_REPO% code; cd code; /go/bin/gas -fmt=json -log=log.txt -out=results.json ./... ; cat results.json" , "language": "Go", "default":true}' http://localhost:9999/securitytest
 ```
 
 
@@ -129,7 +129,7 @@ curl -s localhost:9999/husky/eZVxfYH7W6XOdjuQbNV5I7l5XJ8puTUo
 ```
 
 ```
-{"ID":"5b4c9795a118cc8f953f2042","RID":"CQsXAjvgVwtKVfUarkCDgHJoZpEI3kz9","URL":"https://github.com/tsuru/cst.git","securityTests":[{"ID":"5b470d9c3406984e4b27009d","name":"gas","image":"huskyci/gas","cmd":"echo -n [GAS]; cd src; git clone %GIT_REPO% code; cd code; /go/bin/gas -quiet -fmt=json -log=log.txt -out=results.json ./... ; cat results.json","language":"generic","default":true}],"status":"started","result":"","containers":[{"CID":"f0fb8ae1c5edd4fed8a62a4554be3d57804e4803b872b762f58af10d94b226e7","VM":"","securityTest":{"ID":"5b470d9c3406984e4b27009d","name":"gas","image":"huskyci/gas","cmd":"echo -n [GAS]; cd src; git clone %GIT_REPO% code; cd code; /go/bin/gas -quiet -fmt=json -log=log.txt -out=results.json ./... ; cat results.json","language":"generic","default":true},"cStatus":"finished","cOutput":"\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0005[GAS]","cResult":"","startedAt":"2018-07-16T10:03:18.515-03:00","finishedAt":"2018-07-16T10:03:21.958-03:00"}]}
+{"ID":"5b4c9795a118cc8f953f2042","RID":"CQsXAjvgVwtKVfUarkCDgHJoZpEI3kz9","URL":"https://github.com/tsuru/cst.git","securityTests":[{"ID":"5b470d9c3406984e4b27009d","name":"gas","image":"huskyci/gas","cmd":"echo -n [GAS]; cd src; git clone %GIT_REPO% code; cd code; /go/bin/gas -quiet -fmt=json -log=log.txt -out=results.json ./... ; cat results.json","language":"Generic","default":true}],"status":"started","result":"","containers":[{"CID":"f0fb8ae1c5edd4fed8a62a4554be3d57804e4803b872b762f58af10d94b226e7","VM":"","securityTest":{"ID":"5b470d9c3406984e4b27009d","name":"gas","image":"huskyci/gas","cmd":"echo -n [GAS]; cd src; git clone %GIT_REPO% code; cd code; /go/bin/gas -quiet -fmt=json -log=log.txt -out=results.json ./... ; cat results.json","language":"Generic","default":true},"cStatus":"finished","cOutput":"\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0005[GAS]","cResult":"","startedAt":"2018-07-16T10:03:18.515-03:00","finishedAt":"2018-07-16T10:03:21.958-03:00"}]}
 ```
 
 ## Architecture draft
