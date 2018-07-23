@@ -1,76 +1,96 @@
 package analysis
 
 import (
+	"encoding/json"
 	"fmt"
-	"regexp"
-	"strings"
+	"reflect"
 
 	"github.com/globocom/husky/types"
 	"gopkg.in/mgo.v2/bson"
 )
 
-// EnryStartAnalysis checks the languages of a repository, update them into mongoDB, and performs new analysis
-func EnryStartAnalysis(CID string, cOutput string, RID string) {
+// EnryStartAnalysis checks the languages of a repository, update them into mongoDB, and starts corresponding new securityTests.
+func EnryStartAnalysis(CID string, cleanedOutput string, RID string) {
 
 	// step 0: get analysis based on RID
-	analysisQuery := map[string]interface{}{"RID": RID}
+	analysisQuery := map[string]interface{}{"containers.CID": CID}
 	analysis, err := FindOneDBAnalysis(analysisQuery)
 	if err != nil {
 		fmt.Println("Could not find analysis by this RID:", err)
+		return
 	}
 
-	// step 1: get each language found in cOutput into repository.languages
-	languagesRepository := []string{}
-	reg, err := regexp.Compile(`[^a-zA-Z]+`)
+	// step 1: get each language found in cOutput
+	mapLanguages := make(map[string][]interface{})
+	err = json.Unmarshal([]byte(cleanedOutput), &mapLanguages)
 	if err != nil {
-		fmt.Println("Error regexp:", err)
+		fmt.Println("Unmarshall error:", err)
+		return
 	}
-	outputWithoutUnicode := strings.Split(reg.ReplaceAllString(cOutput, " "), " ")
-	for _, language := range outputWithoutUnicode {
-		if language != "" {
-			languagesRepository = append(languagesRepository, language)
+	repositoryLanguages := []types.Language{}
+	newLanguage := types.Language{}
+	for name, files := range mapLanguages {
+		fs := []string{}
+		for _, f := range files {
+			if reflect.TypeOf(f).String() == "string" {
+				fs = append(fs, f.(string))
+			} else {
+				fmt.Println("Error mapping languages.")
+				return
+			}
 		}
+		newLanguage = types.Language{
+			Name:  name,
+			Files: fs,
+		}
+		repositoryLanguages = append(repositoryLanguages, newLanguage)
 	}
 
-	// step 2: for each language, include a default securityTest to the repository
-	securityTestList := []types.SecurityTest{}
-	for _, language := range languagesRepository {
-		securityTestQuery := map[string]interface{}{"language": language, "default": true}
-		securityTestResult, err := FindOneDBSecurityTest(securityTestQuery)
+	// step 2: update repository with the languages found and with each corresponding default securityTests
+	newSecurityTests := []types.SecurityTest{}
+	// inserting generic securityTests first.
+	genericSecurityTestQuery := map[string]interface{}{"language": "Generic", "default": true}
+	genericSecurityTestResult, err := FindAllDBSecurityTest(genericSecurityTestQuery)
+	if err != nil {
+		fmt.Println("Error finding default generic securityTest:", err)
+		return
+	}
+	for _, genericSecurityTest := range genericSecurityTestResult {
+		newSecurityTests = append(newSecurityTests, genericSecurityTest)
+	}
+	// inserting new securityTests based on the languages found.
+	for _, language := range repositoryLanguages {
+		languageSecurityTestQuery := map[string]interface{}{"language": language.Name, "default": true}
+		languageSecurityTestResult, err := FindOneDBSecurityTest(languageSecurityTestQuery)
 		if err == nil {
-			securityTestList = append(securityTestList, securityTestResult)
+			newSecurityTests = append(newSecurityTests, languageSecurityTestResult)
 		}
 	}
-
-	// step 3: update repository with new securityTest and languages taken from output
+	// updating repository.
 	repositoryQuery := map[string]interface{}{"URL": analysis.URL}
 	updateRepositoryQuery := bson.M{
 		"$set": bson.M{
-			"securityTests": securityTestList,
-			"languages":     languagesRepository,
+			"securityTests": newSecurityTests,
+			"languages":     repositoryLanguages,
 		},
 	}
 	err = UpdateOneDBRepository(repositoryQuery, updateRepositoryQuery)
 	if err != nil {
 		fmt.Println("Could not update repository's securityTests:", err)
+		return
 	}
 
-	// step 4: update analysis with the new securityTests
-	repositoryResult, err := FindOneDBRepository(repositoryQuery)
-	if err != nil {
-		fmt.Println("Error finding repository:", err)
-	}
-	for _, securityTest := range repositoryResult.SecurityTests {
-		analysis.SecurityTests = append(analysis.SecurityTests, securityTest)
-	}
+	// step 3: update analysis with the new securityTests
+	analysis.SecurityTests = newSecurityTests
 	err = UpdateOneDBAnalysis(analysisQuery, analysis)
 	if err != nil {
-		fmt.Println("Error updating analysis:", err)
+		fmt.Println("Error updating AnalysisCollection:", err)
 	}
 
-	// step 5: start new securityTests
-	for _, securityTest := range repositoryResult.SecurityTests {
-		dockerRun(RID, &analysis, securityTest)
+	// step 4: start new securityTests
+	for _, securityTest := range newSecurityTests {
+		if securityTest.Name != "enry" {
+			go dockerRun(RID, &analysis, securityTest)
+		}
 	}
-
 }
