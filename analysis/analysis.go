@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
-	"strings"
 	"time"
 
 	"gopkg.in/mgo.v2"
@@ -159,17 +158,25 @@ func dockerRun(RID string, analysis *types.Analysis, securityTest types.Security
 	}
 
 	// step 4: read cmd output from container.
+	var cleanedOutput string
 	newContainer.COuput, err = d.ReadOutput(CID)
 	if err != nil {
 		// error reading container's output. maxRetry?
 		fmt.Println("Error reading output from container", CID, ":", err)
 	} else {
 		finishedAt := time.Now()
+		// cleaning json output from dockerfile logs.
+		reg, err := regexp.Compile(`[{\[]{1}([,:{}\[\]0-9.\-+Eaeflnr-u \n\r\t]|".*?")+[}\]]{1}`)
+		if err != nil {
+			fmt.Println("Error regexp:", err)
+			return
+		}
+		cleanedOutput = reg.FindString(newContainer.COuput)
 		updateContainerAnalysisQuery := bson.M{
 			"$set": bson.M{
 				"containers.$.cStatus":    "finished",
 				"containers.$.finishedAt": finishedAt,
-				"containers.$.cOutput":    newContainer.COuput,
+				"containers.$.cOutput":    cleanedOutput,
 			},
 		}
 		err = UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
@@ -179,12 +186,11 @@ func dockerRun(RID string, analysis *types.Analysis, securityTest types.Security
 	}
 
 	// step 5: send output to the proper analysis result function.
-	cOutput := RemoveUnicodeOutput(newContainer.COuput)
 	switch securityTest.Name {
 	case "enry":
-		EnryStartAnalysis(CID, cOutput, analysis.RID)
+		EnryStartAnalysis(CID, cleanedOutput, analysis.RID)
 	case "gas":
-		GasStartAnalysis(CID, cOutput, analysis.RID)
+		GasStartAnalysis(CID, cleanedOutput)
 	default:
 		fmt.Println("Error: Could not find securityTest.Name.")
 	}
@@ -197,9 +203,7 @@ func StatusAnalysis(c echo.Context) error {
 	analysisResult, err := FindOneDBAnalysis(analysisQuery)
 	if err == mgo.ErrNotFound {
 		return c.JSON(http.StatusNotFound, map[string]string{"result": "error", "details": "Analysis not found."})
-	} else {
-		// What if DB is not reachable!?
-	}
+	} // What if DB is not reachable!? else { }
 	return c.JSON(http.StatusFound, analysisResult)
 }
 
@@ -245,17 +249,4 @@ func CreateNewRepository(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusCreated, map[string]string{"result": "created", "details": "repository sucessfully created."})
-}
-
-// RemoveUnicodeOutput removes unicode and others chars from a string.
-func RemoveUnicodeOutput(s string) string {
-	s2 := strings.Replace(s, `\n`, " ", -1)
-	s3 := strings.Replace(s2, `\t`, " ", -1)
-
-	reg, err := regexp.Compile(`.u\d\d\d\d`)
-	if err != nil {
-		fmt.Println("Error regexp:", err)
-	}
-	processedString := reg.ReplaceAllString(s3, "")
-	return processedString
 }
