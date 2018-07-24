@@ -90,7 +90,7 @@ func EnryStartAnalysis(CID string, cleanedOutput string, RID string) {
 	// step 4: start new securityTests
 	for _, securityTest := range newSecurityTests {
 		if securityTest.Name != "enry" {
-			go dockerRun(RID, &analysis, securityTest)
+			go DockerRun(RID, &analysis, securityTest)
 		}
 	}
 }
