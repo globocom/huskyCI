@@ -16,7 +16,7 @@ func EnryStartAnalysis(CID string, cleanedOutput string, RID string) {
 	analysisQuery := map[string]interface{}{"containers.CID": CID}
 	analysis, err := FindOneDBAnalysis(analysisQuery)
 	if err != nil {
-		fmt.Println("Could not find analysis by this RID:", err)
+		fmt.Println("Could not find analysis by this CID:", err)
 		return
 	}
 
