@@ -15,7 +15,7 @@ type Repository struct {
 	VM               string         `bson:"VM" json:"vm"`
 	CreatedAt        time.Time      `bson:"createdAt" json:"createdAt"`
 	DeletedAt        time.Time      `bson:"deletedAt" json:"deletedAt"`
-	Languages        []string       `bson:"languages" json:"languages"`
+	Languages        []Language     `bson:"languages" json:"languages"`
 }
 
 // SecurityTest is the struct that stores all data from the security tests to be executed.
@@ -49,4 +49,10 @@ type Container struct {
 	CResult      string       `bson:"cResult" json:"cResult"`
 	StartedAt    time.Time    `bson:"startedAt" json:"startedAt"`
 	FinishedAt   time.Time    `bson:"finishedAt" json:"finishedAt"`
+}
+
+// Language is the struct that stores all data from a language's repository.
+type Language struct {
+	Name  string   `bson:"name" json:"language_name"`
+	Files []string `bson:"files" json:"language_files"`
 }
