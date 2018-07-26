@@ -69,6 +69,7 @@ func GasStartAnalysis(CID string, cleanedOutput string) {
 	for _, issue := range gasOutput.Issues {
 		if (issue.Severity == "HIGH" || issue.Severity == "MEDIUM") && (issue.Confidence == "HIGH") {
 			cResult = "failed"
+			break
 		}
 	}
 
