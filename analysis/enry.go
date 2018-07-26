@@ -12,7 +12,7 @@ import (
 // EnryStartAnalysis checks the languages of a repository, update them into mongoDB, and starts corresponding new securityTests.
 func EnryStartAnalysis(CID string, cleanedOutput string, RID string) {
 
-	// step 0: get analysis based on RID
+	// step 0: get analysis based on CID
 	analysisQuery := map[string]interface{}{"containers.CID": CID}
 	analysis, err := FindOneDBAnalysis(analysisQuery)
 	if err != nil {
@@ -49,7 +49,7 @@ func EnryStartAnalysis(CID string, cleanedOutput string, RID string) {
 	// step 2: update repository with the languages found and with each corresponding default securityTests
 	genericSecurityTests := []types.SecurityTest{}
 	newSecurityTests := []types.SecurityTest{}
-	// inserting generic securityTests first.
+	// gathering up generic securityTests to be included.
 	genericSecurityTestQuery := map[string]interface{}{"language": "Generic", "default": true}
 	genericSecurityTestResult, err := FindAllDBSecurityTest(genericSecurityTestQuery)
 	if err != nil {
@@ -59,16 +59,16 @@ func EnryStartAnalysis(CID string, cleanedOutput string, RID string) {
 	for _, genericSecurityTest := range genericSecurityTestResult {
 		genericSecurityTests = append(genericSecurityTests, genericSecurityTest)
 	}
-	// inserting new securityTests based on the languages found.
+	// gathering up new securityTests based on the languages found.
 	for _, language := range repositoryLanguages {
 		languageSecurityTestQuery := map[string]interface{}{"language": language.Name, "default": true}
 		languageSecurityTestResult, err := FindOneDBSecurityTest(languageSecurityTestQuery)
 		if err == nil {
 			newSecurityTests = append(newSecurityTests, languageSecurityTestResult)
-		}
+		} // else {} is OK to not find a securityTest by language.Name! To do: log this error
 	}
-	// updating repository.
-	repositoryQuery := map[string]interface{}{"URL": analysis.URL}
+	// step 3: updating repository.
+	repositoryQuery := map[string]interface{}{"_id": analysis.ID}
 	updateRepositoryQuery := bson.M{
 		"$set": bson.M{
 			"securityTests": newSecurityTests,
@@ -90,7 +90,7 @@ func EnryStartAnalysis(CID string, cleanedOutput string, RID string) {
 		fmt.Println("Error updating AnalysisCollection:", err)
 	}
 
-	// step 4: start new securityTests
+	// step 5: start new securityTests
 	for _, securityTest := range newSecurityTests {
 		if securityTest.Name != "enry" {
 			go DockerRun(RID, &analysis, securityTest)
