@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"time"
 
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -130,7 +131,81 @@ func StartAnalysis(RID string, repository types.Repository) {
 		go DockerRun(RID, &newAnalysis, securityTest)
 	}
 
-	// step 5: worker will check if the jobs are done to set newAnalysis.Status = "finished"
+	// step 5: worker will check if jobs are done to set newAnalysis.Status = "finished"
+	go MonitorAnalysis(&newAnalysis)
+
+}
+
+// MonitorAnalysis querys an analysis every retryTick seconds to check if it has already finished.
+func MonitorAnalysis(analysis *types.Analysis) {
+
+	analysisFinished := false
+	analysisQuery := map[string]interface{}{"RID": analysis.RID}
+
+	timeout := time.After(10 * time.Minute)
+	retryTick := time.Tick(5 * time.Second)
+
+	for {
+		select {
+		case <-timeout:
+			// cenario 1: timeout! Update analysis.Status = "timeout"
+			fmt.Println("MonitorAnalysis(): time out!")
+			updateAnalysisQuery := bson.M{
+				"$set": bson.M{
+					"status": "timeout",
+				},
+			}
+			err := UpdateOneDBAnalysisContainer(analysisQuery, updateAnalysisQuery)
+			if err != nil {
+				fmt.Println("Error updating AnalysisCollection:", err)
+			}
+			return
+		case <-retryTick:
+			if analysisFinished {
+				// cenario 2: analysis has finished! Update analysis.Status = "finished" and analysis.Result
+				analysisResult, err := FindOneDBAnalysis(analysisQuery)
+				if err != nil {
+					fmt.Println("Could not find analysis:", err)
+					return
+				}
+				// analyze each cResult from each container to set a value for analysis.Result
+				finalResult := "passed"
+				for _, container := range analysisResult.Containers {
+					if container.CResult == "failed" {
+						finalResult = "failed"
+						break
+					}
+				}
+				// update analysis with the new values
+				updateAnalysisQuery := bson.M{
+					"$set": bson.M{
+						"status": "finished",
+						"result": finalResult,
+					},
+				}
+				err = UpdateOneDBAnalysisContainer(analysisQuery, updateAnalysisQuery)
+				if err != nil {
+					fmt.Println("Error updating AnalysisCollection:", err)
+				}
+				return
+			}
+			// cenario 3: analysis has not finished yet! Query it again and check if every container has cStatus = "finished"
+			analysisResult, err := FindOneDBAnalysis(analysisQuery)
+			if err != nil {
+				fmt.Println("Could not find analysis:", err)
+				return
+			}
+			for _, container := range analysisResult.Containers {
+				if container.CStatus != "finished" {
+					analysisFinished = false
+					break
+				} else {
+					analysisFinished = true
+				}
+			}
+			// try again after retryTick seconds!
+		}
+	}
 }
 
 // StatusAnalysis returns the status of a given analysis (via RID).
