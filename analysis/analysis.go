@@ -141,7 +141,7 @@ func StatusAnalysis(c echo.Context) error {
 	if err == mgo.ErrNotFound {
 		return c.JSON(http.StatusNotFound, map[string]string{"result": "error", "details": "Analysis not found."})
 	} // What if DB is not reachable!? else { }
-	return c.JSON(http.StatusFound, analysisResult)
+	return c.JSON(http.StatusOK, analysisResult)
 }
 
 // CreateNewSecurityTest inserts the given securityTest into SecurityTestCollection.
