@@ -68,7 +68,7 @@ func EnryStartAnalysis(CID string, cleanedOutput string, RID string) {
 		} // else {} is OK to not find a securityTest by language.Name! To do: log this error
 	}
 	// step 3: updating repository.
-	repositoryQuery := map[string]interface{}{"_id": analysis.ID}
+	repositoryQuery := map[string]interface{}{"URL": analysis.URL}
 	updateRepositoryQuery := bson.M{
 		"$set": bson.M{
 			"securityTests": newSecurityTests,
