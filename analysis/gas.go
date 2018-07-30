@@ -59,7 +59,7 @@ func GasStartAnalysis(CID string, cleanedOutput string) {
 	gasOutput := GasOutput{}
 	err := json.Unmarshal([]byte(cleanedOutput), &gasOutput)
 	if err != nil {
-		fmt.Println("Unmarshall error:", err)
+		fmt.Println("Unmarshall error (gas.go):", err)
 		fmt.Println(cleanedOutput)
 		return
 	}
