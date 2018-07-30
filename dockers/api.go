@@ -20,6 +20,7 @@ type Docker struct {
 // CreateContainerPayload is a struct that represents all data need to create a container.
 type CreateContainerPayload struct {
 	Image string   `json:"Image"`
+	Tty   bool     `json:"Tty,omitempty"`
 	Cmd   []string `json:"Cmd"`
 }
 
@@ -37,6 +38,7 @@ func (d Docker) CreateContainer(analysis types.Analysis, image string, cmd strin
 
 	createContainerPayload := CreateContainerPayload{
 		Image: image,
+		Tty:   true,
 		Cmd:   []string{"/bin/sh", "-c", cmd},
 	}
 	jsonPayload, err := json.Marshal(createContainerPayload)
