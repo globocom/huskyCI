@@ -24,7 +24,7 @@ func EnryStartAnalysis(CID string, cleanedOutput string, RID string) {
 	mapLanguages := make(map[string][]interface{})
 	err = json.Unmarshal([]byte(cleanedOutput), &mapLanguages)
 	if err != nil {
-		fmt.Println("Unmarshall error:", err)
+		fmt.Println("Unmarshall error (enry.go):", err)
 		return
 	}
 	repositoryLanguages := []types.Language{}
