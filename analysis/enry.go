@@ -81,10 +81,11 @@ func EnryStartAnalysis(CID string, cleanedOutput string, RID string) {
 		return
 	}
 
-	// step 3: update analysis with the new securityTests
+	// step 4: update analysis with the new securityTests
 	allSecurityTestsExecuted := []types.SecurityTest{}
 	allSecurityTestsExecuted = append(genericSecurityTests, newSecurityTests...)
 	analysis.SecurityTests = allSecurityTestsExecuted
+
 	err = UpdateOneDBAnalysis(analysisQuery, analysis)
 	if err != nil {
 		fmt.Println("Error updating AnalysisCollection:", err)
