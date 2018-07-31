@@ -16,7 +16,7 @@ func EnryStartAnalysis(CID string, cleanedOutput string, RID string) {
 	analysisQuery := map[string]interface{}{"containers.CID": CID}
 	analysis, err := FindOneDBAnalysis(analysisQuery)
 	if err != nil {
-		fmt.Println("Could not find analysis by this RID:", err)
+		fmt.Println("Could not find analysis by this CID:", err)
 		return
 	}
 
@@ -68,7 +68,7 @@ func EnryStartAnalysis(CID string, cleanedOutput string, RID string) {
 		} // else {} is OK to not find a securityTest by language.Name! To do: log this error
 	}
 	// step 3: updating repository.
-	repositoryQuery := map[string]interface{}{"_id": analysis.ID}
+	repositoryQuery := map[string]interface{}{"URL": analysis.URL}
 	updateRepositoryQuery := bson.M{
 		"$set": bson.M{
 			"securityTests": newSecurityTests,
@@ -85,7 +85,7 @@ func EnryStartAnalysis(CID string, cleanedOutput string, RID string) {
 	allSecurityTestsExecuted := []types.SecurityTest{}
 	allSecurityTestsExecuted = append(genericSecurityTests, newSecurityTests...)
 	analysis.SecurityTests = allSecurityTestsExecuted
-	
+
 	err = UpdateOneDBAnalysis(analysisQuery, analysis)
 	if err != nil {
 		fmt.Println("Error updating AnalysisCollection:", err)
