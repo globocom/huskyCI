@@ -47,6 +47,7 @@ func EnryStartAnalysis(CID string, cleanedOutput string, RID string) {
 	}
 
 	// step 2: update repository with the languages found and with each corresponding default securityTests
+	genericSecurityTests := []types.SecurityTest{}
 	newSecurityTests := []types.SecurityTest{}
 	// gathering up generic securityTests to be included.
 	genericSecurityTestQuery := map[string]interface{}{"language": "Generic", "default": true}
@@ -56,7 +57,7 @@ func EnryStartAnalysis(CID string, cleanedOutput string, RID string) {
 		return
 	}
 	for _, genericSecurityTest := range genericSecurityTestResult {
-		newSecurityTests = append(newSecurityTests, genericSecurityTest)
+		genericSecurityTests = append(genericSecurityTests, genericSecurityTest)
 	}
 	// gathering up new securityTests based on the languages found.
 	for _, language := range repositoryLanguages {
@@ -81,7 +82,10 @@ func EnryStartAnalysis(CID string, cleanedOutput string, RID string) {
 	}
 
 	// step 4: update analysis with the new securityTests
-	analysis.SecurityTests = newSecurityTests
+	allSecurityTestsExecuted := []types.SecurityTest{}
+	allSecurityTestsExecuted = append(genericSecurityTests, newSecurityTests...)
+	analysis.SecurityTests = allSecurityTestsExecuted
+	
 	err = UpdateOneDBAnalysis(analysisQuery, analysis)
 	if err != nil {
 		fmt.Println("Error updating AnalysisCollection:", err)
