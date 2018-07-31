@@ -6,6 +6,7 @@ import (
 	"regexp"
 
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 
 	"github.com/globocom/husky/types"
 	"github.com/labstack/echo"
@@ -41,7 +42,7 @@ func ReceiveRequest(c echo.Context) error {
 	repositoryQuery := map[string]interface{}{"URL": repository.URL}
 	repositoryResult, err := FindOneDBRepository(repositoryQuery)
 	if err == nil {
-		// check-03: does this repository have a running status analysis? (for the future: check commits and not URLs?)
+		// check-03: repository found! does it have a running status analysis? (for the future: check commits and not URLs?)
 		analysisQuery := map[string]interface{}{"URL": repository.URL}
 		analysisResult, err := FindOneDBAnalysis(analysisQuery)
 		if err != mgo.ErrNotFound {
@@ -50,7 +51,7 @@ func ReceiveRequest(c echo.Context) error {
 			}
 		}
 	} else {
-		// ok let's then insert it into MongoDB with default securityTests
+		// repository not found! insert it into MongoDB with default securityTests
 		err = InsertDBRepository(repository)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"result": "error", "details": "Internal error inserting repository."})
@@ -71,6 +72,7 @@ func ReceiveRequest(c echo.Context) error {
 // StartAnalysis starts the analysis given a RID and a repository.
 func StartAnalysis(RID string, repository types.Repository) {
 
+	// step 0: create a new analysis struct
 	newAnalysis := types.Analysis{
 		RID:           RID,
 		URL:           repository.URL,
@@ -79,16 +81,56 @@ func StartAnalysis(RID string, repository types.Repository) {
 		Containers:    make([]types.Container, 0),
 	}
 
+	// step 1: insert new analysis into MongoDB
 	err := InsertDBAnalysis(newAnalysis)
 	if err != nil {
 		fmt.Println("Error inserting new analysis.", err)
 	}
 
+	// step 2: increment -1 to repository.LimitEnryScan
+	repositoryQuery := map[string]interface{}{"URL": repository.URL}
+	updateRepositoryQuery := bson.M{
+		"$inc": bson.M{
+			"limitEnryScan": -1,
+		},
+	}
+	err = UpdateOneDBRepository(repositoryQuery, updateRepositoryQuery)
+	if err != nil {
+		fmt.Println("Could not increment repository.LimitEnryScan:", err)
+		return
+	}
+
+	// step 3: check if a new enry scan is needed
+	if repository.LimitEnryScan == 0 {
+		// new enry scan is needed
+		limitEnryScan := 10
+		repository.SecurityTests = nil
+		enrySecurityTestQuery := map[string]interface{}{"name": "enry"}
+		enrySecurityTestResult, err := FindOneDBSecurityTest(enrySecurityTestQuery)
+		if err != nil {
+			fmt.Println("Error finding enry securityTest:", err)
+		}
+		repository.SecurityTests = append(repository.SecurityTests, enrySecurityTestResult)
+		// set repository.LimitEnryScan to its default value
+		repositoryQuery := map[string]interface{}{"URL": repository.URL}
+		updateRepositoryQuery := bson.M{
+			"$set": bson.M{
+				"limitEnryScan": limitEnryScan,
+			},
+		}
+		err = UpdateOneDBRepository(repositoryQuery, updateRepositoryQuery)
+		if err != nil {
+			fmt.Println("Could not set repository.LimitEnryScan to its default value:", err)
+			return
+		}
+	}
+
+	// step 4: start each securityTest set
 	for _, securityTest := range repository.SecurityTests {
 		go DockerRun(RID, &newAnalysis, securityTest)
 	}
 
-	// worker will check if the jobs are done to set newAnalysis.Status = "finished"
+	// step 5: worker will check if the jobs are done to set newAnalysis.Status = "finished"
 }
 
 // StatusAnalysis returns the status of a given analysis (via RID).
