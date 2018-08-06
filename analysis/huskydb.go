@@ -130,14 +130,14 @@ func InsertDBRepository(repository types.Repository) error {
 		}
 	}
 
-	newRepository := bson.M{
-		"URL":           repository.URL,
-		"securityTests": securityTestList,
-		"VM":            repository.VM,
-		"createdAt":     repository.CreatedAt,
-		"deletedAt":     repository.DeletedAt,
-		"languages":     repository.Languages,
-		"limitEnryScan": limitEnryScan,
+	newRepository := types.Repository{
+		URL:           repository.URL,
+		SecurityTests: securityTestList,
+		VM:            repository.VM,
+		CreatedAt:     repository.CreatedAt,
+		DeletedAt:     repository.DeletedAt,
+		Languages:     repository.Languages,
+		LimitEnryScan: limitEnryScan,
 	}
 
 	err = session.Insert(newRepository, db.RepositoryCollection)
