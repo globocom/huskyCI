@@ -8,24 +8,22 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-```
-brew install vagrant
-```
+* Install Vagrant: https://www.vagrantup.com/downloads.html
 
 ## Installing
 
 #### Fork Husky's repository:
 
-Fork this repository to your github!
+Fork this repository into your github!
 
 #### Cloning Husky's repository:
 
 ```
-cd $GOPATH && cd src/ && mkdir github.com && cd github.com && mkdir yourGitHubName && cd yourGitHubName
+cd $GOPATH && cd src && cd github.com && mkdir globocom && cd globocom
 ```
 
 ```
-git clone https://github.com/yourGitHubName/husky.git && cd husky
+git clone https://github.com/globocom/husky.git && cd husky
 ```
 
 #### Starting up VMs:
@@ -40,7 +38,7 @@ vagrant up vm3-docker
 
 #### Downloading docker images:
 
-The images below are already installed via Vagrant! These are only some examples on how to download your own docker image if desired.
+The images below are already installed via Vagrant (vm3-docker-config.sh)! These are only some examples on how to download your own docker image if desired. 
 
 huskyci/enry:
 
@@ -62,7 +60,7 @@ Don't forget to change this password!
 
 ```
 echo 'export DOCKER_HOST="192.168.50.6:2376"' > .env
-echo 'export MONGO_HOST="192.168.50.5"' >> .ev
+echo 'export MONGO_HOST="192.168.50.5"' >> .env
 echo 'export MONGO_NAME="huskyDB"' >> .env
 echo 'export MONGO_USER="husky"' >> .env
 echo 'export MONGO_PASS="superENVPassword"' >> .env
@@ -90,29 +88,27 @@ use huskyDB
 db.createUser({user:"husky", pwd:"superENVPassword", roles: ["readWrite"]})
 ```
 
+#### Adding securityTests:
+
+ENRY:
+
+```
+curl -H "Content-Type: application/json" -d '{"name":"enry", "image": "huskyci/enry", "cmd": "git clone %GIT_REPO% code; cd code; enry --json" , "language": "Generic", "default":true}' http://localhost:9999/securitytest
+```
+
+GAS:
+
+```
+curl -H "Content-Type: application/json" -d '{"name":"gas", "image": "huskyci/gas", "cmd": "cd src; git clone %GIT_REPO% code; cd code; /go/bin/gas -quiet -fmt=json -log=log.txt -out=results.json ./... 2> /dev/null; jq -c . results.json" , "language": "Go", "default":true}' http://localhost:9999/securitytest
+```
+
 #### Starting Husky:
 
 ```
 go run server.go
 ```
 
-#### Adding securityTests:
-
-ENRY:
-
-```
-curl -H "Content-Type: application/json" -d '{"name":"enry", "image": "huskyci/enry", "cmd": "echo [ENRY]; git clone %GIT_REPO% code; cd code; enry --json" , "language": "Generic", "default":true}' http://localhost:9999/securitytest
-```
-
-GAS:
-
-```
-curl -H "Content-Type: application/json" -d '{"name":"enry", "image": "huskyci/enry", "cmd": "echo [GAS]; cd src; git clone %GIT_REPO% code; cd code; /go/bin/gas -fmt=json -log=log.txt -out=results.json ./... ; cat results.json" , "language": "Go", "default":true}' http://localhost:9999/securitytest
-```
-
-
 #### Adding new repository example:
-
 
 ```
 curl -H "Content-Type: application/json" -d '{"repositoryURL":"https://github.com/tsuru/cst.git", "securityTestName":["gas"]}' http://localhost:9999/repository 
@@ -120,6 +116,15 @@ curl -H "Content-Type: application/json" -d '{"repositoryURL":"https://github.co
 
 ```
 {"RID":"eZVxfYH7W6XOdjuQbNV5I7l5XJ8puTUo","details":"Request received.","result":"ok"}
+```
+
+#### Starting a new analysis:
+
+```
+curl -s -H "Content-Type: application/json" -d '{"repositoryURL":"https://github.com/globocom/tsuru/cst.git"}' http://localhost:9999/husky
+```
+```
+{"RID":"8L85jTJgtuN7o7pRi3sUQ3R4KuCjRcP9","details":"Request received.","result":"ok"}
 ```
 
 #### Checking analysis status:
