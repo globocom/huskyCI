@@ -13,35 +13,83 @@ import (
 // DockerRun starts a new container, runs a given securityTest in it and then updates AnalysisCollection.
 func DockerRun(RID string, analysis *types.Analysis, securityTest types.SecurityTest) {
 
-	// step 0: add a new container to the analysis.
 	newContainer := types.Container{SecurityTest: securityTest}
-	analysisQuery := map[string]interface{}{"RID": RID}
-	startedAt := time.Now()
+	d := docker.Docker{}
 
 	// step 1: create a new container.
-	d := docker.Docker{}
+	err := dockerRunCreateContainer(&d, analysis, securityTest, newContainer)
+	if err != nil {
+		fmt.Println("Error dockerRunCreateContainer():", err)
+		return
+	}
+
+	// step 2: start created container.
+	err = dockerRunStartContainer(&d, analysis)
+	if err != nil {
+		fmt.Println("Error dockerRunStartContainer():", err)
+		return
+	}
+
+	// step 3: wait container finish running.
+	err = dockerRunWaitContainer(&d)
+	if err != nil {
+		fmt.Println("Error dockerRunWaitContainer():", err)
+		return
+	}
+
+	// step 4: read cmd output from container.
+	cOutput, err := dockerRunReadOutput(&d, analysis)
+	if err != nil {
+		fmt.Println("Error dockerRunReadOutput():", err)
+		return
+	}
+
+	// step 5: send output to the proper analysis result function.
+	switch securityTest.Name {
+	case "enry":
+		EnryStartAnalysis(d.CID, cOutput, analysis.RID)
+	case "gas":
+		GasStartAnalysis(d.CID, cOutput)
+	default:
+		fmt.Println("Error: Could not find securityTest.Name.")
+	}
+}
+
+// dockerRunCreateContainer creates a new container, updates the corresponding analysis into MongoDB and returns an error and a CID (container ID).
+func dockerRunCreateContainer(d *docker.Docker, analysis *types.Analysis, securityTest types.SecurityTest, newContainer types.Container) error {
+
+	analysisQuery := map[string]interface{}{"RID": analysis.RID}
+
+	// step 1: creating a new container.
 	CID, err := d.CreateContainer(*analysis, securityTest.Image, securityTest.Cmd)
 	if err != nil {
-		// error creating container. maxRetry?
+		// error! update analysis with an error message and quit.
 		newContainer.CStatus = "error"
 		analysis.Containers = append(analysis.Containers, newContainer)
 		err := UpdateOneDBAnalysis(analysisQuery, *analysis)
 		if err != nil {
-			fmt.Println("Error updating AnalysisCollection (step 1-err):", err)
+			fmt.Println("Error 1 dockerRunCreateContainer() UpdateOneDBAnalysis():", err)
+			return err // implement a maxRetry?
 		}
-	} else {
-		newContainer.CID = CID
-		newContainer.CStatus = "created"
-		analysis.Containers = append(analysis.Containers, newContainer)
-		err := UpdateOneDBAnalysis(analysisQuery, *analysis)
-		if err != nil {
-			fmt.Println("Error updating AnalysisCollection (step 1):", err)
-		}
-		analysisQuery = map[string]interface{}{"containers.CID": CID}
+		return err // implement a maxRetry?
 	}
 
-	// step 2: start created container.
-	err = d.StartContainer(CID)
+	// step 2: update analysis with the container's information.
+	d.CID = CID
+	newContainer.CID = CID
+	newContainer.CStatus = "created"
+	analysis.Containers = append(analysis.Containers, newContainer)
+	err = UpdateOneDBAnalysis(analysisQuery, *analysis)
+	if err != nil {
+		fmt.Println("Error 2 dockerRunCreateContainer() UpdateOneDBAnalysis():", err)
+	}
+	return err
+}
+
+// dockerRunStartContainer starts a container, updates the corresponding analysis into MongoDB and returns an error.
+func dockerRunStartContainer(d *docker.Docker, analysis *types.Analysis) error {
+	analysisQuery := map[string]interface{}{"containers.CID": d.CID}
+	err := d.StartContainer()
 	if err != nil {
 		// error starting container. maxRetry?
 		updateContainerAnalysisQuery := bson.M{
@@ -52,62 +100,62 @@ func DockerRun(RID string, analysis *types.Analysis, securityTest types.Security
 		err = UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
 			fmt.Println("Error updating AnalysisCollection (step 2-err):", err)
+			return err
 		}
-	} else {
-		startedAt = time.Now()
-		updateContainerAnalysisQuery := bson.M{
-			"$set": bson.M{
-				"containers.$.cStatus":   "running",
-				"containers.$.startedAt": startedAt,
-			},
-		}
-		err = UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
-		if err != nil {
-			fmt.Println("Error updating AnalysisCollection (step 2):", err)
-		}
+		return err
 	}
-
-	// step 3: wait container finish running.
-	err = d.WaitContainer(CID)
+	startedAt := time.Now()
+	updateContainerAnalysisQuery := bson.M{
+		"$set": bson.M{
+			"containers.$.cStatus":   "running",
+			"containers.$.startedAt": startedAt,
+		},
+	}
+	err = UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 	if err != nil {
-		fmt.Println("Error waiting the container", CID, ":", err)
+		return err
 	}
+	return err
+}
 
-	// step 4: read cmd output from container.
+// dockerRunWaitContainer waits a container run its commands.
+func dockerRunWaitContainer(d *docker.Docker) error {
+	err := d.WaitContainer()
+	return err
+}
+
+// dockerRunReadOutput reads the output of a container and updates the corresponding analysis into MongoDB.
+func dockerRunReadOutput(d *docker.Docker, analysis *types.Analysis) (string, error) {
+	analysisQuery := map[string]interface{}{"containers.CID": d.CID}
+	var cOutput string
 	var cleanedOutput string
-	newContainer.COuput, err = d.ReadOutput(CID)
+
+	cOutput, err := d.ReadOutput()
 	if err != nil {
-		// error reading container's output. maxRetry?
-		fmt.Println("Error reading output from container", CID, ":", err)
-	} else {
-		finishedAt := time.Now()
-		// cleaning json output from dockerfile logs.
-		reg, err := regexp.Compile(`[{\[]{1}([,:{}\[\]0-9.\-+Eaeflnr-u \n\r\t]|".*?")+[}\]]{1}`)
-		if err != nil {
-			fmt.Println("Error regexp:", err)
-			return
-		}
-		cleanedOutput = reg.FindString(newContainer.COuput)
-		updateContainerAnalysisQuery := bson.M{
-			"$set": bson.M{
-				"containers.$.cStatus":    "finished",
-				"containers.$.finishedAt": finishedAt,
-				"containers.$.cOutput":    cleanedOutput,
-			},
-		}
-		err = UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
-		if err != nil {
-			fmt.Println("Error updating AnalysisCollection (step 4).", err)
-		}
+		fmt.Println("Error reading output from container", d.CID, ":", err)
+		return "", err // implement a maxRetry?
 	}
 
-	// step 5: send output to the proper analysis result function.
-	switch securityTest.Name {
-	case "enry":
-		EnryStartAnalysis(CID, cleanedOutput, analysis.RID)
-	case "gas":
-		GasStartAnalysis(CID, cleanedOutput)
-	default:
-		fmt.Println("Error: Could not find securityTest.Name.")
+	finishedAt := time.Now()
+	// cleaning json output from dockerfile logs.
+	reg, err := regexp.Compile(`[{\[]{1}([,:{}\[\]0-9.\-+Eaeflnr-u \n\r\t]|".*?")+[}\]]{1}`)
+	if err != nil {
+		fmt.Println("Error regexp:", err)
+		return "", err
 	}
+
+	cleanedOutput = reg.FindString(cOutput)
+	updateContainerAnalysisQuery := bson.M{
+		"$set": bson.M{
+			"containers.$.cStatus":    "finished",
+			"containers.$.finishedAt": finishedAt,
+			"containers.$.cOutput":    cleanedOutput,
+		},
+	}
+	err = UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+	if err != nil {
+		fmt.Println("Error updating AnalysisCollection (step 4).", err)
+		return "", err
+	}
+	return cleanedOutput, err
 }
