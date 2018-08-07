@@ -14,7 +14,7 @@ import (
 
 // Docker is the docker struct
 type Docker struct {
-	Container string `json:"Id"`
+	CID string `json:"Id"`
 }
 
 // CreateContainerPayload is a struct that represents all data need to create a container.
@@ -66,13 +66,13 @@ func (d Docker) CreateContainer(analysis types.Analysis, image string, cmd strin
 		return "", err
 	}
 
-	return d.Container, err
+	return d.CID, err
 }
 
 // StartContainer starts a container and returns its error
-func (d Docker) StartContainer(containerID string) error {
+func (d Docker) StartContainer() error {
 	dockerHost := os.Getenv("DOCKER_HOST")
-	URL := "http://" + dockerHost + "/v1.24/containers/" + containerID + "/start"
+	URL := "http://" + dockerHost + "/v1.24/containers/" + d.CID + "/start"
 	resp, err := http.Post(URL, "", nil)
 	if err != nil {
 		fmt.Println("Error in POST to start the container:", err)
@@ -82,9 +82,9 @@ func (d Docker) StartContainer(containerID string) error {
 }
 
 // WaitContainer returns when container finishes executing cmd
-func (d Docker) WaitContainer(containerID string) error {
+func (d Docker) WaitContainer() error {
 	dockerHost := os.Getenv("DOCKER_HOST")
-	URL := "http://" + dockerHost + "/v1.24/containers/" + containerID + "/wait"
+	URL := "http://" + dockerHost + "/v1.24/containers/" + d.CID + "/wait"
 	resp, err := http.Post(URL, "", nil)
 	if err != nil {
 		fmt.Println("Error in POST /wait:", err)
@@ -94,9 +94,9 @@ func (d Docker) WaitContainer(containerID string) error {
 }
 
 // ReadOutput returns the command ouput of a given containerID
-func (d Docker) ReadOutput(containerID string) (string, error) {
+func (d Docker) ReadOutput() (string, error) {
 	dockerHost := os.Getenv("DOCKER_HOST")
-	URL := "http://" + dockerHost + "/v1.24/containers/" + containerID + "/logs?stdout=1"
+	URL := "http://" + dockerHost + "/v1.24/containers/" + d.CID + "/logs?stdout=1"
 	resp, err := http.Get(URL)
 	if err != nil {
 		return "", err
