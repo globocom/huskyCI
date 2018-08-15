@@ -4,8 +4,9 @@ jobs:
   build:
     docker:
       - image: circleci/golang:1.10
-    
-    working_directory: /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}}
+
+    working_directory: /go/src/github.com/globo.com/husky
+
     steps:
       - checkout
       - run: go get -v -t -d ./...
