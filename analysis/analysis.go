@@ -116,7 +116,7 @@ func AnalyzeResult(analysisResult types.Analysis) {
 		for _, container := range analysisResult.Containers {
 			if container.CResult == "failed" {
 				// cOutput is a string that needs to become a JSON
-				fmt.Println(container.COuput)
+				fmt.Println(container.COutput)
 			}
 		}
 	} else {
