@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/globocom/husky/analysis"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -22,4 +24,8 @@ func main() {
 
 	echoInstance.Logger.Fatal(echoInstance.Start(":9999"))
 
+}
+
+func FailCI() {
+	fmt.Println("Just checking CI!")
 }
