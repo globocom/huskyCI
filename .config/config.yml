@@ -13,8 +13,8 @@ jobs:
         go get -v -t -d ./...
 
       - run:
-          go get -u golang.org/x/lint/golint
-          golint
+        go get -u golang.org/x/lint/golint
+        golint
 
       - run:
         go build -o husky
