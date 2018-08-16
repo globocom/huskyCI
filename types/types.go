@@ -16,7 +16,6 @@ type Repository struct {
 	CreatedAt        time.Time      `bson:"createdAt" json:"createdAt"`
 	DeletedAt        time.Time      `bson:"deletedAt" json:"deletedAt"`
 	Languages        []Language     `bson:"languages" json:"languages"`
-	LimitEnryScan    int            `bson:"limitEnryScan" json:"limitEnryScan"`
 }
 
 // SecurityTest is the struct that stores all data from the security tests to be executed.
