@@ -93,7 +93,7 @@ db.createUser({user:"husky", pwd:"superENVPassword", roles: ["readWrite"]})
 ENRY:
 
 ```
-curl -H "Content-Type: application/json" -d '{"name":"enry", "image": "huskyci/enry", "cmd": "git clone %GIT_REPO% code && cd code && enry --json" , "language": "Generic", "default":true}' http://localhost:9999/securitytest
+curl -H "Content-Type: application/json" -d '{"name":"enry", "image": "huskyci/enry", "cmd": "git clone %GIT_REPO% code --quiet && cd code && enry --json" , "language": "Generic", "default":true}' http://localhost:9999/securitytest
 ```
 
 GAS:
