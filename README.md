@@ -93,13 +93,13 @@ db.createUser({user:"husky", pwd:"superENVPassword", roles: ["readWrite"]})
 ENRY:
 
 ```
-curl -H "Content-Type: application/json" -d '{"name":"enry", "image": "huskyci/enry", "cmd": "git clone %GIT_REPO% code; cd code; enry --json" , "language": "Generic", "default":true}' http://localhost:9999/securitytest
+curl -H "Content-Type: application/json" -d '{"name":"enry", "image": "huskyci/enry", "cmd": "git clone %GIT_REPO% code && cd code && enry --json" , "language": "Generic", "default":true}' http://localhost:9999/securitytest
 ```
 
 GAS:
 
 ```
-curl -H "Content-Type: application/json" -d '{"name":"gas", "image": "huskyci/gas", "cmd": "cd src; git clone %GIT_REPO% code; cd code; /go/bin/gas -quiet -fmt=json -log=log.txt -out=results.json ./... 2> /dev/null; jq -c . results.json" , "language": "Go", "default":true}' http://localhost:9999/securitytest
+curl -H "Content-Type: application/json" -d '{"name":"gas", "image": "huskyci/gas", "cmd": "cd src; git clone %GIT_REPO% code --quiet && cd code && /go/bin/gas -quiet -fmt=json -log=log.txt -out=results.json ./... 2> /dev/null ; jq -c . results.json" , "language": "Go", "default":true}' http://localhost:9999/securitytest
 ```
 
 #### Starting Husky:
