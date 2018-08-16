@@ -121,7 +121,7 @@ curl -H "Content-Type: application/json" -d '{"repositoryURL":"https://github.co
 #### Starting a new analysis:
 
 ```
-curl -s -H "Content-Type: application/json" -d '{"repositoryURL":"https://github.com/globocom/tsuru/cst.git"}' http://localhost:9999/husky
+curl -s -H "Content-Type: application/json" -d '{"repositoryURL":"https://github.com/tsuru/cst.git"}' http://localhost:9999/husky
 ```
 ```
 {"RID":"8L85jTJgtuN7o7pRi3sUQ3R4KuCjRcP9","details":"Request received.","result":"ok"}
