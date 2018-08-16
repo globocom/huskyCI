@@ -75,63 +75,30 @@ func StartAnalysis(RID string, repository types.Repository) {
 
 	// step 0: create a new analysis struct
 	newAnalysis := types.Analysis{
-		RID:           RID,
-		URL:           repository.URL,
-		SecurityTests: repository.SecurityTests,
-		Status:        "started",
-		Containers:    make([]types.Container, 0),
+		RID:        RID,
+		URL:        repository.URL,
+		Status:     "started",
+		Containers: make([]types.Container, 0),
 	}
 
-	// step 1: insert new analysis into MongoDB
+	// step 1: insert new analysis into MongoDB.
 	err := InsertDBAnalysis(newAnalysis)
 	if err != nil {
 		fmt.Println("Error inserting new analysis.", err)
-	}
-
-	// step 2: increment -1 to repository.LimitEnryScan
-	repositoryQuery := map[string]interface{}{"URL": repository.URL}
-	updateRepositoryQuery := bson.M{
-		"$inc": bson.M{
-			"limitEnryScan": -1,
-		},
-	}
-	err = UpdateOneDBRepository(repositoryQuery, updateRepositoryQuery)
-	if err != nil {
-		fmt.Println("Could not increment repository.LimitEnryScan:", err)
 		return
 	}
 
-	// step 3: check if a new enry scan is needed
-	if repository.LimitEnryScan == 0 {
-		// new enry scan is needed
-		limitEnryScan := 10
-		repository.SecurityTests = nil
-		enrySecurityTestQuery := map[string]interface{}{"name": "enry"}
-		enrySecurityTestResult, err := FindOneDBSecurityTest(enrySecurityTestQuery)
-		if err != nil {
-			fmt.Println("Error finding enry securityTest:", err)
-		}
-		repository.SecurityTests = append(repository.SecurityTests, enrySecurityTestResult)
-		// set repository.LimitEnryScan to its default value
-		repositoryQuery := map[string]interface{}{"URL": repository.URL}
-		updateRepositoryQuery := bson.M{
-			"$set": bson.M{
-				"limitEnryScan": limitEnryScan,
-			},
-		}
-		err = UpdateOneDBRepository(repositoryQuery, updateRepositoryQuery)
-		if err != nil {
-			fmt.Println("Could not set repository.LimitEnryScan to its default value:", err)
-			return
-		}
+	// step 2: start enry and EnryStartAnalysis will start all others securityTests
+	// for the future: Yaml config file to have an enry security preset.
+	enryQuery := map[string]interface{}{"name": "enry"}
+	enrySecurityTest, err := FindOneDBSecurityTest(enryQuery)
+	if err != nil {
+		fmt.Println("Error finding Enry SecurityTest:", err)
+		return
 	}
+	DockerRun(RID, &newAnalysis, enrySecurityTest)
 
-	// step 4: start each securityTest set
-	for _, securityTest := range repository.SecurityTests {
-		go DockerRun(RID, &newAnalysis, securityTest)
-	}
-
-	// step 5: worker will check if jobs are done to set newAnalysis.Status = "finished"
+	// step 3: worker will check if jobs are done to set newAnalysis.Status = "finished".
 	go MonitorAnalysis(&newAnalysis)
 
 }
