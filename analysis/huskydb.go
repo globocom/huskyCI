@@ -95,7 +95,6 @@ func InsertDBRepository(repository types.Repository) error {
 	securityTestList := []types.SecurityTest{}
 	err := errors.New("")
 	maxQueryAllowed := 8
-	limitEnryScan := 10
 
 	if len(repository.SecurityTestName) == 0 {
 		// checking default and Generic securityTests in SecurityTestCollection
@@ -137,7 +136,6 @@ func InsertDBRepository(repository types.Repository) error {
 		CreatedAt:     repository.CreatedAt,
 		DeletedAt:     repository.DeletedAt,
 		Languages:     repository.Languages,
-		LimitEnryScan: limitEnryScan,
 	}
 
 	err = session.Insert(newRepository, db.RepositoryCollection)
