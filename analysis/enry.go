@@ -10,7 +10,7 @@ import (
 )
 
 // EnryStartAnalysis checks the languages of a repository, update them into mongoDB, and starts corresponding new securityTests.
-func EnryStartAnalysis(CID string, cleanedOutput string, RID string) {
+func EnryStartAnalysis(CID string, cOutput string, RID string) {
 
 	// step 0: get analysis based on CID.
 	analysisQuery := map[string]interface{}{"containers.CID": CID}
@@ -22,7 +22,7 @@ func EnryStartAnalysis(CID string, cleanedOutput string, RID string) {
 
 	// step 1: get each language found in cOutput.
 	mapLanguages := make(map[string][]interface{})
-	err = json.Unmarshal([]byte(cleanedOutput), &mapLanguages)
+	err = json.Unmarshal([]byte(cOutput), &mapLanguages)
 	if err != nil {
 		fmt.Println("Unmarshall error (enry.go):", err)
 		return
