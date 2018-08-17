@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io"
-	"os"
 
 	"github.com/globocom/husky-client/analysis"
 	"github.com/globocom/husky-client/config"
@@ -27,10 +25,6 @@ func main() {
 	}
 
 	// step 3: analyze result and return to CI the final result.
-	finalResultError := analysis.AnalyzeResult(huskyAnalysis)
-	if finalResultError != nil {
-		io.WriteString(os.Stderr, "[HUSKY][FAILED]")
-	} else {
-		io.WriteString(os.Stdout, "[HUSKY][PASSED]")
-	}
+	analysis.AnalyzeResult(huskyAnalysis)
+
 }
