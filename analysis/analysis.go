@@ -104,25 +104,23 @@ func MonitorAnalysis(RID string) (types.Analysis, error) {
 			if analysis.Status == "finished" {
 				return analysis, nil
 			}
-			fmt.Println("Not finished yet")
 		}
 	}
 }
 
 // AnalyzeResult analyzes.
-func AnalyzeResult(analysisResult types.Analysis) error {
+func AnalyzeResult(analysisResult types.Analysis) {
 	// result = passed? sucess! Close client. result = failed? Throw error. Output cOutput where cResult = failed.
-	var analysisFailed error
 	if analysisResult.Result != "passed" {
 		// print cOutput of each container that has cResult == failed and throw an error
 		for _, container := range analysisResult.Containers {
 			if container.CResult == "failed" {
 				// cOutput is a string that needs to become a JSON
-				fmt.Println(container.COuput)
+				fmt.Println(container.COutput)
 			}
 		}
-		return analysisFailed
+	} else {
+		// print Sucess! Warnings!
+		fmt.Println(`{"Husky":"Success"}`)
 	}
-	// print Sucess! Warnings!
-	return nil
 }
