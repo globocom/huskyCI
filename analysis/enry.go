@@ -12,7 +12,7 @@ import (
 // EnryStartAnalysis checks the languages of a repository, update them into mongoDB, and starts corresponding new securityTests.
 func EnryStartAnalysis(CID string, cleanedOutput string, RID string) {
 
-	// step 0: get analysis based on CID
+	// step 0: get analysis based on CID.
 	analysisQuery := map[string]interface{}{"containers.CID": CID}
 	analysis, err := FindOneDBAnalysis(analysisQuery)
 	if err != nil {
@@ -20,7 +20,7 @@ func EnryStartAnalysis(CID string, cleanedOutput string, RID string) {
 		return
 	}
 
-	// step 1: get each language found in cOutput
+	// step 1: get each language found in cOutput.
 	mapLanguages := make(map[string][]interface{})
 	err = json.Unmarshal([]byte(cleanedOutput), &mapLanguages)
 	if err != nil {
@@ -46,32 +46,33 @@ func EnryStartAnalysis(CID string, cleanedOutput string, RID string) {
 		repositoryLanguages = append(repositoryLanguages, newLanguage)
 	}
 
-	// step 2: update repository with the languages found and with each corresponding default securityTests
-	genericSecurityTests := []types.SecurityTest{}
-	newSecurityTests := []types.SecurityTest{}
-	// gathering up generic securityTests to be included.
+	// step 2: get all securityTests to be updated into RepositoryCollection and Analysiscollection.
+
+	// step 2.1: querying MongoDB to gather up all securityTests that match (language=Generic and default=true).
 	genericSecurityTestQuery := map[string]interface{}{"language": "Generic", "default": true}
-	genericSecurityTestResult, err := FindAllDBSecurityTest(genericSecurityTestQuery)
+	genericSecurityTests, err := FindAllDBSecurityTest(genericSecurityTestQuery)
 	if err != nil {
-		fmt.Println("Error finding default generic securityTest:", err)
+		fmt.Println("Error finding securityTest (language=Generic and default=true):", err)
 		return
 	}
-	for _, genericSecurityTest := range genericSecurityTestResult {
-		genericSecurityTests = append(genericSecurityTests, genericSecurityTest)
-	}
-	// gathering up new securityTests based on the languages found.
+
+	// step 2.2: querying MongoDB to gather up all securityTests that match (language=languageFound and default=true).
+	newLanguageSecurityTests := []types.SecurityTest{}
 	for _, language := range repositoryLanguages {
 		languageSecurityTestQuery := map[string]interface{}{"language": language.Name, "default": true}
 		languageSecurityTestResult, err := FindOneDBSecurityTest(languageSecurityTestQuery)
 		if err == nil {
-			newSecurityTests = append(newSecurityTests, languageSecurityTestResult)
-		} // else {} is OK to not find a securityTest by language.Name! To do: log this error
+			newLanguageSecurityTests = append(newLanguageSecurityTests, languageSecurityTestResult)
+		} // else {} is OK to not find a securityTest by language.Name! for the future: log this error?
 	}
-	// step 3: updating repository.
+
+	allSecurityTests := append(genericSecurityTests, newLanguageSecurityTests...)
+
+	// step 3: updating repository with all securityTests found.
 	repositoryQuery := map[string]interface{}{"URL": analysis.URL}
 	updateRepositoryQuery := bson.M{
 		"$set": bson.M{
-			"securityTests": newSecurityTests,
+			"securityTests": allSecurityTests,
 			"languages":     repositoryLanguages,
 		},
 	}
@@ -81,18 +82,17 @@ func EnryStartAnalysis(CID string, cleanedOutput string, RID string) {
 		return
 	}
 
-	// step 4: update analysis with the new securityTests
-	allSecurityTestsExecuted := []types.SecurityTest{}
-	allSecurityTestsExecuted = append(genericSecurityTests, newSecurityTests...)
-	analysis.SecurityTests = allSecurityTestsExecuted
-
+	// step 4: update analysis with the all securityTests found.
+	analysis.SecurityTests = allSecurityTests
 	err = UpdateOneDBAnalysis(analysisQuery, analysis)
 	if err != nil {
 		fmt.Println("Error updating AnalysisCollection:", err)
+		return
 	}
 
-	// step 5: start new securityTests
-	for _, securityTest := range newSecurityTests {
+	// step 5: start all new securityTests.
+	for _, securityTest := range newLanguageSecurityTests {
+		// avoiding a loop here with this if condition.
 		if securityTest.Name != "enry" {
 			go DockerRun(RID, &analysis, securityTest)
 		}
