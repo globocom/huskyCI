@@ -33,18 +33,18 @@ type Stats struct {
 }
 
 // GasStartAnalysis analyses the output from Gas and sets a cResult based on it.
-func GasStartAnalysis(CID string, cleanedOutput string) {
+func GasStartAnalysis(CID string, cOutput string) {
 
 	var cResult string
 	analysisQuery := map[string]interface{}{"containers.CID": CID}
 
 	// step 0: nil cOutput states that no Issues were found.
-	if cleanedOutput == "" {
+	if cOutput == "" {
 		// what if some error occurred inside container? use $? to check this?
 		cResult = "passed"
 		updateContainerAnalysisQuery := bson.M{
 			"$set": bson.M{
-				"containers.$.cOutput": "No issues found.",
+				"containers.$.cOutput": "No issues found (cOutput empty).",
 				"containers.$.cResult": cResult,
 			},
 		}
@@ -55,16 +55,16 @@ func GasStartAnalysis(CID string, cleanedOutput string) {
 		return
 	}
 
-	// step 1: Unmarshall cleanedOutput
+	// step 1: Unmarshall cOutput into GasOutput struct.
 	gasOutput := GasOutput{}
-	err := json.Unmarshal([]byte(cleanedOutput), &gasOutput)
+	err := json.Unmarshal([]byte(cOutput), &gasOutput)
 	if err != nil {
 		fmt.Println("Unmarshall error (gas.go):", err)
-		fmt.Println(cleanedOutput)
+		fmt.Println(cOutput)
 		return
 	}
 
-	// step 2: find Issues that have severity "MEDIUM" or "HIGH" and confidence "HIGH"
+	// step 2: find Issues that have severity "MEDIUM" or "HIGH" and confidence "HIGH".
 	cResult = "passed"
 	for _, issue := range gasOutput.Issues {
 		if (issue.Severity == "HIGH" || issue.Severity == "MEDIUM") && (issue.Confidence == "HIGH") {
@@ -73,7 +73,7 @@ func GasStartAnalysis(CID string, cleanedOutput string) {
 		}
 	}
 
-	// step 3: update cResult
+	// step 3: update analysis' cResult into AnalyisCollection.
 	updateContainerAnalysisQuery := bson.M{
 		"$set": bson.M{
 			"containers.$.cResult": cResult,
@@ -82,5 +82,6 @@ func GasStartAnalysis(CID string, cleanedOutput string) {
 	err = UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 	if err != nil {
 		fmt.Println("Error updating AnalysisCollection (inside gas.go):", err)
+		return
 	}
 }

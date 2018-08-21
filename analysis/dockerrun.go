@@ -2,7 +2,6 @@ package analysis
 
 import (
 	"fmt"
-	"regexp"
 	"time"
 
 	docker "github.com/globocom/husky/dockers"
@@ -127,29 +126,17 @@ func dockerRunWaitContainer(d *docker.Docker) error {
 // dockerRunReadOutput reads the output of a container and updates the corresponding analysis into MongoDB.
 func dockerRunReadOutput(d *docker.Docker, analysis *types.Analysis) (string, error) {
 	analysisQuery := map[string]interface{}{"containers.CID": d.CID}
-	var cOutput string
-	var cleanedOutput string
-
 	cOutput, err := d.ReadOutput()
 	if err != nil {
 		fmt.Println("Error reading output from container", d.CID, ":", err)
 		return "", err // implement a maxRetry?
 	}
-
 	finishedAt := time.Now()
-	// cleaning json output from dockerfile logs.
-	reg, err := regexp.Compile(`[{\[]{1}([,:{}\[\]0-9.\-+Eaeflnr-u \n\r\t]|".*?")+[}\]]{1}`)
-	if err != nil {
-		fmt.Println("Error regexp:", err)
-		return "", err
-	}
-
-	cleanedOutput = reg.FindString(cOutput)
 	updateContainerAnalysisQuery := bson.M{
 		"$set": bson.M{
 			"containers.$.cStatus":    "finished",
 			"containers.$.finishedAt": finishedAt,
-			"containers.$.cOutput":    cleanedOutput,
+			"containers.$.cOutput":    cOutput,
 		},
 	}
 	err = UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
@@ -157,5 +144,5 @@ func dockerRunReadOutput(d *docker.Docker, analysis *types.Analysis) (string, er
 		fmt.Println("Error updating AnalysisCollection (step 4).", err)
 		return "", err
 	}
-	return cleanedOutput, err
+	return cOutput, err
 }
