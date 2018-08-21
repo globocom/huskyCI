@@ -3,6 +3,7 @@ package dockers
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -69,7 +70,7 @@ func (d Docker) CreateContainer(analysis types.Analysis, image string, cmd strin
 	return d.CID, err
 }
 
-// StartContainer starts a container and returns its error
+// StartContainer starts a container and returns its error.
 func (d Docker) StartContainer() error {
 	dockerHost := os.Getenv("DOCKER_HOST")
 	URL := "http://" + dockerHost + "/v1.24/containers/" + d.CID + "/start"
@@ -81,7 +82,7 @@ func (d Docker) StartContainer() error {
 	return err
 }
 
-// WaitContainer returns when container finishes executing cmd
+// WaitContainer returns when container finishes executing cmd.
 func (d Docker) WaitContainer() error {
 	dockerHost := os.Getenv("DOCKER_HOST")
 	URL := "http://" + dockerHost + "/v1.24/containers/" + d.CID + "/wait"
@@ -93,7 +94,7 @@ func (d Docker) WaitContainer() error {
 	return err
 }
 
-// ReadOutput returns the command ouput of a given containerID
+// ReadOutput returns the command ouput of a given containerID.
 func (d Docker) ReadOutput() (string, error) {
 	dockerHost := os.Getenv("DOCKER_HOST")
 	URL := "http://" + dockerHost + "/v1.24/containers/" + d.CID + "/logs?stdout=1"
@@ -109,7 +110,7 @@ func (d Docker) ReadOutput() (string, error) {
 	return string(body), err
 }
 
-// PullImage pulls an image, like docker pull
+// PullImage pulls an image, like docker pull.
 func (d Docker) PullImage(image string) error {
 	dockerHost := os.Getenv("DOCKER_HOST")
 	URL := "http://" + dockerHost + "/v1.24/images/create?fromImage=" + image
@@ -121,7 +122,7 @@ func (d Docker) PullImage(image string) error {
 	return err
 }
 
-// ListImages returns the docker images, like docker image ls
+// ListImages returns the docker images, like docker image ls.
 func (d Docker) ListImages() string {
 	dockerHost := os.Getenv("DOCKER_HOST")
 	URL := "http://" + dockerHost + "/v1.24/images/json"
@@ -135,4 +136,18 @@ func (d Docker) ListImages() string {
 		fmt.Println("Error reading the body response of GET to read the command output:", err)
 	}
 	return string(body)
+}
+
+// HealthCheckAPI returns true if a 200 status code is received or false otherwise.
+func HealthCheckAPI(dockerHost string) error {
+	URL := fmt.Sprintf("http://%s/v1.24/version", dockerHost)
+	resp, err := http.Get(URL)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode != 200 {
+		finalError := fmt.Sprintf("%d status code", resp.StatusCode)
+		return errors.New(finalError)
+	}
+	return nil
 }
