@@ -26,6 +26,7 @@ func main() {
 	}
 
 	echoInstance := echo.New()
+	echoInstance.HideBanner = true
 
 	echoInstance.Use(middleware.Logger())
 	echoInstance.Use(middleware.Recover())
@@ -46,23 +47,23 @@ func checkHuskyRequirements(apiConfig *apiContext.APIConfig) error {
 	// check if all environment variables are properly set.
 	if err := checkEnvVars(apiConfig); err != nil {
 		return err
-	} else {
-		fmt.Println("[*] Environment Variables: OK!")
 	}
+
+	fmt.Println("[*] Environment Variables: OK!")
 
 	// check if all docker hosts are up and running docker API.
 	if err := checkDockerHosts(apiConfig); err != nil {
 		return err
-	} else {
-		fmt.Println("[*] Docker API Hosts: OK!")
 	}
+
+	fmt.Println("[*] Docker API Hosts: OK!")
 
 	// check if MongoDB is acessible and credentials received are working.
 	if err := checkMongoDB(apiConfig); err != nil {
 		return err
-	} else {
-		fmt.Println("[*] MongoDB: OK!")
 	}
+
+	fmt.Println("[*] MongoDB: OK!")
 
 	return nil
 }
@@ -105,8 +106,8 @@ func checkEnvVars(apiConfig *apiContext.APIConfig) error {
 
 func checkDockerHosts(apiConfig *apiContext.APIConfig) error {
 
-	dockerAPIPort := apiConfig.DockerVMsConfig.DockerAPIPort
-	dockerHostsList := apiConfig.DockerVMsConfig.Addresses
+	dockerAPIPort := apiConfig.DockerHostsConfig.DockerAPIPort
+	dockerHostsList := apiConfig.DockerHostsConfig.Addresses
 
 	for _, dockerHost := range dockerHostsList {
 		dockerAddress := fmt.Sprintf("%s:%d", dockerHost, dockerAPIPort)
