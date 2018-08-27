@@ -59,11 +59,20 @@ For more Docker API examples, refer to: https://docs.docker.com/develop/sdk/exam
 Don't forget to change this password!
 
 ```
-echo 'export DOCKER_HOST="192.168.50.6:2376"' > .env
+echo 'export DOCKER_HOSTS_LIST="192.168.50.6"' > .env
 echo 'export MONGO_HOST="192.168.50.5"' >> .env
-echo 'export MONGO_NAME="huskyDB"' >> .env
-echo 'export MONGO_USER="husky"' >> .env
-echo 'export MONGO_PASS="superENVPassword"' >> .env
+echo 'export MONGO_DATABASE_NAME="huskyDB"' >> .env
+echo 'export MONGO_DATABASE_USERNAME="husky"' >> .env
+echo 'export MONGO_DATABASE_PASSWORD="superENVPassword"' >> .env
+```
+
+Optional environment variables:
+
+```
+"DOCKER_API_PORT" -> Husky default value (2376)
+"MONGO_PORT" -> Husky default value (27017)
+"HUSKY_API_PORT" -> Husky default value (9999)
+"MONGO_TIMEOUT" -> Husky default value (60s)
 ```
 
 ```
