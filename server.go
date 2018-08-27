@@ -11,15 +11,16 @@ import (
 	docker "github.com/globocom/husky/dockers"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	mgo "gopkg.in/mgo.v2"
 )
 
 func main() {
 
 	fmt.Println("[*] Starting Husky...")
 
-	apiConfig := apiContext.GetAPIConfig()
+	configAPI := apiContext.GetAPIConfig()
 
-	if err := checkHuskyRequirements(apiConfig); err != nil {
+	if err := checkHuskyRequirements(configAPI); err != nil {
 		fmt.Println("[x] Error starting Husky:")
 		fmt.Println("[x]", err)
 		os.Exit(1)
@@ -38,37 +39,44 @@ func main() {
 	echoInstance.POST("/securitytest", analysis.CreateNewSecurityTest)
 	echoInstance.POST("/repository", analysis.CreateNewRepository)
 
-	huskyAPIport := fmt.Sprintf(":%d", apiConfig.HuskyAPIPort)
+	huskyAPIport := fmt.Sprintf(":%d", configAPI.HuskyAPIPort)
 	echoInstance.Logger.Fatal(echoInstance.Start(huskyAPIport))
 }
 
-func checkHuskyRequirements(apiConfig *apiContext.APIConfig) error {
+func checkHuskyRequirements(configAPI *apiContext.APIConfig) error {
 
 	// check if all environment variables are properly set.
-	if err := checkEnvVars(apiConfig); err != nil {
+	if err := checkEnvVars(); err != nil {
 		return err
 	}
 
 	fmt.Println("[*] Environment Variables: OK!")
 
 	// check if all docker hosts are up and running docker API.
-	if err := checkDockerHosts(apiConfig); err != nil {
+	if err := checkDockerHosts(configAPI); err != nil {
 		return err
 	}
 
 	fmt.Println("[*] Docker API Hosts: OK!")
 
 	// check if MongoDB is acessible and credentials received are working.
-	if err := checkMongoDB(apiConfig); err != nil {
+	if err := checkMongoDB(); err != nil {
 		return err
 	}
 
 	fmt.Println("[*] MongoDB: OK!")
 
+	// check if default securityTests are set into MongoDB.
+	if err := checkDefaultSecurityTests(configAPI); err != nil {
+		return err
+	}
+
+	fmt.Println("[*] Default security tests set: OK!")
+
 	return nil
 }
 
-func checkEnvVars(apiConfig *apiContext.APIConfig) error {
+func checkEnvVars() error {
 
 	envVars := []string{
 		"DOCKER_HOSTS_LIST",
@@ -104,14 +112,14 @@ func checkEnvVars(apiConfig *apiContext.APIConfig) error {
 	return nil
 }
 
-func checkDockerHosts(apiConfig *apiContext.APIConfig) error {
+func checkDockerHosts(configAPI *apiContext.APIConfig) error {
 
-	dockerAPIPort := apiConfig.DockerHostsConfig.DockerAPIPort
-	dockerHostsList := apiConfig.DockerHostsConfig.Addresses
+	dockerAPIPort := configAPI.DockerHostsConfig.DockerAPIPort
+	dockerHostsList := configAPI.DockerHostsConfig.Addresses
 
 	for _, dockerHost := range dockerHostsList {
 		dockerAddress := fmt.Sprintf("%s:%d", dockerHost, dockerAPIPort)
-		if err := docker.HealthCheckAPI(dockerAddress); err != nil {
+		if err := docker.HealthCheckDockerAPI(dockerAddress); err != nil {
 			return err
 		}
 	}
@@ -119,13 +127,43 @@ func checkDockerHosts(apiConfig *apiContext.APIConfig) error {
 	return nil
 }
 
-func checkMongoDB(apiConfig *apiContext.APIConfig) error {
+func checkMongoDB() error {
 
 	_, err := db.Connect()
 
 	if err != nil {
 		mongoError := fmt.Sprintf("check mongoDB: %s", err)
 		return errors.New(mongoError)
+	}
+
+	return nil
+}
+
+func checkDefaultSecurityTests(configAPI *apiContext.APIConfig) error {
+	enryQuery := map[string]interface{}{"name": "enry"}
+	enry, err := analysis.FindOneDBSecurityTest(enryQuery)
+	if err == mgo.ErrNotFound {
+		// As Enry securityTest is not set into MongoDB, Husky will insert it.
+		fmt.Println("[!] Enry securityTest not found!")
+		enry = *configAPI.EnrySecurityTest
+		if err := analysis.InsertDBSecurityTest(enry); err != nil {
+			return err
+		}
+	} else if err != nil {
+		return err
+	}
+
+	gasQuery := map[string]interface{}{"name": "gas"}
+	gas, err := analysis.FindOneDBSecurityTest(gasQuery)
+	if err == mgo.ErrNotFound {
+		// As Gas securityTest is not set into MongoDB, Husky will insert it.
+		fmt.Println("[!] Gas securityTest not found!")
+		gas = *configAPI.GasSecurityTest
+		if err := analysis.InsertDBSecurityTest(gas); err != nil {
+			return err
+		}
+	} else if err != nil {
+		return err
 	}
 
 	return nil
