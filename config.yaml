@@ -1,0 +1,14 @@
+enry:
+  name: enry
+  image: huskyci/enry
+  cmd: git clone %GIT_REPO% code --quiet && cd code && enry --json | tr -d '\r\n'
+  language: Generic
+  default: true
+
+gas:
+  name: gas
+  image: huskyci/gas
+  cmd: cd src; git clone %GIT_REPO% code --quiet && cd code && /go/bin/gas -quiet -fmt=json -log=log.txt -out=results.json ./... 2> /dev/null ; jq -j -M -c . results.json
+  language: Go
+  default: true
+
