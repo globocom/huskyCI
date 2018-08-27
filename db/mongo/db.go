@@ -41,13 +41,13 @@ type Database interface {
 
 var config = &mongoConfig{
 	Address:      os.Getenv("MONGO_HOST"),
-	DatabaseName: os.Getenv("MONGO_NAME"),
-	UserName:     os.Getenv("MONGO_USER"),
-	Password:     os.Getenv("MONGO_PASS"),
+	DatabaseName: os.Getenv("MONGO_DATABASE_NAME"),
+	UserName:     os.Getenv("MONGO_DATABASE_USERNAME"),
+	Password:     os.Getenv("MONGO_DATABASE_PASSWORD"),
 }
 
 // Connect connects to mongo and returns the session.
-func Connect() *DB {
+func Connect() (*DB, error) {
 	dialInfo := &mgo.DialInfo{
 		Addrs:    []string{config.Address},
 		Timeout:  time.Second * 60,
@@ -59,13 +59,18 @@ func Connect() *DB {
 	session, err := mgo.DialWithInfo(dialInfo)
 	if err != nil {
 		fmt.Println("Error connecting to Mongo:", err)
+		return nil, err
 	}
 	session.SetSafe(&mgo.Safe{WMode: "majority"})
+
 	if err := session.Ping(); err != nil {
 		fmt.Println("Error pinging Mongo after connection:", err)
+		return nil, err
 	}
+
 	go autoReconnect(session)
-	return &DB{Session: session}
+
+	return &DB{Session: session}, nil
 }
 
 // autoReconnect checks mongo's connection each second and, if an error is found, reconect to it.
