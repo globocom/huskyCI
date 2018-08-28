@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -98,7 +97,7 @@ func MonitorAnalysis(RID string) (types.Analysis, error) {
 		case <-retryTick:
 			analysis, err := GetAnalyisis(RID)
 			if err != nil {
-				io.WriteString(os.Stderr, "Error!")
+				fmt.Println("Internal error (MonitorAnalysis): ", err)
 				return analysis, err
 			}
 			if analysis.Status == "finished" {
