@@ -113,7 +113,10 @@ func MonitorAnalysis(analysis *types.Analysis) {
 		select {
 		case <-timeout:
 			// cenario 1: MonitorAnalysis has timed out!
-			monitorAnalysisTimedOut(analysis.RID)
+			if err := monitorAnalysisTimedOut(analysis.RID); err != nil {
+				fmt.Println("Internal error monitorAnalysisTimedOut(): ", err)
+				return
+			}
 			return
 		case <-retryTick:
 			// check if analysis has already finished.
