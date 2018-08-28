@@ -10,6 +10,6 @@ var HuskyAPI string
 
 // SetConfigs sets all configuration needed to start the client.
 func SetConfigs() {
-	RepositoryURL = os.Getenv(`REPO_URL`)
+	RepositoryURL = os.Getenv(`CI_REPOSITORY_URL`)
 	HuskyAPI = os.Getenv(`HUSKY_API`)
 }
