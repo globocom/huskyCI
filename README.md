@@ -9,6 +9,11 @@ These instructions will get you a copy of the project up and running on your loc
 ### Prerequisites
 
 * Install Vagrant: https://www.vagrantup.com/downloads.html
+* Install Golang: 
+
+```
+brew install go
+```
 
 ## Installing
 
@@ -38,7 +43,7 @@ vagrant up vm3-docker
 
 #### Downloading docker images:
 
-The images below are already installed via Vagrant (vm3-docker-config.sh)! These are only some examples on how to download your own docker image if desired. 
+The images below are already installed via Vagrant (vm3-docker-config.sh)! These are only some examples on how to download your own docker image, if desired: 
 
 huskyci/enry:
 
@@ -95,20 +100,6 @@ use huskyDB
 
 ```
 db.createUser({user:"husky", pwd:"superENVPassword", roles: ["readWrite"]})
-```
-
-#### Adding securityTests:
-
-ENRY:
-
-```
-curl -H "Content-Type: application/json" -d '{"name":"enry", "image": "huskyci/enry", "cmd": "git clone %GIT_REPO% code --quiet && cd code && enry --json | tr -d '\r\n'" , "language": "Generic", "default":true}' http://localhost:9999/securitytest
-```
-
-GAS:
-
-```
-curl -H "Content-Type: application/json" -d '{"name":"gas", "image": "huskyci/gas", "cmd": "cd src; git clone %GIT_REPO% code --quiet && cd code && /go/bin/gas -quiet -fmt=json -log=log.txt -out=results.json ./... 2> /dev/null ; jq -j -M -c . results.json" , "language": "Go", "default":true}' http://localhost:9999/securitytest
 ```
 
 #### Starting Husky:
