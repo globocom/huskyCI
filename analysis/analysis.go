@@ -119,6 +119,8 @@ func AnalyzeResult(analysisResult types.Analysis) {
 				fmt.Println(container.COutput)
 			}
 		}
+		// throw a exit code = 1 (Catchall for general errors)
+		os.Exit(1)
 	} else {
 		// print Sucess! Warnings!
 		fmt.Println(`{"Husky":"Success"}`)
