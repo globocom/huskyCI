@@ -1,3 +1,0 @@
-hooks:
-  build:
-    - go get -u ./...
