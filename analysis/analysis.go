@@ -27,7 +27,7 @@ func StartAnalysis() (string, error) {
 		return "", err
 	}
 
-	huskyStartAnalysisURL := config.HuskyAPI + "husky"
+	huskyStartAnalysisURL := config.HuskyAPI + "/husky"
 	req, err := http.NewRequest("POST", huskyStartAnalysisURL, bytes.NewBuffer(marshalPayload))
 	req.Header.Set("Content-Type", "application/json")
 
@@ -59,7 +59,7 @@ func StartAnalysis() (string, error) {
 func GetAnalyisis(RID string) (types.Analysis, error) {
 
 	analysis := types.Analysis{}
-	huskyMonitorAnalysisURL := config.HuskyAPI + "husky/" + RID
+	huskyMonitorAnalysisURL := config.HuskyAPI + "/husky/" + RID
 
 	resp, err := http.Get(huskyMonitorAnalysisURL)
 	if err != nil {
