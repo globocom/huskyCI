@@ -2,12 +2,14 @@ package dockers
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/globocom/husky/context"
 	"github.com/globocom/husky/types"
@@ -25,17 +27,23 @@ type CreateContainerPayload struct {
 	Cmd   []string `json:"Cmd"`
 }
 
-// handleCmd will extract %GIT_REPO% from cmd and replace it with the proper repository URL.
-func handleCmd(analysis types.Analysis, cmd string) string {
-	cmdReplaced := strings.Replace(cmd, "%GIT_REPO%", analysis.URL, -1)
-	return cmdReplaced
+// clientAPI is the HTTP client being used to query Docker API.
+var clientAPI = &http.Client{
+	Transport: &http.Transport{
+		TLSClientConfig: &tls.Config{
+			MinVersion:               tls.VersionTLS11,
+			MaxVersion:               tls.VersionTLS11,
+			PreferServerCipherSuites: true,
+			InsecureSkipVerify:       false,
+		},
+	},
 }
 
 // CreateContainer creates a container and returns its ID.
 func (d Docker) CreateContainer(analysis types.Analysis, image string, cmd string) (string, error) {
 
 	configAPI := context.GetAPIConfig()
-	dockerHost := fmt.Sprintf("%s:%d", configAPI.DockerHostsConfig.Addresses[0], configAPI.DockerHostsConfig.DockerAPIPort)
+	URL := fmt.Sprintf("http://%s:%d/v1.24/containers/create", configAPI.DockerHostsConfig.Addresses[0], configAPI.DockerHostsConfig.DockerAPIPort)
 	cmd = handleCmd(analysis, cmd)
 
 	createContainerPayload := CreateContainerPayload{
@@ -43,12 +51,13 @@ func (d Docker) CreateContainer(analysis types.Analysis, image string, cmd strin
 		Tty:   true,
 		Cmd:   []string{"/bin/sh", "-c", cmd},
 	}
+
 	jsonPayload, err := json.Marshal(createContainerPayload)
 	if err != nil {
 		fmt.Println("Error in JSON Marshal.")
 		return "", err
 	}
-	URL := fmt.Sprintf("http://%s/v1.24/containers/create", dockerHost)
+
 	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(jsonPayload))
 	req.Header.Set("Content-Type", "application/json")
 	client := &http.Client{}
@@ -86,16 +95,25 @@ func (d Docker) StartContainer() error {
 }
 
 // WaitContainer returns when container finishes executing cmd.
-func (d Docker) WaitContainer() error {
+func (d Docker) WaitContainer(securityTest types.SecurityTest) error {
+
 	configAPI := context.GetAPIConfig()
-	dockerHost := fmt.Sprintf("%s:%d", configAPI.DockerHostsConfig.Addresses[0], configAPI.DockerHostsConfig.DockerAPIPort)
-	URL := fmt.Sprintf("http://%s/v1.24/containers/%s/wait", dockerHost, d.CID)
-	resp, err := http.Post(URL, "", nil)
+	URL := fmt.Sprintf("http://%s:%d/v1.24/containers/%s/wait", configAPI.DockerHostsConfig.Addresses[0], configAPI.DockerHostsConfig.DockerAPIPort, d.CID)
+	jsonPayload := []byte{}
+
+	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(jsonPayload))
+	req.Header.Set("Content-Type", "application/json")
+
+	reqTimeOut := time.Duration(securityTest.TimeOutInSeconds) * time.Duration(time.Second)
+	clientAPI.Timeout = reqTimeOut
+
+	resp, err := clientAPI.Do(req)
 	if err != nil {
-		fmt.Println("Error in POST /wait:", err)
+		// timeout will enter here!
+		return err
 	}
 	defer resp.Body.Close()
-	return err
+	return nil
 }
 
 // ReadOutput returns the command ouput of a given containerID.
@@ -157,4 +175,10 @@ func HealthCheckDockerAPI(dockerAddress string) error {
 		return errors.New(finalError)
 	}
 	return nil
+}
+
+// handleCmd will extract %GIT_REPO% from cmd and replace it with the proper repository URL.
+func handleCmd(analysis types.Analysis, cmd string) string {
+	cmdReplaced := strings.Replace(cmd, "%GIT_REPO%", analysis.URL, -1)
+	return cmdReplaced
 }
