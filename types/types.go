@@ -20,12 +20,13 @@ type Repository struct {
 
 // SecurityTest is the struct that stores all data from the security tests to be executed.
 type SecurityTest struct {
-	ID       bson.ObjectId `bson:"_id,omitempty"`
-	Name     string        `bson:"name" json:"name"`
-	Image    string        `bson:"image" json:"image"`
-	Cmd      string        `bson:"cmd" json:"cmd"`
-	Language string        `bson:"language" json:"language"`
-	Default  bool          `bson:"default" json:"default"`
+	ID               bson.ObjectId `bson:"_id,omitempty"`
+	Name             string        `bson:"name" json:"name"`
+	Image            string        `bson:"image" json:"image"`
+	Cmd              string        `bson:"cmd" json:"cmd"`
+	Language         string        `bson:"language" json:"language"`
+	Default          bool          `bson:"default" json:"default"`
+	TimeOutInSeconds int           `bson:"timeOutSeconds" json:"timeOutSeconds"`
 }
 
 // Analysis is the struct that stores all data from analysis performed.
