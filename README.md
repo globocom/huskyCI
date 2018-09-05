@@ -61,23 +61,22 @@ For more Docker API examples, refer to: https://docs.docker.com/develop/sdk/exam
 
 #### Setting up environment variables (use your own configuration):
 
-Don't forget to change this password!
-
-```
+```sh
 echo 'export DOCKER_HOSTS_LIST="192.168.50.6"' > .env
 echo 'export MONGO_HOST="192.168.50.5"' >> .env
-echo 'export MONGO_DATABASE_NAME="huskyDB"' >> .env
-echo 'export MONGO_DATABASE_USERNAME="husky"' >> .env
-echo 'export MONGO_DATABASE_PASSWORD="superENVPassword"' >> .env
+echo 'export MONGO_DATABASE_NAME="huskyDB$RANDOM"' >> .env
+echo 'export MONGO_DATABASE_USERNAME="husky$RANDOM"' >> .env
+echo 'export MONGO_DATABASE_PASSWORD="$RANDOM$RANDOM$RANDOM"' >> .env
 ```
 
 Optional environment variables:
 
-```
-"DOCKER_API_PORT" -> Husky default value (2376)
-"MONGO_PORT" -> Husky default value (27017)
-"HUSKY_API_PORT" -> Husky default value (9999)
-"MONGO_TIMEOUT" -> Husky default value (60s)
+```sh 
+echo 'export GIT_PRIVATE_SSH_KEY="$(cat your_private_git_ssh_key)"' >> .env
+echo 'export DOCKER_API_PORT="$RANDOM"' >> .env # -> Husky default value = 2376
+echo 'export MONGO_PORT="$RANDOM"' >> .env # -> Husky default value = 27017
+echo 'export HUSKY_API_PORT="$RANDOM"' >> .env # -> Husky default value = 8888
+echo 'export MONGO_TIMEOUT="$RANDOM"' >> .env # -> Husky default value = 60 (seconds)
 ```
 
 ```
