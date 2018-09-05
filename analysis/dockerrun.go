@@ -2,6 +2,8 @@ package analysis
 
 import (
 	"fmt"
+	"os"
+	"strings"
 	"time"
 
 	docker "github.com/globocom/husky/dockers"
@@ -14,6 +16,8 @@ func DockerRun(RID string, analysis *types.Analysis, securityTest types.Security
 
 	newContainer := types.Container{SecurityTest: securityTest}
 	d := docker.Docker{}
+
+	securityTest.Cmd = handlePrivateSSHKey(securityTest.Cmd)
 
 	// step 1: create a new container.
 	err := dockerRunCreateContainer(&d, analysis, securityTest, newContainer)
@@ -145,4 +149,9 @@ func dockerRunReadOutput(d *docker.Docker, analysis *types.Analysis) (string, er
 		return "", err
 	}
 	return cOutput, err
+}
+
+func handlePrivateSSHKey(rawString string) string {
+	cmdReplaced := strings.Replace(rawString, "GIT_PRIVATE_SSH_KEY", os.Getenv("GIT_PRIVATE_SSH_KEY"), -1)
+	return cmdReplaced
 }
