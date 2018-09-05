@@ -84,6 +84,7 @@ func checkEnvVars() error {
 		"MONGO_DATABASE_NAME",
 		"MONGO_DATABASE_USERNAME",
 		"MONGO_DATABASE_PASSWORD",
+		// "GIT_PRIVATE_SSH_KEY", optional
 		// "DOCKER_API_PORT", optional -> default value (2376)
 		// "MONGO_PORT", optional -> default value (27017)
 		// "HUSKY_API_PORT", optional -> default value (9999)

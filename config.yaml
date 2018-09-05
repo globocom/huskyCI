@@ -1,14 +1,32 @@
 enry:
   name: enry
   image: huskyci/enry
-  cmd: git clone %GIT_REPO% code --quiet && cd code && enry --json | tr -d '\r\n'
+  cmd: |+ 
+    mkdir -p ~/.ssh &&
+    echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa && 
+    chmod 600 ~/.ssh/huskyci_id_rsa && 
+    echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config && 
+    echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config && 
+    git clone %GIT_REPO% code --quiet 2> /dev/null && 
+    cd code && 
+    enry --json | tr -d '\r\n'
   language: Generic
   default: true
 
 gas:
   name: gas
   image: huskyci/gas
-  cmd: cd src; git clone %GIT_REPO% code --quiet && cd code && /go/bin/gas -quiet -fmt=json -log=log.txt -out=results.json ./... 2> /dev/null ; jq -j -M -c . results.json
+  cmd: |+ 
+    mkdir -p ~/.ssh &&
+    echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa && 
+    chmod 600 ~/.ssh/huskyci_id_rsa && 
+    echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config && 
+    echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config && 
+    cd src ; 
+    git clone %GIT_REPO% code --quiet 2> /dev/null && 
+    cd code && 
+    touch results.json &&
+    /go/bin/gas -quiet -fmt=json -log=log.txt -out=results.json ./... 2> /dev/null ; 
+    jq -j -M -c . results.json
   language: Go
   default: true
-
