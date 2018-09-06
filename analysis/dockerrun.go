@@ -34,7 +34,7 @@ func DockerRun(RID string, analysis *types.Analysis, securityTest types.Security
 	}
 
 	// step 3: wait container finish running.
-	err = dockerRunWaitContainer(&d, securityTest)
+	err = dockerRunWaitContainer(&d, securityTest.TimeOutInSeconds)
 	if err != nil {
 		// error timeout will enter here!
 		if err := dockerRunRegisterError(&d, analysis); err != nil {
