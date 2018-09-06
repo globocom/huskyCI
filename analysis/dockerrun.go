@@ -170,7 +170,6 @@ func dockerRunRegisterError(d *docker.Docker, analysis *types.Analysis) error {
 	}
 	err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 	if err != nil {
-		fmt.Println("Error updating Analysis (dockerRunRegisterError): ", err)
 		return err
 	}
 	return nil
