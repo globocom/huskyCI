@@ -95,7 +95,7 @@ func (d Docker) StartContainer() error {
 }
 
 // WaitContainer returns when container finishes executing cmd.
-func (d Docker) WaitContainer(securityTest types.SecurityTest) error {
+func (d Docker) WaitContainer(timeOutInSeconds int) error {
 
 	configAPI := context.GetAPIConfig()
 	URL := fmt.Sprintf("http://%s:%d/v1.24/containers/%s/wait", configAPI.DockerHostsConfig.Addresses[0], configAPI.DockerHostsConfig.DockerAPIPort, d.CID)
@@ -104,7 +104,7 @@ func (d Docker) WaitContainer(securityTest types.SecurityTest) error {
 	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(jsonPayload))
 	req.Header.Set("Content-Type", "application/json")
 
-	reqTimeOut := time.Duration(securityTest.TimeOutInSeconds) * time.Duration(time.Second)
+	reqTimeOut := time.Duration(timeOutInSeconds) * time.Duration(time.Second)
 	clientAPI.Timeout = reqTimeOut
 
 	resp, err := clientAPI.Do(req)
