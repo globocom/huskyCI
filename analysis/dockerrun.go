@@ -126,8 +126,8 @@ func dockerRunStartContainer(d *docker.Docker, analysis *types.Analysis) error {
 }
 
 // dockerRunWaitContainer waits a container run its commands.
-func dockerRunWaitContainer(d *docker.Docker, securityTest types.SecurityTest) error {
-	err := d.WaitContainer(securityTest)
+func dockerRunWaitContainer(d *docker.Docker, timeout int) error {
+	err := d.WaitContainer(timeout)
 	return err
 }
 
