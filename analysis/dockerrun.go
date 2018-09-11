@@ -34,9 +34,13 @@ func DockerRun(RID string, analysis *types.Analysis, securityTest types.Security
 	}
 
 	// step 3: wait container finish running.
-	err = dockerRunWaitContainer(&d)
+	err = dockerRunWaitContainer(&d, securityTest.TimeOutInSeconds)
 	if err != nil {
-		fmt.Println("Error dockerRunWaitContainer():", err)
+		// error timeout will enter here!
+		if err := dockerRunRegisterError(&d, analysis); err != nil {
+			fmt.Println("Error dockerRunRegisterError():", err)
+			return
+		}
 		return
 	}
 
@@ -122,8 +126,8 @@ func dockerRunStartContainer(d *docker.Docker, analysis *types.Analysis) error {
 }
 
 // dockerRunWaitContainer waits a container run its commands.
-func dockerRunWaitContainer(d *docker.Docker) error {
-	err := d.WaitContainer()
+func dockerRunWaitContainer(d *docker.Docker, timeout int) error {
+	err := d.WaitContainer(timeout)
 	return err
 }
 
@@ -149,6 +153,26 @@ func dockerRunReadOutput(d *docker.Docker, analysis *types.Analysis) (string, er
 		return "", err
 	}
 	return cOutput, err
+}
+
+// dockerRunRegisterError updates the corresponding analysis into MongoDB with an error status.
+func dockerRunRegisterError(d *docker.Docker, analysis *types.Analysis) error {
+
+	analysisQuery := map[string]interface{}{"containers.CID": d.CID}
+	finishedAt := time.Now()
+	updateContainerAnalysisQuery := bson.M{
+		"$set": bson.M{
+			"containers.$.cStatus":    "finished",
+			"containers.$.finishedAt": finishedAt,
+			"containers.$.cResult":    "failed",
+			"containers.$.cOutput":    "Error waiting the container to finish.",
+		},
+	}
+	err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func handlePrivateSSHKey(rawString string) string {

@@ -3,6 +3,7 @@ package analysis
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"gopkg.in/mgo.v2/bson"
 )
@@ -37,15 +38,34 @@ func GasStartAnalysis(CID string, cOutput string) {
 
 	var cResult string
 	analysisQuery := map[string]interface{}{"containers.CID": CID}
+	analysis, err := FindOneDBAnalysis(analysisQuery)
+	if err != nil {
+		fmt.Println("Could not find analysis by this CID:", err)
+		return
+	}
 
-	// step 0: nil cOutput states that no Issues were found.
+	// step 0.1: nil cOutput states that no Issues were found.
 	if cOutput == "" {
-		// what if some error occurred inside container? use $? to check this?
-		cResult = "passed"
 		updateContainerAnalysisQuery := bson.M{
 			"$set": bson.M{
-				"containers.$.cOutput": "No issues found (cOutput empty).",
-				"containers.$.cResult": cResult,
+				"containers.$.cOutput": "No issues found.",
+				"containers.$.cResult": "passed",
+			},
+		}
+		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+		if err != nil {
+			fmt.Println("Error updating AnalysisCollection (inside gas.go):", err)
+		}
+		return
+	}
+
+	// step 0.2: error cloning repository!
+	if strings.Contains(cOutput, "ERROR_CLONING") {
+		errorOutput := fmt.Sprintf("Error cloning repository: %s", analysis.URL)
+		updateContainerAnalysisQuery := bson.M{
+			"$set": bson.M{
+				"containers.$.cOutput": errorOutput,
+				"containers.$.cResult": "failed",
 			},
 		}
 		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
@@ -57,7 +77,7 @@ func GasStartAnalysis(CID string, cOutput string) {
 
 	// step 1: Unmarshall cOutput into GasOutput struct.
 	gasOutput := GasOutput{}
-	err := json.Unmarshal([]byte(cOutput), &gasOutput)
+	err = json.Unmarshal([]byte(cOutput), &gasOutput)
 	if err != nil {
 		fmt.Println("Unmarshall error (gas.go):", err)
 		fmt.Println(cOutput)

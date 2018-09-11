@@ -7,11 +7,16 @@ enry:
     chmod 600 ~/.ssh/huskyci_id_rsa && 
     echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config && 
     echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config && 
-    git clone %GIT_REPO% code --quiet 2> /dev/null && 
-    cd code && 
-    enry --json | tr -d '\r\n'
+    git clone %GIT_REPO% code --quiet 2> /dev/null 
+    if [ $? -eq 0 ]; then
+      cd code && 
+      enry --json | tr -d '\r\n'
+    else
+      echo "ERROR_CLONING"
+    fi
   language: Generic
   default: true
+  timeOutInSeconds: 60
 
 gas:
   name: gas
@@ -24,9 +29,15 @@ gas:
     echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config && 
     cd src ; 
     git clone %GIT_REPO% code --quiet 2> /dev/null && 
-    cd code && 
-    touch results.json &&
-    /go/bin/gas -quiet -fmt=json -log=log.txt -out=results.json ./... 2> /dev/null ; 
-    jq -j -M -c . results.json
+    if [ $? -eq 0 ]; then
+      cd code && 
+      touch results.json &&
+      /go/bin/gas -quiet -fmt=json -log=log.txt -out=results.json ./... 2> /dev/null ; 
+      jq -j -M -c . results.json
+    else
+      echo "ERROR_CLONING"
+    fi
+    
   language: Go
   default: true
+  timeOutInSeconds: 360

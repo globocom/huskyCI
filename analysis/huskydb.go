@@ -171,11 +171,12 @@ func InsertDBSecurityTest(securityTest types.SecurityTest) error {
 		return err
 	}
 	newSecurityTest := bson.M{
-		"name":     securityTest.Name,
-		"image":    securityTest.Image,
-		"cmd":      securityTest.Cmd,
-		"language": securityTest.Language,
-		"default":  securityTest.Default,
+		"name":           securityTest.Name,
+		"image":          securityTest.Image,
+		"cmd":            securityTest.Cmd,
+		"language":       securityTest.Language,
+		"default":        securityTest.Default,
+		"timeOutSeconds": securityTest.TimeOutInSeconds,
 	}
 	err = session.Insert(newSecurityTest, db.SecurityTestCollection)
 	return err
