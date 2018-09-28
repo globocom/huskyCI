@@ -74,11 +74,11 @@ func getDockerHostsConfig() *DockerHostsConfig {
 
 // getDockerAPIPort returns the port used by Docker API retrieved from an environment variable.
 func getDockerAPIPort() int {
-	mongoPort, err := strconv.Atoi(os.Getenv("DOCKER_API_PORT"))
+	dockerAPIport, err := strconv.Atoi(os.Getenv("DOCKER_API_PORT"))
 	if err != nil {
 		return 2376
 	}
-	return mongoPort
+	return dockerAPIport
 }
 
 // getMongoConfig returns all MongoConfig retrieved from environment variables.
@@ -129,21 +129,23 @@ func getMongoTimeout() time.Duration {
 
 func getEnryConfig() *types.SecurityTest {
 	return &types.SecurityTest{
-		Name:     viper.GetString("enry.name"),
-		Image:    viper.GetString("enry.image"),
-		Cmd:      viper.GetString("enry.cmd"),
-		Language: viper.GetString("enry.language"),
-		Default:  viper.GetBool("enry.default"),
+		Name:             viper.GetString("enry.name"),
+		Image:            viper.GetString("enry.image"),
+		Cmd:              viper.GetString("enry.cmd"),
+		Language:         viper.GetString("enry.language"),
+		Default:          viper.GetBool("enry.default"),
+		TimeOutInSeconds: viper.GetInt("enry.timeOutInSeconds"),
 	}
 }
 
 func getGasConfig() *types.SecurityTest {
 	return &types.SecurityTest{
-		Name:     viper.GetString("gas.name"),
-		Image:    viper.GetString("gas.image"),
-		Cmd:      viper.GetString("gas.cmd"),
-		Language: viper.GetString("gas.language"),
-		Default:  viper.GetBool("gas.default"),
+		Name:             viper.GetString("gas.name"),
+		Image:            viper.GetString("gas.image"),
+		Cmd:              viper.GetString("gas.cmd"),
+		Language:         viper.GetString("gas.language"),
+		Default:          viper.GetBool("gas.default"),
+		TimeOutInSeconds: viper.GetInt("gas.timeOutInSeconds"),
 	}
 }
 
