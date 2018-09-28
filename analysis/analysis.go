@@ -29,8 +29,9 @@ func ReceiveRequest(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Error binding repository."})
 	}
 
-	// check-01: is this a git repository URL?
-	regexpGit := `^(?:git|https?|ssh|git@[-\w.]+):(//)?(.*?)(\.git)(/?|#[-\d\w._]+?)$`
+	// check-01: is this a git repository URL? default format = gitlab@gitlab.example.com:folder/project.git
+	// regexpGit := `^(?:git|https?|ssh|git@[-\w.]+):(//)?(.*?)(\.git)(/?|#[-\d\w._]+?)$`
+	regexpGit := `((git|gitlab@[\w\.]+))(:(//)?)([\w\.@\:/\-~]+)(\.git)(/)?`
 	valid, err := regexp.MatchString(regexpGit, repository.URL)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Internal error."})
