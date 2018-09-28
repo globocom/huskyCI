@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/globocom/husky/types"
 	"gopkg.in/mgo.v2/bson"
@@ -12,11 +13,27 @@ import (
 // EnryStartAnalysis checks the languages of a repository, update them into mongoDB, and starts corresponding new securityTests.
 func EnryStartAnalysis(CID string, cOutput string, RID string) {
 
-	// step 0: get analysis based on CID.
+	// step 0.1: get analysis based on CID.
 	analysisQuery := map[string]interface{}{"containers.CID": CID}
 	analysis, err := FindOneDBAnalysis(analysisQuery)
 	if err != nil {
 		fmt.Println("Could not find analysis by this CID:", err)
+		return
+	}
+
+	// step 0.2: ERROR_CLONING or nil cOutput states that there were errors cloning a repository.
+	if strings.Contains(cOutput, "ERROR_CLONING") || cOutput == "" {
+		errorOutput := fmt.Sprintf("Error cloning repository: %s", analysis.URL)
+		updateContainerAnalysisQuery := bson.M{
+			"$set": bson.M{
+				"containers.$.cOutput": errorOutput,
+				"containers.$.cResult": "failed",
+			},
+		}
+		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+		if err != nil {
+			fmt.Println("Error updating AnalysisCollection (inside gas.go):", err)
+		}
 		return
 	}
 
