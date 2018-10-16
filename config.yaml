@@ -39,7 +39,6 @@ gas:
       echo "ERROR_CLONING"
       cat /tmp/errorGitCloneGas
     fi
-    
   language: Go
   default: true
   timeOutInSeconds: 360
