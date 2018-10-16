@@ -38,11 +38,6 @@ func GasStartAnalysis(CID string, cOutput string) {
 
 	var cResult string
 	analysisQuery := map[string]interface{}{"containers.CID": CID}
-	analysis, err := FindOneDBAnalysis(analysisQuery)
-	if err != nil {
-		fmt.Println("Could not find analysis by this CID:", err)
-		return
-	}
 
 	// step 0.1: nil cOutput states that no Issues were found.
 	if cOutput == "" {
@@ -61,7 +56,7 @@ func GasStartAnalysis(CID string, cOutput string) {
 
 	// step 0.2: error cloning repository!
 	if strings.Contains(cOutput, "ERROR_CLONING") {
-		errorOutput := fmt.Sprintf("Error cloning repository: %s", analysis.URL)
+		errorOutput := fmt.Sprintf("Container error: %s", cOutput)
 		updateContainerAnalysisQuery := bson.M{
 			"$set": bson.M{
 				"containers.$.cOutput": errorOutput,
@@ -77,7 +72,7 @@ func GasStartAnalysis(CID string, cOutput string) {
 
 	// step 1: Unmarshall cOutput into GasOutput struct.
 	gasOutput := GasOutput{}
-	err = json.Unmarshal([]byte(cOutput), &gasOutput)
+	err := json.Unmarshal([]byte(cOutput), &gasOutput)
 	if err != nil {
 		fmt.Println("Unmarshall error (gas.go):", err)
 		fmt.Println(cOutput)
