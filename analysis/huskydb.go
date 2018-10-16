@@ -153,6 +153,7 @@ func InsertDBRepository(repository types.Repository) error {
 
 	newRepository := types.Repository{
 		URL:           repository.URL,
+		Branch:        repository.Branch,
 		SecurityTests: securityTestList,
 		VM:            repository.VM,
 		CreatedAt:     repository.CreatedAt,
@@ -191,6 +192,7 @@ func InsertDBAnalysis(analysis types.Analysis) error {
 	newAnalysis := bson.M{
 		"RID":          analysis.RID,
 		"URL":          analysis.URL,
+		"Branch":       analysis.Branch,
 		"securityTest": analysis.SecurityTests,
 		"status":       analysis.Status,
 		"result":       analysis.Result,
