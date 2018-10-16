@@ -9,7 +9,8 @@ import (
 // Repository is the struct that stores all data from repository to be analyzed.
 type Repository struct {
 	ID               bson.ObjectId  `bson:"_id,omitempty"`
-	URL              string         `bson:"URL" json:"repositoryURL"`
+	URL              string         `bson:"repositoryURL" json:"repositoryURL"`
+	Branch           string         `bson:"repositoryBranch" json:"repositoryBranch"`
 	SecurityTests    []SecurityTest `bson:"securityTests" json:"securityTests"`
 	SecurityTestName []string       `bson:"securityTestName,omitempty" json:"securityTestName"`
 	VM               string         `bson:"VM" json:"vm"`
@@ -33,7 +34,8 @@ type SecurityTest struct {
 type Analysis struct {
 	ID            bson.ObjectId  `bson:"_id,omitempty"`
 	RID           string         `bson:"RID" json:"RID"`
-	URL           string         `bson:"URL" json:"URL"`
+	URL           string         `bson:"repositoryURL" json:"repositoryURL"`
+	Branch        string         `bson:"repositoryBranch" json:"repositoryBranch"`
 	SecurityTests []SecurityTest `bson:"securityTests" json:"securityTests"`
 	Status        string         `bson:"status" json:"status"`
 	Result        string         `bson:"result" json:"result"`

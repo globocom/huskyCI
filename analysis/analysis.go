@@ -29,23 +29,31 @@ func ReceiveRequest(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Error binding repository."})
 	}
 
-	// check-01: is this a git repository URL? default format = gitlab@gitlab.example.com:folder/project.git
-	// regexpGit := `^(?:git|https?|ssh|git@[-\w.]+):(//)?(.*?)(\.git)(/?|#[-\d\w._]+?)$`
-	regexpGit := `((git|gitlab@[\w\.]+))(:(//)?)([\w\.@\:/\-~]+)(\.git)(/)?`
+	// check-01: is this a git repository URL and a branch?
+	regexpGit := `^(((git|gitlab)@[\w\.]+))(:(//)?)([\w\.@\:/\-~]+)(\.git)(/)?$`
 	valid, err := regexp.MatchString(regexpGit, repository.URL)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Internal error."})
 	}
 	if !valid {
-		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "URL received is not a git repository."})
+		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "This is not a valid repository URL..."})
+	}
+
+	regexpBranch := `^[a-zA-Z0-9_\.-/]*$`
+	valid, err = regexp.MatchString(regexpBranch, repository.Branch)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Internal error."})
+	}
+	if !valid {
+		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "This is not a valid branch..."})
 	}
 
 	// check-02: is this repository in MongoDB?
-	repositoryQuery := map[string]interface{}{"URL": repository.URL}
+	repositoryQuery := map[string]interface{}{"repositoryURL": repository.URL, "repositoryBranch": repository.Branch}
 	repositoryResult, err := FindOneDBRepository(repositoryQuery)
 	if err == nil {
 		// check-03: repository found! does it have a running status analysis? (for the future: check commits and not URLs?)
-		analysisQuery := map[string]interface{}{"URL": repository.URL}
+		analysisQuery := map[string]interface{}{"repositoryURL": repository.URL, "repositoryBranch": repository.Branch}
 		analysisResult, err := FindOneDBAnalysis(analysisQuery)
 		if err != mgo.ErrNotFound {
 			if analysisResult.Status == "running" {
@@ -58,7 +66,7 @@ func ReceiveRequest(c echo.Context) error {
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"result": "error", "details": "Internal error inserting repository."})
 		}
-		repositoryQuery := map[string]interface{}{"URL": repository.URL}
+		repositoryQuery := map[string]interface{}{"repositoryURL": repository.URL, "repositoryBranch": repository.Branch}
 		repositoryResult, err = FindOneDBRepository(repositoryQuery)
 		if err != nil {
 			// well it was supposed to be there, after all, we just inserted it.
@@ -78,7 +86,8 @@ func StartAnalysis(RID string, repository types.Repository) {
 	newAnalysis := types.Analysis{
 		RID:        RID,
 		URL:        repository.URL,
-		Status:     "started",
+		Branch:     repository.Branch,
+		Status:     "running",
 		Containers: make([]types.Container, 0),
 	}
 
@@ -90,7 +99,6 @@ func StartAnalysis(RID string, repository types.Repository) {
 	}
 
 	// step 2: start enry and EnryStartAnalysis will start all others securityTests
-	// for the future: Yaml config file to have an enry security preset.
 	enryQuery := map[string]interface{}{"name": "enry"}
 	enrySecurityTest, err := FindOneDBSecurityTest(enryQuery)
 	if err != nil {

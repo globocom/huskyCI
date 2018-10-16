@@ -23,7 +23,7 @@ func EnryStartAnalysis(CID string, cOutput string, RID string) {
 
 	// step 0.2: ERROR_CLONING or nil cOutput states that there were errors cloning a repository.
 	if strings.Contains(cOutput, "ERROR_CLONING") || cOutput == "" {
-		errorOutput := fmt.Sprintf("Error cloning repository: %s", analysis.URL)
+		errorOutput := fmt.Sprintf("Container error: %s", cOutput)
 		updateContainerAnalysisQuery := bson.M{
 			"$set": bson.M{
 				"containers.$.cOutput": errorOutput,
@@ -86,7 +86,7 @@ func EnryStartAnalysis(CID string, cOutput string, RID string) {
 	allSecurityTests := append(genericSecurityTests, newLanguageSecurityTests...)
 
 	// step 3: updating repository with all securityTests found.
-	repositoryQuery := map[string]interface{}{"URL": analysis.URL}
+	repositoryQuery := map[string]interface{}{"repositoryURL": analysis.URL, "repositoryBranch": analysis.Branch}
 	updateRepositoryQuery := bson.M{
 		"$set": bson.M{
 			"securityTests": allSecurityTests,
