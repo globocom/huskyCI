@@ -8,7 +8,8 @@ import (
 
 // JSONPayload is a struct that represents the JSON payload needed to make a Husky API request.
 type JSONPayload struct {
-	RepositoryURL string `json:"repositoryURL"`
+	RepositoryURL    string `json:"repositoryURL"`
+	RepositoryBranch string `json:"repositoryBranch"`
 }
 
 // JSONResponse is a struct that represents the JSON reponse of a Husky API request.
