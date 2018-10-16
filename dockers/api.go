@@ -44,7 +44,7 @@ func (d Docker) CreateContainer(analysis types.Analysis, image string, cmd strin
 
 	configAPI := context.GetAPIConfig()
 	URL := fmt.Sprintf("http://%s:%d/v1.24/containers/create", configAPI.DockerHostsConfig.Addresses[0], configAPI.DockerHostsConfig.DockerAPIPort)
-	cmd = handleCmd(analysis, cmd)
+	cmd = handleCmd(analysis.URL, analysis.Branch, cmd)
 
 	createContainerPayload := CreateContainerPayload{
 		Image: image,
@@ -177,8 +177,9 @@ func HealthCheckDockerAPI(dockerAddress string) error {
 	return nil
 }
 
-// handleCmd will extract %GIT_REPO% from cmd and replace it with the proper repository URL.
-func handleCmd(analysis types.Analysis, cmd string) string {
-	cmdReplaced := strings.Replace(cmd, "%GIT_REPO%", analysis.URL, -1)
-	return cmdReplaced
+// handleCmd will extract %GIT_REPO% and %GIT_BRANCH%  from cmd and replace it with the proper repository URL.
+func handleCmd(repositoryURL, repositoryBranch, cmd string) string {
+	replace1 := strings.Replace(cmd, "%GIT_REPO%", repositoryURL, -1)
+	replace2 := strings.Replace(replace1, "%GIT_BRANCH%", repositoryBranch, -1)
+	return replace2
 }
