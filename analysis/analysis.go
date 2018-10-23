@@ -39,7 +39,7 @@ func ReceiveRequest(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "This is not a valid repository URL..."})
 	}
 
-	regexpBranch := `^[a-zA-Z0-9_\.-/]*$`
+	regexpBranch := `^[a-zA-Z0-9_\.-]*$`
 	valid, err = regexp.MatchString(regexpBranch, repository.Branch)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Internal error."})
