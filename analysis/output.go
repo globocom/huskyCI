@@ -16,7 +16,7 @@ func CheckContainerOutput(container types.Container) {
 	case "enry":
 
 	case "gas":
-		PrintGasOutput(container.COuput)
+		PrintGasOutput(container.COutput)
 	default:
 		fmt.Println("[HUSKYCI][ERROR] securityTest name not recognized:", container.SecurityTest.Name)
 		os.Exit(1)
