@@ -7,14 +7,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/globocom/husky-client/config"
 	"github.com/globocom/husky-client/types"
 )
 
-// StartAnalysis starts a container and returns its error
+// StartAnalysis starts a container and returns its RID and error.
 func StartAnalysis() (string, error) {
 
 	// preparing POST to HuskyCI
@@ -83,8 +82,8 @@ func GetAnalysis(RID string) (types.Analysis, error) {
 func MonitorAnalysis(RID string) (types.Analysis, error) {
 
 	analysis := types.Analysis{}
-	timeout := time.After(10 * time.Minute)
-	retryTick := time.Tick(10 * time.Second)
+	timeout := time.After(15 * time.Minute)
+	retryTick := time.Tick(15 * time.Second)
 
 	for {
 		select {
@@ -98,25 +97,14 @@ func MonitorAnalysis(RID string) (types.Analysis, error) {
 			if analysis.Status == "finished" {
 				return analysis, nil
 			}
-			fmt.Println("[HUSKYCI][!] Waiting HuskyCI finish its securityTests...")
+			fmt.Println("[HUSKYCI][!] Hold on! HuskyCI is still running...")
 		}
 	}
 }
 
 // AnalyzeResult analyzes the result received from HuskyCI API.
 func AnalyzeResult(analysisResult types.Analysis) {
-	// result = passed? sucess! Close client. result = failed? Throw error. Output cOutput where cResult = failed.
-	if analysisResult.Result != "passed" {
-		// print cOutput of each container that has cResult == failed and throw an error
-		for _, container := range analysisResult.Containers {
-			if container.CResult == "failed" {
-				// cOutput is a string that needs to become a JSON
-				fmt.Println(container.COutput)
-			}
-		}
-		// throw a exit code = 1 (Catchall for general errors)
-		os.Exit(1)
-	} else {
-		fmt.Println("[HUSKYCI][*] Nice! No security issues found.")
+	for _, container := range analysisResult.Containers {
+		CheckContainerOutput(container)
 	}
 }
