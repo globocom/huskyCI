@@ -104,6 +104,7 @@ func MonitorAnalysis(RID string) (types.Analysis, error) {
 
 // AnalyzeResult analyzes the result received from HuskyCI API.
 func AnalyzeResult(analysisResult types.Analysis) {
+	fmt.Println()
 	for _, container := range analysisResult.Containers {
 		CheckContainerOutput(container)
 	}
