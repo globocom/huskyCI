@@ -11,13 +11,12 @@ import (
 func main() {
 
 	// step 0: check and set huskyci-client configuration
-
 	if err := config.CheckEnvVars(); err != nil {
 		fmt.Println("[HUSKYCI][ERROR] Check environment variables:", err)
 		os.Exit(1)
 	}
 	config.SetConfigs()
-	fmt.Println(fmt.Sprintf("[HUSKYCI][*] %s of %s", config.RepositoryBranch, config.RepositoryURL))
+	fmt.Println(fmt.Sprintf("[HUSKYCI][*] %s -> %s", config.RepositoryBranch, config.RepositoryURL))
 
 	// step 1: start analysis and get a RID.
 	RID, err := analysis.StartAnalysis()
@@ -25,6 +24,7 @@ func main() {
 		fmt.Println("[HUSKYCI][ERROR] Sending request to HuskyCI:", err)
 		os.Exit(1)
 	}
+
 	fmt.Println("[HUSKYCI][*] HuskyCI analysis started!", RID)
 
 	// step 2: keep querying husky API to check if a given analysis has already finished.
