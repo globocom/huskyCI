@@ -12,6 +12,7 @@ import (
 // CheckContainerOutput will validate the output of a given container.
 func CheckContainerOutput(container types.Container) {
 
+	fmt.Println()
 	switch container.SecurityTest.Name {
 	case "enry":
 
