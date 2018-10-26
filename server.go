@@ -40,7 +40,7 @@ func main() {
 	echoInstance.POST("/repository", analysis.CreateNewRepository)
 
 	huskyAPIport := fmt.Sprintf(":%d", configAPI.HuskyAPIPort)
-	echoInstance.Logger.Fatal(echoInstance.Start(huskyAPIport))
+	echoInstance.Logger.Fatal(echoInstance.StartTLS(huskyAPIport, configAPI.DockerHostsConfig.Certificate, configAPI.DockerHostsConfig.Key))
 }
 
 func checkHuskyRequirements(configAPI *apiContext.APIConfig) error {
@@ -84,6 +84,8 @@ func checkEnvVars() error {
 		"MONGO_DATABASE_NAME",
 		"MONGO_DATABASE_USERNAME",
 		"MONGO_DATABASE_PASSWORD",
+		"DOCKER_HOSTS_CERT",
+		"DOCKER_HOSTS_KEY",
 		// "GIT_PRIVATE_SSH_KEY", optional
 		// "DOCKER_API_PORT", optional -> default value (2376)
 		// "MONGO_PORT", optional -> default value (27017)
