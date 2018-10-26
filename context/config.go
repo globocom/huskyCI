@@ -25,6 +25,8 @@ type MongoConfig struct {
 type DockerHostsConfig struct {
 	Addresses     []string
 	DockerAPIPort int
+	Certificate   string
+	Key           string
 }
 
 // APIConfig represents API configuration.
@@ -65,10 +67,14 @@ func getDockerHostsConfig() *DockerHostsConfig {
 	dockerAPIPort := getDockerAPIPort()
 	dockerHostsAddressesEnv := os.Getenv("DOCKER_HOSTS_LIST")
 	dockerHostsAddresses := strings.Split(dockerHostsAddressesEnv, " ")
+	dockerHostsCertificate := os.Getenv("DOCKER_HOSTS_CERT")
+	dockerHostsKey := os.Getenv("DOCKER_HOSTS_KEY")
 
 	return &DockerHostsConfig{
 		Addresses:     dockerHostsAddresses,
 		DockerAPIPort: dockerAPIPort,
+		Certificate:   dockerHostsCertificate,
+		Key:           dockerHostsKey,
 	}
 }
 
