@@ -3,6 +3,7 @@ package dockers
 import (
 	"bytes"
 	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -27,16 +28,36 @@ type CreateContainerPayload struct {
 	Cmd   []string `json:"Cmd"`
 }
 
-// clientAPI is the HTTP client being used to query Docker API.
-var clientAPI = &http.Client{
-	Transport: &http.Transport{
-		TLSClientConfig: &tls.Config{
-			MinVersion:               tls.VersionTLS11,
-			MaxVersion:               tls.VersionTLS11,
-			PreferServerCipherSuites: true,
-			InsecureSkipVerify:       false,
+// NewClient creates http client with certificate authentication
+func (d Docker) NewClient() (*http.Client, error) {
+	cert, err := tls.LoadX509KeyPair("cert.pem", "key.pem")
+	if err != nil {
+		return nil, err
+	}
+	caCert, err := ioutil.ReadFile("ca.pem")
+	if err != nil {
+		return nil, err
+	}
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM(caCert)
+	tlsConfig := &tls.Config{
+		Certificates: []tls.Certificate{cert},
+		RootCAs:      caCertPool,
+	}
+	tlsConfig.BuildNameToCertificate()
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				MinVersion:               tls.VersionTLS11,
+				MaxVersion:               tls.VersionTLS12,
+				PreferServerCipherSuites: true,
+				InsecureSkipVerify:       false,
+				Certificates:             []tls.Certificate{cert},
+				RootCAs:                  caCertPool,
+			},
 		},
-	},
+	}
+	return client, nil
 }
 
 // CreateContainer creates a container and returns its ID.
@@ -59,6 +80,10 @@ func (d Docker) CreateContainer(analysis types.Analysis, image string, cmd strin
 	}
 
 	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(jsonPayload))
+	if err != nil {
+		fmt.Println("Error in POST to create a container:", err)
+		return "", err
+	}
 	req.Header.Set("Content-Type", "application/json")
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -86,7 +111,8 @@ func (d Docker) StartContainer() error {
 	configAPI := context.GetAPIConfig()
 	dockerHost := fmt.Sprintf("%s:%d", configAPI.DockerHostsConfig.Addresses[0], configAPI.DockerHostsConfig.DockerAPIPort)
 	URL := fmt.Sprintf("http://%s/v1.24/containers/%s/start", dockerHost, d.CID)
-	resp, err := http.Post(URL, "", nil)
+	client, _ := d.NewClient()
+	resp, err := client.Post(URL, "", nil)
 	if err != nil {
 		fmt.Println("Error in POST to start the container:", err)
 	}
@@ -102,9 +128,14 @@ func (d Docker) WaitContainer(timeOutInSeconds int) error {
 	jsonPayload := []byte{}
 
 	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(jsonPayload))
+	if err != nil {
+		fmt.Println("Error in POST to create a container:", err)
+		return err
+	}
 	req.Header.Set("Content-Type", "application/json")
 
 	reqTimeOut := time.Duration(timeOutInSeconds) * time.Duration(time.Second)
+	clientAPI, _ := d.NewClient()
 	clientAPI.Timeout = reqTimeOut
 
 	resp, err := clientAPI.Do(req)
@@ -121,7 +152,8 @@ func (d Docker) ReadOutput() (string, error) {
 	configAPI := context.GetAPIConfig()
 	dockerHost := fmt.Sprintf("%s:%d", configAPI.DockerHostsConfig.Addresses[0], configAPI.DockerHostsConfig.DockerAPIPort)
 	URL := fmt.Sprintf("http://%s/v1.24/containers/%s/logs?stdout=1", dockerHost, d.CID)
-	resp, err := http.Get(URL)
+	client, _ := d.NewClient()
+	resp, err := client.Get(URL)
 	if err != nil {
 		return "", err
 	}
@@ -138,7 +170,8 @@ func (d Docker) PullImage(image string) error {
 	configAPI := context.GetAPIConfig()
 	dockerHost := fmt.Sprintf("%s:%d", configAPI.DockerHostsConfig.Addresses[0], configAPI.DockerHostsConfig.DockerAPIPort)
 	URL := fmt.Sprintf("http://%s/v1.24/images/create?fromImage=%s", dockerHost, image)
-	resp, err := http.Post(URL, "", nil)
+	client, _ := d.NewClient()
+	resp, err := client.Post(URL, "", nil)
 	if err != nil {
 		fmt.Println("Error in POST to start the container:", err)
 	}
@@ -151,7 +184,8 @@ func (d Docker) ListImages() string {
 	configAPI := context.GetAPIConfig()
 	dockerHost := fmt.Sprintf("%s:%d", configAPI.DockerHostsConfig.Addresses[0], configAPI.DockerHostsConfig.DockerAPIPort)
 	URL := fmt.Sprintf("http://%s/v1.24/images/json", dockerHost)
-	resp, err := http.Get(URL)
+	client, _ := d.NewClient()
+	resp, err := client.Get(URL)
 	if err != nil {
 		fmt.Println("Error in GET to get the images list:", err)
 	}
@@ -164,9 +198,10 @@ func (d Docker) ListImages() string {
 }
 
 // HealthCheckDockerAPI returns true if a 200 status code is received from dockerAddress or false otherwise.
-func HealthCheckDockerAPI(dockerAddress string) error {
+func (d Docker) HealthCheckDockerAPI(dockerAddress string) error {
 	URL := fmt.Sprintf("http://%s/v1.24/version", dockerAddress)
-	resp, err := http.Get(URL)
+	client, _ := d.NewClient()
+	resp, err := client.Get(URL)
 	if err != nil {
 		return err
 	}
