@@ -169,5 +169,18 @@ func checkDefaultSecurityTests(configAPI *apiContext.APIConfig) error {
 		return err
 	}
 
+	banditQuery := map[string]interface{}{"name": "bandit"}
+	bandit, err := analysis.FindOneDBSecurityTest(banditQuery)
+	if err == mgo.ErrNotFound {
+		// As Bandit securityTest is not set into MongoDB, Husky will insert it.
+		fmt.Println("[!] Bandit securityTest not found!")
+		bandit = *configAPI.BanditSecurityTest
+		if err := analysis.InsertDBSecurityTest(bandit); err != nil {
+			return err
+		}
+	} else if err != nil {
+		return err
+	}
+
 	return nil
 }
