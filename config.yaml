@@ -55,8 +55,8 @@ bandit:
      git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneBandit
      if [ $? -eq 0 ]; then
        cd code
-       bandit -r . -j json 2> /dev/null > results.json
-       cat results.json | -jq '. | {results, errors}' 
+       bandit -r . -f json 2> /dev/null > results.json
+       cat results.json | -jq '. | {results, errors}'
      else
        echo "ERROR_CLONING"
        cat /tmp/errorGitCloneBandit
