@@ -117,14 +117,8 @@ func checkEnvVars() error {
 
 func checkDockerHosts(configAPI *apiContext.APIConfig) error {
 
-	dockerAPIPort := configAPI.DockerHostsConfig.DockerAPIPort
-	dockerHostsList := configAPI.DockerHostsConfig.Addresses
-
-	for _, dockerHost := range dockerHostsList {
-		dockerAddress := fmt.Sprintf("%s:%d", dockerHost, dockerAPIPort)
-		if err := docker.HealthCheckDockerAPI(dockerAddress); err != nil {
-			return err
-		}
+	if err := docker.HealthCheckDockerAPI(configAPI.DockerHostsConfig.Host); err != nil {
+		return err
 	}
 
 	return nil
