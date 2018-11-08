@@ -42,3 +42,25 @@ gas:
   language: Go
   default: true
   timeOutInSeconds: 360
+
+  brakeman:
+  name: brakeman
+  image: docker.artifactory.globoi.com/huskyci/brakeman:2.4-alpine
+  cmd: |+
+    mkdir -p ~/.ssh &&
+    echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
+    chmod 600 ~/.ssh/huskyci_id_rsa &&
+    echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
+    echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
+    mkdir app
+    git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% ./app/code --quiet 2> /tmp/errorGitCloneBandit
+    if [ $? -eq 0 ]; then
+      brakeman -q -o results.json .
+      jq -j -M -c . results.json
+    else
+      echo "ERROR_CLONING"
+      cat /tmp/errorGitCloneBandit
+    fi
+  language: Ruby
+  default: true
+  timeOutInSeconds: 360
