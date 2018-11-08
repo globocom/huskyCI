@@ -1,15 +1,15 @@
 enry:
   name: enry
   image: huskyci/enry
-  cmd: |+ 
+  cmd: |+
     mkdir -p ~/.ssh &&
-    echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa && 
-    chmod 600 ~/.ssh/huskyci_id_rsa && 
-    echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config && 
-    echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config && 
+    echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
+    chmod 600 ~/.ssh/huskyci_id_rsa &&
+    echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
+    echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
     git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneEnry
     if [ $? -eq 0 ]; then
-      cd code 
+      cd code
       enry --json | tr -d '\r\n'
     else
       echo "ERROR_CLONING"
@@ -22,24 +22,46 @@ enry:
 gas:
   name: gas
   image: huskyci/gas
-  cmd: |+ 
+  cmd: |+
     mkdir -p ~/.ssh &&
-    echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa && 
-    chmod 600 ~/.ssh/huskyci_id_rsa && 
-    echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config && 
-    echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config && 
-    cd src 
-    git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneGas 
+    echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
+    chmod 600 ~/.ssh/huskyci_id_rsa &&
+    echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
+    echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
+    cd src
+    git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneGas
     if [ $? -eq 0 ]; then
-      cd code 
+      cd code
       touch results.json
-      /go/bin/gas -quiet -fmt=json -log=log.txt -out=results.json ./... 2> /dev/null 
+      /go/bin/gas -quiet -fmt=json -log=log.txt -out=results.json ./... 2> /dev/null
       jq -j -M -c . results.json
     else
       echo "ERROR_CLONING"
       cat /tmp/errorGitCloneGas
     fi
   language: Go
+  default: true
+  timeOutInSeconds: 360
+
+bandit:
+   name: bandit
+   image: huskyci/bandit
+   cmd: |+
+     mkdir -p ~/.ssh &&
+     echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
+     chmod 600 ~/.ssh/huskyci_id_rsa &&
+     echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
+     echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
+     git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneBandit
+     if [ $? -eq 0 ]; then
+       cd code
+       bandit -r . -f json 2> /dev/null > results.json
+       cat results.json | -jq '. | {results, errors}'
+     else
+       echo "ERROR_CLONING"
+       cat /tmp/errorGitCloneBandit
+     fi
+  language: Python
   default: true
   timeOutInSeconds: 360
 

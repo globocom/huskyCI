@@ -60,7 +60,7 @@ func GasStartAnalysis(CID string, cOutput string) {
 		updateContainerAnalysisQuery := bson.M{
 			"$set": bson.M{
 				"containers.$.cOutput": errorOutput,
-				"containers.$.cResult": "failed",
+				"containers.$.cResult": "error",
 			},
 		}
 		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
