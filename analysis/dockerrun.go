@@ -59,6 +59,8 @@ func DockerRun(RID string, analysis *types.Analysis, securityTest types.Security
 		GasStartAnalysis(d.CID, cOutput)
 	case "bandit":
 		BanditStartAnalysis(d.CID, cOutput)
+	case "brakeman":
+		BrakemanStartAnalysis(d.CID, cOutput)
 	default:
 		fmt.Println("Error: Could not find securityTest.Name.")
 	}
