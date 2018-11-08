@@ -31,11 +31,12 @@ type DockerHostsConfig struct {
 
 // APIConfig represents API configuration.
 type APIConfig struct {
-	MongoDBConfig     *MongoConfig
-	DockerHostsConfig *DockerHostsConfig
-	HuskyAPIPort      int
-	EnrySecurityTest  *types.SecurityTest
-	GasSecurityTest   *types.SecurityTest
+	MongoDBConfig      *MongoConfig
+	DockerHostsConfig  *DockerHostsConfig
+	HuskyAPIPort       int
+	EnrySecurityTest   *types.SecurityTest
+	GasSecurityTest    *types.SecurityTest
+	BanditSecurityTest *types.SecurityTest
 }
 
 var apiConfig *APIConfig
