@@ -6,11 +6,10 @@ import (
 	"regexp"
 	"time"
 
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
-
 	"github.com/globocom/husky/types"
 	"github.com/labstack/echo"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // HealthCheck is the heath check function.
@@ -20,7 +19,7 @@ func HealthCheck(c echo.Context) error {
 
 // ReceiveRequest receives the request and performs several checks before starting a new analysis.
 func ReceiveRequest(c echo.Context) error {
-	RID := c.Response().Header()["X-Request-Id"][0]
+	RID := c.Response().Header().Get(echo.HeaderXRequestID)
 
 	// check-00: is this a valid JSON?
 	repository := types.Repository{}
