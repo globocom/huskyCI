@@ -64,7 +64,7 @@ func (d Docker) NewClient() (*http.Client, error) {
 func (d Docker) CreateContainer(analysis types.Analysis, image string, cmd string) (string, error) {
 
 	configAPI := context.GetAPIConfig()
-	URL := fmt.Sprintf("http://%s:%d/v1.24/containers/create", configAPI.DockerHostsConfig.Addresses[0], configAPI.DockerHostsConfig.DockerAPIPort)
+	URL := fmt.Sprintf("https://%s:%d/v1.24/containers/create", configAPI.DockerHostsConfig.Addresses[0], configAPI.DockerHostsConfig.DockerAPIPort)
 	cmd = handleCmd(analysis.URL, analysis.Branch, cmd)
 
 	createContainerPayload := CreateContainerPayload{
@@ -110,7 +110,7 @@ func (d Docker) CreateContainer(analysis types.Analysis, image string, cmd strin
 func (d Docker) StartContainer() error {
 	configAPI := context.GetAPIConfig()
 	dockerHost := fmt.Sprintf("%s:%d", configAPI.DockerHostsConfig.Addresses[0], configAPI.DockerHostsConfig.DockerAPIPort)
-	URL := fmt.Sprintf("http://%s/v1.24/containers/%s/start", dockerHost, d.CID)
+	URL := fmt.Sprintf("https://%s/v1.24/containers/%s/start", dockerHost, d.CID)
 	client, err := d.NewClient()
 	if err != nil {
 		fmt.Println("Error in POST to start the container:", err)
@@ -127,7 +127,7 @@ func (d Docker) StartContainer() error {
 func (d Docker) WaitContainer(timeOutInSeconds int) error {
 
 	configAPI := context.GetAPIConfig()
-	URL := fmt.Sprintf("http://%s:%d/v1.24/containers/%s/wait", configAPI.DockerHostsConfig.Addresses[0], configAPI.DockerHostsConfig.DockerAPIPort, d.CID)
+	URL := fmt.Sprintf("https://%s:%d/v1.24/containers/%s/wait", configAPI.DockerHostsConfig.Addresses[0], configAPI.DockerHostsConfig.DockerAPIPort, d.CID)
 	jsonPayload := []byte{}
 
 	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(jsonPayload))
@@ -157,7 +157,7 @@ func (d Docker) WaitContainer(timeOutInSeconds int) error {
 func (d Docker) ReadOutput() (string, error) {
 	configAPI := context.GetAPIConfig()
 	dockerHost := fmt.Sprintf("%s:%d", configAPI.DockerHostsConfig.Addresses[0], configAPI.DockerHostsConfig.DockerAPIPort)
-	URL := fmt.Sprintf("http://%s/v1.24/containers/%s/logs?stdout=1", dockerHost, d.CID)
+	URL := fmt.Sprintf("https://%s/v1.24/containers/%s/logs?stdout=1", dockerHost, d.CID)
 	client, err := d.NewClient()
 	if err != nil {
 		return "", err
@@ -214,7 +214,7 @@ func (d Docker) ListImages() string {
 
 // HealthCheckDockerAPI returns true if a 200 status code is received from dockerAddress or false otherwise.
 func (d Docker) HealthCheckDockerAPI(dockerAddress string) error {
-	URL := fmt.Sprintf("http://%s/v1.24/version", dockerAddress)
+	URL := fmt.Sprintf("https://%s/v1.24/version", dockerAddress)
 	client, err := d.NewClient()
 	if err != nil {
 		return err
