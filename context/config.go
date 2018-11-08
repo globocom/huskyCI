@@ -62,11 +62,12 @@ func (dc *DockerHostsConfig) GetUrlHealthCheck(dockerAddress string) string {
 
 // APIConfig represents API configuration.
 type APIConfig struct {
-	MongoDBConfig     *MongoConfig
-	DockerHostsConfig *DockerHostsConfig
-	HuskyAPIPort      int
-	EnrySecurityTest  *types.SecurityTest
-	GasSecurityTest   *types.SecurityTest
+	MongoDBConfig        *MongoConfig
+	DockerHostsConfig    *DockerHostsConfig
+	HuskyAPIPort         int
+	EnrySecurityTest     *types.SecurityTest
+	GasSecurityTest      *types.SecurityTest
+	BrakemanSecurityTest *types.SecurityTest
 }
 
 var apiConfig *APIConfig
@@ -83,11 +84,12 @@ func init() {
 func GetAPIConfig() *APIConfig {
 	onceConfig.Do(func() {
 		apiConfig = &APIConfig{
-			MongoDBConfig:     getMongoConfig(),
-			DockerHostsConfig: getDockerHostsConfig(),
-			HuskyAPIPort:      getAPIHostPort(),
-			EnrySecurityTest:  getEnryConfig(),
-			GasSecurityTest:   getGasConfig(),
+			MongoDBConfig:        getMongoConfig(),
+			DockerHostsConfig:    getDockerHostsConfig(),
+			HuskyAPIPort:         getAPIHostPort(),
+			EnrySecurityTest:     getEnryConfig(),
+			GasSecurityTest:      getGasConfig(),
+			BrakemanSecurityTest: getBrakemanConfig(),
 		}
 	})
 	return apiConfig
@@ -173,6 +175,17 @@ func getEnryConfig() *types.SecurityTest {
 		Language:         viper.GetString("enry.language"),
 		Default:          viper.GetBool("enry.default"),
 		TimeOutInSeconds: viper.GetInt("enry.timeOutInSeconds"),
+	}
+}
+
+func getBrakemanConfig() *types.SecurityTest {
+	return &types.SecurityTest{
+		Name:             viper.GetString("brakeman.name"),
+		Image:            viper.GetString("brakeman.image"),
+		Cmd:              viper.GetString("brakeman.cmd"),
+		Language:         viper.GetString("brakeman.language"),
+		Default:          viper.GetBool("brakeman.default"),
+		TimeOutInSeconds: viper.GetInt("brakeman.timeOutInSeconds"),
 	}
 }
 
