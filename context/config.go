@@ -12,6 +12,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+const DockerHostVersion = "v1.24"
+
 // MongoConfig represents MongoDB configuration.
 type MongoConfig struct {
 	Address      string
@@ -23,10 +25,39 @@ type MongoConfig struct {
 
 // DockerHostsConfig represents Docker Hosts configuration.
 type DockerHostsConfig struct {
-	Addresses     []string
+	Address       string
 	DockerAPIPort int
 	Certificate   string
 	Key           string
+	Host          string
+}
+
+func (dc *DockerHostsConfig) GetUrlCreate() string {
+	return fmt.Sprintf("http://%s/%s/containers/create", dc.Host, DockerHostVersion)
+}
+
+func (dc *DockerHostsConfig) GetUrlStart(CID string) string {
+	return fmt.Sprintf("http://%s/%s/containers/%s/start", dc.Host, DockerHostVersion, CID)
+}
+
+func (dc *DockerHostsConfig) GetUrlWait(CID string) string {
+	return fmt.Sprintf("http://%s/%s/containers/%s/wait", dc.Host, DockerHostVersion, CID)
+}
+
+func (dc *DockerHostsConfig) GetUrlOutPut(CID string) string {
+	return fmt.Sprintf("http://%s/%s/containers/%s/logs?stdout=1", dc.Host, DockerHostVersion, CID)
+}
+
+func (dc *DockerHostsConfig) GetUrlPull(image string) string {
+	return fmt.Sprintf("http://%s/%s/images/create?fromImage=%s", dc.Host, DockerHostVersion, image)
+}
+
+func (dc *DockerHostsConfig) GetUrlList() string {
+	return fmt.Sprintf("http://%s/%s/images/json", dc.Host, DockerHostVersion)
+}
+
+func (dc *DockerHostsConfig) GetUrlHealthCheck(dockerAddress string) string {
+	return fmt.Sprintf("http://%s/%s/version", dockerAddress, DockerHostVersion)
 }
 
 // APIConfig represents API configuration.
@@ -37,6 +68,7 @@ type APIConfig struct {
 	EnrySecurityTest   *types.SecurityTest
 	GasSecurityTest    *types.SecurityTest
 	BanditSecurityTest *types.SecurityTest
+	BrakemanSecurityTest *types.SecurityTest
 }
 
 var apiConfig *APIConfig
@@ -59,6 +91,7 @@ func GetAPIConfig() *APIConfig {
 			EnrySecurityTest:   getEnryConfig(),
 			GasSecurityTest:    getGasConfig(),
 			BanditSecurityTest: getBanditConfig(),
+			BrakemanSecurityTest: getBrakemanConfig(),
 		}
 	})
 	return apiConfig
@@ -73,10 +106,11 @@ func getDockerHostsConfig() *DockerHostsConfig {
 	dockerHostsKey := os.Getenv("DOCKER_HOSTS_KEY")
 
 	return &DockerHostsConfig{
-		Addresses:     dockerHostsAddresses,
+		Address:       dockerHostsAddresses[0],
 		DockerAPIPort: dockerAPIPort,
 		Certificate:   dockerHostsCertificate,
 		Key:           dockerHostsKey,
+		Host:          fmt.Sprintf("%s:%d", dockerHostsAddresses[0], dockerAPIPort),
 	}
 }
 
@@ -143,6 +177,17 @@ func getEnryConfig() *types.SecurityTest {
 		Language:         viper.GetString("enry.language"),
 		Default:          viper.GetBool("enry.default"),
 		TimeOutInSeconds: viper.GetInt("enry.timeOutInSeconds"),
+	}
+}
+
+func getBrakemanConfig() *types.SecurityTest {
+	return &types.SecurityTest{
+		Name:             viper.GetString("brakeman.name"),
+		Image:            viper.GetString("brakeman.image"),
+		Cmd:              viper.GetString("brakeman.cmd"),
+		Language:         viper.GetString("brakeman.language"),
+		Default:          viper.GetBool("brakeman.default"),
+		TimeOutInSeconds: viper.GetInt("brakeman.timeOutInSeconds"),
 	}
 }
 
