@@ -57,6 +57,8 @@ func DockerRun(RID string, analysis *types.Analysis, securityTest types.Security
 		EnryStartAnalysis(d.CID, cOutput, analysis.RID)
 	case "gas":
 		GasStartAnalysis(d.CID, cOutput)
+	case "bandit":
+		BanditStartAnalysis(d.CID, cOutput)
 	case "brakeman":
 		BrakemanStartAnalysis(d.CID, cOutput)
 	default:
