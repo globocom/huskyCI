@@ -48,6 +48,8 @@ var config = &mongoConfig{
 
 // Connect connects to mongo and returns the session.
 func Connect() (*DB, error) {
+
+	// fmt.Printf("config:%#v", config)
 	dialInfo := &mgo.DialInfo{
 		Addrs:    []string{config.Address},
 		Timeout:  time.Second * 60,
