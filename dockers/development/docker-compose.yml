@@ -1,0 +1,45 @@
+version: '3'
+services:
+
+    dockerapi:
+        privileged: true
+        image: docker:stable-dind
+        container_name: dockerapi
+        ports:
+          - "2375:2375"
+        volumes:
+            - docker_vol:/var/lib/docker
+        networks:
+            - husky_net
+
+    huskyapi:
+        container_name: huskyapi
+        build:
+            context: ../../
+            dockerfile: dockers/development/huskyapi.Dockerfile
+        command: "go run server.go"
+        env_file:
+            - ../../dockers/development/huskyapi.env
+        ports:
+          - "8888:8888"
+        networks:
+            - husky_net
+
+    mongodb:
+        container_name: mongodb
+        build:
+            context: ../../
+            dockerfile: dockers/development/mongo.Dockerfile
+        ports:
+          - "27017:27017"
+          - "27018:27018"
+        volumes:
+            - mongo_vol:/data/db
+        networks:
+            - husky_net
+networks:
+    husky_net:
+
+volumes:
+    docker_vol:
+    mongo_vol:
