@@ -44,9 +44,9 @@ gas:
   timeOutInSeconds: 360
 
 bandit:
-  name: bandit
-  image: huskyci/bandit
-  cmd: |+
+   name: bandit
+   image: huskyci/bandit
+   cmd: |+
      mkdir -p ~/.ssh &&
      echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
      chmod 600 ~/.ssh/huskyci_id_rsa &&
@@ -65,7 +65,7 @@ bandit:
   default: true
   timeOutInSeconds: 360
 
-brakeman:
+  brakeman:
   name: brakeman
   image: docker.artifactory.globoi.com/huskyci/brakeman:2.4-alpine
   cmd: |+
