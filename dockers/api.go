@@ -16,6 +16,12 @@ import (
 	"github.com/globocom/husky/types"
 )
 
+const (
+	certFile   = "cert.pem"
+	keyFile    = "key.pem"
+	carootFile = "ca.pem"
+)
+
 // Docker is the docker struct
 type Docker struct {
 	CID string `json:"Id"`
@@ -30,11 +36,11 @@ type CreateContainerPayload struct {
 
 // NewClient creates http client with certificate authentication
 func (d Docker) NewClient() (*http.Client, error) {
-	cert, err := tls.LoadX509KeyPair("cert.pem", "key.pem")
+	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
 	if err != nil {
 		return nil, err
 	}
-	caCert, err := ioutil.ReadFile("ca.pem")
+	caCert, err := ioutil.ReadFile(carootFile)
 	if err != nil {
 		return nil, err
 	}
@@ -110,8 +116,8 @@ func (d Docker) CreateContainer(analysis types.Analysis, image string, cmd strin
 func (d Docker) StartContainer() error {
 	configAPI := context.GetAPIConfig()
 	URL := configAPI.DockerHostsConfig.GetUrlStart(d.CID)
-	
-  client, err := d.NewClient()
+
+	client, err := d.NewClient()
 	if err != nil {
 		fmt.Println("Error in POST to start the container:", err)
 	}
@@ -158,14 +164,13 @@ func (d Docker) WaitContainer(timeOutInSeconds int) error {
 func (d Docker) ReadOutput() (string, error) {
 	configAPI := context.GetAPIConfig()
 	URL := configAPI.DockerHostsConfig.GetUrlOutPut(d.CID)
-	resp, err := http.Get(URL)
-  
+
 	client, err := d.NewClient()
 	if err != nil {
 		return "", err
 	}
-	
-  resp, err := client.Get(URL)
+
+	resp, err := client.Get(URL)
 	if err != nil {
 		return "", err
 	}
@@ -186,8 +191,8 @@ func (d Docker) PullImage(image string) error {
 	if err != nil {
 		fmt.Println("Error in POST to start the container:", err)
 	}
-	
-  resp, err := client.Post(URL, "", nil)
+
+	resp, err := client.Post(URL, "", nil)
 	if err != nil {
 		fmt.Println("Error in POST to start the container:", err)
 	}
@@ -205,7 +210,7 @@ func (d Docker) ListImages() string {
 		fmt.Println("Error in GET to get the images list:", err)
 	}
 
-  resp, err := client.Get(URL)
+	resp, err := client.Get(URL)
 	if err != nil {
 		fmt.Println("Error in GET to get the images list:", err)
 	}
