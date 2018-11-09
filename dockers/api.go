@@ -110,8 +110,8 @@ func (d Docker) CreateContainer(analysis types.Analysis, image string, cmd strin
 func (d Docker) StartContainer() error {
 	configAPI := context.GetAPIConfig()
 	URL := configAPI.DockerHostsConfig.GetUrlStart(d.CID)
-	
-  client, err := d.NewClient()
+
+	client, err := d.NewClient()
 	if err != nil {
 		fmt.Println("Error in POST to start the container:", err)
 	}
@@ -158,14 +158,13 @@ func (d Docker) WaitContainer(timeOutInSeconds int) error {
 func (d Docker) ReadOutput() (string, error) {
 	configAPI := context.GetAPIConfig()
 	URL := configAPI.DockerHostsConfig.GetUrlOutPut(d.CID)
-	resp, err := http.Get(URL)
-  
+
 	client, err := d.NewClient()
 	if err != nil {
 		return "", err
 	}
-	
-  resp, err := client.Get(URL)
+
+	resp, err := client.Get(URL)
 	if err != nil {
 		return "", err
 	}
@@ -186,8 +185,8 @@ func (d Docker) PullImage(image string) error {
 	if err != nil {
 		fmt.Println("Error in POST to start the container:", err)
 	}
-	
-  resp, err := client.Post(URL, "", nil)
+
+	resp, err := client.Post(URL, "", nil)
 	if err != nil {
 		fmt.Println("Error in POST to start the container:", err)
 	}
@@ -205,7 +204,7 @@ func (d Docker) ListImages() string {
 		fmt.Println("Error in GET to get the images list:", err)
 	}
 
-  resp, err := client.Get(URL)
+	resp, err := client.Get(URL)
 	if err != nil {
 		fmt.Println("Error in GET to get the images list:", err)
 	}
