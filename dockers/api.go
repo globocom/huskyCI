@@ -1,19 +1,27 @@
 package dockers
 
 import (
-	"bytes"
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
-	"time"
 
+	dockerTypes "github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/client"
 	"github.com/globocom/husky/context"
 	"github.com/globocom/husky/types"
+	goContext "golang.org/x/net/context"
+)
+
+const (
+	certFile   = "cert.pem"
+	keyFile    = "key.pem"
+	carootFile = "ca.pem"
 )
 
 // Docker is the docker struct
@@ -29,12 +37,19 @@ type CreateContainerPayload struct {
 }
 
 // NewClient creates http client with certificate authentication
-func (d Docker) NewClient() (*http.Client, error) {
-	cert, err := tls.LoadX509KeyPair("cert.pem", "key.pem")
+func (d Docker) NewClient() (*client.Client, error) {
+	configAPI := context.GetAPIConfig()
+	_ = os.Setenv("DOCKER_HOST", configAPI.DockerHostsConfig.Host)
+	return client.NewEnvClient()
+}
+
+// NewClient creates http client with certificate authentication
+func (d Docker) NewClientTLS() (*http.Client, error) {
+	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
 	if err != nil {
 		return nil, err
 	}
-	caCert, err := ioutil.ReadFile("ca.pem")
+	caCert, err := ioutil.ReadFile(carootFile)
 	if err != nil {
 		return nil, err
 	}
@@ -60,116 +75,65 @@ func (d Docker) NewClient() (*http.Client, error) {
 	return client, nil
 }
 
-// CreateContainer creates a container and returns its ID.
 func (d Docker) CreateContainer(analysis types.Analysis, image string, cmd string) (string, error) {
+	ctx := goContext.Background()
+	cli, err := d.NewClient()
+	if err != nil {
+		return "", err
+	}
 
-	configAPI := context.GetAPIConfig()
-	URL := configAPI.DockerHostsConfig.GetUrlCreate()
 	cmd = handleCmd(analysis.URL, analysis.Branch, cmd)
-
-	createContainerPayload := CreateContainerPayload{
+	resp, err := cli.ContainerCreate(ctx, &container.Config{
 		Image: image,
 		Tty:   true,
 		Cmd:   []string{"/bin/sh", "-c", cmd},
-	}
+	}, nil, nil, "")
 
-	jsonPayload, err := json.Marshal(createContainerPayload)
 	if err != nil {
-		fmt.Println("Error in JSON Marshal.")
 		return "", err
 	}
 
-	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(jsonPayload))
-	if err != nil {
-		fmt.Println("Error in POST to create a container:", err)
-		return "", err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		fmt.Println("Error in POST to create a container:", err)
-		return "", err
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Println("Error reading the body response of POST to create the container:", err)
-		return "", err
-	}
-	err = json.Unmarshal(body, &d)
-	if err != nil {
-		fmt.Println("Error reading container ID:", err)
-		return "", err
-	}
-
-	return d.CID, err
+	return resp.ID, nil
 }
 
 // StartContainer starts a container and returns its error.
 func (d Docker) StartContainer() error {
-	configAPI := context.GetAPIConfig()
-	URL := configAPI.DockerHostsConfig.GetUrlStart(d.CID)
-
-	client, err := d.NewClient()
+	cli, err := d.NewClient()
 	if err != nil {
-		fmt.Println("Error in POST to start the container:", err)
+		return err
 	}
-	resp, err := client.Post(URL, "", nil)
 
-	if err != nil {
-		fmt.Println("Error in POST to start the container:", err)
-	}
-	defer resp.Body.Close()
-	return err
+	return cli.ContainerStart(goContext.Background(), d.CID, dockerTypes.ContainerStartOptions{})
 }
 
 // WaitContainer returns when container finishes executing cmd.
 func (d Docker) WaitContainer(timeOutInSeconds int) error {
-
-	configAPI := context.GetAPIConfig()
-	URL := configAPI.DockerHostsConfig.GetUrlWait(d.CID)
-	jsonPayload := []byte{}
-
-	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(jsonPayload))
-	if err != nil {
-		fmt.Println("Error in POST to create a container:", err)
-		return err
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	reqTimeOut := time.Duration(timeOutInSeconds) * time.Duration(time.Second)
-	clientAPI, err := d.NewClient()
+	cli, err := d.NewClient()
 	if err != nil {
 		return err
 	}
-	clientAPI.Timeout = reqTimeOut
 
-	resp, err := clientAPI.Do(req)
-	if err != nil {
-		// timeout will enter here!
-		return err
+	statusCode, err := cli.ContainerWait(goContext.Background(), d.CID)
+	if statusCode != 0 {
+		return fmt.Errorf("Error in POST to wait the container with statusCode %d", statusCode)
 	}
-	defer resp.Body.Close()
-	return nil
+
+	return err
 }
 
 // ReadOutput returns the command ouput of a given containerID.
 func (d Docker) ReadOutput() (string, error) {
-	configAPI := context.GetAPIConfig()
-	URL := configAPI.DockerHostsConfig.GetUrlOutPut(d.CID)
-
-	client, err := d.NewClient()
+	cli, err := d.NewClient()
 	if err != nil {
 		return "", err
 	}
 
-	resp, err := client.Get(URL)
+	out, err := cli.ContainerLogs(goContext.Background(), d.CID, dockerTypes.ContainerLogsOptions{ShowStdout: true})
 	if err != nil {
-		return "", err
+		return "", nil
 	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+
+	body, err := ioutil.ReadAll(out)
 	if err != nil {
 		return "", err
 	}
@@ -181,7 +145,7 @@ func (d Docker) PullImage(image string) error {
 	configAPI := context.GetAPIConfig()
 	URL := configAPI.DockerHostsConfig.GetUrlPull(image)
 
-	client, err := d.NewClient()
+	client, err := d.NewClientTLS()
 	if err != nil {
 		fmt.Println("Error in POST to start the container:", err)
 	}
@@ -199,7 +163,7 @@ func (d Docker) ListImages() string {
 	configAPI := context.GetAPIConfig()
 	URL := configAPI.DockerHostsConfig.GetUrlList()
 
-	client, err := d.NewClient()
+	client, err := d.NewClientTLS()
 	if err != nil {
 		fmt.Println("Error in GET to get the images list:", err)
 	}
