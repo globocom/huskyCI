@@ -39,7 +39,7 @@ type CreateContainerPayload struct {
 // NewClient creates http client with certificate authentication
 func (d Docker) NewClient() (*client.Client, error) {
 	configAPI := context.GetAPIConfig()
-	_ = os.Setenv("DOCKER_HOST", "" configAPI.DockerHostsConfig.Host)
+	_ = os.Setenv("DOCKER_HOST", configAPI.DockerHostsConfig.Host)
 	return client.NewEnvClient()
 }
 
@@ -98,24 +98,22 @@ func (d Docker) CreateContainer(analysis types.Analysis, image string, cmd strin
 
 // StartContainer starts a container and returns its error.
 func (d Docker) StartContainer() error {
-	ctx := goContext.Background()
 	cli, err := d.NewClient()
 	if err != nil {
 		return err
 	}
 
-	return cli.ContainerStart(ctx, d.CID, dockerTypes.ContainerStartOptions{})
+	return cli.ContainerStart(goContext.Background(), d.CID, dockerTypes.ContainerStartOptions{})
 }
 
 // WaitContainer returns when container finishes executing cmd.
 func (d Docker) WaitContainer(timeOutInSeconds int) error {
-	ctx := goContext.Background()
 	cli, err := d.NewClient()
 	if err != nil {
 		return err
 	}
 
-	statusCode, err := cli.ContainerWait(ctx, d.CID)
+	statusCode, err := cli.ContainerWait(goContext.Background(), d.CID)
 	if statusCode != 0 {
 		return fmt.Errorf("Error in POST to wait the container with statusCode %d", statusCode)
 	}
@@ -125,13 +123,12 @@ func (d Docker) WaitContainer(timeOutInSeconds int) error {
 
 // ReadOutput returns the command ouput of a given containerID.
 func (d Docker) ReadOutput() (string, error) {
-	ctx := goContext.Background()
 	cli, err := d.NewClient()
 	if err != nil {
 		return "", err
 	}
 
-	out, err := cli.ContainerLogs(ctx, d.CID, dockerTypes.ContainerLogsOptions{ShowStdout: true})
+	out, err := cli.ContainerLogs(goContext.Background(), d.CID, dockerTypes.ContainerLogsOptions{ShowStdout: true})
 	if err != nil {
 		return "", nil
 	}
