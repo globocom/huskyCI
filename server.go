@@ -40,7 +40,7 @@ func main() {
 	echoInstance.POST("/repository", analysis.CreateNewRepository)
 
 	huskyAPIport := fmt.Sprintf(":%d", configAPI.HuskyAPIPort)
-	echoInstance.Logger.Fatal(echoInstance.StartTLS(huskyAPIport, configAPI.DockerHostsConfig.Certificate, configAPI.DockerHostsConfig.Key))
+	echoInstance.Logger.Fatal(echoInstance.Start(huskyAPIport))
 }
 
 func checkHuskyRequirements(configAPI *apiContext.APIConfig) error {
@@ -84,8 +84,8 @@ func checkEnvVars() error {
 		"MONGO_DATABASE_NAME",
 		"MONGO_DATABASE_USERNAME",
 		"MONGO_DATABASE_PASSWORD",
-		"DOCKER_HOSTS_CERT",
-		"DOCKER_HOSTS_KEY",
+		// "DOCKER_HOSTS_CERT",
+		// "DOCKER_HOSTS_KEY",
 		// "GIT_PRIVATE_SSH_KEY", optional
 		// "DOCKER_API_PORT", optional -> default value (2376)
 		// "MONGO_PORT", optional -> default value (27017)
@@ -163,21 +163,19 @@ func checkDefaultSecurityTests(configAPI *apiContext.APIConfig) error {
 		return err
 	}
 
-  brakemanQuery := map[string]interface{}{"name": "brakeman"}
+	brakemanQuery := map[string]interface{}{"name": "brakeman"}
 	brakeman, err := analysis.FindOneDBSecurityTest(brakemanQuery)
 	if err == mgo.ErrNotFound {
 		// As Brakeman securityTest is not set into MongoDB, Husky will insert it.
 		fmt.Println("[!] Brakeman securityTest not found!")
 		brakeman = *configAPI.BrakemanSecurityTest
-		fmt.Println("AKI")
-		fmt.Println(brakeman)
 		if err := analysis.InsertDBSecurityTest(brakeman); err != nil {
 			return err
 		}
 	} else if err != nil {
 		return err
 	}
-  
+
 	banditQuery := map[string]interface{}{"name": "bandit"}
 	bandit, err := analysis.FindOneDBSecurityTest(banditQuery)
 	if err == mgo.ErrNotFound {
