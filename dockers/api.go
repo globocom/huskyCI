@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	dockerTypes "github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	"github.com/globocom/husky/context"
@@ -91,20 +92,13 @@ func (d Docker) CreateContainer(analysis types.Analysis, image string, cmd strin
 
 // StartContainer starts a container and returns its error.
 func (d Docker) StartContainer() error {
-	configAPI := context.GetAPIConfig()
-	URL := configAPI.DockerHostsConfig.GetUrlStart(d.CID)
-
-	client, err := d.NewClient()
+	ctx := goContext.Background()
+	cli, err := client.NewEnvClient()
 	if err != nil {
-		fmt.Println("Error in POST to start the container:", err)
+		return err
 	}
-	resp, err := client.Post(URL, "", nil)
 
-	if err != nil {
-		fmt.Println("Error in POST to start the container:", err)
-	}
-	defer resp.Body.Close()
-	return err
+	return cli.ContainerStart(ctx, d.CID, dockerTypes.ContainerStartOptions{})
 }
 
 // WaitContainer returns when container finishes executing cmd.
