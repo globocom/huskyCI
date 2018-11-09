@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -12,8 +11,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/client"
 	"github.com/globocom/husky/context"
 	"github.com/globocom/husky/types"
+	goContext "golang.org/x/net/context"
 )
 
 const (
@@ -66,50 +68,25 @@ func (d Docker) NewClient() (*http.Client, error) {
 	return client, nil
 }
 
-// CreateContainer creates a container and returns its ID.
 func (d Docker) CreateContainer(analysis types.Analysis, image string, cmd string) (string, error) {
+	ctx := goContext.Background()
+	cli, err := client.NewEnvClient()
+	if err != nil {
+		return "", err
+	}
 
-	configAPI := context.GetAPIConfig()
-	URL := configAPI.DockerHostsConfig.GetUrlCreate()
 	cmd = handleCmd(analysis.URL, analysis.Branch, cmd)
-
-	createContainerPayload := CreateContainerPayload{
+	resp, err := cli.ContainerCreate(ctx, &container.Config{
 		Image: image,
 		Tty:   true,
 		Cmd:   []string{"/bin/sh", "-c", cmd},
-	}
+	}, nil, nil, "")
 
-	jsonPayload, err := json.Marshal(createContainerPayload)
 	if err != nil {
-		fmt.Println("Error in JSON Marshal.")
 		return "", err
 	}
 
-	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(jsonPayload))
-	if err != nil {
-		fmt.Println("Error in POST to create a container:", err)
-		return "", err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		fmt.Println("Error in POST to create a container:", err)
-		return "", err
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Println("Error reading the body response of POST to create the container:", err)
-		return "", err
-	}
-	err = json.Unmarshal(body, &d)
-	if err != nil {
-		fmt.Println("Error reading container ID:", err)
-		return "", err
-	}
-
-	return d.CID, err
+	return resp.ID, nil
 }
 
 // StartContainer starts a container and returns its error.
