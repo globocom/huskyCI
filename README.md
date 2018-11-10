@@ -31,6 +31,18 @@ cd $GOPATH && cd src && cd github.com && mkdir globocom && cd globocom
 git clone https://github.com/globocom/husky.git && cd husky
 ```
 
+#### Starting with docker
+
+##### Prerequisites
+* Install [docker](https://www.docker.com/get-started)
+* Install [docker-compose](https://docs.docker.com/compose/install/)
+
+##### Running compose
+```
+make compose
+```
+
+
 #### Starting up VMs:
 
 ```

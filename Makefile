@@ -54,6 +54,12 @@ build:
 	echo "Building $(PROJECT)"
 	go build -ldflags "$(LDFLAGS)" -o $(PROJECT) server.go
 
+## Run project using docker-compose
+compose:
+	docker-compose -f dockers/development/docker-compose.yml build
+	echo "Running compose"
+	docker-compose -f dockers/development/docker-compose.yml up -d
+
 ## Prints this help
 help:
 	printf "${COLOR_YELLOW}${PROJECT}\n------\n${COLOR_RESET}"
