@@ -15,29 +15,40 @@ import (
 func DockerRun(RID string, analysis *types.Analysis, securityTest types.SecurityTest) {
 
 	newContainer := types.Container{SecurityTest: securityTest}
-	d := docker.Docker{}
-
 	securityTest.Cmd = handlePrivateSSHKey(securityTest.Cmd)
 
+	d, err := docker.NewDocker()
+	if err != nil {
+		fmt.Println("Error NewDocker():", err)
+		return
+	}
+
+	// step 0: pull image
+	err = d.PullImage(securityTest.Image)
+	if err != nil {
+		fmt.Println("Error PullImage():", err)
+		return
+	}
+
 	// step 1: create a new container.
-	err := dockerRunCreateContainer(&d, analysis, securityTest, newContainer)
+	err = dockerRunCreateContainer(d, analysis, securityTest, newContainer)
 	if err != nil {
 		fmt.Println("Error dockerRunCreateContainer():", err)
 		return
 	}
 
 	// step 2: start created container.
-	err = dockerRunStartContainer(&d, analysis)
+	err = dockerRunStartContainer(d, analysis)
 	if err != nil {
 		fmt.Println("Error dockerRunStartContainer():", err)
 		return
 	}
 
 	// step 3: wait container finish running.
-	err = dockerRunWaitContainer(&d, securityTest.TimeOutInSeconds)
+	err = dockerRunWaitContainer(d, securityTest.TimeOutInSeconds)
 	if err != nil {
 		// error timeout will enter here!
-		if err := dockerRunRegisterError(&d, analysis); err != nil {
+		if err := dockerRunRegisterError(d, analysis); err != nil {
 			fmt.Println("Error dockerRunRegisterError():", err)
 			return
 		}
@@ -45,7 +56,7 @@ func DockerRun(RID string, analysis *types.Analysis, securityTest types.Security
 	}
 
 	// step 4: read cmd output from container.
-	cOutput, err := dockerRunReadOutput(&d, analysis)
+	cOutput, err := dockerRunReadOutput(d, analysis)
 	if err != nil {
 		fmt.Println("Error dockerRunReadOutput():", err)
 		return
@@ -71,8 +82,22 @@ func dockerRunCreateContainer(d *docker.Docker, analysis *types.Analysis, securi
 
 	analysisQuery := map[string]interface{}{"RID": analysis.RID}
 
+	// step 0: wait for image to be pulled (2 Minutes)
+	timeout := time.Now().Add(2 * time.Minute)
+	for {
+		if d.ImageIsLoaded(securityTest.Image) {
+			break
+		}
+		if time.Now().Before(timeout) {
+			time.Sleep(5 * time.Second)
+		} else {
+			break
+		}
+	}
+
 	// step 1: creating a new container.
 	CID, err := d.CreateContainer(*analysis, securityTest.Image, securityTest.Cmd)
+
 	if err != nil {
 		// error! update analysis with an error message and quit.
 		newContainer.CStatus = "error"
