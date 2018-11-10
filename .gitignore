@@ -1,1 +1,10 @@
+.DS_Store
+.idea/
+.keep
+Godeps/_workspace
+.GOPATH
+#vendor
+coverage.txt
 *.pem
+.env
+.vagrant
