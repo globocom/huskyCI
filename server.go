@@ -116,12 +116,7 @@ func checkEnvVars() error {
 }
 
 func checkDockerHosts(configAPI *apiContext.APIConfig) error {
-
-	if err := docker.HealthCheckDockerAPI(configAPI.DockerHostsConfig.Host); err != nil {
-		return err
-	}
-
-	return nil
+	return docker.HealthCheckDockerAPI()
 }
 
 func checkMongoDB() error {

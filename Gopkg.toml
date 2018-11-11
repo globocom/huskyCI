@@ -27,7 +27,7 @@
 
 [[constraint]]
   name = "github.com/labstack/echo"
-  version = "3.3.5"
+  version = "3.3.7"
 
 [[constraint]]
   name = "github.com/spf13/viper"
@@ -37,14 +37,14 @@
   branch = "v2"
   name = "gopkg.in/mgo.v2"
 
-[prune]
-  go-tests = true
-  unused-packages = true
-
 [[constraint]]
   name = "github.com/docker/docker"
-  version = "1.13.1"
+  version = ">=1.13.1"
 
 [[constraint]]
   branch = "master"
   name = "golang.org/x/net"
+
+[prune]
+  go-tests = true
+  unused-packages = true

@@ -3,7 +3,6 @@ package dockers
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -12,6 +11,7 @@ import (
 
 	dockerTypes "github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/globocom/husky/context"
 	"github.com/globocom/husky/types"
@@ -26,7 +26,8 @@ const (
 
 // Docker is the docker struct
 type Docker struct {
-	CID string `json:"Id"`
+	CID    string `json:"Id"`
+	client *client.Client
 }
 
 // CreateContainerPayload is a struct that represents all data need to create a container.
@@ -36,11 +37,21 @@ type CreateContainerPayload struct {
 	Cmd   []string `json:"Cmd"`
 }
 
-// NewClient creates http client with certificate authentication
-func (d Docker) NewClient() (*client.Client, error) {
+func NewDocker() (*Docker, error) {
 	configAPI := context.GetAPIConfig()
-	_ = os.Setenv("DOCKER_HOST", configAPI.DockerHostsConfig.Host)
-	return client.NewEnvClient()
+	dockerHost := fmt.Sprintf("http://%s", configAPI.DockerHostsConfig.Host)
+	fmt.Printf("dockerHost:%s\n", dockerHost)
+
+	_ = os.Setenv("DOCKER_HOST", dockerHost)
+
+	client, err := client.NewEnvClient()
+	if err != nil {
+		return nil, err
+	}
+	docker := &Docker{
+		client: client,
+	}
+	return docker, nil
 }
 
 // NewClient creates http client with certificate authentication
@@ -76,14 +87,9 @@ func (d Docker) NewClientTLS() (*http.Client, error) {
 }
 
 func (d Docker) CreateContainer(analysis types.Analysis, image string, cmd string) (string, error) {
-	ctx := goContext.Background()
-	cli, err := d.NewClient()
-	if err != nil {
-		return "", err
-	}
-
 	cmd = handleCmd(analysis.URL, analysis.Branch, cmd)
-	resp, err := cli.ContainerCreate(ctx, &container.Config{
+	ctx := goContext.Background()
+	resp, err := d.client.ContainerCreate(ctx, &container.Config{
 		Image: image,
 		Tty:   true,
 		Cmd:   []string{"/bin/sh", "-c", cmd},
@@ -98,22 +104,14 @@ func (d Docker) CreateContainer(analysis types.Analysis, image string, cmd strin
 
 // StartContainer starts a container and returns its error.
 func (d Docker) StartContainer() error {
-	cli, err := d.NewClient()
-	if err != nil {
-		return err
-	}
-
-	return cli.ContainerStart(goContext.Background(), d.CID, dockerTypes.ContainerStartOptions{})
+	ctx := goContext.Background()
+	return d.client.ContainerStart(ctx, d.CID, dockerTypes.ContainerStartOptions{})
 }
 
 // WaitContainer returns when container finishes executing cmd.
 func (d Docker) WaitContainer(timeOutInSeconds int) error {
-	cli, err := d.NewClient()
-	if err != nil {
-		return err
-	}
-
-	statusCode, err := cli.ContainerWait(goContext.Background(), d.CID)
+	ctx := goContext.Background()
+	statusCode, err := d.client.ContainerWait(ctx, d.CID)
 	if statusCode != 0 {
 		return fmt.Errorf("Error in POST to wait the container with statusCode %d", statusCode)
 	}
@@ -123,12 +121,8 @@ func (d Docker) WaitContainer(timeOutInSeconds int) error {
 
 // ReadOutput returns the command ouput of a given containerID.
 func (d Docker) ReadOutput() (string, error) {
-	cli, err := d.NewClient()
-	if err != nil {
-		return "", err
-	}
-
-	out, err := cli.ContainerLogs(goContext.Background(), d.CID, dockerTypes.ContainerLogsOptions{ShowStdout: true})
+	ctx := goContext.Background()
+	out, err := d.client.ContainerLogs(ctx, d.CID, dockerTypes.ContainerLogsOptions{ShowStdout: true})
 	if err != nil {
 		return "", nil
 	}
@@ -142,58 +136,47 @@ func (d Docker) ReadOutput() (string, error) {
 
 // PullImage pulls an image, like docker pull.
 func (d Docker) PullImage(image string) error {
-	configAPI := context.GetAPIConfig()
-	URL := configAPI.DockerHostsConfig.GetUrlPull(image)
-
-	client, err := d.NewClientTLS()
-	if err != nil {
-		fmt.Println("Error in POST to start the container:", err)
-	}
-
-	resp, err := client.Post(URL, "", nil)
-	if err != nil {
-		fmt.Println("Error in POST to start the container:", err)
-	}
-	defer resp.Body.Close()
+	ctx := goContext.Background()
+	_, err := d.client.ImagePull(ctx, image, dockerTypes.ImagePullOptions{})
 	return err
 }
 
+func (d Docker) ImageIsLoaded(image string) bool {
+	args := filters.NewArgs()
+	args.Add("reference", image)
+	options := dockerTypes.ImageListOptions{Filters: args}
+
+	ctx := goContext.Background()
+	result, err := d.client.ImageList(ctx, options)
+	if err != nil {
+		panic(err)
+	}
+
+	return len(result) != 0
+}
+
 // ListImages returns the docker images, like docker image ls.
-func (d Docker) ListImages() string {
-	configAPI := context.GetAPIConfig()
-	URL := configAPI.DockerHostsConfig.GetUrlList()
+func (d Docker) ListImages() ([]dockerTypes.ImageSummary, error) {
+	ctx := goContext.Background()
+	return d.client.ImageList(ctx, dockerTypes.ImageListOptions{})
+}
 
-	client, err := d.NewClientTLS()
-	if err != nil {
-		fmt.Println("Error in GET to get the images list:", err)
-	}
-
-	resp, err := client.Get(URL)
-	if err != nil {
-		fmt.Println("Error in GET to get the images list:", err)
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Println("Error reading the body response of GET to read the command output:", err)
-	}
-	return string(body)
+func (d Docker) RemoveImage(imageID string) ([]dockerTypes.ImageDelete, error) {
+	ctx := goContext.Background()
+	return d.client.ImageRemove(ctx, imageID, dockerTypes.ImageRemoveOptions{Force: true})
 }
 
 // HealthCheckDockerAPI returns true if a 200 status code is received from dockerAddress or false otherwise.
-func HealthCheckDockerAPI(dockerAddress string) error {
-	configAPI := context.GetAPIConfig()
-	URL := configAPI.DockerHostsConfig.GetUrlHealthCheck(dockerAddress)
-	resp, err := http.Get(URL)
-
+func HealthCheckDockerAPI() error {
+	d, err := NewDocker()
 	if err != nil {
+		fmt.Println("Error HealthCheckDockerAPI():", err)
 		return err
 	}
-	if resp.StatusCode != 200 {
-		finalError := fmt.Sprintf("%d status code", resp.StatusCode)
-		return errors.New(finalError)
-	}
-	return nil
+
+	ctx := goContext.Background()
+	_, err = d.client.Ping(ctx)
+	return err
 }
 
 // handleCmd will extract %GIT_REPO% and %GIT_BRANCH%  from cmd and replace it with the proper repository URL.
