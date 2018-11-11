@@ -8,7 +8,6 @@ GOBIN ?= $(GOPATH)/bin
 GODEP ?= $(GOBIN)/dep
 GOLINT ?= $(GOBIN)/golint
 GOSEC ?= $(GOBIN)/gosec
-CERTPASSPHRASE ?= $($(shell $(RANDOM)$(RANDOM)$(RANDOM)))
 
 HUSKYCIBIN ?= huskyci
 
