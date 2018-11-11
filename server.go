@@ -135,7 +135,7 @@ func checkDefaultSecurityTests(configAPI *apiContext.APIConfig) error {
 	enryQuery := map[string]interface{}{"name": "enry"}
 	enry, err := analysis.FindOneDBSecurityTest(enryQuery)
 	if err == mgo.ErrNotFound {
-		// As Enry securityTest is not set into MongoDB, Husky will insert it.
+		// As Enry securityTest is not set into MongoDB, HuskyCI will insert it.
 		fmt.Println("[!] Enry securityTest not found!")
 		enry = *configAPI.EnrySecurityTest
 		if err := analysis.InsertDBSecurityTest(enry); err != nil {
@@ -148,7 +148,7 @@ func checkDefaultSecurityTests(configAPI *apiContext.APIConfig) error {
 	gasQuery := map[string]interface{}{"name": "gas"}
 	gas, err := analysis.FindOneDBSecurityTest(gasQuery)
 	if err == mgo.ErrNotFound {
-		// As Gas securityTest is not set into MongoDB, Husky will insert it.
+		// As Gas securityTest is not set into MongoDB, HuskyCI will insert it.
 		fmt.Println("[!] Gas securityTest not found!")
 		gas = *configAPI.GasSecurityTest
 		if err := analysis.InsertDBSecurityTest(gas); err != nil {
@@ -161,7 +161,7 @@ func checkDefaultSecurityTests(configAPI *apiContext.APIConfig) error {
 	brakemanQuery := map[string]interface{}{"name": "brakeman"}
 	brakeman, err := analysis.FindOneDBSecurityTest(brakemanQuery)
 	if err == mgo.ErrNotFound {
-		// As Brakeman securityTest is not set into MongoDB, Husky will insert it.
+		// As Brakeman securityTest is not set into MongoDB, HuskyCI will insert it.
 		fmt.Println("[!] Brakeman securityTest not found!")
 		brakeman = *configAPI.BrakemanSecurityTest
 		if err := analysis.InsertDBSecurityTest(brakeman); err != nil {
@@ -174,7 +174,7 @@ func checkDefaultSecurityTests(configAPI *apiContext.APIConfig) error {
 	banditQuery := map[string]interface{}{"name": "bandit"}
 	bandit, err := analysis.FindOneDBSecurityTest(banditQuery)
 	if err == mgo.ErrNotFound {
-		// As Bandit securityTest is not set into MongoDB, Husky will insert it.
+		// As Bandit securityTest is not set into MongoDB, HuskyCI will insert it.
 		fmt.Println("[!] Bandit securityTest not found!")
 		bandit = *configAPI.BanditSecurityTest
 		if err := analysis.InsertDBSecurityTest(bandit); err != nil {
