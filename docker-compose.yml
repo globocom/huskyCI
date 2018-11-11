@@ -15,20 +15,25 @@ services:
     huskyapi:
         container_name: huskyapi
         build:
-            context: ../../
+            context: .
             dockerfile: dockers/development/huskyapi.Dockerfile
         command: "go run server.go"
         env_file:
-            - ../../dockers/development/huskyapi.env
+            - dockers/development/huskyapi.env
         ports:
           - "8888:8888"
         networks:
             - husky_net
+        volumes:
+            - .:/go/src/github.com/globocom/husky
+        depends_on:
+            - mongodb
+            - dockerapi
 
     mongodb:
         container_name: mongodb
         build:
-            context: ../../
+            context: .
             dockerfile: dockers/development/mongo.Dockerfile
         ports:
           - "27017:27017"

@@ -56,9 +56,9 @@ build:
 
 ## Run project using docker-compose
 compose:
-	docker-compose -f dockers/development/docker-compose.yml build
+	docker-compose build
 	echo "Running compose"
-	docker-compose -f dockers/development/docker-compose.yml up -d
+	docker-compose up -d
 
 ## Prints this help
 help:
