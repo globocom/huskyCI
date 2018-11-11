@@ -30,19 +30,23 @@ type Docker struct {
 	client *client.Client
 }
 
-// CreateContainerPayload is a struct that represents all data need to create a container.
+// CreateContainerPayload is a struct that represents all data needed to create a container.
 type CreateContainerPayload struct {
 	Image string   `json:"Image"`
 	Tty   bool     `json:"Tty,omitempty"`
 	Cmd   []string `json:"Cmd"`
 }
 
+// NewDocker returns a new docker.
 func NewDocker() (*Docker, error) {
 	configAPI := context.GetAPIConfig()
 	dockerHost := fmt.Sprintf("http://%s", configAPI.DockerHostsConfig.Host)
 	fmt.Printf("dockerHost:%s\n", dockerHost)
 
-	_ = os.Setenv("DOCKER_HOST", dockerHost)
+	err := os.Setenv("DOCKER_HOST", dockerHost)
+	if err != nil {
+		return nil, err
+	}
 
 	client, err := client.NewEnvClient()
 	if err != nil {
@@ -54,7 +58,7 @@ func NewDocker() (*Docker, error) {
 	return docker, nil
 }
 
-// NewClient creates http client with certificate authentication
+// NewClientTLS returns an http client with certificate authentication.
 func (d Docker) NewClientTLS() (*http.Client, error) {
 	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
 	if err != nil {
@@ -86,6 +90,7 @@ func (d Docker) NewClientTLS() (*http.Client, error) {
 	return client, nil
 }
 
+// CreateContainer creates a new container
 func (d Docker) CreateContainer(analysis types.Analysis, image string, cmd string) (string, error) {
 	cmd = handleCmd(analysis.URL, analysis.Branch, cmd)
 	ctx := goContext.Background()
@@ -141,6 +146,7 @@ func (d Docker) PullImage(image string) error {
 	return err
 }
 
+// ImageIsLoaded returns a bool if a a docker image is loaded or not.
 func (d Docker) ImageIsLoaded(image string) bool {
 	args := filters.NewArgs()
 	args.Add("reference", image)
@@ -161,6 +167,7 @@ func (d Docker) ListImages() ([]dockerTypes.ImageSummary, error) {
 	return d.client.ImageList(ctx, dockerTypes.ImageListOptions{})
 }
 
+// RemoveImage removes an image.
 func (d Docker) RemoveImage(imageID string) ([]dockerTypes.ImageDelete, error) {
 	ctx := goContext.Background()
 	return d.client.ImageRemove(ctx, imageID, dockerTypes.ImageRemoveOptions{Force: true})

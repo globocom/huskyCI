@@ -24,6 +24,9 @@ services:
           - "8888:8888"
         networks:
             - husky_net
+        depends_on:
+            - mongodb
+            - dockerapi
 
     mongodb:
         container_name: mongodb
