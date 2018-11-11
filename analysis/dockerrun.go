@@ -24,9 +24,9 @@ func DockerRun(RID string, analysis *types.Analysis, securityTest types.Security
 	}
 
 	// step 0: pull image
-	err = d.PullImage(securityTest.Image)
+	err = dockerPullImage(d, securityTest.Image)
 	if err != nil {
-		fmt.Println("Error PullImage():", err)
+		fmt.Println("Error dockerPullImage():", err)
 		return
 	}
 
@@ -81,19 +81,6 @@ func DockerRun(RID string, analysis *types.Analysis, securityTest types.Security
 func dockerRunCreateContainer(d *docker.Docker, analysis *types.Analysis, securityTest types.SecurityTest, newContainer types.Container) error {
 
 	analysisQuery := map[string]interface{}{"RID": analysis.RID}
-
-	// step 0: wait for image to be pulled (2 Minutes)
-	timeout := time.Now().Add(2 * time.Minute)
-	for {
-		if d.ImageIsLoaded(securityTest.Image) {
-			break
-		}
-		if time.Now().Before(timeout) {
-			time.Sleep(5 * time.Second)
-		} else {
-			break
-		}
-	}
 
 	// step 1: creating a new container.
 	CID, err := d.CreateContainer(*analysis, securityTest.Image, securityTest.Cmd)
@@ -207,4 +194,31 @@ func dockerRunRegisterError(d *docker.Docker, analysis *types.Analysis) error {
 func handlePrivateSSHKey(rawString string) string {
 	cmdReplaced := strings.Replace(rawString, "GIT_PRIVATE_SSH_KEY", os.Getenv("GIT_PRIVATE_SSH_KEY"), -1)
 	return cmdReplaced
+}
+
+func dockerPullImage(d *docker.Docker, image string) error {
+
+	if d.ImageIsLoaded(image) {
+		return nil
+	}
+
+	if err := d.PullImage(image); err != nil {
+		return err
+	}
+
+	// wait for image to be pulled (2 Minutes)
+	timeout := time.Now().Add(2 * time.Minute)
+	for {
+		if d.ImageIsLoaded(image) {
+			return nil
+		}
+		if time.Now().Before(timeout) {
+			time.Sleep(5 * time.Second)
+			fmt.Println("Waiting pull image...")
+		} else {
+			break
+		}
+	}
+
+	return nil
 }
