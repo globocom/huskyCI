@@ -1,7 +1,15 @@
 .SILENT:
-
-SHELL = /bin/bash
 .DEFAULT_GOAL := help
+
+GO ?= go
+GOROOT ?= $(shell $(GO) env GOROOT)
+GOPATH ?= $(shell $(GO) env GOPATH)
+GOBIN ?= $(GOPATH)/bin
+GODEP ?= $(GOBIN)/dep
+GOLINT ?= $(GOBIN)/golint
+GOSEC ?= $(GOBIN)/gosec
+
+HUSKYCIBIN ?= huskyci
 
 COLOR_RESET = \033[0m
 COLOR_COMMAND = \033[36m
@@ -9,60 +17,48 @@ COLOR_YELLOW = \033[33m
 COLOR_GREEN = \033[32m
 COLOR_RED = \033[31m
 
-TAG := `git describe --tags`
-DATE := `date -u +"%Y-%m-%dT%H:%M:%SZ"`
-COMMIT := ""
-LDFLAGS := -X main.version=$(TAG) -X main.commit=$(COMMIT) -X main.date=$(DATE)
+PROJECT := HuskyCI
 
-PROJECT := Husky
-SOURCE_FILES?=$$(go list ./... | grep -v /vendor/)
+## Installs all development dependencies
+install-deps:
+	$(GO) get -u github.com/golang/dep/cmd/dep
+	$(GO) get -u golang.org/x/lint/golint
+	$(GO) get -u github.com/securego/gosec/cmd/gosec
 
-## Setup of the project
-setup:
-	@go get -u github.com/alecthomas/gometalinter
-	@go get -u github.com/golang/dep/...
-	@make dep
-	gometalinter --install --update
+## Runs a security static analysis using Gosec
+security-check:
+	$(GOSEC) ./... 2> /dev/null
 
-## Install dependencies of the project
-dep:
-	@dep ensure -v
+## Perfoms all make tests
+test: lint security-check
 
-lint: ## Run all the linters
-	gometalinter --vendor --disable-all \
-		--enable=deadcode \
-		--enable=ineffassign \
-		--enable=gosimple \
-		--enable=staticcheck \
-		--enable=gofmt \
-		--enable=goimports \
-		--enable=dupl \
-		--enable=misspell \
-		--enable=errcheck \
-		--enable=vet \
-		--enable=vetshadow \
-		--deadline=10m \
-		--aggregate \
-		./...
+## Runs lint
+lint:
+	$(GOLINT) $(shell $(GO) list ./...)
 
-## Run project http
+## Runs project
 run:
 	@go run server.go
 
-## Build project
+## Builds Go project to the executable file huskyci
 build:
-	echo "Building $(PROJECT)"
-	go build -ldflags "$(LDFLAGS)" -o $(PROJECT) server.go
+	$(GO) build -o "$(HUSKYCIBIN)"
 
-## Run project using docker-compose
-compose:
-	docker-compose build
-	echo "Running compose"
-	docker-compose up -d
+## Builds a development environment using docker-compose
+compose-start:
+	docker-compose -f dev/docker-compose.yml build
+	docker-compose -f dev/docker-compose.yml up -d
 
-## Prints this help
+## Stops all dockers using docker-compose
+compose-stop:
+	docker-compose -f dev/docker-compose.yml stop
+
+# Restarts all dockers from the development environment
+compose-restart: compose-stop compose-start
+
+## Prints help message
 help:
-	printf "${COLOR_YELLOW}${PROJECT}\n------\n${COLOR_RESET}"
+	printf "\n${COLOR_YELLOW}${PROJECT}\n------\n${COLOR_RESET}"
 	awk '/^[a-zA-Z\-\_0-9\.%]+:/ { \
 		helpMessage = match(lastLine, /^## (.*)/); \
 		if (helpMessage) { \
@@ -72,4 +68,4 @@ help:
 		} \
 	} \
 	{ lastLine = $$0 }' $(MAKEFILE_LIST) | sort
-	printf "\n"	
+	printf "\n"
