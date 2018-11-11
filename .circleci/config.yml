@@ -9,7 +9,5 @@ jobs:
 
     steps:
       - checkout
-      - run: go get -v -t -d ./...
       - run: go get -u golang.org/x/lint/golint && golint
-      - run: go build -o husky
-
+      - run: get -u github.com/securego/gosec/cmd/gosec && gosec ./...
