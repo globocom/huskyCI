@@ -56,6 +56,21 @@ compose-stop:
 # Restarts all dockers from the development environment
 compose-restart: compose-stop compose-start
 
+## Pull every HuskyCI docker image into dockerAPI container
+pull-images:
+	echo "Pulling huskyci/enry..."
+	docker exec dockerAPI /bin/sh -c "docker pull huskyci/enry"
+	echo "Pulling huskyci/gas ..."
+	docker exec dockerAPI /bin/sh -c "docker pull huskyci/gas"
+	echo "Pulling huskyci/bandit:2.7 ..."
+	docker exec dockerAPI /bin/sh -c "docker pull huskyci/bandit:2.7"
+	echo "Pulling huskyci/bandit:3.6 ..."
+	docker exec dockerAPI /bin/sh -c "docker pull huskyci/bandit:3.6"
+	echo "Pulling huskyci/brakeman ..."
+	docker exec dockerAPI /bin/sh -c "docker pull huskyci/brakeman"
+	echo "Pulling huskyci/retirejs ..."
+	docker exec dockerAPI /bin/sh -c "docker pull huskyci/retirejs"
+
 ## Prints help message
 help:
 	printf "\n${COLOR_YELLOW}${PROJECT}\n------\n${COLOR_RESET}"
