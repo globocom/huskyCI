@@ -1,4 +1,7 @@
-FROM docker-hub.artifactory.globoi.com/python:2.7-alpine
+# Dockerfile used to create "husyci/bandit:2.7" image
+# https://hub.docker.com/r/huskyci/bandit/
+
+FROM python:2.7-alpine
 
 RUN apk update && apk upgrade \
 	&& apk add --no-cache alpine-sdk bash openssh-client \
