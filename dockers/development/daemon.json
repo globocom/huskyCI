@@ -3,5 +3,5 @@
     "tlscacert": "/data/certs/ca.pem",
     "tlscert": "/data/certs/server-cert.pem",
     "tlskey": "/data/certs/server-key.pem",
-    "tlsverify": false
+    "tlsverify": true
 }
