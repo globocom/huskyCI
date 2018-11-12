@@ -9,8 +9,8 @@ services:
           - "2375:2375"
         volumes:
             - docker_vol:/var/lib/docker
-            - ../../dockers/development/daemon.json:/etc/docker/daemon.json:ro
-            - ../../dockers/development/certs/:/data/certs/
+            - ../../dev/daemon.json:/etc/docker/daemon.json:ro
+            - ../../dev/certs/:/data/certs/
         networks:
             - husky_net
 
