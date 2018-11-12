@@ -33,31 +33,31 @@ type DockerHostsConfig struct {
 }
 
 func (dc *DockerHostsConfig) GetUrlCreate() string {
-	return fmt.Sprintf("http://%s/%s/containers/create", dc.Host, DockerHostVersion)
+	return fmt.Sprintf("https://%s/%s/containers/create", dc.Host, DockerHostVersion)
 }
 
 func (dc *DockerHostsConfig) GetUrlStart(CID string) string {
-	return fmt.Sprintf("http://%s/%s/containers/%s/start", dc.Host, DockerHostVersion, CID)
+	return fmt.Sprintf("https://%s/%s/containers/%s/start", dc.Host, DockerHostVersion, CID)
 }
 
 func (dc *DockerHostsConfig) GetUrlWait(CID string) string {
-	return fmt.Sprintf("http://%s/%s/containers/%s/wait", dc.Host, DockerHostVersion, CID)
+	return fmt.Sprintf("https://%s/%s/containers/%s/wait", dc.Host, DockerHostVersion, CID)
 }
 
 func (dc *DockerHostsConfig) GetUrlOutPut(CID string) string {
-	return fmt.Sprintf("http://%s/%s/containers/%s/logs?stdout=1", dc.Host, DockerHostVersion, CID)
+	return fmt.Sprintf("https://%s/%s/containers/%s/logs?stdout=1", dc.Host, DockerHostVersion, CID)
 }
 
 func (dc *DockerHostsConfig) GetUrlPull(image string) string {
-	return fmt.Sprintf("http://%s/%s/images/create?fromImage=%s", dc.Host, DockerHostVersion, image)
+	return fmt.Sprintf("https://%s/%s/images/create?fromImage=%s", dc.Host, DockerHostVersion, image)
 }
 
 func (dc *DockerHostsConfig) GetUrlList() string {
-	return fmt.Sprintf("http://%s/%s/images/json", dc.Host, DockerHostVersion)
+	return fmt.Sprintf("https://%s/%s/images/json", dc.Host, DockerHostVersion)
 }
 
 func (dc *DockerHostsConfig) GetUrlHealthCheck(dockerAddress string) string {
-	return fmt.Sprintf("http://%s/%s/version", dockerAddress, DockerHostVersion)
+	return fmt.Sprintf("https://%s/%s/version", dockerAddress, DockerHostVersion)
 }
 
 // APIConfig represents API configuration.
