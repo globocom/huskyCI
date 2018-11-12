@@ -58,7 +58,8 @@ build:
 compose:
 	docker-compose -f dockers/development/docker-compose.yml build
 	echo "Running compose"
-	docker-compose -f dockers/development/docker-compose.yml up -d
+	docker-compose -f dockers/development/docker-compose.yml down -v
+	docker-compose -f dockers/development/docker-compose.yml up -d --force-recreate
 
 ## Prints this help
 help:
