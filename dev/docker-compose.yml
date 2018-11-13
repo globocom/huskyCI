@@ -9,8 +9,8 @@ services:
           - "2375:2375"
         volumes:
             - docker_vol:/var/lib/docker
-            - ../../dev/daemon.json:/etc/docker/daemon.json:ro
-            - ../../dev/certs/:/data/certs/
+            - ../dev/daemon.json:/etc/docker/daemon.json:ro
+            - ../dev/certs/:/data/certs/
         networks:
             - husky_net
 
@@ -24,9 +24,9 @@ services:
             - huskyCIAPI.env
         volumes:
             - docker_vol:/var/lib/docker
-            - ../../dev/certs/client-huskyapi-cert.pem:/go/src/github.com/globocom/husky/cert.pem:ro
-            - ../../dev/certs/client-huskyapi-key.pem:/go/src/github.com/globocom/husky/key.pem:ro
-            - ../../dev/certs/ca.pem:/go/src/github.com/globocom/husky/ca.pem:ro
+            - ../dev/certs/client-huskyapi-cert.pem:/go/src/github.com/globocom/husky/cert.pem:ro
+            - ../dev/certs/client-huskyapi-key.pem:/go/src/github.com/globocom/husky/key.pem:ro
+            - ../dev/certs/ca.pem:/go/src/github.com/globocom/husky/ca.pem:ro
         ports:
           - "8888:8888"
         networks:
