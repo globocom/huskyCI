@@ -118,6 +118,13 @@ setup-auth:
 	# [dockerAPI] # dockerd --tlsverify --tlscacert=ca.pem --tlscert=server-cert.pem --tlskey=server-key.pem -H=0.0.0.0:2375
 	# Error starting daemon: pid file found, ensure docker is not running or delete /var/run/docker.pid
 
+## Run project using docker-compose
+compose:
+	docker-compose -f dev/docker-compose.yml build
+	docker-compose -f dev/docker-compose.yml down -v
+	docker-compose -f dev/docker-compose.yml up -d --force-recreate
+
+
 ## Prints help message
 help:
 	printf "\n${COLOR_YELLOW}${PROJECT}\n------\n${COLOR_RESET}"
