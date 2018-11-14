@@ -29,14 +29,17 @@ func ReceiveRequest(c echo.Context) error {
 	}
 
 	// check-01: is this a git repository URL and a branch?
-	regexpGit := `^(((git|gitlab)@[\w\.]+))(:(//)?)([\w\.@\:/\-~]+)(\.git)(/)?$`
+	regexpGit := `((git|ssh|http(s)?)|(git@[\w\.]+))(:(//)?)([\w\.@\:/\-~]+)(\.git)(/)?`
+	r := regexp.MustCompile(regexpGit)
 	valid, err := regexp.MatchString(regexpGit, repository.URL)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Internal error."})
 	}
 	if !valid {
-		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "This is not a valid repository URL..."})
+		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "This is not a valid repository URL."})
 	}
+	matches := r.FindString(repository.URL)
+	repository.URL = matches
 
 	regexpBranch := `^[a-zA-Z0-9_\.-]*$`
 	valid, err = regexp.MatchString(regexpBranch, repository.Branch)
@@ -44,7 +47,7 @@ func ReceiveRequest(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Internal error."})
 	}
 	if !valid {
-		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "This is not a valid branch..."})
+		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "This is not a valid branch."})
 	}
 
 	// check-02: is this repository in MongoDB?
