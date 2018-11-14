@@ -1,10 +1,35 @@
-# Husky: Security CI
+# HuskyCI
 
-Husky will make security tests inside a CI.
+HuskyCI is a Go project that performs security tests inside a single or multiples CIs of your organization and centralizes all  scan results into a Mongo database.
 
-## Getting Started
+## How does it work?
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+Imagine that your organization has projects like `awesome-golang-project`, `awesome-python-project` and `awesome-ruby-project`. In each of them, you may include the following  CI configuration instructions example:
+
+```
+test-project:
+  stage: HuskyCI
+  script:
+    - wget urlwhereyour.huskyCI.is/huskyci-client
+    - chmod +x huskyci-client
+    - ./huskyci-client
+```
+
+HuskyCI receives all requests from these clients and starts analyzing each new code submitted via a Pull Request, using well known open source static analysis tools, eventually failing the CI as shown on the example bellow: 
+
+![architecture](images/arch-example-huskyCI.png)
+
+ ## Running locally
+ 
+The easiest way to deploy  HuskyCI is using Docker Compose, thus, you should have installed [Docker][Docker Install] and [Docker Compose][Docker Compose Install] on your machine. After cloning the repository, just run:
+
+```
+make install
+```
+
+[Docker Install]:  https://docs.docker.com/install/
+[Docker Compose Install]: https://docs.docker.com/compose/install/
+
 
 ### Prerequisites
 
@@ -147,12 +172,3 @@ curl -s localhost:9999/husky/eZVxfYH7W6XOdjuQbNV5I7l5XJ8puTUo
 ```
 {"ID":"5b4c9795a118cc8f953f2042","RID":"CQsXAjvgVwtKVfUarkCDgHJoZpEI3kz9","URL":"https://github.com/tsuru/cst.git","securityTests":[{"ID":"5b470d9c3406984e4b27009d","name":"gas","image":"huskyci/gas","cmd":"echo -n [GAS]; cd src; git clone %GIT_REPO% code; cd code; /go/bin/gas -quiet -fmt=json -log=log.txt -out=results.json ./... ; cat results.json","language":"Generic","default":true}],"status":"started","result":"","containers":[{"CID":"f0fb8ae1c5edd4fed8a62a4554be3d57804e4803b872b762f58af10d94b226e7","VM":"","securityTest":{"ID":"5b470d9c3406984e4b27009d","name":"gas","image":"huskyci/gas","cmd":"echo -n [GAS]; cd src; git clone %GIT_REPO% code; cd code; /go/bin/gas -quiet -fmt=json -log=log.txt -out=results.json ./... ; cat results.json","language":"Generic","default":true},"cStatus":"finished","cOutput":"\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0005[GAS]","cResult":"","startedAt":"2018-07-16T10:03:18.515-03:00","finishedAt":"2018-07-16T10:03:21.958-03:00"}]}
 ```
-
-## Architecture draft
-
-![architecture](images/architecture-draft.png)
-
-## MongoDB draft
-
-![db](images/mongoBD-draft.png)
-
