@@ -57,7 +57,7 @@ Wow! Hold on! At this moment HuskyCI can only perform static security analysis i
 
 ## Running locally
  
-The easiest way to deploy HuskyCI is by using Docker Compose, thus, you should have installed [Docker][Docker Install] and [Docker Compose][Docker Compose Install] on your machine. After cloning the repository, just run this to provision your local environment:
+The easiest way to deploy HuskyCI is by using Docker Compose, thus, you should have [Docker][Docker Install] and [Docker Compose][Docker Compose Install] installed on your machine. After cloning the repository, just run this to provision your local environment:
 
 ```
 make install
@@ -82,7 +82,7 @@ Result:
 Use the following curl command now to manually check the results of the analysis:
 
 ```
-curl -s localhost:8888/husky/1HQfkskK69LYvLV7rWY03xv03YWoD47T
+curl -s localhost:8888/husky/8L85jTJgtuN7o7pRi3sUQ3R4KuCjRcP9
 ```
 
 ## Contributing
