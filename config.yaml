@@ -56,7 +56,7 @@ bandit:
      if [ $? -eq 0 ]; then
        cd code
        bandit -r . -f json 2> /dev/null > results.json
-       cat results.json | -jq '. | {results, errors}'
+       jq -j -M -c . results.json
      else
        echo "ERROR_CLONING"
        cat /tmp/errorGitCloneBandit
