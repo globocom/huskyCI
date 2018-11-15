@@ -1,158 +1,106 @@
-# Husky: Security CI
+# HuskyCI
 
-Husky will make security tests inside a CI.
+[![CircleCI](https://circleci.com/gh/globocom/husky/tree/master.svg?style=svg&circle-token=415bfb6b5aa0dfce8d2129878a66326da9533150)](https://circleci.com/gh/globocom/husky/tree/master)
 
-## Getting Started
+HuskyCI is an open source tool that performs security tests inside CI pipelines of multiple projects and centralizes all results into a database for further analysis and metrics. 
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+The main goal of this project is to help development teams improve the quality of their code by finding vulnerabilities as soon as possible.  
 
-### Prerequisites
+## How does it work?
 
-* Install Vagrant: https://www.vagrantup.com/downloads.html
-* Install Golang: 
-
-```
-brew install go
-```
-
-## Installing
-
-#### Fork Husky's repository:
-
-Fork this repository into your github!
-
-#### Cloning Husky's repository:
+Imagine that an organization has projects like `awesome-golang-project`, `awesome-python-project` and `awesome-ruby-project`. In each project's CI configuration file, the following example code may be included:
 
 ```
-cd $GOPATH && cd src && cd github.com && mkdir globocom && cd globocom
+test-project:
+  stage: HuskyCI
+  script:
+    - wget urlTo.huskyCI/huskyci-client
+    - chmod +x huskyci-client
+    - ./huskyci-client
 ```
 
-```
-git clone https://github.com/globocom/husky.git && cd husky
-```
+By adding this simple stage, requests will be made to HuskyCI API and it will start analyzing new code submitted via Pull Request using well-known open source static analysis tools, as shown in the example bellow: 
 
-#### Starting with docker
+![architecture](images/arch-example-huskyCI.png)
 
-##### Prerequisites
-* Install [docker](https://www.docker.com/get-started)
-* Install [docker-compose](https://docs.docker.com/compose/install/)
+## What is this HuskyCI Client all about?
 
-##### Running compose
-```
-make compose
-```
-
-
-#### Starting up VMs:
+Well, actually [HuskyCI Client][HuskyCI Client] is just a binary built in Golang that performs the proper requests to HuskyCI API, waits security tests finish and inteprets the results by returning errors (if vulnerabilities are found) or not: 
 
 ```
-vagrant up vm2-db
+$ ./huskyci-client
+
+[HUSKYCI][*] new-feature-branch -> https://url.to.repository/team/project.git
+[HUSKYCI][*] HuskyCI analysis started! UUT3MoVnLio9r5syzhbOIZYdLqbx4EDT
+
+[HUSKYCI][!] Severity: MEDIUM
+[HUSKYCI][!] Confidence: HIGH
+[HUSKYCI][!] Details: Potential file inclusion via variable
+[HUSKYCI][!] File: /go/src/code/example/example/example.go
+[HUSKYCI][!] Line: 76
+[HUSKYCI][!] Code: os.Open(path)
+
+[HUSKYCI][!] Severity: LOW
+[HUSKYCI][!] Confidence: HIGH
+[HUSKYCI][!] Details: Errors unhandled.
+[HUSKYCI][!] File: /go/src/code/example2/example2/example2.go
+[HUSKYCI][!] Line: 132
+[HUSKYCI][!] Code: subdirs, _ := ioutil.ReadDir(p)
+
+[HUSKYCI][X] :(
+exit status 1
 ```
 
-```
-vagrant up vm3-docker
-```
+## Cool! So HuskyCI can check vulnerabilities in all languages ever?
 
-#### Downloading docker images:
+Wow! Hold on! At this moment HuskyCI can only perform static security analysis in Python ([Bandit][Bandit]), Ruby ([Brakeman][Brakeman]) and Golang ([Gosec][Gosec]). However, if you want to contribute to HuskyCI by adding other cool security tests, you should check this documentation right away! 
 
-The images below are already installed via Vagrant (vm3-docker-config.sh)! These are only some examples on how to download your own docker image, if desired: 
-
-huskyci/enry:
+## Running locally
+ 
+The easiest way to deploy HuskyCI is by using Docker Compose, thus, you should have [Docker][Docker Install] and [Docker Compose][Docker Compose Install] installed on your machine. After cloning the repository, just run this to provision your local environment:
 
 ```
-curl -X POST http://192.168.50.6:2376/v1.24/images/create?fromImage=huskyci/enry
-```
-
-huskyci/gas:
-
-```
-curl -X POST http://192.168.50.6:2376/v1.24/images/create?fromImage=huskyci/gas
-```
-
-For more Docker API examples, refer to: https://docs.docker.com/develop/sdk/examples/
-
-#### Setting up environment variables (use your own configuration):
-
-```sh
-echo 'export DOCKER_HOSTS_LIST="192.168.50.6"' > .env
-echo 'export MONGO_HOST="192.168.50.5"' >> .env
-echo 'export MONGO_DATABASE_NAME="huskyDB$RANDOM"' >> .env
-echo 'export MONGO_DATABASE_USERNAME="husky$RANDOM"' >> .env
-echo 'export MONGO_DATABASE_PASSWORD="$RANDOM$RANDOM$RANDOM"' >> .env
-```
-
-Optional environment variables:
-
-```sh 
-echo 'export GIT_PRIVATE_SSH_KEY="$(cat your_private_git_ssh_key)"' >> .env
-echo 'export DOCKER_API_PORT="$RANDOM"' >> .env # -> Husky default value = 2376
-echo 'export MONGO_PORT="$RANDOM"' >> .env # -> Husky default value = 27017
-echo 'export HUSKY_API_PORT="$RANDOM"' >> .env # -> Husky default value = 8888
-echo 'export MONGO_TIMEOUT="$RANDOM"' >> .env # -> Husky default value = 60 (seconds)
-```
-
-```
-source .env
-```
-
-#### Inserting new MongoDB user:
-
-```
-vagrant ssh vm2-db
-```
-
-```
-sudo su && mongo
-```
-
-```
-use huskyDB
-```
-
-```
-db.createUser({user:"husky", pwd:"superENVPassword", roles: ["readWrite"]})
-```
-
-#### Starting Husky:
-
-```
-go run server.go
-```
-
-#### Adding new repository example:
-
-```
-curl -H "Content-Type: application/json" -d '{"repositoryURL":"https://github.com/tsuru/cst.git", "securityTestName":["gas"]}' http://localhost:9999/repository 
-```
-
-```
-{"RID":"eZVxfYH7W6XOdjuQbNV5I7l5XJ8puTUo","details":"Request received.","result":"ok"}
+make install
 ```
 
 #### Starting a new analysis:
 
+Use the following curl command to manually start a new analysis: 
+
 ```
-curl -s -H "Content-Type: application/json" -d '{"repositoryURL":"https://github.com/tsuru/cst.git"}' http://localhost:9999/husky
+curl -s -H "Content-Type: application/json" -d '{"repositoryURL":"https://github.com/tsuru/cst.git","repositoryBranch":"master"}' http://localhost:8888/husky
 ```
+
+Result:
+
 ```
 {"RID":"8L85jTJgtuN7o7pRi3sUQ3R4KuCjRcP9","details":"Request received.","result":"ok"}
 ```
 
 #### Checking analysis status:
 
-```
-curl -s localhost:9999/husky/eZVxfYH7W6XOdjuQbNV5I7l5XJ8puTUo
-```
+Use the following curl command now to manually check the results of the analysis:
 
 ```
-{"ID":"5b4c9795a118cc8f953f2042","RID":"CQsXAjvgVwtKVfUarkCDgHJoZpEI3kz9","URL":"https://github.com/tsuru/cst.git","securityTests":[{"ID":"5b470d9c3406984e4b27009d","name":"gas","image":"huskyci/gas","cmd":"echo -n [GAS]; cd src; git clone %GIT_REPO% code; cd code; /go/bin/gas -quiet -fmt=json -log=log.txt -out=results.json ./... ; cat results.json","language":"Generic","default":true}],"status":"started","result":"","containers":[{"CID":"f0fb8ae1c5edd4fed8a62a4554be3d57804e4803b872b762f58af10d94b226e7","VM":"","securityTest":{"ID":"5b470d9c3406984e4b27009d","name":"gas","image":"huskyci/gas","cmd":"echo -n [GAS]; cd src; git clone %GIT_REPO% code; cd code; /go/bin/gas -quiet -fmt=json -log=log.txt -out=results.json ./... ; cat results.json","language":"Generic","default":true},"cStatus":"finished","cOutput":"\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0005[GAS]","cResult":"","startedAt":"2018-07-16T10:03:18.515-03:00","finishedAt":"2018-07-16T10:03:21.958-03:00"}]}
+curl -s localhost:8888/husky/8L85jTJgtuN7o7pRi3sUQ3R4KuCjRcP9
 ```
 
-## Architecture draft
+## Contributing
 
-![architecture](images/architecture-draft.png)
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests to HuskyCI.
 
-## MongoDB draft
 
-![db](images/mongoBD-draft.png)
+## Documentation
 
+Check here!
+
+## License
+
+This project is licensed under the --- License - read [LICENSE.md][LICENSE.md] file for details.
+
+[Docker Install]:  https://docs.docker.com/install/
+[Docker Compose Install]: https://docs.docker.com/compose/install/
+[HuskyCI Client]: https://github.com/globocom/husky-client
+[Bandit]: https://github.com/PyCQA/bandit
+[Brakeman]: https://github.com/presidentbeef/brakeman
+[Gosec]: https://github.com/securego/gosec
