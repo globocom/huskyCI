@@ -57,10 +57,9 @@ compose:
 pull-images:
 	docker exec dockerAPI /bin/sh -c "docker pull huskyci/enry"
 	docker exec dockerAPI /bin/sh -c "docker pull huskyci/gas"
-	docker exec dockerAPI /bin/sh -c "docker pull huskyci/bandit:2.7"
-	docker exec dockerAPI /bin/sh -c "docker pull huskyci/bandit:3.6"
+	docker exec dockerAPI /bin/sh -c "docker pull huskyci/bandit"
 	docker exec dockerAPI /bin/sh -c "docker pull huskyci/brakeman"
-	docker exec dockerAPI /bin/sh -c "docker pull huskyci/retirejs"
+	#docker exec dockerAPI /bin/sh -c "docker pull huskyci/retirejs"
 
 ## Creates certs and sets all config to dockerAPI
 create-certs:
