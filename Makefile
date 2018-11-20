@@ -20,7 +20,7 @@ COLOR_RED = \033[31m
 PROJECT := HuskyCI
 
 ## Installs a development environment using docker-compose
-install: create-certs compose pull-images 
+install: generate-passwords create-certs compose check-env pull-images
 
 ## Gets all go test dependencies
 get-deps:
@@ -36,6 +36,10 @@ check-deps:
 check-sec:
 	$(GOSEC) ./... 2> /dev/null
 
+## Checks .env file from HuskyCI
+check-env:
+	cat .env
+
 ## Perfoms all make tests
 test: get-deps lint security-check
 
@@ -49,9 +53,9 @@ build:
 
 ## Run project using docker-compose
 compose:
-	docker-compose -f dev/docker-compose.yml build
-	docker-compose -f dev/docker-compose.yml down -v
-	docker-compose -f dev/docker-compose.yml up -d --force-recreate
+	docker-compose -f deployments/docker-compose.yml build
+	docker-compose -f deployments/docker-compose.yml down -v
+	docker-compose -f deployments/docker-compose.yml up -d --force-recreate
 
 ## Pulls every HuskyCI docker image into dockerAPI container
 pull-images:
@@ -63,8 +67,13 @@ pull-images:
 
 ## Creates certs and sets all config to dockerAPI
 create-certs:
-	chmod +x dev/run-create-certs.sh
-	./dev/run-create-certs.sh
+	chmod +x scripts/run-create-certs.sh
+	./scripts/run-create-certs.sh
+
+## Generates passwords and set them as environment variables
+generate-passwords:
+	chmod +x scripts/generate-env-pass.sh
+	./scripts/generate-env-pass.sh
 
 ## Prints help message
 help:
