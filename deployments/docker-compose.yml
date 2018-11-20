@@ -1,0 +1,74 @@
+version: '3'
+services:
+
+    dockerapi:
+        privileged: true
+        image: docker:stable-dind
+        container_name: dockerAPI
+        ports:
+          - "2375:2375"
+        volumes:
+            - docker_vol:/var/lib/docker
+            - ../deployments/daemon.json:/etc/docker/daemon.json:ro
+            - ../deployments/certs/:/data/certs/
+        networks:
+            - husky_net
+
+    huskyapi:
+        container_name: huskyCIAPI
+        environment:
+            GOPATH: /go/
+            HUSKY_API_PORT: 8888
+            MONGO_HOST: mongodb
+            MONGO_DATABASE_NAME: huskyDB
+            MONGO_PORT: 27017
+            MONGO_TIMEOUT: 60
+            MONGO_PORT: 27017
+            MONGO_TIMEOUT: 60
+            DOCKER_HOSTS_LIST: dockerapi
+            DOCKER_API_PORT: 2375
+            DOCKER_HOSTS_CERT: /go/src/github.com/globocom/husky/cert.pem
+            DOCKER_HOSTS_KEY: /go/src/github.com/globocom/husky/key.pem
+            DOCKER_CERT_PATH: /go/src/github.com/globocom/husky/
+            DOCKER_TLS_VERIFY: 1
+        env_file:
+            - dockers.env
+        build:
+            context: ../
+            dockerfile: deployments/huskyCI.Dockerfile
+        command: "go run server.go"
+        volumes:
+            - docker_vol:/var/lib/docker
+            - ../deployments/certs/client-huskyapi-cert.pem:/go/src/github.com/globocom/husky/cert.pem:ro
+            - ../deployments/certs/client-huskyapi-key.pem:/go/src/github.com/globocom/husky/key.pem:ro
+            - ../deployments/certs/ca.pem:/go/src/github.com/globocom/husky/ca.pem:ro
+        ports:
+          - "8888:8888"
+        networks:
+            - husky_net
+        depends_on:
+            - mongodb
+            - dockerapi
+        external_links:
+            - dockerapi:dockerapi
+
+    mongodb:
+        container_name: mongodb
+        build:
+            context: ../
+            dockerfile: deployments/mongo.Dockerfile
+        env_file:
+            - dockers.env
+        ports:
+          - "27017:27017"
+          - "27018:27018"
+        volumes:
+            - mongo_vol:/data/db
+        networks:
+            - husky_net
+networks:
+    husky_net:
+
+volumes:
+    docker_vol:
+    mongo_vol:

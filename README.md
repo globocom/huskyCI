@@ -2,9 +2,9 @@
 
 [![CircleCI](https://circleci.com/gh/globocom/husky/tree/master.svg?style=svg&circle-token=415bfb6b5aa0dfce8d2129878a66326da9533150)](https://circleci.com/gh/globocom/husky/tree/master)
 
-HuskyCI is an open source tool that performs security tests inside CI pipelines of multiple projects and centralizes all results into a database for further analysis and metrics. 
+HuskyCI is an open source tool that performs security tests inside CI pipelines of multiple projects and centralizes all results into a database for further analysis and metrics.
 
-The main goal of this project is to help development teams improve the quality of their code by finding vulnerabilities as soon as possible.  
+The main goal of this project is to help development teams improve the quality of their code by finding vulnerabilities as soon as possible.
 
 ## How does it work?
 
@@ -19,13 +19,13 @@ test-project:
     - ./huskyci-client
 ```
 
-By adding this simple stage, requests will be made to HuskyCI API and it will start analyzing new code submitted via Pull Request using well-known open source static analysis tools, as shown in the example bellow: 
+By adding this simple stage, requests will be made to HuskyCI API and it will start analyzing new code submitted via Pull Request using well-known open source static analysis tools, as shown in the example bellow:
 
 ![architecture](images/arch-example-huskyCI.png)
 
 ## What is this HuskyCI Client all about?
 
-Well, actually [HuskyCI Client][HuskyCI Client] is just a binary built in Golang that performs the proper requests to HuskyCI API, waits security tests finish and inteprets the results by returning errors (if vulnerabilities are found) or not: 
+Well, actually [HuskyCI Client][HuskyCI Client] is just a binary built in Golang that performs the proper requests to HuskyCI API, waits security tests finish and inteprets the results by returning errors (if vulnerabilities are found) or not:
 
 ```
 $ ./huskyci-client
@@ -53,10 +53,10 @@ exit status 1
 
 ## Cool! So HuskyCI can check vulnerabilities in all languages ever?
 
-Wow! Hold on! At this moment HuskyCI can only perform static security analysis in Python ([Bandit][Bandit]), Ruby ([Brakeman][Brakeman]) and Golang ([Gosec][Gosec]). However, if you want to contribute to HuskyCI by adding other cool security tests, you should check this documentation right away! 
+Wow! Hold on! At this moment HuskyCI can only perform static security analysis in Python ([Bandit][Bandit]), Ruby ([Brakeman][Brakeman]) and Golang ([Gosec][Gosec]). However, if you want to contribute to HuskyCI by adding other cool security tests, you should check this documentation right away!
 
 ## Running locally
- 
+
 The easiest way to deploy HuskyCI is by using Docker Compose, thus, you should have [Docker][Docker Install] and [Docker Compose][Docker Compose Install] installed on your machine. After cloning the repository, just run this to provision your local environment:
 
 ```
@@ -65,7 +65,7 @@ make install
 
 #### Starting a new analysis:
 
-Use the following curl command to manually start a new analysis: 
+Use the following curl command to manually start a new analysis:
 
 ```
 curl -s -H "Content-Type: application/json" -d '{"repositoryURL":"https://github.com/tsuru/cst.git","repositoryBranch":"master"}' http://localhost:8888/husky
@@ -96,7 +96,7 @@ Check here!
 
 ## License
 
-This project is licensed under the --- License - read [LICENSE.md][LICENSE.md] file for details.
+This project is licensed under the --- License - read [LICENSE.md](LICENSE.md) file for details.
 
 [Docker Install]:  https://docs.docker.com/install/
 [Docker Compose Install]: https://docs.docker.com/compose/install/

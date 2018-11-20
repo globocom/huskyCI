@@ -1,5 +1,10 @@
 #!/bin/bash
-#see https://docs.docker.com/engine/security/https/
+#
+# This script will create certs so that DockerAPI only accepts authenticated requests
+# from HuskyCI.
+#
+# Check https://docs.docker.com/engine/security/https/ for more detailed info.
+
 
 EXPIRATIONDAYS=700
 CASUBJSTRING="/C=GB/ST=London/L=London/O=ExampleCompany/OU=IT/CN=example.com/emailAddress=test@example.com"
@@ -11,37 +16,37 @@ key="$1"
 case $key in
     -m|--mode)
     MODE="$2"
-    shift 
+    shift
     ;;
     -h|--hostname)
     NAME="$2"
-    shift 
+    shift
     ;;
     -hip|--hostip)
     SERVERIP="$2"
-    shift 
-    ;;    
+    shift
+    ;;
     -pw|--password)
     PASSWORD="$2"
-    shift 
+    shift
     ;;
     -t|--targetdir)
     TARGETDIR="$2"
-    shift 
-    ;;    
+    shift
+    ;;
     -e|--expirationdays)
     EXPIRATIONDAYS="$2"
-    shift 
-    ;;    
+    shift
+    ;;
     --ca-subj)
     CASUBJSTRING="$2"
-    shift 
-    ;; 
+    shift
+    ;;
     *)
             # unknown option
     ;;
 esac
-shift 
+shift
 done
 
 echo "Mode $MODE"
@@ -59,7 +64,7 @@ function usage {
     echo "  -hip|--hostip             host's IP - default: none"
     echo "  -pw|--password            Password for CA Key generation"
     echo "  -t|--targetdir            Targetdir for certfiles and keys"
-    echo "  -e|--expirationdays       certificate expiration in day - default: 700 days"    
+    echo "  -e|--expirationdays       certificate expiration in day - default: 700 days"
     echo "  --ca-subj                 subj string for ca cert - default: Example String..."
     exit 1
 }
@@ -67,7 +72,7 @@ function usage {
 function createCA {
     openssl genrsa -aes256 -passout pass:$PASSWORD -out $TARGETDIR/ca-key.pem 4096
     openssl req -passin pass:$PASSWORD -new -x509 -days $EXPIRATIONDAYS -key $TARGETDIR/ca-key.pem -sha256 -out $TARGETDIR/ca.pem -subj $CASUBJSTRING
-    
+
     chmod 0400 $TARGETDIR/ca-key.pem
     chmod 0444 $TARGETDIR/ca.pem
 }
@@ -111,17 +116,17 @@ function createClientCert {
     chmod 0444 $TARGETDIR/client-cert.pem
 
     mv $TARGETDIR/client-key.pem $TARGETDIR/client-$NAME-key.pem
-    mv $TARGETDIR/client-cert.pem $TARGETDIR/client-$NAME-cert.pem 
+    mv $TARGETDIR/client-cert.pem $TARGETDIR/client-$NAME-cert.pem
 }
 
 
 if [[ -z $MODE || ($MODE != "ca" && -z $NAME) || -z $PASSWORD || -z $TARGETDIR ]]; then
-    usage   
+    usage
 fi
 
 mkdir -p $TARGETDIR
 
-if [[ $MODE = "ca" ]]; then 
+if [[ $MODE = "ca" ]]; then
     createCA
 elif [[ $MODE = "server" ]]; then
     createServerCert
