@@ -19,6 +19,12 @@ COLOR_RED = \033[31m
 
 PROJECT := HuskyCI
 
+TAG := $(shell git describe --tags --abbrev=0)
+DATE := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
+COMMIT := $(shell git rev-parse $(TAG))
+AUTHOR := $(shell git show -s --pretty="%an <%ae>" $(TAG))
+LDFLAGS := '-X "main.version=$(TAG)" -X "main.commit=$(COMMIT)" -X "main.date=$(DATE)" -X "main.author=$(AUTHOR)"'
+
 ## Installs a development environment using docker-compose
 install: generate-passwords create-certs compose check-env pull-images
 
@@ -49,13 +55,15 @@ lint:
 
 ## Builds Go project to the executable file huskyci
 build:
-	$(GO) build -o "$(HUSKYCIBIN)"
+	$(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCIBIN)"
+
 
 ## Run project using docker-compose
 compose:
-	docker-compose -f deployments/docker-compose.yml build
-	docker-compose -f deployments/docker-compose.yml down -v
-	docker-compose -f deployments/docker-compose.yml up -d --force-recreate
+	docker-compose -f dev/docker-compose.yml build
+	docker-compose -f dev/docker-compose.yml down
+	docker-compose -f dev/docker-compose.yml up -d --force-recreate
+	docker-compose -f dev/docker-compose.yml logs -f huskyapi
 
 ## Pulls every HuskyCI docker image into dockerAPI container
 pull-images:
