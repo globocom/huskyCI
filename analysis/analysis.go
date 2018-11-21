@@ -12,9 +12,23 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+type version struct {
+	Version string `json:"version"`
+	Commit  string `json:"commit"`
+	Author  string `json:"author"`
+	Date    string `json:"date"`
+}
+
+var Version version
+
 // HealthCheck is the heath check function.
 func HealthCheck(c echo.Context) error {
 	return c.String(http.StatusOK, "WORKING!\n")
+}
+
+func VersionHandler(c echo.Context) error {
+	return c.JSON(http.StatusOK, Version)
+
 }
 
 // ReceiveRequest receives the request and performs several checks before starting a new analysis.
