@@ -2,17 +2,54 @@
 
 
 [[projects]]
+  digest = "1:865079840386857c809b72ce300be7580cb50d3d3129ce11bf9aa6ca2bc1934a"
+  name = "github.com/fatih/color"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "5b77d2a35fb0ede96d138fc9a99f5c9b6aef11b4"
+  version = "v1.7.0"
+
+[[projects]]
+  digest = "1:c658e84ad3916da105a761660dcaeb01e63416c8ec7bc62256a9b411a05fcd67"
+  name = "github.com/mattn/go-colorable"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "167de6bfdfba052fa6b2d3664c8f5272e23c9072"
+  version = "v0.0.9"
+
+[[projects]]
+  digest = "1:0981502f9816113c9c8c4ac301583841855c8cf4da8c72f696b3ebedf6d0e4e5"
+  name = "github.com/mattn/go-isatty"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "6ca4dbf54d38eea1a992b3c722a76a5d1c4cb25c"
+  version = "v0.0.4"
+
+[[projects]]
+  branch = "master"
+  digest = "1:44010c69a8af2745fcdc6b4c57b126b4dd3de5cb01b6a5ba97a1781a24df0886"
+  name = "golang.org/x/sys"
+  packages = ["unix"]
+  pruneopts = "UT"
+  revision = "ec83556a53fe16b65c452a104ea9d1e86a671852"
+
+[[projects]]
   branch = "v2"
+  digest = "1:2642fd0b6900c77247d61d80cf2eb59a374ef4ffc2d25a1b95b87dc355b2894e"
   name = "gopkg.in/mgo.v2"
   packages = [
     "bson",
-    "internal/json"
+    "internal/json",
   ]
+  pruneopts = "UT"
   revision = "9856a29383ce1c59f308dd1cf0363a79b5bef6b5"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "72c4b713baceea3e6f505de57a758c2f27c3375e5d62237e0b1c2868f9b0771e"
+  input-imports = [
+    "github.com/fatih/color",
+    "gopkg.in/mgo.v2/bson",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1

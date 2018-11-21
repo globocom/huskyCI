@@ -57,9 +57,8 @@ func StartAnalysis() (string, error) {
 func GetAnalysis(RID string) (types.Analysis, error) {
 
 	analysis := types.Analysis{}
-	huskyMonitorAnalysisURL := config.HuskyAPI + "/husky/" + RID
 
-	resp, err := http.Get(huskyMonitorAnalysisURL)
+	resp, err := http.Get(config.HuskyAPI + "/husky/" + RID)
 	if err != nil {
 		return analysis, err
 	}
@@ -83,7 +82,7 @@ func MonitorAnalysis(RID string) (types.Analysis, error) {
 
 	analysis := types.Analysis{}
 	timeout := time.After(15 * time.Minute)
-	retryTick := time.Tick(15 * time.Second)
+	retryTick := time.Tick(30 * time.Second)
 
 	for {
 		select {
