@@ -46,6 +46,7 @@ func main() {
 	echoInstance.Use(middleware.RequestID())
 
 	echoInstance.GET("/healthcheck", analysis.HealthCheck)
+	echoInstance.GET("/version", analysis.VersionHandler)
 	echoInstance.GET("/husky/:id", analysis.StatusAnalysis)
 	echoInstance.POST("/husky", analysis.ReceiveRequest)
 	echoInstance.POST("/securitytest", analysis.CreateNewSecurityTest)
