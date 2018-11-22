@@ -18,7 +18,6 @@ import (
 var (
 	version string
 	commit  string
-	author  string
 	date    string
 )
 
@@ -26,7 +25,7 @@ const ProjectName = "HuskyCI"
 
 func main() {
 
-	configVersion(version, commit, author, date)
+	configVersion(version, commit, date)
 
 	fmt.Println("[*] Starting Husky...")
 
@@ -200,16 +199,15 @@ func checkDefaultSecurityTests(configAPI *apiContext.APIConfig) error {
 	return nil
 }
 
-func configVersion(version, commit, author, date string) {
+func configVersion(version, commit, date string) {
 	analysis.Version.Version = version
 	analysis.Version.Commit = commit
-	analysis.Version.Author = author
 	analysis.Version.Date = date
 
-	printVersion(version, commit, author, date)
+	printVersion(version, commit, date)
 }
 
-func printVersion(version, commit, author, date string) {
+func printVersion(version, commit, date string) {
 	vFlag := flag.Bool("v", false, "print current version")
 	versionFlag := flag.Bool("version", false, "print current version")
 	flag.Parse()
@@ -219,17 +217,16 @@ func printVersion(version, commit, author, date string) {
 	project: %s
 	version: %s
 	commit: %s
-	author: %s
 	data build: %s
 	************************************
-	`, ProjectName, version, commit, author, date)
+	`, ProjectName, version, commit, date)
 
 	if *vFlag || *versionFlag {
 		fmt.Println(printVersion)
 		os.Exit(0)
 	}
 
-	if version != "" && date != "" && author != "" {
+	if version != "" && date != "" {
 		fmt.Println(printVersion)
 	}
 }

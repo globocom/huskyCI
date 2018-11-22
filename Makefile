@@ -22,8 +22,7 @@ PROJECT := HuskyCI
 TAG := $(shell git describe --tags --abbrev=0)
 DATE := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 COMMIT := $(shell git rev-parse $(TAG))
-AUTHOR := $(shell git show -s --pretty="%an <%ae>" $(TAG))
-LDFLAGS := '-X "main.version=$(TAG)" -X "main.commit=$(COMMIT)" -X "main.date=$(DATE)" -X "main.author=$(AUTHOR)"'
+LDFLAGS := '-X "main.version=$(TAG)" -X "main.commit=$(COMMIT)" -X "main.date=$(DATE)"'
 
 ## Installs a development environment using docker-compose
 install: generate-passwords create-certs compose check-env pull-images
