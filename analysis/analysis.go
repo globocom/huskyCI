@@ -15,7 +15,6 @@ import (
 type version struct {
 	Version string `json:"version"`
 	Commit  string `json:"commit"`
-	Author  string `json:"author"`
 	Date    string `json:"date"`
 }
 
