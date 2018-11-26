@@ -1,11 +1,11 @@
 package analysis
 
 import (
-	"fmt"
 	"os"
 	"strings"
 	"time"
 
+	"github.com/globocom/glbgelf"
 	docker "github.com/globocom/husky/dockers"
 	"github.com/globocom/husky/types"
 	"gopkg.in/mgo.v2/bson"
@@ -19,28 +19,36 @@ func DockerRun(RID string, analysis *types.Analysis, securityTest types.Security
 
 	d, err := docker.NewDocker()
 	if err != nil {
-		fmt.Println("Error NewDocker():", err)
+		glbgelf.Logger.SendLog(map[string]interface{}{
+			"action": "DockerRun",
+			"info":   "DOCKERRUN"}, "ERROR", "Error NewDocker():", err)
 		return
 	}
 
 	// step 0: pull image
 	err = dockerPullImage(d, securityTest.Image)
 	if err != nil {
-		fmt.Println("Error dockerPullImage():", err)
+		glbgelf.Logger.SendLog(map[string]interface{}{
+			"action": "DockerRun",
+			"info":   "DOCKERRUN"}, "ERROR", "Error dockerPullImage():", err)
 		return
 	}
 
 	// step 1: create a new container.
 	err = dockerRunCreateContainer(d, analysis, securityTest, newContainer)
 	if err != nil {
-		fmt.Println("Error dockerRunCreateContainer():", err)
+		glbgelf.Logger.SendLog(map[string]interface{}{
+			"action": "DockerRun",
+			"info":   "DOCKERRUN"}, "ERROR", "Error dockerRunCreateContainer():", err)
 		return
 	}
 
 	// step 2: start created container.
 	err = dockerRunStartContainer(d, analysis)
 	if err != nil {
-		fmt.Println("Error dockerRunStartContainer():", err)
+		glbgelf.Logger.SendLog(map[string]interface{}{
+			"action": "DockerRun",
+			"info":   "DOCKERRUN"}, "ERROR", "Error dockerRunStartContainer():", err)
 		return
 	}
 
@@ -49,7 +57,9 @@ func DockerRun(RID string, analysis *types.Analysis, securityTest types.Security
 	if err != nil {
 		// error timeout will enter here!
 		if err := dockerRunRegisterError(d, analysis); err != nil {
-			fmt.Println("Error dockerRunRegisterError():", err)
+			glbgelf.Logger.SendLog(map[string]interface{}{
+				"action": "DockerRun",
+				"info":   "DOCKERRUN"}, "ERROR", "Error dockerRunRegisterError():", err)
 			return
 		}
 		return
@@ -58,7 +68,9 @@ func DockerRun(RID string, analysis *types.Analysis, securityTest types.Security
 	// step 4: read cmd output from container.
 	cOutput, err := dockerRunReadOutput(d, analysis)
 	if err != nil {
-		fmt.Println("Error dockerRunReadOutput():", err)
+		glbgelf.Logger.SendLog(map[string]interface{}{
+			"action": "DockerRun",
+			"info":   "DOCKERRUN"}, "ERROR", "Error dockerRunReadOutput():", err)
 		return
 	}
 
@@ -73,7 +85,9 @@ func DockerRun(RID string, analysis *types.Analysis, securityTest types.Security
 	case "brakeman":
 		BrakemanStartAnalysis(d.CID, cOutput)
 	default:
-		fmt.Println("Error: Could not find securityTest.Name.")
+		glbgelf.Logger.SendLog(map[string]interface{}{
+			"action": "DockerRun",
+			"info":   "DOCKERRUN"}, "ERROR", "Error: Could not find securityTest.Name.")
 	}
 }
 
@@ -91,7 +105,9 @@ func dockerRunCreateContainer(d *docker.Docker, analysis *types.Analysis, securi
 		analysis.Containers = append(analysis.Containers, newContainer)
 		err := UpdateOneDBAnalysis(analysisQuery, *analysis)
 		if err != nil {
-			fmt.Println("Error 1 dockerRunCreateContainer() UpdateOneDBAnalysis():", err)
+			glbgelf.Logger.SendLog(map[string]interface{}{
+				"action": "dockerRunCreateContainer",
+				"info":   "DOCKERRUN"}, "ERROR", "Error 1 dockerRunCreateContainer() UpdateOneDBAnalysis():", err)
 			return err // implement a maxRetry?
 		}
 		return err // implement a maxRetry?
@@ -104,7 +120,9 @@ func dockerRunCreateContainer(d *docker.Docker, analysis *types.Analysis, securi
 	analysis.Containers = append(analysis.Containers, newContainer)
 	err = UpdateOneDBAnalysis(analysisQuery, *analysis)
 	if err != nil {
-		fmt.Println("Error 2 dockerRunCreateContainer() UpdateOneDBAnalysis():", err)
+		glbgelf.Logger.SendLog(map[string]interface{}{
+			"action": "dockerRunCreateContainer",
+			"info":   "DOCKERRUN"}, "ERROR", "Error 2 dockerRunCreateContainer() UpdateOneDBAnalysis():", err)
 	}
 	return err
 }
@@ -122,7 +140,9 @@ func dockerRunStartContainer(d *docker.Docker, analysis *types.Analysis) error {
 		}
 		err = UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
-			fmt.Println("Error updating AnalysisCollection (step 2-err):", err)
+			glbgelf.Logger.SendLog(map[string]interface{}{
+				"action": "dockerRunStartContainer",
+				"info":   "DOCKERRUN"}, "ERROR", "Error updating AnalysisCollection (step 2-err):", err)
 			return err
 		}
 		return err
@@ -152,7 +172,9 @@ func dockerRunReadOutput(d *docker.Docker, analysis *types.Analysis) (string, er
 	analysisQuery := map[string]interface{}{"containers.CID": d.CID}
 	cOutput, err := d.ReadOutput()
 	if err != nil {
-		fmt.Println("Error reading output from container", d.CID, ":", err)
+		glbgelf.Logger.SendLog(map[string]interface{}{
+			"action": "dockerRunReadOutput",
+			"info":   "DOCKERRUN"}, "ERROR", "Error reading output from container", d.CID, ":", err)
 		return "", err // implement a maxRetry?
 	}
 	finishedAt := time.Now()
@@ -165,7 +187,9 @@ func dockerRunReadOutput(d *docker.Docker, analysis *types.Analysis) (string, er
 	}
 	err = UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 	if err != nil {
-		fmt.Println("Error updating AnalysisCollection (step 4).", err)
+		glbgelf.Logger.SendLog(map[string]interface{}{
+			"action": "dockerRunReadOutput",
+			"info":   "DOCKERRUN"}, "ERROR", "Error updating AnalysisCollection (step 4).", err)
 		return "", err
 	}
 	return cOutput, err
@@ -214,7 +238,9 @@ func dockerPullImage(d *docker.Docker, image string) error {
 		}
 		if time.Now().Before(timeout) {
 			time.Sleep(5 * time.Second)
-			fmt.Println("Waiting pull image...")
+			glbgelf.Logger.SendLog(map[string]interface{}{
+				"action": "dockerPullImage",
+				"info":   "DOCKERRUN"}, "INFO", "Waiting pull image...")
 		} else {
 			break
 		}
