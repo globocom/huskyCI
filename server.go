@@ -10,6 +10,7 @@ import (
 	apiContext "github.com/globocom/husky/context"
 	db "github.com/globocom/husky/db/mongo"
 	docker "github.com/globocom/husky/dockers"
+	"github.com/globocom/husky/types"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	mgo "gopkg.in/mgo.v2"
@@ -21,11 +22,11 @@ var (
 	date    string
 )
 
-const ProjectName = "HuskyCI"
+const projectName = "HuskyCI"
 
 func main() {
 
-	configVersion(version, commit, date)
+	configAndPrintVersion(version, commit, date)
 
 	fmt.Println("[*] Starting Husky...")
 
@@ -199,34 +200,27 @@ func checkDefaultSecurityTests(configAPI *apiContext.APIConfig) error {
 	return nil
 }
 
-func configVersion(version, commit, date string) {
+func configAndPrintVersion(version, commit, date string) {
+
+	analysis.Version.Project = projectName
 	analysis.Version.Version = version
 	analysis.Version.Commit = commit
 	analysis.Version.Date = date
 
-	printVersion(version, commit, date)
+	printVersion(analysis.Version)
 }
 
-func printVersion(version, commit, date string) {
+func printVersion(versionAPI types.VersionAPI) {
 	vFlag := flag.Bool("v", false, "print current version")
 	versionFlag := flag.Bool("version", false, "print current version")
 	flag.Parse()
 
-	printVersion := fmt.Sprintf(`
-	************************************
-	project: %s
-	version: %s
-	commit: %s
-	data build: %s
-	************************************
-	`, ProjectName, version, commit, date)
-
 	if *vFlag || *versionFlag {
-		fmt.Println(printVersion)
+		versionAPI.Print()
 		os.Exit(0)
 	}
 
-	if version != "" && date != "" {
-		fmt.Println(printVersion)
+	if versionAPI.Version != "" {
+		versionAPI.Print()
 	}
 }
