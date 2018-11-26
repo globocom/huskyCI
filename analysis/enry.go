@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/globocom/glbgelf"
 	"github.com/globocom/husky/types"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -17,7 +18,9 @@ func EnryStartAnalysis(CID string, cOutput string, RID string) {
 	analysisQuery := map[string]interface{}{"containers.CID": CID}
 	analysis, err := FindOneDBAnalysis(analysisQuery)
 	if err != nil {
-		fmt.Println("Could not find analysis by this CID:", err)
+		glbgelf.Logger.SendLog(map[string]interface{}{
+			"action": "EnryStartAnalysis",
+			"info":   "ENRY"}, "ERROR", "Could not find analysis by this CID:", err)
 		return
 	}
 
@@ -32,7 +35,9 @@ func EnryStartAnalysis(CID string, cOutput string, RID string) {
 		}
 		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
-			fmt.Println("Error updating AnalysisCollection (inside gas.go):", err)
+			glbgelf.Logger.SendLog(map[string]interface{}{
+				"action": "EnryStartAnalysis",
+				"info":   "ENRY"}, "ERROR", "Error updating AnalysisCollection (inside gas.go):", err)
 		}
 		return
 	}
@@ -41,7 +46,9 @@ func EnryStartAnalysis(CID string, cOutput string, RID string) {
 	mapLanguages := make(map[string][]interface{})
 	err = json.Unmarshal([]byte(cOutput), &mapLanguages)
 	if err != nil {
-		fmt.Println("Unmarshall error (enry.go):", err)
+		glbgelf.Logger.SendLog(map[string]interface{}{
+			"action": "EnryStartAnalysis",
+			"info":   "ENRY"}, "ERROR", "Unmarshall error (enry.go):", err)
 		return
 	}
 	repositoryLanguages := []types.Language{}
@@ -52,7 +59,9 @@ func EnryStartAnalysis(CID string, cOutput string, RID string) {
 			if reflect.TypeOf(f).String() == "string" {
 				fs = append(fs, f.(string))
 			} else {
-				fmt.Println("Error mapping languages.")
+				glbgelf.Logger.SendLog(map[string]interface{}{
+					"action": "EnryStartAnalysis",
+					"info":   "ENRY"}, "ERROR", "Error mapping languages.")
 				return
 			}
 		}
@@ -69,7 +78,9 @@ func EnryStartAnalysis(CID string, cOutput string, RID string) {
 	genericSecurityTestQuery := map[string]interface{}{"language": "Generic", "default": true}
 	genericSecurityTests, err := FindAllDBSecurityTest(genericSecurityTestQuery)
 	if err != nil {
-		fmt.Println("Error finding securityTest (language=Generic and default=true):", err)
+		glbgelf.Logger.SendLog(map[string]interface{}{
+			"action": "EnryStartAnalysis",
+			"info":   "ENRY"}, "ERROR", "Error finding securityTest (language=Generic and default=true):", err)
 		return
 	}
 
@@ -95,7 +106,9 @@ func EnryStartAnalysis(CID string, cOutput string, RID string) {
 	}
 	err = UpdateOneDBRepository(repositoryQuery, updateRepositoryQuery)
 	if err != nil {
-		fmt.Println("Could not update repository's securityTests:", err)
+		glbgelf.Logger.SendLog(map[string]interface{}{
+			"action": "EnryStartAnalysis",
+			"info":   "ENRY"}, "ERROR", "Could not update repository's securityTests:", err)
 		return
 	}
 
@@ -103,7 +116,9 @@ func EnryStartAnalysis(CID string, cOutput string, RID string) {
 	analysis.SecurityTests = allSecurityTests
 	err = UpdateOneDBAnalysis(analysisQuery, analysis)
 	if err != nil {
-		fmt.Println("Error updating AnalysisCollection:", err)
+		glbgelf.Logger.SendLog(map[string]interface{}{
+			"action": "EnryStartAnalysis",
+			"info":   "ENRY"}, "ERROR", "Error updating AnalysisCollection:", err)
 		return
 	}
 
