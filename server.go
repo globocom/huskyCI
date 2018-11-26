@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"os"
 
@@ -10,13 +11,24 @@ import (
 	apiContext "github.com/globocom/husky/context"
 	db "github.com/globocom/husky/db/mongo"
 	docker "github.com/globocom/husky/dockers"
+	"github.com/globocom/husky/types"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	mgo "gopkg.in/mgo.v2"
 	"strings"
 )
 
+var (
+	version string
+	commit  string
+	date    string
+)
+
+const projectName = "HuskyCI"
+
 func main() {
+
+	configAndPrintVersion(version, commit, date)
 
 	isDev := true
 	if strings.EqualFold(os.Getenv("HUSKYCI_DEV"), "false") {
@@ -46,6 +58,7 @@ func main() {
 	echoInstance.Use(middleware.RequestID())
 
 	echoInstance.GET("/healthcheck", analysis.HealthCheck)
+	echoInstance.GET("/version", analysis.VersionHandler)
 	echoInstance.GET("/husky/:id", analysis.StatusAnalysis)
 	echoInstance.POST("/husky", analysis.ReceiveRequest)
 	echoInstance.POST("/securitytest", analysis.CreateNewSecurityTest)
@@ -213,4 +226,29 @@ func checkDefaultSecurityTests(configAPI *apiContext.APIConfig) error {
 	}
 
 	return nil
+}
+
+func configAndPrintVersion(version, commit, date string) {
+
+	analysis.Version.Project = projectName
+	analysis.Version.Version = version
+	analysis.Version.Commit = commit
+	analysis.Version.Date = date
+
+	printVersion(analysis.Version)
+}
+
+func printVersion(versionAPI types.VersionAPI) {
+	vFlag := flag.Bool("v", false, "print current version")
+	versionFlag := flag.Bool("version", false, "print current version")
+	flag.Parse()
+
+	if *vFlag || *versionFlag {
+		versionAPI.Print()
+		os.Exit(0)
+	}
+
+	if versionAPI.Version != "" {
+		versionAPI.Print()
+	}
 }

@@ -12,9 +12,17 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+// Version holds the API version to be returned in /version route.
+var Version types.VersionAPI
+
 // HealthCheck is the heath check function.
 func HealthCheck(c echo.Context) error {
 	return c.String(http.StatusOK, "WORKING!\n")
+}
+
+//VersionHandler returns the API version
+func VersionHandler(c echo.Context) error {
+	return c.JSON(http.StatusOK, Version)
 }
 
 // ReceiveRequest receives the request and performs several checks before starting a new analysis.

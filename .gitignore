@@ -8,3 +8,4 @@ coverage.txt
 *.pem
 .env
 .vagrant
+huskyci
