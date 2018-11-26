@@ -58,7 +58,7 @@ func BanditStartAnalysis(CID string, cOutput string) {
 			"info":   "BANDIT"}, "ERROR", "Unmarshall error (bandit.go):", err)
 		glbgelf.Logger.SendLog(map[string]interface{}{
 			"action": "BanditStartAnalysis",
-			"info":   "BANDIT"}, "INFO", "Resulted output:", cOutput)
+			"info":   "BANDIT"}, "INFO", "cOutput result:", cOutput)
 		return
 	}
 
