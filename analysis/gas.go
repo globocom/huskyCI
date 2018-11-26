@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/globocom/glbgelf"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -49,7 +50,9 @@ func GasStartAnalysis(CID string, cOutput string) {
 		}
 		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
-			fmt.Println("Error updating AnalysisCollection (inside gas.go):", err)
+			glbgelf.Logger.SendLog(map[string]interface{}{
+				"action": "GasStartAnalysis",
+				"info":   "GAS"}, "ERROR", "Error updating AnalysisCollection (inside gas.go):", err)
 		}
 		return
 	}
@@ -65,7 +68,9 @@ func GasStartAnalysis(CID string, cOutput string) {
 		}
 		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
-			fmt.Println("Error updating AnalysisCollection (inside gas.go):", err)
+			glbgelf.Logger.SendLog(map[string]interface{}{
+				"action": "GasStartAnalysis",
+				"info":   "GAS"}, "ERROR", "Error updating AnalysisCollection (inside gas.go):", err)
 		}
 		return
 	}
@@ -74,8 +79,12 @@ func GasStartAnalysis(CID string, cOutput string) {
 	gasOutput := GasOutput{}
 	err := json.Unmarshal([]byte(cOutput), &gasOutput)
 	if err != nil {
-		fmt.Println("Unmarshall error (gas.go):", err)
-		fmt.Println(cOutput)
+		glbgelf.Logger.SendLog(map[string]interface{}{
+			"action": "GasStartAnalysis",
+			"info":   "GAS"}, "ERROR", "Unmarshall error (gas.go):", err)
+		glbgelf.Logger.SendLog(map[string]interface{}{
+			"action": "GasStartAnalysis",
+			"info":   "GAS"}, "ERROR", cOutput)
 		return
 	}
 
@@ -96,7 +105,9 @@ func GasStartAnalysis(CID string, cOutput string) {
 	}
 	err = UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 	if err != nil {
-		fmt.Println("Error updating AnalysisCollection (inside gas.go):", err)
+		glbgelf.Logger.SendLog(map[string]interface{}{
+			"action": "GasStartAnalysis",
+			"info":   "GAS"}, "ERROR", "Error updating AnalysisCollection (inside gas.go):", err)
 		return
 	}
 }

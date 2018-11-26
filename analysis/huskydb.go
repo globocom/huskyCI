@@ -2,9 +2,9 @@ package analysis
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
+	"github.com/globocom/glbgelf"
 	db "github.com/globocom/husky/db/mongo"
 	"github.com/globocom/husky/types"
 	"gopkg.in/mgo.v2/bson"
@@ -123,7 +123,9 @@ func InsertDBRepository(repository types.Repository) error {
 		securityTestQuery := map[string]interface{}{"default": true, "language": "Generic"}
 		securityTestList, err = FindAllDBSecurityTest(securityTestQuery)
 		if err != nil {
-			fmt.Println("Could not find default securityTests:", err)
+			glbgelf.Logger.SendLog(map[string]interface{}{
+				"action": "InsertDBRepository",
+				"info":   "HUSKYDB"}, "ERROR", "Could not find default securityTests:", err)
 		}
 	} else {
 		// checking if a given securityTestName matches a securityTest
@@ -133,7 +135,9 @@ func InsertDBRepository(repository types.Repository) error {
 				securityTestQuery := map[string]interface{}{"name": securityTestName}
 				securityTestResult, err := FindOneDBSecurityTest(securityTestQuery)
 				if err != nil {
-					fmt.Println("Could not find securityTestName:", securityTestName)
+					glbgelf.Logger.SendLog(map[string]interface{}{
+						"action": "InsertDBRepository",
+						"info":   "HUSKYDB"}, "ERROR", "Could not find securityTestName:", securityTestName)
 				} else {
 					securityTestList = append(securityTestList, securityTestResult)
 				}
@@ -143,7 +147,9 @@ func InsertDBRepository(repository types.Repository) error {
 				securityTestQuery := map[string]interface{}{"name": securityTestName}
 				securityTestResult, err := FindOneDBSecurityTest(securityTestQuery)
 				if err != nil {
-					fmt.Println("Could not find securityTestName:", securityTestName)
+					glbgelf.Logger.SendLog(map[string]interface{}{
+						"action": "InsertDBRepository",
+						"info":   "HUSKYDB"}, "ERROR", "Could not find securityTestName:", securityTestName)
 				} else {
 					securityTestList = append(securityTestList, securityTestResult)
 				}
