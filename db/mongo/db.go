@@ -74,7 +74,7 @@ func Connect() (*DB, error) {
 		return nil, err
 	}
 
-	go autoReconnect(session)
+	//go autoReconnect(session)
 
 	return &DB{Session: session}, nil
 }
