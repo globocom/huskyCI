@@ -82,6 +82,14 @@
   version = "v1.4.7"
 
 [[projects]]
+  digest = "1:a7a55aa6c1c3a06f9694957995001d915f7708a5cb300a9ce6f7f5f54855fcc3"
+  name = "github.com/globocom/glbgelf"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "eda2a164a9d3f248b06487e8b2adca1f6d38f9df"
+  version = "2.0.0"
+
+[[projects]]
   digest = "1:c0d19ab64b32ce9fe5cf4ddceba78d5bc9807f0016db6b1183599da3dcc24d10"
   name = "github.com/hashicorp/hcl"
   packages = [
@@ -283,6 +291,14 @@
 
 [[projects]]
   branch = "v2"
+  digest = "1:c4d761c08662e6ad6cae23ccbc4f607638ae55b08dba2f15aceac91683f0f87c"
+  name = "gopkg.in/Graylog2/go-gelf.v2"
+  packages = ["gelf"]
+  pruneopts = "UT"
+  revision = "4dbb9d7213480a8484c02610e3f51ecd9c506a71"
+
+[[projects]]
+  branch = "v2"
   digest = "1:988de7520a09024d5d94cd99bd545afbf194893994ec759b1cda0a0bbb6adb80"
   name = "gopkg.in/mgo.v2"
   packages = [
@@ -311,6 +327,7 @@
     "github.com/docker/docker/api/types/container",
     "github.com/docker/docker/api/types/filters",
     "github.com/docker/docker/client",
+    "github.com/globocom/glbgelf",
     "github.com/labstack/echo",
     "github.com/labstack/echo/middleware",
     "github.com/spf13/viper",
