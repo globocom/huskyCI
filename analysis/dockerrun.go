@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/globocom/glbgelf"
-	docker "github.com/globocom/husky/dockers"
-	"github.com/globocom/husky/types"
+	docker "github.com/globocom/huskyci/dockers"
+	"github.com/globocom/huskyci/types"
 	"gopkg.in/mgo.v2/bson"
 )
 

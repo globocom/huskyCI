@@ -9,3 +9,5 @@ coverage.txt
 .env
 .vagrant
 huskyci
+dockers.env
+mongo-init.js

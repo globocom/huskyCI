@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/globocom/husky/types"
+	"github.com/globocom/huskyci/types"
 	"github.com/spf13/viper"
 )
 

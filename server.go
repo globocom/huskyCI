@@ -5,17 +5,17 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/globocom/glbgelf"
-	"github.com/globocom/husky/analysis"
-	apiContext "github.com/globocom/husky/context"
-	db "github.com/globocom/husky/db/mongo"
-	docker "github.com/globocom/husky/dockers"
-	"github.com/globocom/husky/types"
+	"github.com/globocom/huskyci/analysis"
+	apiContext "github.com/globocom/huskyci/context"
+	db "github.com/globocom/huskyci/db/mongo"
+	docker "github.com/globocom/huskyci/dockers"
+	"github.com/globocom/huskyci/types"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	mgo "gopkg.in/mgo.v2"
-	"strings"
 )
 
 var (
