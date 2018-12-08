@@ -2,6 +2,7 @@ package analysis
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/globocom/glbgelf"
@@ -123,9 +124,11 @@ func InsertDBRepository(repository types.Repository) error {
 		securityTestQuery := map[string]interface{}{"default": true, "language": "Generic"}
 		securityTestList, err = FindAllDBSecurityTest(securityTestQuery)
 		if err != nil {
-			glbgelf.Logger.SendLog(map[string]interface{}{
+			if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
 				"action": "InsertDBRepository",
-				"info":   "HUSKYDB"}, "ERROR", "Could not find default securityTests:", err)
+				"info":   "HUSKYDB"}, "ERROR", "Could not find default securityTests:", err); errLog != nil {
+				fmt.Println("glbgelf error: ", errLog)
+			}
 		}
 	} else {
 		// checking if a given securityTestName matches a securityTest
@@ -135,9 +138,11 @@ func InsertDBRepository(repository types.Repository) error {
 				securityTestQuery := map[string]interface{}{"name": securityTestName}
 				securityTestResult, err := FindOneDBSecurityTest(securityTestQuery)
 				if err != nil {
-					glbgelf.Logger.SendLog(map[string]interface{}{
+					if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
 						"action": "InsertDBRepository",
-						"info":   "HUSKYDB"}, "ERROR", "Could not find securityTestName:", securityTestName)
+						"info":   "HUSKYDB"}, "ERROR", "Could not find securityTestName:", securityTestName); errLog != nil {
+						fmt.Println("glbgelf error: ", errLog)
+					}
 				} else {
 					securityTestList = append(securityTestList, securityTestResult)
 				}
@@ -147,9 +152,11 @@ func InsertDBRepository(repository types.Repository) error {
 				securityTestQuery := map[string]interface{}{"name": securityTestName}
 				securityTestResult, err := FindOneDBSecurityTest(securityTestQuery)
 				if err != nil {
-					glbgelf.Logger.SendLog(map[string]interface{}{
+					if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
 						"action": "InsertDBRepository",
-						"info":   "HUSKYDB"}, "ERROR", "Could not find securityTestName:", securityTestName)
+						"info":   "HUSKYDB"}, "ERROR", "Could not find securityTestName:", securityTestName); errLog != nil {
+						fmt.Println("glbgelf error: ", errLog)
+					}
 				} else {
 					securityTestList = append(securityTestList, securityTestResult)
 				}

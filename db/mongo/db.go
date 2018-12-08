@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -60,17 +61,21 @@ func Connect() (*DB, error) {
 	}
 	session, err := mgo.DialWithInfo(dialInfo)
 	if err != nil {
-		glbgelf.Logger.SendLog(map[string]interface{}{
+		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
 			"action": "Connect",
-			"info":   "DB"}, "ERROR", "Error connecting to Mongo:", err)
+			"info":   "DB"}, "ERROR", "Error connecting to Mongo:", err); errLog != nil {
+			fmt.Println("glbgelf error: ", errLog)
+		}
 		return nil, err
 	}
 	session.SetSafe(&mgo.Safe{WMode: "majority"})
 
 	if err := session.Ping(); err != nil {
-		glbgelf.Logger.SendLog(map[string]interface{}{
+		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
 			"action": "Connect",
-			"info":   "DB"}, "ERROR", "Error pinging Mongo after connection:", err)
+			"info":   "DB"}, "ERROR", "Error pinging Mongo after connection:", err); errLog != nil {
+			fmt.Println("glbgelf error: ", errLog)
+		}
 		return nil, err
 	}
 
@@ -85,19 +90,25 @@ func autoReconnect(session *mgo.Session) {
 	for {
 		err = session.Ping()
 		if err != nil {
-			glbgelf.Logger.SendLog(map[string]interface{}{
+			if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
 				"action": "autoReconnect",
-				"info":   "DB"}, "ERROR", "Error pinging Mongo in autoReconnect:", err)
+				"info":   "DB"}, "ERROR", "Error pinging Mongo in autoReconnect:", err); errLog != nil {
+				fmt.Println("glbgelf error: ", errLog)
+			}
 			session.Refresh()
 			err = session.Ping()
 			if err == nil {
-				glbgelf.Logger.SendLog(map[string]interface{}{
+				if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
 					"action": "autoReconnect",
-					"info":   "DB"}, "ERROR", "Reconnect to MongoDB successful.")
+					"info":   "DB"}, "ERROR", "Reconnect to MongoDB successful."); errLog != nil {
+					fmt.Println("glbgelf error: ", errLog)
+				}
 			} else {
-				glbgelf.Logger.SendLog(map[string]interface{}{
+				if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
 					"action": "autoReconnect",
-					"info":   "DB"}, "ERROR", "Reconnect to MongoDB failed:", err)
+					"info":   "DB"}, "ERROR", "Reconnect to MongoDB failed:", err); errLog != nil {
+					fmt.Println("glbgelf error: ", errLog)
+				}
 			}
 		}
 		time.Sleep(time.Second * 1)

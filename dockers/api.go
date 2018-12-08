@@ -42,9 +42,11 @@ type CreateContainerPayload struct {
 func NewDocker() (*Docker, error) {
 	configAPI := context.GetAPIConfig()
 	dockerHost := fmt.Sprintf("http://%s", configAPI.DockerHostsConfig.Host)
-	glbgelf.Logger.SendLog(map[string]interface{}{
+	if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
 		"action": "NewDocker",
-		"info":   "API"}, "INFO", "dockerHost:", dockerHost)
+		"info":   "API"}, "INFO", "dockerHost:", dockerHost); errLog != nil {
+		fmt.Println("glbgelf error")
+	}
 
 	err := os.Setenv("DOCKER_HOST", dockerHost)
 	if err != nil {
@@ -127,7 +129,7 @@ func (d Docker) WaitContainer(timeOutInSeconds int) error {
 	return err
 }
 
-// ReadOutput returns the command ouput of a given containerID.
+// ReadOutput returns the ouput of a given containerID.
 func (d Docker) ReadOutput() (string, error) {
 	ctx := goContext.Background()
 	out, err := d.client.ContainerLogs(ctx, d.CID, dockerTypes.ContainerLogsOptions{ShowStdout: true})
@@ -164,7 +166,7 @@ func (d Docker) ImageIsLoaded(image string) bool {
 	return len(result) != 0
 }
 
-// ListImages returns the docker images, like docker image ls.
+// ListImages returns docker images, like docker image ls.
 func (d Docker) ListImages() ([]dockerTypes.ImageSummary, error) {
 	ctx := goContext.Background()
 	return d.client.ImageList(ctx, dockerTypes.ImageListOptions{})
@@ -180,9 +182,11 @@ func (d Docker) RemoveImage(imageID string) ([]dockerTypes.ImageDelete, error) {
 func HealthCheckDockerAPI() error {
 	d, err := NewDocker()
 	if err != nil {
-		glbgelf.Logger.SendLog(map[string]interface{}{
+		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
 			"action": "HealthCheckDockerAPI",
-			"info":   "API"}, "ERROR", "Error HealthCheckDockerAPI():", err)
+			"info":   "API"}, "ERROR", "Error HealthCheckDockerAPI():", err); errLog != nil {
+			fmt.Println("glbgelf error")
+		}
 		return err
 	}
 

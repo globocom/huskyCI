@@ -50,9 +50,11 @@ func GosecStartAnalysis(CID string, cOutput string) {
 		}
 		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
-			glbgelf.Logger.SendLog(map[string]interface{}{
+			if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
 				"action": "GosecStartAnalysis",
-				"info":   "GOSEC"}, "ERROR", "Error updating AnalysisCollection (inside gosec.go):", err)
+				"info":   "GOSEC"}, "ERROR", "Error updating AnalysisCollection (inside gosec.go):", err); errLog != nil {
+				fmt.Println("glbgelf error: ", errLog)
+			}
 		}
 		return
 	}
@@ -68,9 +70,11 @@ func GosecStartAnalysis(CID string, cOutput string) {
 		}
 		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
-			glbgelf.Logger.SendLog(map[string]interface{}{
+			if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
 				"action": "GosecStartAnalysis",
-				"info":   "GOSEC"}, "ERROR", "Error updating AnalysisCollection (inside gosec.go):", err)
+				"info":   "GOSEC"}, "ERROR", "Error updating AnalysisCollection (inside gosec.go):", err); errLog != nil {
+				fmt.Println("glbgelf error: ", errLog)
+			}
 		}
 		return
 	}
@@ -79,12 +83,16 @@ func GosecStartAnalysis(CID string, cOutput string) {
 	gosecOutput := GosecOutput{}
 	err := json.Unmarshal([]byte(cOutput), &gosecOutput)
 	if err != nil {
-		glbgelf.Logger.SendLog(map[string]interface{}{
+		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
 			"action": "GosecStartAnalysis",
-			"info":   "GOSEC"}, "ERROR", "Unmarshall error (gosec.go):", err)
-		glbgelf.Logger.SendLog(map[string]interface{}{
+			"info":   "GOSEC"}, "ERROR", "Unmarshall error (gosec.go):", err); errLog != nil {
+			fmt.Println("glbgelf error: ", errLog)
+		}
+		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
 			"action": "GosecStartAnalysis",
-			"info":   "GOSEC"}, "ERROR", cOutput)
+			"info":   "GOSEC"}, "ERROR", cOutput); errLog != nil {
+			fmt.Println("glbgelf error: ", errLog)
+		}
 		return
 	}
 
@@ -105,9 +113,11 @@ func GosecStartAnalysis(CID string, cOutput string) {
 	}
 	err = UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 	if err != nil {
-		glbgelf.Logger.SendLog(map[string]interface{}{
+		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
 			"action": "GosecStartAnalysis",
-			"info":   "GOSEC"}, "ERROR", "Error updating AnalysisCollection (inside gosec.go):", err)
+			"info":   "GOSEC"}, "ERROR", "Error updating AnalysisCollection (inside gosec.go):", err); errLog != nil {
+			fmt.Println("glbgelf error: ", errLog)
+		}
 		return
 	}
 }
