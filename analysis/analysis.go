@@ -1,6 +1,7 @@
 package analysis
 
 import (
+	"fmt"
 	"net/http"
 	"regexp"
 	"time"
@@ -104,9 +105,11 @@ func StartAnalysis(RID string, repository types.Repository) {
 	// step 1: insert new analysis into MongoDB.
 	err := InsertDBAnalysis(newAnalysis)
 	if err != nil {
-		glbgelf.Logger.SendLog(map[string]interface{}{
+		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
 			"action": "StartAnalysis",
-			"info":   "ANALYSIS"}, "ERROR", "Error inserting new analysis.", err)
+			"info":   "ANALYSIS"}, "ERROR", "Error inserting new analysis.", err); errLog != nil {
+			fmt.Println("glbgelf error: ", errLog)
+		}
 		return
 	}
 
@@ -114,9 +117,11 @@ func StartAnalysis(RID string, repository types.Repository) {
 	enryQuery := map[string]interface{}{"name": "enry"}
 	enrySecurityTest, err := FindOneDBSecurityTest(enryQuery)
 	if err != nil {
-		glbgelf.Logger.SendLog(map[string]interface{}{
+		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
 			"action": "StartAnalysis",
-			"info":   "ANALYSIS"}, "ERROR", "Error finding Enry SecurityTest:", err)
+			"info":   "ANALYSIS"}, "ERROR", "Error finding Enry SecurityTest:", err); errLog != nil {
+			fmt.Println("glbgelf error: ", errLog)
+		}
 		return
 	}
 	DockerRun(RID, &newAnalysis, enrySecurityTest)
@@ -137,9 +142,11 @@ func MonitorAnalysis(analysis *types.Analysis) {
 		case <-timeout:
 			// cenario 1: MonitorAnalysis has timed out!
 			if err := monitorAnalysisTimedOut(analysis.RID); err != nil {
-				glbgelf.Logger.SendLog(map[string]interface{}{
+				if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
 					"action": "MonitorAnalysis",
-					"info":   "ANALYSIS"}, "ERROR", "Internal error monitorAnalysisTimedOut(): ", err)
+					"info":   "ANALYSIS"}, "ERROR", "Internal error monitorAnalysisTimedOut(): ", err); errLog != nil {
+					fmt.Println("glbgelf error: ", errLog)
+				}
 				return
 			}
 			return
@@ -147,17 +154,21 @@ func MonitorAnalysis(analysis *types.Analysis) {
 			// check if analysis has already finished.
 			analysisHasFinished, err := monitorAnalysisCheckStatus(analysis.RID)
 			if err != nil {
-				glbgelf.Logger.SendLog(map[string]interface{}{
+				if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
 					"action": "MonitorAnalysis",
-					"info":   "ANALYSIS"}, "ERROR", "Internal error monitorAnalysisCheckStatus(): ", err)
+					"info":   "ANALYSIS"}, "ERROR", "Internal error monitorAnalysisCheckStatus(): ", err); errLog != nil {
+					fmt.Println("glbgelf error: ", errLog)
+				}
 			}
 			// cenario 2: analysis has finished!
 			if analysisHasFinished {
 				err := monitorAnalysisUpdateStatus(analysis.RID)
 				if err != nil {
-					glbgelf.Logger.SendLog(map[string]interface{}{
+					if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
 						"action": "MonitorAnalysis",
-						"info":   "ANALYSIS"}, "ERROR", "Internal error monitorAnalysisUpdateStatus(): ", err)
+						"info":   "ANALYSIS"}, "ERROR", "Internal error monitorAnalysisUpdateStatus(): ", err); errLog != nil {
+						fmt.Println("glbgelf error: ", errLog)
+					}
 				}
 			} // cenario 3: retry after retryTick seconds!
 		}
@@ -175,9 +186,11 @@ func monitorAnalysisTimedOut(RID string) error {
 	}
 	err := UpdateOneDBAnalysisContainer(analysisQuery, updateAnalysisQuery)
 	if err != nil {
-		glbgelf.Logger.SendLog(map[string]interface{}{
+		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
 			"action": "monitorAnalysisTimedOut",
-			"info":   "ANALYSIS"}, "ERROR", "Error updating AnalysisCollection:", err)
+			"info":   "ANALYSIS"}, "ERROR", "Error updating AnalysisCollection:", err); errLog != nil {
+			fmt.Println("glbgelf error: ", errLog)
+		}
 	}
 	return err
 }
@@ -187,9 +200,11 @@ func monitorAnalysisUpdateStatus(RID string) error {
 	analysisQuery := map[string]interface{}{"RID": RID}
 	analysisResult, err := FindOneDBAnalysis(analysisQuery)
 	if err != nil {
-		glbgelf.Logger.SendLog(map[string]interface{}{
+		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
 			"action": "monitorAnalysisUpdateStatus",
-			"info":   "ANALYSIS"}, "ERROR", "Could not find analysis:", err)
+			"info":   "ANALYSIS"}, "ERROR", "Could not find analysis:", err); errLog != nil {
+			fmt.Println("glbgelf error: ", errLog)
+		}
 		return err
 	}
 	// analyze each cResult from each container to determine what is the value of analysis.Result
@@ -208,9 +223,11 @@ func monitorAnalysisUpdateStatus(RID string) error {
 	}
 	err = UpdateOneDBAnalysisContainer(analysisQuery, updateAnalysisQuery)
 	if err != nil {
-		glbgelf.Logger.SendLog(map[string]interface{}{
+		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
 			"action": "monitorAnalysisUpdateStatus",
-			"info":   "ANALYSIS"}, "ERROR", "Error updating AnalysisCollection:", err)
+			"info":   "ANALYSIS"}, "ERROR", "Error updating AnalysisCollection:", err); errLog != nil {
+			fmt.Println("glbgelf error: ", errLog)
+		}
 	}
 	return err
 }
@@ -221,9 +238,11 @@ func monitorAnalysisCheckStatus(RID string) (bool, error) {
 	analysisQuery := map[string]interface{}{"RID": RID}
 	analysisResult, err := FindOneDBAnalysis(analysisQuery)
 	if err != nil {
-		glbgelf.Logger.SendLog(map[string]interface{}{
+		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
 			"action": "monitorAnalysisCheckStatus",
-			"info":   "ANALYSIS"}, "Could not find analysis:", err)
+			"info":   "ANALYSIS"}, "Could not find analysis:", err); errLog != nil {
+			fmt.Println("glbgelf error: ", errLog)
+		}
 	}
 	for _, container := range analysisResult.Containers {
 		if container.CStatus != "finished" {
