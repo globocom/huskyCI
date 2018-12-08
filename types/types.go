@@ -69,6 +69,7 @@ type VersionAPI struct {
 	Date    string `json:"date"`
 }
 
+// Print will print HuskyCI version.
 func (v VersionAPI) Print() {
 	version := v.getValue(v.Version, "N/A")
 	commit := v.getValue(v.Commit, "N/A")
