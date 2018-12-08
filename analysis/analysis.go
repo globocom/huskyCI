@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/globocom/glbgelf"
-	"github.com/globocom/husky/types"
+	"github.com/globocom/huskyci/types"
 	"github.com/labstack/echo"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"

@@ -1,4 +1,4 @@
 FROM golang
 
-ADD . /go/src/github.com/globocom/husky
-WORKDIR /go/src/github.com/globocom/husky
+ADD . /go/src/github.com/globocom/huskyci
+WORKDIR /go/src/github.com/globocom/huskyci
