@@ -129,10 +129,25 @@ func (d Docker) WaitContainer(timeOutInSeconds int) error {
 	return err
 }
 
-// ReadOutput returns the ouput of a given containerID.
+// ReadOutput returns STDOUT of a given containerID.
 func (d Docker) ReadOutput() (string, error) {
 	ctx := goContext.Background()
 	out, err := d.client.ContainerLogs(ctx, d.CID, dockerTypes.ContainerLogsOptions{ShowStdout: true})
+	if err != nil {
+		return "", nil
+	}
+
+	body, err := ioutil.ReadAll(out)
+	if err != nil {
+		return "", err
+	}
+	return string(body), err
+}
+
+// ReadOutputStderr returns STDERR of a given containerID.
+func (d Docker) ReadOutputStderr() (string, error) {
+	ctx := goContext.Background()
+	out, err := d.client.ContainerLogs(ctx, d.CID, dockerTypes.ContainerLogsOptions{ShowStderr: true})
 	if err != nil {
 		return "", nil
 	}
