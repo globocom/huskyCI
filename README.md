@@ -100,7 +100,7 @@ This project is licensed under the --- License - read [LICENSE.md](LICENSE.md) f
 
 [Docker Install]:  https://docs.docker.com/install/
 [Docker Compose Install]: https://docs.docker.com/compose/install/
-[HuskyCI Client]: https://github.com/globocom/husky-client
+[HuskyCI Client]: https://github.com/globocom/huskyci-client
 [Bandit]: https://github.com/PyCQA/bandit
 [Brakeman]: https://github.com/presidentbeef/brakeman
 [Gosec]: https://github.com/securego/gosec

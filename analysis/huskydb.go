@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/globocom/glbgelf"
-	db "github.com/globocom/husky/db/mongo"
-	"github.com/globocom/husky/types"
+	db "github.com/globocom/huskyci/db/mongo"
+	"github.com/globocom/huskyci/types"
 	"gopkg.in/mgo.v2/bson"
 )
 

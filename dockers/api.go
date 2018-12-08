@@ -14,8 +14,8 @@ import (
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/globocom/glbgelf"
-	"github.com/globocom/husky/context"
-	"github.com/globocom/husky/types"
+	"github.com/globocom/huskyci/context"
+	"github.com/globocom/huskyci/types"
 	goContext "golang.org/x/net/context"
 )
 

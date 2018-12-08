@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/globocom/glbgelf"
-	"github.com/globocom/husky/types"
+	"github.com/globocom/huskyci/types"
 	"gopkg.in/mgo.v2/bson"
 )
 
