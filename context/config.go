@@ -12,8 +12,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-const DockerHostVersion = "v1.24"
-
 // MongoConfig represents MongoDB configuration.
 type MongoConfig struct {
 	Address      string
@@ -32,42 +30,14 @@ type DockerHostsConfig struct {
 	Host          string
 }
 
-func (dc *DockerHostsConfig) GetUrlCreate() string {
-	return fmt.Sprintf("https://%s/%s/containers/create", dc.Host, DockerHostVersion)
-}
-
-func (dc *DockerHostsConfig) GetUrlStart(CID string) string {
-	return fmt.Sprintf("https://%s/%s/containers/%s/start", dc.Host, DockerHostVersion, CID)
-}
-
-func (dc *DockerHostsConfig) GetUrlWait(CID string) string {
-	return fmt.Sprintf("https://%s/%s/containers/%s/wait", dc.Host, DockerHostVersion, CID)
-}
-
-func (dc *DockerHostsConfig) GetUrlOutPut(CID string) string {
-	return fmt.Sprintf("https://%s/%s/containers/%s/logs?stdout=1", dc.Host, DockerHostVersion, CID)
-}
-
-func (dc *DockerHostsConfig) GetUrlPull(image string) string {
-	return fmt.Sprintf("https://%s/%s/images/create?fromImage=%s", dc.Host, DockerHostVersion, image)
-}
-
-func (dc *DockerHostsConfig) GetUrlList() string {
-	return fmt.Sprintf("https://%s/%s/images/json", dc.Host, DockerHostVersion)
-}
-
-func (dc *DockerHostsConfig) GetUrlHealthCheck(dockerAddress string) string {
-	return fmt.Sprintf("https://%s/%s/version", dockerAddress, DockerHostVersion)
-}
-
 // APIConfig represents API configuration.
 type APIConfig struct {
-	MongoDBConfig      *MongoConfig
-	DockerHostsConfig  *DockerHostsConfig
-	HuskyAPIPort       int
-	EnrySecurityTest   *types.SecurityTest
-	GasSecurityTest    *types.SecurityTest
-	BanditSecurityTest *types.SecurityTest
+	MongoDBConfig        *MongoConfig
+	DockerHostsConfig    *DockerHostsConfig
+	HuskyAPIPort         int
+	EnrySecurityTest     *types.SecurityTest
+	GosecSecurityTest    *types.SecurityTest
+	BanditSecurityTest   *types.SecurityTest
 	BrakemanSecurityTest *types.SecurityTest
 }
 
@@ -85,12 +55,12 @@ func init() {
 func GetAPIConfig() *APIConfig {
 	onceConfig.Do(func() {
 		apiConfig = &APIConfig{
-			MongoDBConfig:      getMongoConfig(),
-			DockerHostsConfig:  getDockerHostsConfig(),
-			HuskyAPIPort:       getAPIHostPort(),
-			EnrySecurityTest:   getEnryConfig(),
-			GasSecurityTest:    getGasConfig(),
-			BanditSecurityTest: getBanditConfig(),
+			MongoDBConfig:        getMongoConfig(),
+			DockerHostsConfig:    getDockerHostsConfig(),
+			HuskyAPIPort:         getAPIHostPort(),
+			EnrySecurityTest:     getEnryConfig(),
+			GosecSecurityTest:    getGosecConfig(),
+			BanditSecurityTest:   getBanditConfig(),
 			BrakemanSecurityTest: getBrakemanConfig(),
 		}
 	})
@@ -191,14 +161,14 @@ func getBrakemanConfig() *types.SecurityTest {
 	}
 }
 
-func getGasConfig() *types.SecurityTest {
+func getGosecConfig() *types.SecurityTest {
 	return &types.SecurityTest{
-		Name:             viper.GetString("gas.name"),
-		Image:            viper.GetString("gas.image"),
-		Cmd:              viper.GetString("gas.cmd"),
-		Language:         viper.GetString("gas.language"),
-		Default:          viper.GetBool("gas.default"),
-		TimeOutInSeconds: viper.GetInt("gas.timeOutInSeconds"),
+		Name:             viper.GetString("gosec.name"),
+		Image:            viper.GetString("gosec.image"),
+		Cmd:              viper.GetString("gosec.cmd"),
+		Language:         viper.GetString("gosec.language"),
+		Default:          viper.GetBool("gosec.default"),
+		TimeOutInSeconds: viper.GetInt("gosec.timeOutInSeconds"),
 	}
 }
 

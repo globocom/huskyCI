@@ -180,15 +180,15 @@ func checkDefaultSecurityTests(configAPI *apiContext.APIConfig) error {
 		return err
 	}
 
-	gasQuery := map[string]interface{}{"name": "gas"}
-	gas, err := analysis.FindOneDBSecurityTest(gasQuery)
+	gosecQuery := map[string]interface{}{"name": "gosec"}
+	gosec, err := analysis.FindOneDBSecurityTest(gosecQuery)
 	if err == mgo.ErrNotFound {
-		// As Gas securityTest is not set into MongoDB, HuskyCI will insert it.
+		// As Gosec securityTest is not set into MongoDB, HuskyCI will insert it.
 		glbgelf.Logger.SendLog(map[string]interface{}{
 			"action": "checkDefaultSecurityTests",
-			"info":   "SERVER"}, "ERROR", "Gas securityTest not found!")
-		gas = *configAPI.GasSecurityTest
-		if err := analysis.InsertDBSecurityTest(gas); err != nil {
+			"info":   "SERVER"}, "ERROR", "Gosec securityTest not found!")
+		gosec = *configAPI.GosecSecurityTest
+		if err := analysis.InsertDBSecurityTest(gosec); err != nil {
 			return err
 		}
 	} else if err != nil {
