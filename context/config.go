@@ -62,12 +62,12 @@ func (dc *DockerHostsConfig) GetUrlHealthCheck(dockerAddress string) string {
 
 // APIConfig represents API configuration.
 type APIConfig struct {
-	MongoDBConfig      *MongoConfig
-	DockerHostsConfig  *DockerHostsConfig
-	HuskyAPIPort       int
-	EnrySecurityTest   *types.SecurityTest
-	GasSecurityTest    *types.SecurityTest
-	BanditSecurityTest *types.SecurityTest
+	MongoDBConfig        *MongoConfig
+	DockerHostsConfig    *DockerHostsConfig
+	HuskyAPIPort         int
+	EnrySecurityTest     *types.SecurityTest
+	GosecSecurityTest    *types.SecurityTest
+	BanditSecurityTest   *types.SecurityTest
 	BrakemanSecurityTest *types.SecurityTest
 }
 
@@ -85,12 +85,12 @@ func init() {
 func GetAPIConfig() *APIConfig {
 	onceConfig.Do(func() {
 		apiConfig = &APIConfig{
-			MongoDBConfig:      getMongoConfig(),
-			DockerHostsConfig:  getDockerHostsConfig(),
-			HuskyAPIPort:       getAPIHostPort(),
-			EnrySecurityTest:   getEnryConfig(),
-			GasSecurityTest:    getGasConfig(),
-			BanditSecurityTest: getBanditConfig(),
+			MongoDBConfig:        getMongoConfig(),
+			DockerHostsConfig:    getDockerHostsConfig(),
+			HuskyAPIPort:         getAPIHostPort(),
+			EnrySecurityTest:     getEnryConfig(),
+			GosecSecurityTest:    getGosecConfig(),
+			BanditSecurityTest:   getBanditConfig(),
 			BrakemanSecurityTest: getBrakemanConfig(),
 		}
 	})
@@ -191,14 +191,14 @@ func getBrakemanConfig() *types.SecurityTest {
 	}
 }
 
-func getGasConfig() *types.SecurityTest {
+func getGosecConfig() *types.SecurityTest {
 	return &types.SecurityTest{
-		Name:             viper.GetString("gas.name"),
-		Image:            viper.GetString("gas.image"),
-		Cmd:              viper.GetString("gas.cmd"),
-		Language:         viper.GetString("gas.language"),
-		Default:          viper.GetBool("gas.default"),
-		TimeOutInSeconds: viper.GetInt("gas.timeOutInSeconds"),
+		Name:             viper.GetString("gosec.name"),
+		Image:            viper.GetString("gosec.image"),
+		Cmd:              viper.GetString("gosec.cmd"),
+		Language:         viper.GetString("gosec.language"),
+		Default:          viper.GetBool("gosec.default"),
+		TimeOutInSeconds: viper.GetInt("gosec.timeOutInSeconds"),
 	}
 }
 

@@ -78,8 +78,8 @@ func DockerRun(RID string, analysis *types.Analysis, securityTest types.Security
 	switch securityTest.Name {
 	case "enry":
 		EnryStartAnalysis(d.CID, cOutput, analysis.RID)
-	case "gas":
-		GasStartAnalysis(d.CID, cOutput)
+	case "gosec":
+		GosecStartAnalysis(d.CID, cOutput)
 	case "bandit":
 		BanditStartAnalysis(d.CID, cOutput)
 	case "brakeman":

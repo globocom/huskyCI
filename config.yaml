@@ -19,9 +19,9 @@ enry:
   default: true
   timeOutInSeconds: 60
 
-gas:
-  name: gas
-  image: huskyci/gas
+gosec:
+  name: gosec
+  image: huskyci/gosec
   cmd: |+
     mkdir -p ~/.ssh &&
     echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
@@ -29,15 +29,15 @@ gas:
     echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
     echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
     cd src
-    git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneGas
+    git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneGosec
     if [ $? -eq 0 ]; then
       cd code
       touch results.json
-      /go/bin/gas -quiet -fmt=json -log=log.txt -out=results.json ./... 2> /dev/null
+      /go/bin/gosec -quiet -fmt=json -log=log.txt -out=results.json ./... 2> /dev/null
       jq -j -M -c . results.json
     else
       echo "ERROR_CLONING"
-      cat /tmp/errorGitCloneGas
+      cat /tmp/errorGitCloneGosec
     fi
   language: Go
   default: true

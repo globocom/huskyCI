@@ -9,8 +9,8 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-// GasOutput is the struct that holds issues and stats found on a Gas scan.
-type GasOutput struct {
+// GosecOutput is the struct that holds issues and stats found on a Gosec scan.
+type GosecOutput struct {
 	Issues []Issue
 	Stats  Stats
 }
@@ -26,7 +26,7 @@ type Issue struct {
 	Line       string `json:"line"`
 }
 
-// Stats is the struct that holds the stats found on a Gas scan.
+// Stats is the struct that holds the stats found on a Gosec scan.
 type Stats struct {
 	Files int `json:"files"`
 	Lines int `json:"lines"`
@@ -34,8 +34,8 @@ type Stats struct {
 	Found int `json:"found"`
 }
 
-// GasStartAnalysis analyses the output from Gas and sets a cResult based on it.
-func GasStartAnalysis(CID string, cOutput string) {
+// GosecStartAnalysis analyses the output from Gosec and sets a cResult based on it.
+func GosecStartAnalysis(CID string, cOutput string) {
 
 	var cResult string
 	analysisQuery := map[string]interface{}{"containers.CID": CID}
@@ -51,8 +51,8 @@ func GasStartAnalysis(CID string, cOutput string) {
 		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
 			glbgelf.Logger.SendLog(map[string]interface{}{
-				"action": "GasStartAnalysis",
-				"info":   "GAS"}, "ERROR", "Error updating AnalysisCollection (inside gas.go):", err)
+				"action": "GosecStartAnalysis",
+				"info":   "GOSEC"}, "ERROR", "Error updating AnalysisCollection (inside gosec.go):", err)
 		}
 		return
 	}
@@ -69,28 +69,28 @@ func GasStartAnalysis(CID string, cOutput string) {
 		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
 			glbgelf.Logger.SendLog(map[string]interface{}{
-				"action": "GasStartAnalysis",
-				"info":   "GAS"}, "ERROR", "Error updating AnalysisCollection (inside gas.go):", err)
+				"action": "GosecStartAnalysis",
+				"info":   "GOSEC"}, "ERROR", "Error updating AnalysisCollection (inside gosec.go):", err)
 		}
 		return
 	}
 
-	// step 1: Unmarshall cOutput into GasOutput struct.
-	gasOutput := GasOutput{}
-	err := json.Unmarshal([]byte(cOutput), &gasOutput)
+	// step 1: Unmarshall cOutput into GosecOutput struct.
+	gosecOutput := GosecOutput{}
+	err := json.Unmarshal([]byte(cOutput), &gosecOutput)
 	if err != nil {
 		glbgelf.Logger.SendLog(map[string]interface{}{
-			"action": "GasStartAnalysis",
-			"info":   "GAS"}, "ERROR", "Unmarshall error (gas.go):", err)
+			"action": "GosecStartAnalysis",
+			"info":   "GOSEC"}, "ERROR", "Unmarshall error (gosec.go):", err)
 		glbgelf.Logger.SendLog(map[string]interface{}{
-			"action": "GasStartAnalysis",
-			"info":   "GAS"}, "ERROR", cOutput)
+			"action": "GosecStartAnalysis",
+			"info":   "GOSEC"}, "ERROR", cOutput)
 		return
 	}
 
 	// step 2: find Issues that have severity "MEDIUM" or "HIGH" and confidence "HIGH".
 	cResult = "passed"
-	for _, issue := range gasOutput.Issues {
+	for _, issue := range gosecOutput.Issues {
 		if (issue.Severity == "HIGH" || issue.Severity == "MEDIUM") && (issue.Confidence == "HIGH") {
 			cResult = "failed"
 			break
@@ -106,8 +106,8 @@ func GasStartAnalysis(CID string, cOutput string) {
 	err = UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 	if err != nil {
 		glbgelf.Logger.SendLog(map[string]interface{}{
-			"action": "GasStartAnalysis",
-			"info":   "GAS"}, "ERROR", "Error updating AnalysisCollection (inside gas.go):", err)
+			"action": "GosecStartAnalysis",
+			"info":   "GOSEC"}, "ERROR", "Error updating AnalysisCollection (inside gosec.go):", err)
 		return
 	}
 }
