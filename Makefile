@@ -28,7 +28,7 @@ LDFLAGS := '-X "main.version=$(TAG)" -X "main.commit=$(COMMIT)" -X "main.date=$(
 install: generate-passwords create-certs compose check-env pull-images
 
 ## Gets all go test dependencies
-get-deps:
+get-test-deps:
 	$(GO) get -u github.com/golang/dep/cmd/dep
 	$(GO) get -u golang.org/x/lint/golint
 	$(GO) get -u github.com/securego/gosec/cmd/gosec
@@ -46,7 +46,7 @@ check-env:
 	cat .env
 
 ## Perfoms all make tests
-test: get-deps lint security-check
+test: get-deps lint check-sec
 
 ## Runs lint
 lint:
