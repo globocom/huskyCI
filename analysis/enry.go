@@ -37,7 +37,7 @@ func EnryStartAnalysis(CID string, cOutput string, RID string) {
 		if err != nil {
 			glbgelf.Logger.SendLog(map[string]interface{}{
 				"action": "EnryStartAnalysis",
-				"info":   "ENRY"}, "ERROR", "Error updating AnalysisCollection (inside gas.go):", err)
+				"info":   "ENRY"}, "ERROR", "Error updating AnalysisCollection (inside enry.go):", err)
 		}
 		return
 	}

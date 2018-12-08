@@ -66,7 +66,7 @@ compose:
 ## Pulls every HuskyCI docker image into dockerAPI container
 pull-images:
 	docker exec dockerAPI /bin/sh -c "docker pull huskyci/enry"
-	docker exec dockerAPI /bin/sh -c "docker pull huskyci/gas"
+	docker exec dockerAPI /bin/sh -c "docker pull huskyci/gosec"
 	docker exec dockerAPI /bin/sh -c "docker pull huskyci/bandit"
 	docker exec dockerAPI /bin/sh -c "docker pull huskyci/brakeman"
 	#docker exec dockerAPI /bin/sh -c "docker pull huskyci/retirejs"
