@@ -166,7 +166,7 @@ func checkDockerHosts(configAPI *apiContext.APIConfig) error {
 
 func checkMongoDB() error {
 
-	_, err := db.Connect()
+	err := db.Connect()
 
 	if err != nil {
 		mongoError := fmt.Sprintf("check mongoDB: %s", err)
