@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/globocom/glbgelf"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -60,17 +61,25 @@ func Connect() (*DB, error) {
 	}
 	session, err := mgo.DialWithInfo(dialInfo)
 	if err != nil {
-		fmt.Println("Error connecting to Mongo:", err)
+		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
+			"action": "Connect",
+			"info":   "DB"}, "ERROR", "Error connecting to Mongo:", err); errLog != nil {
+			fmt.Println("glbgelf error: ", errLog)
+		}
 		return nil, err
 	}
 	session.SetSafe(&mgo.Safe{WMode: "majority"})
 
 	if err := session.Ping(); err != nil {
-		fmt.Println("Error pinging Mongo after connection:", err)
+		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
+			"action": "Connect",
+			"info":   "DB"}, "ERROR", "Error pinging Mongo after connection:", err); errLog != nil {
+			fmt.Println("glbgelf error: ", errLog)
+		}
 		return nil, err
 	}
 
-	go autoReconnect(session)
+	//go autoReconnect(session)
 
 	return &DB{Session: session}, nil
 }
@@ -81,13 +90,25 @@ func autoReconnect(session *mgo.Session) {
 	for {
 		err = session.Ping()
 		if err != nil {
-			fmt.Println("Error pinging Mongo in autoReconnect:", err)
+			if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
+				"action": "autoReconnect",
+				"info":   "DB"}, "ERROR", "Error pinging Mongo in autoReconnect:", err); errLog != nil {
+				fmt.Println("glbgelf error: ", errLog)
+			}
 			session.Refresh()
 			err = session.Ping()
 			if err == nil {
-				fmt.Println("Reconnect to MongoDB successful.")
+				if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
+					"action": "autoReconnect",
+					"info":   "DB"}, "ERROR", "Reconnect to MongoDB successful."); errLog != nil {
+					fmt.Println("glbgelf error: ", errLog)
+				}
 			} else {
-				fmt.Println("Reconnect to MongoDB failed:", err)
+				if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
+					"action": "autoReconnect",
+					"info":   "DB"}, "ERROR", "Reconnect to MongoDB failed:", err); errLog != nil {
+					fmt.Println("glbgelf error: ", errLog)
+				}
 			}
 		}
 		time.Sleep(time.Second * 1)
