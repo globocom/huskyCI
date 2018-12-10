@@ -1,6 +1,6 @@
 # HuskyCI
 
-[![CircleCI](https://circleci.com/gh/globocom/husky/tree/master.svg?style=svg&circle-token=415bfb6b5aa0dfce8d2129878a66326da9533150)](https://circleci.com/gh/globocom/husky/tree/master)
+[![CircleCI](https://circleci.com/gh/globocom/huskyci/tree/master.svg?style=svg&circle-token=415bfb6b5aa0dfce8d2129878a66326da9533150)](https://circleci.com/gh/globocom/husky/tree/master)
 
 HuskyCI is an open source tool that performs security tests inside CI pipelines of multiple projects and centralizes all results into a database for further analysis and metrics.
 
@@ -100,7 +100,7 @@ This project is licensed under the --- License - read [LICENSE.md](LICENSE.md) f
 
 [Docker Install]:  https://docs.docker.com/install/
 [Docker Compose Install]: https://docs.docker.com/compose/install/
-[HuskyCI Client]: https://github.com/globocom/husky-client
+[HuskyCI Client]: https://github.com/globocom/huskyci-client
 [Bandit]: https://github.com/PyCQA/bandit
 [Brakeman]: https://github.com/presidentbeef/brakeman
 [Gosec]: https://github.com/securego/gosec

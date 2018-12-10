@@ -19,11 +19,16 @@ COLOR_RED = \033[31m
 
 PROJECT := HuskyCI
 
+TAG := $(shell git describe --tags --abbrev=0)
+DATE := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
+COMMIT := $(shell git rev-parse $(TAG))
+LDFLAGS := '-X "main.version=$(TAG)" -X "main.commit=$(COMMIT)" -X "main.date=$(DATE)"'
+
 ## Installs a development environment using docker-compose
 install: generate-passwords create-certs compose check-env pull-images
 
 ## Gets all go test dependencies
-get-deps:
+get-test-deps:
 	$(GO) get -u github.com/golang/dep/cmd/dep
 	$(GO) get -u golang.org/x/lint/golint
 	$(GO) get -u github.com/securego/gosec/cmd/gosec
@@ -41,7 +46,7 @@ check-env:
 	cat .env
 
 ## Perfoms all make tests
-test: get-deps lint security-check
+test: get-deps lint check-sec
 
 ## Runs lint
 lint:
@@ -49,18 +54,19 @@ lint:
 
 ## Builds Go project to the executable file huskyci
 build:
-	$(GO) build -o "$(HUSKYCIBIN)"
+	$(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCIBIN)"
+
 
 ## Run project using docker-compose
 compose:
 	docker-compose -f deployments/docker-compose.yml build
-	docker-compose -f deployments/docker-compose.yml down -v
+	docker-compose -f deployments/docker-compose.yml down
 	docker-compose -f deployments/docker-compose.yml up -d --force-recreate
 
 ## Pulls every HuskyCI docker image into dockerAPI container
 pull-images:
 	docker exec dockerAPI /bin/sh -c "docker pull huskyci/enry"
-	docker exec dockerAPI /bin/sh -c "docker pull huskyci/gas"
+	docker exec dockerAPI /bin/sh -c "docker pull huskyci/gosec"
 	docker exec dockerAPI /bin/sh -c "docker pull huskyci/bandit"
 	docker exec dockerAPI /bin/sh -c "docker pull huskyci/brakeman"
 	#docker exec dockerAPI /bin/sh -c "docker pull huskyci/retirejs"

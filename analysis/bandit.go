@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/globocom/glbgelf"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -43,15 +44,28 @@ func BanditStartAnalysis(CID string, cOutput string) {
 		}
 		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
-			fmt.Println("Error updating AnalysisCollection (inside bandit.go):", err)
+			if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
+				"action": "BanditStartAnalysis",
+				"info":   "BANDIT"}, "ERROR", "Error updating AnalysisCollection (inside bandit.go):", err); errLog != nil {
+				fmt.Println("glbgelf error: ", errLog)
+			}
 		}
 		return
 	}
 
 	var banditResult BanditOutput
 	if err := json.Unmarshal([]byte(cOutput), &banditResult); err != nil {
-		fmt.Println("Unmarshall error (bandit.go):", err)
-		fmt.Println(cOutput)
+		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
+			"action": "BanditStartAnalysis",
+			"info":   "BANDIT"}, "ERROR", "Unmarshall error (bandit.go):", err); errLog != nil {
+			fmt.Println("glbgelf error: ", errLog)
+		}
+
+		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
+			"action": "BanditStartAnalysis",
+			"info":   "BANDIT"}, "INFO", "cOutput result:", cOutput); errLog != nil {
+			fmt.Println("glbgelf error: ", errLog)
+		}
 		return
 	}
 
@@ -64,7 +78,11 @@ func BanditStartAnalysis(CID string, cOutput string) {
 		}
 		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
-			fmt.Println("Error updating AnalysisCollection (inside bandit.go):", err)
+			if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
+				"action": "BanditStartAnalysis",
+				"info":   "BANDIT"}, "ERROR", "Error updating AnalysisCollection (inside bandit.go):", err); errLog != nil {
+				fmt.Println("glbgelf error: ", errLog)
+			}
 		}
 	}
 
@@ -84,7 +102,11 @@ func BanditStartAnalysis(CID string, cOutput string) {
 		},
 	}
 	if err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery); err != nil {
-		fmt.Println("Error updating AnalysisCollection (inside bandit.go):", err)
+		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
+			"action": "BanditStartAnalysis",
+			"info":   "BANDIT"}, "ERROR", "Error updating AnalysisCollection (inside bandit.go):", err); errLog != nil {
+			fmt.Println("glbgelf error: ", errLog)
+		}
 		return
 	}
 }

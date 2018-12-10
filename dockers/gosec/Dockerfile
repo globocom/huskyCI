@@ -1,14 +1,15 @@
-# Dockerfile used to create "husyci/gas" image
-# https://hub.docker.com/r/huskyci/gas/
+# Dockerfile used to create "husyci/gosec" image
+# https://hub.docker.com/r/huskyci/gosec/
 
-FROM golang:alpine
+FROM golang:alpine as builder
 
 RUN apk update && apk upgrade \
-	&& apk add --no-cache alpine-sdk bash openssh-client \
-	&& apk add git
+	&& apk add --no-cache alpine-sdk git \
+	&& apk --update add jq
 
 RUN go get github.com/securego/gosec/cmd/gosec/...
 
-RUN wget -O jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64
-RUN chmod +x ./jq
-RUN cp jq /usr/bin
+# From the base image
+FROM alpine:3.8
+COPY --from=builder /go/bin/gosec /usr/bin/
+COPY --from=builder /usr/bin/jq /usr/bin/

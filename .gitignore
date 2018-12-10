@@ -8,3 +8,6 @@ coverage.txt
 *.pem
 .env
 .vagrant
+huskyci
+dockers.env
+mongo-init.js

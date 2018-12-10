@@ -2,27 +2,55 @@ package main
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"os"
+	"strings"
 
-	"github.com/globocom/husky/analysis"
-	apiContext "github.com/globocom/husky/context"
-	db "github.com/globocom/husky/db/mongo"
-	docker "github.com/globocom/husky/dockers"
+	"github.com/globocom/glbgelf"
+	"github.com/globocom/huskyci/analysis"
+	apiContext "github.com/globocom/huskyci/context"
+	db "github.com/globocom/huskyci/db/mongo"
+	docker "github.com/globocom/huskyci/dockers"
+	"github.com/globocom/huskyci/types"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	mgo "gopkg.in/mgo.v2"
 )
 
+var (
+	version string
+	commit  string
+	date    string
+)
+
+const projectName = "HuskyCI"
+
 func main() {
 
-	fmt.Println("[*] Starting Husky...")
+	configAndPrintVersion(version, commit, date)
+
+	isDev := true
+	if strings.EqualFold(os.Getenv("HUSKYCI_DEV"), "false") {
+		isDev = false
+	}
+
+	glbgelf.InitLogger(os.Getenv("HUSKYCI_GRAYLOG_ADDR"), os.Getenv("HUSKYCI_APP_NAME"), os.Getenv("HUSKYCI_TAGS"), isDev, os.Getenv("HUSKYCI_GRAYLOG_PROTO"))
+
+	if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
+		"action": "main",
+		"info":   "SERVER"}, "INFO", "Starting Husky..."); errLog != nil {
+		fmt.Println("glbgelf error: ", errLog)
+	}
 
 	configAPI := apiContext.GetAPIConfig()
 
 	if err := checkHuskyRequirements(configAPI); err != nil {
-		fmt.Println("[x] Error starting Husky:")
-		fmt.Println("[x]", err)
+		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
+			"action": "main",
+			"info":   "SERVER"}, "ERROR", "Error starting Husky:", err); errLog != nil {
+			fmt.Println("glbgelf error: ", errLog)
+		}
 		os.Exit(1)
 	}
 
@@ -34,6 +62,7 @@ func main() {
 	echoInstance.Use(middleware.RequestID())
 
 	echoInstance.GET("/healthcheck", analysis.HealthCheck)
+	echoInstance.GET("/version", analysis.VersionHandler)
 	echoInstance.GET("/husky/:id", analysis.StatusAnalysis)
 	echoInstance.POST("/husky", analysis.ReceiveRequest)
 	echoInstance.POST("/securitytest", analysis.CreateNewSecurityTest)
@@ -50,28 +79,44 @@ func checkHuskyRequirements(configAPI *apiContext.APIConfig) error {
 		return err
 	}
 
-	fmt.Println("[*] Environment Variables: OK!")
+	if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
+		"action": "checkHuskyRequirements",
+		"info":   "SERVER"}, "INFO", "Environment Variables: OK!"); errLog != nil {
+		fmt.Println("glbgelf error: ", errLog)
+	}
 
 	// check if all docker hosts are up and running docker API.
 	if err := checkDockerHosts(configAPI); err != nil {
 		return err
 	}
 
-	fmt.Println("[*] Docker API Hosts: OK!")
+	if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
+		"action": "checkHuskyRequirements",
+		"info":   "SERVER"}, "INFO", "Docker API Hosts: OK!"); errLog != nil {
+		fmt.Println("glbgelf error: ", errLog)
+	}
 
 	// check if MongoDB is acessible and credentials received are working.
 	if err := checkMongoDB(); err != nil {
 		return err
 	}
 
-	fmt.Println("[*] MongoDB: OK!")
+	if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
+		"action": "checkHuskyRequirements",
+		"info":   "SERVER"}, "INFO", "MongoDB: OK!"); errLog != nil {
+		fmt.Println("glbgelf error: ", errLog)
+	}
 
 	// check if default securityTests are set into MongoDB.
 	if err := checkDefaultSecurityTests(configAPI); err != nil {
 		return err
 	}
 
-	fmt.Println("[*] Default security tests set: OK!")
+	if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
+		"action": "checkHuskyRequirements",
+		"info":   "SERVER"}, "INFO", "Default security tests set: OK!"); errLog != nil {
+		fmt.Println("glbgelf error: ", errLog)
+	}
 
 	return nil
 }
@@ -136,7 +181,11 @@ func checkDefaultSecurityTests(configAPI *apiContext.APIConfig) error {
 	enry, err := analysis.FindOneDBSecurityTest(enryQuery)
 	if err == mgo.ErrNotFound {
 		// As Enry securityTest is not set into MongoDB, HuskyCI will insert it.
-		fmt.Println("[!] Enry securityTest not found!")
+		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
+			"action": "checkDefaultSecurityTests",
+			"info":   "SERVER"}, "ERROR", "Enry securityTest not found!"); errLog != nil {
+			fmt.Println("glbgelf error: ", errLog)
+		}
 		enry = *configAPI.EnrySecurityTest
 		if err := analysis.InsertDBSecurityTest(enry); err != nil {
 			return err
@@ -145,13 +194,17 @@ func checkDefaultSecurityTests(configAPI *apiContext.APIConfig) error {
 		return err
 	}
 
-	gasQuery := map[string]interface{}{"name": "gas"}
-	gas, err := analysis.FindOneDBSecurityTest(gasQuery)
+	gosecQuery := map[string]interface{}{"name": "gosec"}
+	gosec, err := analysis.FindOneDBSecurityTest(gosecQuery)
 	if err == mgo.ErrNotFound {
-		// As Gas securityTest is not set into MongoDB, HuskyCI will insert it.
-		fmt.Println("[!] Gas securityTest not found!")
-		gas = *configAPI.GasSecurityTest
-		if err := analysis.InsertDBSecurityTest(gas); err != nil {
+		// As Gosec securityTest is not set into MongoDB, HuskyCI will insert it.
+		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
+			"action": "checkDefaultSecurityTests",
+			"info":   "SERVER"}, "ERROR", "Gosec securityTest not found!"); errLog != nil {
+			fmt.Println("glbgelf error: ", errLog)
+		}
+		gosec = *configAPI.GosecSecurityTest
+		if err := analysis.InsertDBSecurityTest(gosec); err != nil {
 			return err
 		}
 	} else if err != nil {
@@ -162,7 +215,11 @@ func checkDefaultSecurityTests(configAPI *apiContext.APIConfig) error {
 	brakeman, err := analysis.FindOneDBSecurityTest(brakemanQuery)
 	if err == mgo.ErrNotFound {
 		// As Brakeman securityTest is not set into MongoDB, HuskyCI will insert it.
-		fmt.Println("[!] Brakeman securityTest not found!")
+		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
+			"action": "checkDefaultSecurityTests",
+			"info":   "SERVER"}, "ERROR", "Brakeman securityTest not found!"); errLog != nil {
+			fmt.Println("glbgelf error: ", errLog)
+		}
 		brakeman = *configAPI.BrakemanSecurityTest
 		if err := analysis.InsertDBSecurityTest(brakeman); err != nil {
 			return err
@@ -175,7 +232,11 @@ func checkDefaultSecurityTests(configAPI *apiContext.APIConfig) error {
 	bandit, err := analysis.FindOneDBSecurityTest(banditQuery)
 	if err == mgo.ErrNotFound {
 		// As Bandit securityTest is not set into MongoDB, HuskyCI will insert it.
-		fmt.Println("[!] Bandit securityTest not found!")
+		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
+			"action": "checkDefaultSecurityTests",
+			"info":   "SERVER"}, "ERROR", "Bandit securityTest not found!"); errLog != nil {
+			fmt.Println("glbgelf error: ", errLog)
+		}
 		bandit = *configAPI.BanditSecurityTest
 		if err := analysis.InsertDBSecurityTest(bandit); err != nil {
 			return err
@@ -185,4 +246,29 @@ func checkDefaultSecurityTests(configAPI *apiContext.APIConfig) error {
 	}
 
 	return nil
+}
+
+func configAndPrintVersion(version, commit, date string) {
+
+	analysis.Version.Project = projectName
+	analysis.Version.Version = version
+	analysis.Version.Commit = commit
+	analysis.Version.Date = date
+
+	printVersion(analysis.Version)
+}
+
+func printVersion(versionAPI types.VersionAPI) {
+	vFlag := flag.Bool("v", false, "print current version")
+	versionFlag := flag.Bool("version", false, "print current version")
+	flag.Parse()
+
+	if *vFlag || *versionFlag {
+		versionAPI.Print()
+		os.Exit(0)
+	}
+
+	if versionAPI.Version != "" {
+		versionAPI.Print()
+	}
 }

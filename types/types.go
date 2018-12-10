@@ -1,6 +1,7 @@
 package types
 
 import (
+	"fmt"
 	"time"
 
 	"gopkg.in/mgo.v2/bson"
@@ -58,4 +59,37 @@ type Container struct {
 type Language struct {
 	Name  string   `bson:"name" json:"language_name"`
 	Files []string `bson:"files" json:"language_files"`
+}
+
+// VersionAPI is the struct that stores all data about version api.
+type VersionAPI struct {
+	Project string `json:"project"`
+	Version string `json:"version"`
+	Commit  string `json:"commit"`
+	Date    string `json:"date"`
+}
+
+// Print will print HuskyCI version.
+func (v VersionAPI) Print() {
+	version := v.getValue(v.Version, "N/A")
+	commit := v.getValue(v.Commit, "N/A")
+	date := v.getValue(v.Date, "N/A")
+
+	printVersion := fmt.Sprintf(`
+************************************************
+project: %s
+version: %s
+commit: %s
+data build: %s
+************************************************
+	`, v.Project, version, commit, date)
+
+	fmt.Println(printVersion)
+}
+
+func (v VersionAPI) getValue(value, defaultValue string) string {
+	if value != "" {
+		return value
+	}
+	return defaultValue
 }
