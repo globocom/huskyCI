@@ -1,3 +1,7 @@
+// Copyright 2018 Globo.com authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package db
 
 import (
@@ -10,6 +14,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+// Conn is the MongoDB connection variable.
 var Conn *DB
 
 // Collections names used in MongoDB.
