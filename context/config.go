@@ -19,6 +19,7 @@ type MongoConfig struct {
 	Timeout      time.Duration
 	Username     string
 	Password     string
+	PoolLimit    int
 }
 
 // DockerHostsConfig represents Docker Hosts configuration.
@@ -41,7 +42,7 @@ type APIConfig struct {
 	BrakemanSecurityTest *types.SecurityTest
 }
 
-var apiConfig *APIConfig
+var ApiConfig *APIConfig
 var onceConfig sync.Once
 
 func init() {
@@ -54,7 +55,7 @@ func init() {
 // GetAPIConfig returns the instance of an APIConfig.
 func GetAPIConfig() *APIConfig {
 	onceConfig.Do(func() {
-		apiConfig = &APIConfig{
+		ApiConfig = &APIConfig{
 			MongoDBConfig:        getMongoConfig(),
 			DockerHostsConfig:    getDockerHostsConfig(),
 			HuskyAPIPort:         getAPIHostPort(),
@@ -64,7 +65,7 @@ func GetAPIConfig() *APIConfig {
 			BrakemanSecurityTest: getBrakemanConfig(),
 		}
 	})
-	return apiConfig
+	return ApiConfig
 }
 
 func getDockerHostsConfig() *DockerHostsConfig {
@@ -103,6 +104,7 @@ func getMongoConfig() *MongoConfig {
 	mongoTimeout := getMongoTimeout()
 	mongoPort := getMongoPort()
 	mongoAddress := fmt.Sprintf("%s:%d", mongoHost, mongoPort)
+	mongoPoolLimit := getMongoPoolLimit()
 
 	return &MongoConfig{
 		Address:      mongoAddress,
@@ -110,6 +112,7 @@ func getMongoConfig() *MongoConfig {
 		Timeout:      mongoTimeout,
 		Username:     mongoUserName,
 		Password:     mongoPassword,
+		PoolLimit:    mongoPoolLimit,
 	}
 }
 
@@ -139,6 +142,13 @@ func getMongoTimeout() time.Duration {
 	return time.Duration(mongoTimeout) * time.Second
 }
 
+func getMongoPoolLimit() int {
+	mongoPoolLimit, err := strconv.Atoi(os.Getenv("MONGO_POOL_LIMIT"))
+	if err != nil && mongoPoolLimit <= 0 {
+		return 1000
+	}
+	return mongoPoolLimit
+}
 func getEnryConfig() *types.SecurityTest {
 	return &types.SecurityTest{
 		Name:             viper.GetString("enry.name"),

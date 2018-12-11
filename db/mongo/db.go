@@ -2,13 +2,15 @@ package db
 
 import (
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/globocom/glbgelf"
+	config "github.com/globocom/huskyci/context"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
+
+var Conn *DB
 
 // Collections names used in MongoDB.
 var (
@@ -40,33 +42,30 @@ type Database interface {
 	SearchOne(query bson.M, selectors []string, collection string, obj interface{}) error
 }
 
-var config = &mongoConfig{
-	Address:      os.Getenv("MONGO_HOST"),
-	DatabaseName: os.Getenv("MONGO_DATABASE_NAME"),
-	UserName:     os.Getenv("MONGO_DATABASE_USERNAME"),
-	Password:     os.Getenv("MONGO_DATABASE_PASSWORD"),
-}
-
 // Connect connects to mongo and returns the session.
-func Connect() (*DB, error) {
-
-	// fmt.Printf("config:%#v", config)
+func Connect() error {
+	glbgelf.Logger.SendLog(map[string]interface{}{
+		"action": "Connect",
+		"info":   "DB"}, "INFO", "Connecting to mongodb")
+	mongoConfig := config.ApiConfig.MongoDBConfig
 	dialInfo := &mgo.DialInfo{
-		Addrs:    []string{config.Address},
-		Timeout:  time.Second * 60,
-		FailFast: true,
-		Database: config.DatabaseName,
-		Username: config.UserName,
-		Password: config.Password,
+		Addrs:     []string{mongoConfig.Address},
+		Timeout:   mongoConfig.Timeout,
+		FailFast:  true,
+		Database:  mongoConfig.DatabaseName,
+		Username:  mongoConfig.Username,
+		Password:  mongoConfig.Password,
+		PoolLimit: mongoConfig.PoolLimit,
 	}
 	session, err := mgo.DialWithInfo(dialInfo)
+
 	if err != nil {
 		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
 			"action": "Connect",
 			"info":   "DB"}, "ERROR", "Error connecting to Mongo:", err); errLog != nil {
 			fmt.Println("glbgelf error: ", errLog)
 		}
-		return nil, err
+		return err
 	}
 	session.SetSafe(&mgo.Safe{WMode: "majority"})
 
@@ -76,27 +75,31 @@ func Connect() (*DB, error) {
 			"info":   "DB"}, "ERROR", "Error pinging Mongo after connection:", err); errLog != nil {
 			fmt.Println("glbgelf error: ", errLog)
 		}
-		return nil, err
+		return err
 	}
 
-	//go autoReconnect(session)
+	Conn = &DB{Session: session}
+	go autoReconnect()
 
-	return &DB{Session: session}, nil
+	return nil
 }
 
 // autoReconnect checks mongo's connection each second and, if an error is found, reconect to it.
-func autoReconnect(session *mgo.Session) {
+func autoReconnect() {
+	glbgelf.Logger.SendLog(map[string]interface{}{
+		"action": "autoReconnect",
+		"info":   "DB"}, "INFO", "Initializing mongodb auto reconnect")
 	var err error
 	for {
-		err = session.Ping()
+		err = Conn.Session.Ping()
 		if err != nil {
 			if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
 				"action": "autoReconnect",
 				"info":   "DB"}, "ERROR", "Error pinging Mongo in autoReconnect:", err); errLog != nil {
 				fmt.Println("glbgelf error: ", errLog)
 			}
-			session.Refresh()
-			err = session.Ping()
+			Conn.Session.Refresh()
+			err = Conn.Session.Ping()
 			if err == nil {
 				if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
 					"action": "autoReconnect",
