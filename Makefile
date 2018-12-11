@@ -60,7 +60,7 @@ build:
 ## Run project using docker-compose
 compose:
 	docker-compose -f deployments/docker-compose.yml build
-	docker-compose -f deployments/docker-compose.yml down
+	docker-compose -f deployments/docker-compose.yml down -v
 	docker-compose -f deployments/docker-compose.yml up -d --force-recreate
 
 ## Pulls every HuskyCI docker image into dockerAPI container
