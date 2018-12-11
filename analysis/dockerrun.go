@@ -97,6 +97,8 @@ func DockerRun(RID string, analysis *types.Analysis, securityTest types.Security
 		BanditStartAnalysis(d.CID, cOutput)
 	case "brakeman":
 		BrakemanStartAnalysis(d.CID, cOutput)
+	case "retirejs":
+		RetirejsStartAnalysis(d.CID, cOutput)
 	default:
 		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
 			"action": "DockerRun",
