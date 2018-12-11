@@ -27,6 +27,7 @@
 
 [[projects]]
   branch = "master"
+
   digest = "1:008fb9f84ae9bf7994228b9c78810d44162071ec13caf28291677897dca819ee"
   name = "golang.org/x/sys"
   packages = ["unix"]
