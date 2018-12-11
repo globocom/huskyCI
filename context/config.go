@@ -144,8 +144,8 @@ func getMongoTimeout() time.Duration {
 
 func getMongoPoolLimit() int {
 	mongoPoolLimit, err := strconv.Atoi(os.Getenv("MONGO_POOL_LIMIT"))
-	if err != nil {
-		return 10
+	if err != nil && mongoPoolLimit <= 0 {
+		return 1000
 	}
 	return mongoPoolLimit
 }
