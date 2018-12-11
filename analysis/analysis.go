@@ -240,7 +240,7 @@ func monitorAnalysisCheckStatus(RID string) (bool, error) {
 	if err != nil {
 		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
 			"action": "monitorAnalysisCheckStatus",
-			"info":   "ANALYSIS"}, "Could not find analysis:", err); errLog != nil {
+			"info":   "ANALYSIS"}, "ERROR", "Could not find analysis:", err); errLog != nil {
 			fmt.Println("glbgelf error: ", errLog)
 		}
 	}
