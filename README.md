@@ -39,5 +39,8 @@ echo 'export HUSKYCI_REPO_URL="https://github.com/tsuru/cst.git"' > .env
 echo 'export HUSKYCI_REPO_BRANCH="master"' >> .env
 echo 'export HUSKYCI_API="http://127.0.0.1:8888"' >> .env
 ```
+## License
 
-[HuskyCI]: https://github.com/globocom/husky
+This project is licensed under the BSD 3-Clause "New" or "Revised" License - read [LICENSE.md](LICENSE.md) file for details.
+
+[HuskyCI]: https://github.com/globocom/huskyci
