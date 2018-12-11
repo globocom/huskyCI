@@ -11,12 +11,12 @@ import (
 
 // GosecOutput is the struct that holds issues and stats found on a Gosec scan.
 type GosecOutput struct {
-	Issues []Issue
-	Stats  Stats
+	Issues []GosecIssue
+	Stats  GosecStats
 }
 
-// Issue is the struct that holds all detailed information of a vulnerability found.
-type Issue struct {
+// GosecIssue is the struct that holds all detailed information of a vulnerability found.
+type GosecIssue struct {
 	Severity   string `json:"severity"`
 	Confidence string `json:"confidence"`
 	RuleID     string `json:"rule_id"`
@@ -26,8 +26,8 @@ type Issue struct {
 	Line       string `json:"line"`
 }
 
-// Stats is the struct that holds the stats found on a Gosec scan.
-type Stats struct {
+// GosecStats is the struct that holds the stats found on a Gosec scan.
+type GosecStats struct {
 	Files int `json:"files"`
 	Lines int `json:"lines"`
 	NoSec int `json:"nosec"`
