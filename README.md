@@ -96,7 +96,7 @@ Check here!
 
 ## License
 
-This project is licensed under the --- License - read [LICENSE.md](LICENSE.md) file for details.
+This project is licensed under the BSD 3-Clause "New" or "Revised" License - read [LICENSE.md](LICENSE.md) file for details.
 
 [Docker Install]:  https://docs.docker.com/install/
 [Docker Compose Install]: https://docs.docker.com/compose/install/
