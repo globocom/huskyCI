@@ -1,3 +1,7 @@
+// Copyright 2018 Globo.com authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package analysis
 
 import (
@@ -31,10 +35,10 @@ type RetirejsResult struct {
 
 //RetirejsVulnerability is a struct that holds info on what vulnerabilies were found.
 type RetirejsVulnerability struct {
-	Info                string               `json:"info"`
-	Below               string               `json:"below"`
-	Severity            string               `json:"severity"`
-	RetirejsIdentifiers []RetirejsIdentifier `json:"identifiers"`
+	Info                []string           `json:"info"`
+	Below               string             `json:"below"`
+	Severity            string             `json:"severity"`
+	RetirejsIdentifiers RetirejsIdentifier `json:"identifiers"`
 }
 
 //RetirejsIdentifier is a struct that holds details on the vulnerabilities found.

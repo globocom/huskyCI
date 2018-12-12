@@ -9,6 +9,3 @@ RUN apk update && apk upgrade \
 
 RUN npm install
 RUN npm install -g retire
-
-RUN chmod +x ./jq
-RUN cp jq /usr/bin
