@@ -32,8 +32,8 @@ func CheckContainerOutput(container types.Container) {
 func PrintGosecOutput(containerOutput string) {
 
 	if containerOutput == "No issues found." {
-		color.Green("[HUSKYCI][*] :) ")
-		os.Exit(0)
+		color.Green("[HUSKYCI][*] Gosec :)\n\n")
+		return
 	}
 
 	foundVuln := false
@@ -85,22 +85,22 @@ func PrintGosecOutput(containerOutput string) {
 	}
 
 	if foundVuln {
-		color.Red("[HUSKYCI][X] :( ")
-		os.Exit(1)
+		color.Red("[HUSKYCI][X] :(\n\n")
+		types.FoundVuln = true
+	} else if foundInfo {
+		fmt.Printf("[HUSKYCI][*] Gosec :|\n\n")
+	} else {
+		color.Green("[HUSKYCI][*] Gosec :)\n\n")
 	}
-	if foundInfo {
-		fmt.Println("[HUSKYCI][*] :|")
-		os.Exit(0)
-	}
-	color.Green("[HUSKYCI][*] :) ")
+
 }
 
 // PrintBanditOutput will print Bandit output.
 func PrintBanditOutput(containerOutput string) {
 
 	if containerOutput == "No issues found." {
-		color.Green("[HUSKYCI][*] :) ")
-		os.Exit(0)
+		color.Green("[HUSKYCI][*] Bandit :)\n\n")
+		return
 	}
 
 	foundVuln := false
@@ -152,12 +152,12 @@ func PrintBanditOutput(containerOutput string) {
 	}
 
 	if foundVuln {
-		color.Red("[HUSKYCI][X] :( ")
-		os.Exit(1)
+		color.Red("[HUSKYCI][X] Bandit :(\n\n")
+		types.FoundVuln = true
+	} else if foundInfo {
+		fmt.Printf("[HUSKYCI][*] Bandit :|\n\n")
+	} else {
+		color.Green("[HUSKYCI][*] Bandit :)\n\n")
 	}
-	if foundInfo {
-		fmt.Println("[HUSKYCI][*] :|")
-		os.Exit(0)
-	}
-	color.Green("[HUSKYCI][*] :) ")
+
 }
