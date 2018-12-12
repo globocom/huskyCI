@@ -11,8 +11,8 @@ import (
 
 // GosecOutput is the struct that holds issues and stats found on a Gosec scan.
 type GosecOutput struct {
-	Issues []GosecIssue
-	Stats  GosecStats
+	GosecIssues []GosecIssue
+	GosecStats  GosecStats
 }
 
 // GosecIssue is the struct that holds all detailed information of a vulnerability found.
@@ -98,7 +98,7 @@ func GosecStartAnalysis(CID string, cOutput string) {
 
 	// step 2: find Issues that have severity "MEDIUM" or "HIGH" and confidence "HIGH".
 	cResult = "passed"
-	for _, issue := range gosecOutput.Issues {
+	for _, issue := range gosecOutput.GosecIssues {
 		if (issue.Severity == "HIGH" || issue.Severity == "MEDIUM") && (issue.Confidence == "HIGH") {
 			cResult = "failed"
 			break
