@@ -18,8 +18,8 @@ func CheckContainerOutput(container types.Container) {
 
 	switch container.SecurityTest.Name {
 	case "enry":
-	case "gas":
-		PrintGasOutput(container.COutput)
+	case "gosec":
+		PrintGosecOutput(container.COutput)
 	case "bandit":
 		PrintBanditOutput(container.COutput)
 	default:
@@ -28,8 +28,8 @@ func CheckContainerOutput(container types.Container) {
 	}
 }
 
-// PrintGasOutput will print the Gas output.
-func PrintGasOutput(containerOutput string) {
+// PrintGosecOutput will print the Gosec output.
+func PrintGosecOutput(containerOutput string) {
 
 	if containerOutput == "No issues found." {
 		color.Green("[HUSKYCI][*] :) ")
@@ -38,14 +38,14 @@ func PrintGasOutput(containerOutput string) {
 
 	foundVuln := false
 	foundInfo := false
-	gasOutput := types.GasOutput{}
-	err := json.Unmarshal([]byte(containerOutput), &gasOutput)
+	gosecOutput := types.GosecOutput{}
+	err := json.Unmarshal([]byte(containerOutput), &gosecOutput)
 	if err != nil {
-		fmt.Println("[HUSKYCI][ERROR] Could not Unmarshal gasOutput!", containerOutput)
+		fmt.Println("[HUSKYCI][ERROR] Could not Unmarshal gosecOutput!", containerOutput)
 		os.Exit(1)
 	}
 
-	for _, issue := range gasOutput.Issues {
+	for _, issue := range gosecOutput.GosecIssues {
 		if (issue.Severity == "HIGH") && (issue.Confidence == "HIGH") {
 			foundVuln = true
 			color.Red("[HUSKYCI][!] Severity: %s", issue.Severity)
@@ -58,7 +58,7 @@ func PrintGasOutput(containerOutput string) {
 		}
 	}
 
-	for _, issue := range gasOutput.Issues {
+	for _, issue := range gosecOutput.GosecIssues {
 		if (issue.Severity == "MEDIUM") && (issue.Confidence == "HIGH") {
 			foundVuln = true
 			color.Yellow("[HUSKYCI][!] Severity: %s", issue.Severity)
@@ -71,7 +71,7 @@ func PrintGasOutput(containerOutput string) {
 		}
 	}
 
-	for _, issue := range gasOutput.Issues {
+	for _, issue := range gosecOutput.GosecIssues {
 		if issue.Severity == "LOW" {
 			foundInfo = true
 			color.Blue("[HUSKYCI][!] Severity: %s", issue.Severity)
