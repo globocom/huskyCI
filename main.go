@@ -10,9 +10,12 @@ import (
 
 	"github.com/globocom/husky-client/analysis"
 	"github.com/globocom/husky-client/config"
+	"github.com/globocom/husky-client/types"
 )
 
 func main() {
+
+	types.FoundVuln = false
 
 	// step 0: check and set huskyci-client configuration
 	if err := config.CheckEnvVars(); err != nil {
@@ -40,5 +43,11 @@ func main() {
 
 	// step 3: analyze result and return to CI the final result.
 	analysis.AnalyzeResult(huskyAnalysis)
+
+	if types.FoundVuln == true {
+		os.Exit(1)
+	}
+
+	os.Exit(0)
 
 }
