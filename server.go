@@ -249,6 +249,23 @@ func checkDefaultSecurityTests(configAPI *apiContext.APIConfig) error {
 		return err
 	}
 
+	retirejsQuery := map[string]interface{}{"name": "retirejs"}
+	retirejs, err := analysis.FindOneDBSecurityTest(retirejsQuery)
+	if err == mgo.ErrNotFound {
+		// As RetireJS securityTest is not set into MongoDB, HuskyCI will insert it.
+		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
+			"action": "checkDefaultSecurityTests",
+			"info":   "SERVER"}, "ERROR", "RetireJS securityTest not found!"); errLog != nil {
+			fmt.Println("glbgelf error: ", errLog)
+		}
+		retirejs = *configAPI.RetirejsSecurityTest
+		if err := analysis.InsertDBSecurityTest(retirejs); err != nil {
+			return err
+		}
+	} else if err != nil {
+		return err
+	}
+
 	return nil
 }
 

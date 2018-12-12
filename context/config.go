@@ -44,6 +44,7 @@ type APIConfig struct {
 	GosecSecurityTest    *types.SecurityTest
 	BanditSecurityTest   *types.SecurityTest
 	BrakemanSecurityTest *types.SecurityTest
+	RetirejsSecurityTest *types.SecurityTest
 }
 
 var ApiConfig *APIConfig
@@ -67,6 +68,7 @@ func GetAPIConfig() *APIConfig {
 			GosecSecurityTest:    getGosecConfig(),
 			BanditSecurityTest:   getBanditConfig(),
 			BrakemanSecurityTest: getBrakemanConfig(),
+			RetirejsSecurityTest: getRetirejsConfig(),
 		}
 	})
 	return ApiConfig
@@ -196,6 +198,18 @@ func getBanditConfig() *types.SecurityTest {
 		TimeOutInSeconds: viper.GetInt("bandit.timeOutInSeconds"),
 	}
 }
+
+func getRetirejsConfig() *types.SecurityTest {
+	return &types.SecurityTest{
+		Name:             viper.GetString("retirejs.name"),
+		Image:            viper.GetString("retirejs.image"),
+		Cmd:              viper.GetString("retirejs.cmd"),
+		Language:         viper.GetString("retirejs.language"),
+		Default:          viper.GetBool("retirejs.default"),
+		TimeOutInSeconds: viper.GetInt("retirejs.timeOutInSeconds"),
+	}
+}
+
 func loadViper() error {
 	viper.SetConfigName("config")
 	viper.AddConfigPath(".")
