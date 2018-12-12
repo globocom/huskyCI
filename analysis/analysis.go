@@ -86,7 +86,7 @@ func MonitorAnalysis(RID string) (types.Analysis, error) {
 
 	analysis := types.Analysis{}
 	timeout := time.After(15 * time.Minute)
-	retryTick := time.Tick(30 * time.Second)
+	retryTick := time.Tick(20 * time.Second)
 
 	for {
 		select {
