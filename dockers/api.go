@@ -17,8 +17,8 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
-	"github.com/globocom/glbgelf"
 	"github.com/globocom/huskyci/context"
+	"github.com/globocom/huskyci/log"
 	"github.com/globocom/huskyci/types"
 	goContext "golang.org/x/net/context"
 )
@@ -46,19 +46,16 @@ type CreateContainerPayload struct {
 func NewDocker() (*Docker, error) {
 	configAPI := context.GetAPIConfig()
 	dockerHost := fmt.Sprintf("http://%s", configAPI.DockerHostsConfig.Host)
-	if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-		"action": "NewDocker",
-		"info":   "API"}, "INFO", "dockerHost:", dockerHost); errLog != nil {
-		fmt.Println("glbgelf error")
-	}
 
 	err := os.Setenv("DOCKER_HOST", dockerHost)
 	if err != nil {
+		log.Error("NewDocker", "DOCKERAPI", 3001, err)
 		return nil, err
 	}
 
 	client, err := client.NewEnvClient()
 	if err != nil {
+		log.Error("NewDocker", "DOCKERAPI", 3002, err)
 		return nil, err
 	}
 	docker := &Docker{
@@ -71,10 +68,12 @@ func NewDocker() (*Docker, error) {
 func (d Docker) NewClientTLS() (*http.Client, error) {
 	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
 	if err != nil {
+		log.Error("NewClientTLS", "DOCKERAPI", 3003, err)
 		return nil, err
 	}
 	caCert, err := ioutil.ReadFile(carootFile)
 	if err != nil {
+		log.Error("NewClientTLS", "DOCKERAPI", 3004, err)
 		return nil, err
 	}
 	caCertPool := x509.NewCertPool()
@@ -110,6 +109,7 @@ func (d Docker) CreateContainer(analysis types.Analysis, image string, cmd strin
 	}, nil, nil, "")
 
 	if err != nil {
+		log.Error("CreateContainer", "DOCKERAPI", 3005, err)
 		return "", err
 	}
 
@@ -126,6 +126,7 @@ func (d Docker) StartContainer() error {
 func (d Docker) WaitContainer(timeOutInSeconds int) error {
 	ctx := goContext.Background()
 	statusCode, err := d.client.ContainerWait(ctx, d.CID)
+
 	if statusCode != 0 {
 		return fmt.Errorf("Error in POST to wait the container with statusCode %d", statusCode)
 	}
@@ -138,11 +139,13 @@ func (d Docker) ReadOutput() (string, error) {
 	ctx := goContext.Background()
 	out, err := d.client.ContainerLogs(ctx, d.CID, dockerTypes.ContainerLogsOptions{ShowStdout: true})
 	if err != nil {
+		log.Error("ReadOutput", "DOCKERAPI", 3006, err)
 		return "", nil
 	}
 
 	body, err := ioutil.ReadAll(out)
 	if err != nil {
+		log.Error("ReadOutput", "DOCKERAPI", 3007, err)
 		return "", err
 	}
 	return string(body), err
@@ -153,11 +156,13 @@ func (d Docker) ReadOutputStderr() (string, error) {
 	ctx := goContext.Background()
 	out, err := d.client.ContainerLogs(ctx, d.CID, dockerTypes.ContainerLogsOptions{ShowStderr: true})
 	if err != nil {
+		log.Error("ReadOutputStderr", "DOCKERAPI", 3006, err)
 		return "", nil
 	}
 
 	body, err := ioutil.ReadAll(out)
 	if err != nil {
+		log.Error("ReadOutputStderr", "DOCKERAPI", 3008, err)
 		return "", err
 	}
 	return string(body), err
@@ -167,6 +172,9 @@ func (d Docker) ReadOutputStderr() (string, error) {
 func (d Docker) PullImage(image string) error {
 	ctx := goContext.Background()
 	_, err := d.client.ImagePull(ctx, image, dockerTypes.ImagePullOptions{})
+	if err != nil {
+		log.Error("PullImage", "DOCKERAPI", 3009, err)
+	}
 	return err
 }
 
@@ -179,6 +187,7 @@ func (d Docker) ImageIsLoaded(image string) bool {
 	ctx := goContext.Background()
 	result, err := d.client.ImageList(ctx, options)
 	if err != nil {
+		log.Error("ImageIsLoaded", "DOCKERAPI", 3010, err)
 		panic(err)
 	}
 
@@ -201,11 +210,7 @@ func (d Docker) RemoveImage(imageID string) ([]dockerTypes.ImageDelete, error) {
 func HealthCheckDockerAPI() error {
 	d, err := NewDocker()
 	if err != nil {
-		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-			"action": "HealthCheckDockerAPI",
-			"info":   "API"}, "ERROR", "Error HealthCheckDockerAPI():", err); errLog != nil {
-			fmt.Println("glbgelf error")
-		}
+		log.Error("HealthCheckDockerAPI", "DOCKERAPI", 3011, err)
 		return err
 	}
 
