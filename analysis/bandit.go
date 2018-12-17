@@ -68,11 +68,7 @@ func BanditStartAnalysis(CID string, cOutput string) {
 		}
 		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
-			if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-				"action": "BanditStartAnalysis",
-				"info":   "BANDIT"}, "ERROR", "Error updating AnalysisCollection (inside bandit.go):", err); errLog != nil {
-				fmt.Println("glbgelf error: ", errLog)
-			}
+			log.Error("BanditStartAnalysis", "BANDIT", 2007, "Step 1,5", err)
 		}
 		return
 	}
