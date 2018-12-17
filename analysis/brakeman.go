@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/globocom/glbgelf"
+	"github.com/globocom/huskyci/log"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -40,11 +40,7 @@ func BrakemanStartAnalysis(CID string, cOutput string) {
 		}
 		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
-			if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-				"action": "BrakemanStartAnalysis",
-				"info":   "BRAKEMAN"}, "ERROR", "Error updating AnalysisCollection (inside brakeman.go):", err); errLog != nil {
-				fmt.Println("glbgelf error: ", errLog)
-			}
+			log.Error("BrakemanStartAnalysis", "BRAKEMAN", 2007, "Step 0.1 ", err)
 		}
 		return
 	}
@@ -60,11 +56,7 @@ func BrakemanStartAnalysis(CID string, cOutput string) {
 		}
 		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
-			if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-				"action": "BrakemanStartAnalysis",
-				"info":   "BRAKEMAN"}, "ERROR", "Error updating AnalysisCollection (inside brakeman.go):", err); errLog != nil {
-				fmt.Println("glbgelf error: ", errLog)
-			}
+			log.Error("BrakemanStartAnalysis", "BRAKEMAN", 2007, "Step 0.2 ", err)
 		}
 		return
 	}
@@ -73,11 +65,7 @@ func BrakemanStartAnalysis(CID string, cOutput string) {
 	brakemanOutput := BrakemanOutput{}
 	err := json.Unmarshal([]byte(cOutput), &brakemanOutput)
 	if err != nil {
-		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-			"action": "BrakemanStartAnalysis",
-			"info":   "BRAKEMAN"}, "ERROR", "Unmarshall error (brakeman.go):", err); errLog != nil {
-			fmt.Println("glbgelf error: ", errLog)
-		}
+		log.Error("BrakemanStartAnalysis", "BRAKEMAN", 1005, cOutput, err)
 		return
 	}
 
@@ -95,11 +83,7 @@ func BrakemanStartAnalysis(CID string, cOutput string) {
 	}
 	err = UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 	if err != nil {
-		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-			"action": "BrakemanStartAnalysis",
-			"info":   "BRAKEMAN"}, "ERROR", "Error updating AnalysisCollection (inside brakeman.go):", err); errLog != nil {
-			fmt.Println("glbgelf error: ", errLog)
-		}
+		log.Error("BrakemanStartAnalysis", "BRAKEMAN", 2007, "Step 3 ", err)
 		return
 	}
 }

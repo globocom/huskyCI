@@ -5,12 +5,11 @@
 package analysis
 
 import (
-	"fmt"
 	"net/http"
 	"regexp"
 	"time"
 
-	"github.com/globocom/glbgelf"
+	"github.com/globocom/huskyci/log"
 	"github.com/globocom/huskyci/types"
 	"github.com/labstack/echo"
 	"gopkg.in/mgo.v2"
@@ -38,7 +37,8 @@ func ReceiveRequest(c echo.Context) error {
 	repository := types.Repository{}
 	err := c.Bind(&repository)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Error binding repository."})
+		log.Warning("ReceiveRequest", "ANALYSIS", 101, err)
+		return c.String(http.StatusBadRequest, "This is an invalid JSON.\n")
 	}
 
 	// check-01: is this a git repository URL and a branch?
@@ -46,10 +46,12 @@ func ReceiveRequest(c echo.Context) error {
 	r := regexp.MustCompile(regexpGit)
 	valid, err := regexp.MatchString(regexpGit, repository.URL)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Internal error."})
+		log.Error("ReceiveRequest", "ANALYSIS", 1008, "Repository URL regexp ", err)
+		return c.String(http.StatusInternalServerError, "Internal error 1008.\n")
 	}
 	if !valid {
-		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "This is not a valid repository URL."})
+		log.Warning("ReceiveRequest", "ANALYSIS", 102, repository.URL)
+		return c.String(http.StatusBadRequest, "This is not a valid repository URL.\n")
 	}
 	matches := r.FindString(repository.URL)
 	repository.URL = matches
@@ -57,40 +59,48 @@ func ReceiveRequest(c echo.Context) error {
 	regexpBranch := `^[a-zA-Z0-9_\.-]*$`
 	valid, err = regexp.MatchString(regexpBranch, repository.Branch)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Internal error."})
+		log.Error("ReceiveRequest", "ANALYSIS", 1008, "Repository Branch regexp ", err)
+		return c.String(http.StatusInternalServerError, "Internal error 1008.\n")
 	}
 	if !valid {
-		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "This is not a valid branch."})
+		log.Warning("ReceiveRequest", "ANALYSIS", 103, repository.Branch)
+		return c.String(http.StatusBadRequest, "This is not a valid branch.\n")
 	}
 
 	// check-02: is this repository in MongoDB?
 	repositoryQuery := map[string]interface{}{"repositoryURL": repository.URL, "repositoryBranch": repository.Branch}
 	repositoryResult, err := FindOneDBRepository(repositoryQuery)
 	if err == nil {
-		// check-03: repository found! does it have a running status analysis? (for the future: check commits and not URLs?)
+		// check-03: repository found! does it have a running status analysis?
 		analysisQuery := map[string]interface{}{"repositoryURL": repository.URL, "repositoryBranch": repository.Branch}
 		analysisResult, err := FindOneDBAnalysis(analysisQuery)
-		if err != mgo.ErrNotFound {
-			if analysisResult.Status == "running" {
-				return c.JSON(http.StatusConflict, map[string]string{"result": "error", "details": "An analysis is already in place for this URL."})
+		if err != nil {
+			if err != mgo.ErrNotFound {
+				if analysisResult.Status == "running" {
+					log.Warning("ReceiveRequest", "ANALYSIS", 104, analysisResult.URL)
+					return c.String(http.StatusConflict, "An analysis is already in place for this URL.\n")
+				}
 			}
+			log.Error("ReceiveRequest", "ANALYSIS", 1009, err)
 		}
 	} else {
 		// repository not found! insert it into MongoDB with default securityTests
 		err = InsertDBRepository(repository)
 		if err != nil {
-			return c.JSON(http.StatusInternalServerError, map[string]string{"result": "error", "details": "Internal error inserting repository."})
+			log.Error("ReceiveRequest", "ANALYSIS", 1010, err)
+			return c.String(http.StatusInternalServerError, "Internal error 1010.\n")
 		}
 		repositoryQuery := map[string]interface{}{"repositoryURL": repository.URL, "repositoryBranch": repository.Branch}
 		repositoryResult, err = FindOneDBRepository(repositoryQuery)
 		if err != nil {
 			// well it was supposed to be there, after all, we just inserted it.
-			return c.JSON(http.StatusInternalServerError, map[string]string{"result": "error", "details": "Internal error finding repository."})
+			log.Error("ReceiveRequest", "ANALYSIS", 1011, err)
+			return c.String(http.StatusInternalServerError, "Internal error 1011.\n")
 		}
 	}
 
+	log.Info("ReceiveRequest", "ANALYSIS", 16, repository.Branch, repository.URL)
 	go StartAnalysis(RID, repositoryResult)
-
 	return c.JSON(http.StatusOK, map[string]string{"RID": RID, "result": "ok", "details": "Request received."})
 }
 
@@ -109,11 +119,7 @@ func StartAnalysis(RID string, repository types.Repository) {
 	// step 1: insert new analysis into MongoDB.
 	err := InsertDBAnalysis(newAnalysis)
 	if err != nil {
-		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-			"action": "StartAnalysis",
-			"info":   "ANALYSIS"}, "ERROR", "Error inserting new analysis.", err); errLog != nil {
-			fmt.Println("glbgelf error: ", errLog)
-		}
+		log.Error("StartAnalysis", "ANALYSIS", 2011, err)
 		return
 	}
 
@@ -121,11 +127,7 @@ func StartAnalysis(RID string, repository types.Repository) {
 	enryQuery := map[string]interface{}{"name": "enry"}
 	enrySecurityTest, err := FindOneDBSecurityTest(enryQuery)
 	if err != nil {
-		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-			"action": "StartAnalysis",
-			"info":   "ANALYSIS"}, "ERROR", "Error finding Enry SecurityTest:", err); errLog != nil {
-			fmt.Println("glbgelf error: ", errLog)
-		}
+		log.Error("StartAnalysis", "ANALYSIS", 2011, "enry", err)
 		return
 	}
 	DockerRun(RID, &newAnalysis, enrySecurityTest)
@@ -145,12 +147,9 @@ func MonitorAnalysis(analysis *types.Analysis) {
 		select {
 		case <-timeout:
 			// cenario 1: MonitorAnalysis has timed out!
-			if err := monitorAnalysisTimedOut(analysis.RID); err != nil {
-				if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-					"action": "MonitorAnalysis",
-					"info":   "ANALYSIS"}, "ERROR", "Internal error monitorAnalysisTimedOut(): ", err); errLog != nil {
-					fmt.Println("glbgelf error: ", errLog)
-				}
+			log.Warning("MonitorAnalysis", "ANALYSIS", 105, analysis.RID)
+			if err := registerAnalysisTimedOut(analysis.RID); err != nil {
+				log.Error("MonitorAnalysis", "ANALYSIS", 2013, err)
 				return
 			}
 			return
@@ -158,21 +157,13 @@ func MonitorAnalysis(analysis *types.Analysis) {
 			// check if analysis has already finished.
 			analysisHasFinished, err := monitorAnalysisCheckStatus(analysis.RID)
 			if err != nil {
-				if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-					"action": "MonitorAnalysis",
-					"info":   "ANALYSIS"}, "ERROR", "Internal error monitorAnalysisCheckStatus(): ", err); errLog != nil {
-					fmt.Println("glbgelf error: ", errLog)
-				}
+				// already being logged
 			}
 			// cenario 2: analysis has finished!
 			if analysisHasFinished {
 				err := monitorAnalysisUpdateStatus(analysis.RID)
 				if err != nil {
-					if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-						"action": "MonitorAnalysis",
-						"info":   "ANALYSIS"}, "ERROR", "Internal error monitorAnalysisUpdateStatus(): ", err); errLog != nil {
-						fmt.Println("glbgelf error: ", errLog)
-					}
+					// already being logged
 				}
 			} // cenario 3: retry after retryTick seconds!
 		}
@@ -180,8 +171,8 @@ func MonitorAnalysis(analysis *types.Analysis) {
 
 }
 
-// monitorAnalysisTimedOut updates the status of a given analysis to "timedout".
-func monitorAnalysisTimedOut(RID string) error {
+// registerAnalysisTimedOut updates the status of a given analysis to "timedout".
+func registerAnalysisTimedOut(RID string) error {
 	analysisQuery := map[string]interface{}{"RID": RID}
 	updateAnalysisQuery := bson.M{
 		"$set": bson.M{
@@ -189,13 +180,6 @@ func monitorAnalysisTimedOut(RID string) error {
 		},
 	}
 	err := UpdateOneDBAnalysisContainer(analysisQuery, updateAnalysisQuery)
-	if err != nil {
-		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-			"action": "monitorAnalysisTimedOut",
-			"info":   "ANALYSIS"}, "ERROR", "Error updating AnalysisCollection:", err); errLog != nil {
-			fmt.Println("glbgelf error: ", errLog)
-		}
-	}
 	return err
 }
 
@@ -204,11 +188,7 @@ func monitorAnalysisUpdateStatus(RID string) error {
 	analysisQuery := map[string]interface{}{"RID": RID}
 	analysisResult, err := FindOneDBAnalysis(analysisQuery)
 	if err != nil {
-		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-			"action": "monitorAnalysisUpdateStatus",
-			"info":   "ANALYSIS"}, "ERROR", "Could not find analysis:", err); errLog != nil {
-			fmt.Println("glbgelf error: ", errLog)
-		}
+		log.Error("monitorAnalysisCheckStatus", "ANALYSIS", 2014, RID, err)
 		return err
 	}
 	// analyze each cResult from each container to determine what is the value of analysis.Result
@@ -227,11 +207,7 @@ func monitorAnalysisUpdateStatus(RID string) error {
 	}
 	err = UpdateOneDBAnalysisContainer(analysisQuery, updateAnalysisQuery)
 	if err != nil {
-		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-			"action": "monitorAnalysisUpdateStatus",
-			"info":   "ANALYSIS"}, "ERROR", "Error updating AnalysisCollection:", err); errLog != nil {
-			fmt.Println("glbgelf error: ", errLog)
-		}
+		log.Error("monitorAnalysisCheckStatus", "ANALYSIS", 2007, err)
 	}
 	return err
 }
@@ -242,11 +218,7 @@ func monitorAnalysisCheckStatus(RID string) (bool, error) {
 	analysisQuery := map[string]interface{}{"RID": RID}
 	analysisResult, err := FindOneDBAnalysis(analysisQuery)
 	if err != nil {
-		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-			"action": "monitorAnalysisCheckStatus",
-			"info":   "ANALYSIS"}, "ERROR", "Could not find analysis:", err); errLog != nil {
-			fmt.Println("glbgelf error: ", errLog)
-		}
+		log.Error("monitorAnalysisCheckStatus", "ANALYSIS", 2014, RID, err)
 	}
 	for _, container := range analysisResult.Containers {
 		if container.CStatus != "finished" {
@@ -261,12 +233,28 @@ func monitorAnalysisCheckStatus(RID string) (bool, error) {
 
 // StatusAnalysis returns the status of a given analysis (via RID).
 func StatusAnalysis(c echo.Context) error {
+
 	RID := c.Param("id")
+	regexpRID := `^[a-zA-Z0-9]*$`
+	valid, err := regexp.MatchString(regexpRID, RID)
+	if err != nil {
+		log.Error("StatusAnalysist", "ANALYSIS", 1008, "RID regexp ", err)
+		return c.String(http.StatusInternalServerError, "Internal error 1008.\n")
+	}
+	if !valid {
+		log.Warning("StatusAnalysis", "ANALYSIS", 107, RID)
+		return c.String(http.StatusBadRequest, "This is not a valid RID.\n")
+	}
+
 	analysisQuery := map[string]interface{}{"RID": RID}
 	analysisResult, err := FindOneDBAnalysis(analysisQuery)
-	if err == mgo.ErrNotFound {
-		return c.JSON(http.StatusNotFound, map[string]string{"result": "error", "details": "Analysis not found."})
-	} // What if DB is not reachable!? else { }
+	if err != nil {
+		if err == mgo.ErrNotFound {
+			log.Warning("StatusAnalysis", "ANALYSIS", 106, RID)
+			return c.String(http.StatusNotFound, "Analysis not found.\n")
+		}
+		return c.String(http.StatusInternalServerError, "Internal Error.\n")
+	}
 	return c.JSON(http.StatusOK, analysisResult)
 }
 
@@ -275,21 +263,28 @@ func CreateNewSecurityTest(c echo.Context) error {
 	securityTest := types.SecurityTest{}
 	err := c.Bind(&securityTest)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Error binding securityTest."})
+		log.Warning("CreateNewSecurityTest", "ANALYSIS", 108)
+		return c.String(http.StatusBadRequest, "This is not a valid securityTest JSON.\n")
 	}
 
 	securityTestQuery := map[string]interface{}{"name": securityTest.Name}
 	_, err = FindOneDBSecurityTest(securityTestQuery)
-	if err != mgo.ErrNotFound {
-		return c.JSON(http.StatusConflict, map[string]string{"result": "error", "details": "This securityTest is already in MongoDB."})
+	if err != nil {
+		if err != mgo.ErrNotFound {
+			log.Warning("CreateNewSecurityTest", "ANALYSIS", 109, securityTest.Name)
+			return c.String(http.StatusConflict, "This securityTest is already in MongoDB.\n")
+		}
+		log.Error("CreateNewSecurityTest", "ANALYSIS", 1012, err)
 	}
 
 	err = InsertDBSecurityTest(securityTest)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"result": "error", "details": "Error creating new securityTest."})
+		log.Error("CreateNewSecurityTest", "ANALYSIS", 2016, err)
+		return c.String(http.StatusInternalServerError, "Internal error 2015.\n")
 	}
 
-	return c.JSON(http.StatusCreated, map[string]string{"result": "created", "details": "securityTest sucessfully created."})
+	log.Info("CreateNewSecurityTest", "ANALYSIS", 18, securityTest.Name)
+	return c.String(http.StatusCreated, "SecurityTest sucessfully created.\n")
 }
 
 // CreateNewRepository inserts the given repository into RepositoryCollection.
@@ -297,19 +292,26 @@ func CreateNewRepository(c echo.Context) error {
 	repository := types.Repository{}
 	err := c.Bind(&repository)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"result": "error", "details": "Error binding repository."})
+		log.Warning("CreateNewRepository", "ANALYSIS", 101)
+		return c.String(http.StatusBadRequest, "This is not a valid repository JSON.\n")
 	}
 
 	repositoryQuery := map[string]interface{}{"URL": repository.URL}
 	_, err = FindOneDBRepository(repositoryQuery)
-	if err == nil {
-		return c.JSON(http.StatusConflict, map[string]string{"result": "error", "details": "Repository found."})
+	if err != nil {
+		if err != mgo.ErrNotFound {
+			log.Warning("CreateNewRepository", "ANALYSIS", 110, repository.URL)
+			return c.String(http.StatusConflict, "This repository is already in MongoDB.\n")
+		}
+		log.Error("CreateNewRepository", "ANALYSIS", 1013, err)
 	}
 
 	err = InsertDBRepository(repository)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"result": "error", "details": "Error creating new repository."})
+		log.Error("CreateNewRepository", "ANALYSIS", 2015, err)
+		return c.String(http.StatusInternalServerError, "Internal error 2015.\n")
 	}
 
-	return c.JSON(http.StatusCreated, map[string]string{"result": "created", "details": "repository sucessfully created."})
+	log.Info("CreateNewRepository", "ANALYSIS", 17, repository.URL)
+	return c.String(http.StatusCreated, "Repository sucessfully created.\n")
 }
