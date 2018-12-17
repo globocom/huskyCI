@@ -59,6 +59,24 @@ func BanditStartAnalysis(CID string, cOutput string) {
 		return
 	}
 
+	// Sets the container output to "No issues found" if banditResult returns an empty slice
+	if len(banditResult.Results) == 0 {
+		updateContainerAnalysisQuery := bson.M{
+			"$set": bson.M{
+				"containers.$.cOutput": "No issues found.",
+			},
+		}
+		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+		if err != nil {
+			if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
+				"action": "BanditStartAnalysis",
+				"info":   "BANDIT"}, "ERROR", "Error updating AnalysisCollection (inside bandit.go):", err); errLog != nil {
+				fmt.Println("glbgelf error: ", errLog)
+			}
+		}
+		return
+	}
+
 	// verify if there was any error in the analysis.
 	if banditResult.Errors != nil {
 		updateContainerAnalysisQuery := bson.M{
