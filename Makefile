@@ -46,7 +46,7 @@ check-env:
 	cat .env
 
 ## Perfoms all make tests
-test: get-deps lint check-sec
+test: get-test-deps lint check-sec
 
 ## Runs lint
 lint:
