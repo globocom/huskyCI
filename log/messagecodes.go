@@ -39,6 +39,7 @@ var MsgCode = map[int]string{
 	1011: "Internal error finding repository just inserted into MongoDB: ",
 	1012: "MongoDB message in FindOneDBSecurityTest: ",
 	1013: "MongoDB message in FindOneDBRepository: ",
+	1014: "Could not Unmarshall the following retirejsOutput: ",
 
 	// MongoDB infos
 	21: "Connecting to MongoDB.",
@@ -50,6 +51,7 @@ var MsgCode = map[int]string{
 	202: "Gosec securityTest not found.",
 	203: "Brakeman securityTest not found.",
 	204: "Bandit securityTest not found.",
+	205: "RetireJS securityTest not found.",
 
 	// MongoDB errors
 	2001: "Error connecting to MongoDB: ",
