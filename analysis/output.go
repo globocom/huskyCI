@@ -22,6 +22,10 @@ func CheckContainerOutput(container types.Container) {
 		PrintGosecOutput(container.COutput)
 	case "bandit":
 		PrintBanditOutput(container.COutput)
+	case "retirejs":
+		PrintRetirejsOutput(container.COutput)
+	case "brakeman":
+		PrintBrakemanOutput(container.COutput)
 	default:
 		fmt.Println("[HUSKYCI][ERROR] securityTest name not recognized:", container.SecurityTest.Name)
 		os.Exit(1)
@@ -158,6 +162,150 @@ func PrintBanditOutput(containerOutput string) {
 		fmt.Printf("[HUSKYCI][*] Bandit :|\n\n")
 	} else {
 		color.Green("[HUSKYCI][*] Bandit :)\n\n")
+	}
+
+}
+
+// PrintRetirejsOutput will print Retirejs output.
+func PrintRetirejsOutput(containerOutput string) {
+
+	if containerOutput == "No issues found." {
+		color.Green("[HUSKYCI][*] RetireJS :)\n\n")
+		return
+	}
+
+	foundVuln := false
+	foundInfo := false
+	retirejsOutput := types.RetirejsOutput{}
+	err := json.Unmarshal([]byte(containerOutput), &retirejsOutput)
+	if err != nil {
+		fmt.Println("[HUSKYCI][ERROR] Could not Unmarshal retirejsOutput!", containerOutput)
+		os.Exit(1)
+	}
+
+	for _, issue := range retirejsOutput.RetirejsIssues {
+		for _, result := range issue.RetirejsResults {
+			for _, vulnerability := range result.RetirejsVulnerabilities {
+				if vulnerability.Severity == "high" {
+					foundVuln = true
+					color.Red("[HUSKYCI] [!] Severity: %s", vulnerability.Severity)
+					color.Red("[HUSKYCI] [!] Details: %s", vulnerability.Info)
+					color.Red("[HUSKYCI] [!] File: %s", issue.File)
+					color.Red("[HUSKYCI] [!] Component: %s", result.Component)
+					color.Red("[HUSKYCI] [!] Version: %s", result.Version)
+					color.Red("[HUSKYCI] [!] Vulnerable Below: %s", vulnerability.Below)
+					fmt.Println()
+				}
+			}
+		}
+	}
+
+	for _, issue := range retirejsOutput.RetirejsIssues {
+		for _, result := range issue.RetirejsResults {
+			for _, vulnerability := range result.RetirejsVulnerabilities {
+				if vulnerability.Severity == "medium" {
+					foundVuln = true
+					color.Yellow("[HUSKYCI] [!] Severity: %s", vulnerability.Severity)
+					color.Yellow("[HUSKYCI] [!] Details: %s", vulnerability.Info)
+					color.Yellow("[HUSKYCI] [!] File: %s", issue.File)
+					color.Yellow("[HUSKYCI] [!] Component: %s", result.Component)
+					color.Yellow("[HUSKYCI] [!] Version: %s", result.Version)
+					color.Yellow("[HUSKYCI] [!] Vulnerable Below: %s", vulnerability.Below)
+					fmt.Println()
+				}
+			}
+		}
+	}
+
+	for _, issue := range retirejsOutput.RetirejsIssues {
+		for _, result := range issue.RetirejsResults {
+			for _, vulnerability := range result.RetirejsVulnerabilities {
+				if vulnerability.Severity == "low" {
+					foundVuln = true
+					color.Blue("[HUSKYCI] [!] Severity: %s", vulnerability.Severity)
+					color.Blue("[HUSKYCI] [!] Details: %s", vulnerability.Info)
+					color.Blue("[HUSKYCI] [!] File: %s", issue.File)
+					color.Blue("[HUSKYCI] [!] Component: %s", result.Component)
+					color.Blue("[HUSKYCI] [!] Version: %s", result.Version)
+					color.Blue("[HUSKYCI] [!] Vulnerable Below: %s", vulnerability.Below)
+					fmt.Println()
+				}
+			}
+		}
+	}
+
+	if foundVuln {
+		color.Red("[HUSKYCI][X] RetireJS :(\n\n")
+		types.FoundVuln = true
+	} else if foundInfo {
+		fmt.Printf("[HUSKYCI][*] RetireJS :|\n\n")
+	} else {
+		color.Green("[HUSKYCI][*] RetireJS :)\n\n")
+	}
+
+}
+
+// PrintBrakemanOutput will print Brakeman output.
+func PrintBrakemanOutput(containerOutput string) {
+	if containerOutput == "No issues found." {
+		color.Green("[HUSKYCI][*] Brakeman :)\n\n")
+		return
+	}
+
+	foundVuln := false
+	foundInfo := false
+	brakemanOutput := types.BrakemanOutput{}
+	err := json.Unmarshal([]byte(containerOutput), &brakemanOutput)
+	if err != nil {
+		fmt.Println("[HUSKYCI][ERROR] Could not Unmarshal brakemanOutput!", containerOutput)
+		os.Exit(1)
+	}
+
+	for _, warning := range brakemanOutput.Warnings {
+		if warning.Confidence == "High" {
+			foundVuln = true
+			color.Red("[HUSKYCI] [!] Confidence: %s", warning.Confidence)
+			color.Red("[HUSKYCI] [!] Type: %s", warning.Type)
+			color.Red("[HUSKYCI] [!] Details: %s", warning.Details)
+			color.Red("[HUSKYCI] [!] Info: %s", warning.Message)
+			color.Red("[HUSKYCI] [!] File: %s", warning.File)
+			color.Red("[HUSKYCI] [!] line: %d", warning.Line)
+			color.Red("[HUSKYCI] [!] Code: %s", warning.Code)
+			fmt.Println()
+		}
+
+		if warning.Confidence == "Medium" {
+			foundVuln = true
+			color.Yellow("[HUSKYCI] [!] Confidence: %s", warning.Confidence)
+			color.Yellow("[HUSKYCI] [!] Type: %s", warning.Type)
+			color.Yellow("[HUSKYCI] [!] Details: %s", warning.Details)
+			color.Yellow("[HUSKYCI] [!] Info: %s", warning.Message)
+			color.Yellow("[HUSKYCI] [!] File: %s", warning.File)
+			color.Yellow("[HUSKYCI] [!] line: %d", warning.Line)
+			color.Yellow("[HUSKYCI] [!] Code: %s", warning.Code)
+			fmt.Println()
+		}
+
+		if warning.Confidence == "Low" {
+			foundVuln = true
+			color.Blue("[HUSKYCI] [!] Confidence: %s", warning.Confidence)
+			color.Blue("[HUSKYCI] [!] Type: %s", warning.Type)
+			color.Blue("[HUSKYCI] [!] Details: %s", warning.Details)
+			color.Blue("[HUSKYCI] [!] Info: %s", warning.Message)
+			color.Blue("[HUSKYCI] [!] File: %s", warning.File)
+			color.Blue("[HUSKYCI] [!] line: %d", warning.Line)
+			color.Blue("[HUSKYCI] [!] Code: %s", warning.Code)
+			fmt.Println()
+		}
+	}
+
+	if foundVuln {
+		color.Red("[HUSKYCI][X] Brakeman :(\n\n")
+		types.FoundVuln = true
+	} else if foundInfo {
+		fmt.Printf("[HUSKYCI][*] Brakeman :|\n\n")
+	} else {
+		color.Green("[HUSKYCI][*] Brakeman :)\n\n")
 	}
 
 }
