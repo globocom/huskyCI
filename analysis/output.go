@@ -269,7 +269,7 @@ func PrintBrakemanOutput(containerOutput string) {
 			color.Red("[HUSKYCI] [!] Details: %s", warning.Details)
 			color.Red("[HUSKYCI] [!] Info: %s", warning.Message)
 			color.Red("[HUSKYCI] [!] File: %s", warning.File)
-			color.Red("[HUSKYCI] [!] line: %s", warning.Line)
+			color.Red("[HUSKYCI] [!] line: %d", warning.Line)
 			color.Red("[HUSKYCI] [!] Code: %s", warning.Code)
 			fmt.Println()
 		}
@@ -281,7 +281,7 @@ func PrintBrakemanOutput(containerOutput string) {
 			color.Yellow("[HUSKYCI] [!] Details: %s", warning.Details)
 			color.Yellow("[HUSKYCI] [!] Info: %s", warning.Message)
 			color.Yellow("[HUSKYCI] [!] File: %s", warning.File)
-			color.Yellow("[HUSKYCI] [!] line: %s", warning.Line)
+			color.Yellow("[HUSKYCI] [!] line: %d", warning.Line)
 			color.Yellow("[HUSKYCI] [!] Code: %s", warning.Code)
 			fmt.Println()
 		}
@@ -293,7 +293,7 @@ func PrintBrakemanOutput(containerOutput string) {
 			color.Blue("[HUSKYCI] [!] Details: %s", warning.Details)
 			color.Blue("[HUSKYCI] [!] Info: %s", warning.Message)
 			color.Blue("[HUSKYCI] [!] File: %s", warning.File)
-			color.Blue("[HUSKYCI] [!] line: %s", warning.Line)
+			color.Blue("[HUSKYCI] [!] line: %d", warning.Line)
 			color.Blue("[HUSKYCI] [!] Code: %s", warning.Code)
 			fmt.Println()
 		}
