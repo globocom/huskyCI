@@ -4,7 +4,7 @@ package log
 var MsgCode = map[int]string{
 
 	// HuskyCI API infos
-	11: "Starting HuskyCI",
+	11: "Starting HuskyCI.",
 	12: "Environment variables set properly.",
 	13: "Docker API is up and running.",
 	14: "Connection with MongoDB succeed.",
@@ -14,9 +14,6 @@ var MsgCode = map[int]string{
 	18: "SecurityTest created into MongoDB: ",
 
 	// HuskyCI API warnings
-	101: "Received an invalid repository JSON.",
-	102: "Received an invalid repository URL: ",
-	103: "Received an invalid repository branch: ",
 	104: "An analysis is already in place for this URL: ",
 	105: "The following analysis timed out inside MonitorAnalysis: ",
 	106: "Analysis not found using the following RID: ",
@@ -40,6 +37,9 @@ var MsgCode = map[int]string{
 	1012: "MongoDB message in FindOneDBSecurityTest: ",
 	1013: "MongoDB message in FindOneDBRepository: ",
 	1014: "Could not Unmarshall the following retirejsOutput: ",
+	1015: "Received an invalid repository JSON: ",
+	1016: "Received an invalid repository URL: ",
+	1017: "Received an invalid repository branch: ",
 
 	// MongoDB infos
 	21: "Connecting to MongoDB.",
