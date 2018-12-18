@@ -47,7 +47,8 @@ type APIConfig struct {
 	RetirejsSecurityTest *types.SecurityTest
 }
 
-var ApiConfig *APIConfig
+// APIConfiguration holds all API configuration.
+var APIConfiguration *APIConfig
 var onceConfig sync.Once
 
 func init() {
@@ -60,7 +61,7 @@ func init() {
 // GetAPIConfig returns the instance of an APIConfig.
 func GetAPIConfig() *APIConfig {
 	onceConfig.Do(func() {
-		ApiConfig = &APIConfig{
+		APIConfiguration = &APIConfig{
 			MongoDBConfig:        getMongoConfig(),
 			DockerHostsConfig:    getDockerHostsConfig(),
 			HuskyAPIPort:         getAPIHostPort(),
@@ -71,9 +72,10 @@ func GetAPIConfig() *APIConfig {
 			RetirejsSecurityTest: getRetirejsConfig(),
 		}
 	})
-	return ApiConfig
+	return APIConfiguration
 }
 
+// getDockerHostsConfig gets the Docker API hosts' configuration.
 func getDockerHostsConfig() *DockerHostsConfig {
 
 	dockerAPIPort := getDockerAPIPort()
@@ -140,6 +142,7 @@ func getAPIHostPort() int {
 	return apiPort
 }
 
+// getMongoTimeout returns MongoDB timeout retrieved form an environment variable.
 func getMongoTimeout() time.Duration {
 	mongoTimeout, err := strconv.Atoi(os.Getenv("MONGO_TIMEOUT"))
 	if err != nil {
@@ -148,6 +151,7 @@ func getMongoTimeout() time.Duration {
 	return time.Duration(mongoTimeout) * time.Second
 }
 
+// getMongoPoolLimit returns MongoDB pool limit retrieved form an environment variable.
 func getMongoPoolLimit() int {
 	mongoPoolLimit, err := strconv.Atoi(os.Getenv("MONGO_POOL_LIMIT"))
 	if err != nil && mongoPoolLimit <= 0 {
@@ -155,6 +159,8 @@ func getMongoPoolLimit() int {
 	}
 	return mongoPoolLimit
 }
+
+// getEnryConfig returns Enry configuration form config.yml using viper.
 func getEnryConfig() *types.SecurityTest {
 	return &types.SecurityTest{
 		Name:             viper.GetString("enry.name"),
@@ -166,6 +172,7 @@ func getEnryConfig() *types.SecurityTest {
 	}
 }
 
+// getBrakemanConfig returns Brakeman configuration form config.yml using viper.
 func getBrakemanConfig() *types.SecurityTest {
 	return &types.SecurityTest{
 		Name:             viper.GetString("brakeman.name"),
@@ -177,6 +184,7 @@ func getBrakemanConfig() *types.SecurityTest {
 	}
 }
 
+// getGosecConfig returns Gosec configuration form config.yml using viper.
 func getGosecConfig() *types.SecurityTest {
 	return &types.SecurityTest{
 		Name:             viper.GetString("gosec.name"),
@@ -188,6 +196,7 @@ func getGosecConfig() *types.SecurityTest {
 	}
 }
 
+// getBanditConfig returns Bandit configuration form config.yml using viper.
 func getBanditConfig() *types.SecurityTest {
 	return &types.SecurityTest{
 		Name:             viper.GetString("bandit.name"),
@@ -210,6 +219,7 @@ func getRetirejsConfig() *types.SecurityTest {
 	}
 }
 
+// loagViper loads Vipers configuration using config.yml file.
 func loadViper() error {
 	viper.SetConfigName("config")
 	viper.AddConfigPath(".")

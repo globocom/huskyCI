@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/globocom/glbgelf"
+	"github.com/globocom/huskyci/log"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -35,6 +35,21 @@ func BrakemanStartAnalysis(CID string, cOutput string) {
 	var cResult string
 	analysisQuery := map[string]interface{}{"containers.CID": CID}
 
+	// step 0.1: nil cOutput states that no Issues were found.
+	if cOutput == "" {
+		updateContainerAnalysisQuery := bson.M{
+			"$set": bson.M{
+				"containers.$.cOutput": "No issues found.",
+				"containers.$.cResult": "passed",
+			},
+		}
+		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+		if err != nil {
+			log.Error("BrakemanStartAnalysis", "BRAKEMAN", 2007, "Step 0.1 ", err)
+		}
+		return
+	}
+  
 	// step 0.2: error cloning repository!
 	if strings.Contains(cOutput, "ERROR_CLONING") {
 		errorOutput := fmt.Sprintf("Container error: %s", cOutput)
@@ -46,11 +61,7 @@ func BrakemanStartAnalysis(CID string, cOutput string) {
 		}
 		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
-			if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-				"action": "BrakemanStartAnalysis",
-				"info":   "BRAKEMAN"}, "ERROR", "Error updating AnalysisCollection (inside brakeman.go):", err); errLog != nil {
-				fmt.Println("glbgelf error: ", errLog)
-			}
+			log.Error("BrakemanStartAnalysis", "BRAKEMAN", 2007, "Step 0.2 ", err)
 		}
 		return
 	}
@@ -59,11 +70,7 @@ func BrakemanStartAnalysis(CID string, cOutput string) {
 	brakemanOutput := BrakemanOutput{}
 	err := json.Unmarshal([]byte(cOutput), &brakemanOutput)
 	if err != nil {
-		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-			"action": "BrakemanStartAnalysis",
-			"info":   "BRAKEMAN"}, "ERROR", "Unmarshall error (brakeman.go):", err); errLog != nil {
-			fmt.Println("glbgelf error: ", errLog)
-		}
+		log.Error("BrakemanStartAnalysis", "BRAKEMAN", 1005, cOutput, err)
 		return
 	}
 
@@ -103,11 +110,7 @@ func BrakemanStartAnalysis(CID string, cOutput string) {
 	}
 	err = UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 	if err != nil {
-		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-			"action": "BrakemanStartAnalysis",
-			"info":   "BRAKEMAN"}, "ERROR", "Error updating AnalysisCollection (inside brakeman.go):", err); errLog != nil {
-			fmt.Println("glbgelf error: ", errLog)
-		}
+		log.Error("BrakemanStartAnalysis", "BRAKEMAN", 2007, "Step 3 ", err)
 		return
 	}
 }

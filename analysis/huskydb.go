@@ -6,11 +6,10 @@ package analysis
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
-	"github.com/globocom/glbgelf"
 	db "github.com/globocom/huskyci/db/mongo"
+	"github.com/globocom/huskyci/log"
 	"github.com/globocom/huskyci/types"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -100,11 +99,7 @@ func InsertDBRepository(repository types.Repository) error {
 		securityTestQuery := map[string]interface{}{"default": true, "language": "Generic"}
 		securityTestList, err = FindAllDBSecurityTest(securityTestQuery)
 		if err != nil {
-			if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-				"action": "InsertDBRepository",
-				"info":   "HUSKYDB"}, "ERROR", "Could not find default securityTests:", err); errLog != nil {
-				fmt.Println("glbgelf error: ", errLog)
-			}
+			log.Error("InsertDBRepository", "HUSKYDB", 2005, err)
 		}
 	} else {
 		// checking if a given securityTestName matches a securityTest
@@ -114,11 +109,7 @@ func InsertDBRepository(repository types.Repository) error {
 				securityTestQuery := map[string]interface{}{"name": securityTestName}
 				securityTestResult, err := FindOneDBSecurityTest(securityTestQuery)
 				if err != nil {
-					if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-						"action": "InsertDBRepository",
-						"info":   "HUSKYDB"}, "ERROR", "Could not find securityTestName:", securityTestName); errLog != nil {
-						fmt.Println("glbgelf error: ", errLog)
-					}
+					log.Error("InsertDBRepository", "HUSKYDB", 2006, err)
 				} else {
 					securityTestList = append(securityTestList, securityTestResult)
 				}
@@ -128,11 +119,7 @@ func InsertDBRepository(repository types.Repository) error {
 				securityTestQuery := map[string]interface{}{"name": securityTestName}
 				securityTestResult, err := FindOneDBSecurityTest(securityTestQuery)
 				if err != nil {
-					if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-						"action": "InsertDBRepository",
-						"info":   "HUSKYDB"}, "ERROR", "Could not find securityTestName:", securityTestName); errLog != nil {
-						fmt.Println("glbgelf error: ", errLog)
-					}
+					log.Error("InsertDBRepository", "HUSKYDB", 2006, err)
 				} else {
 					securityTestList = append(securityTestList, securityTestResult)
 				}

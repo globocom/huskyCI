@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/globocom/glbgelf"
+	"github.com/globocom/huskyci/log"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -66,11 +66,7 @@ func RetirejsStartAnalysis(CID string, cOutput string) {
 		}
 		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
-			if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-				"action": "RetirejsStartAnalysis",
-				"info":   "RETIREJS"}, "ERROR", "Error updating AnalysisCollection (inside retirejs.go):", err); errLog != nil {
-				fmt.Println("glbgelf error: ", errLog)
-			}
+			log.Error("RetirejsStartAnalysis", "RETIREJS", 2007, err)
 		}
 		return
 	}
@@ -79,16 +75,7 @@ func RetirejsStartAnalysis(CID string, cOutput string) {
 	retirejsOutput := RetirejsOutput{}
 	err := json.Unmarshal([]byte(cOutput), &retirejsOutput)
 	if err != nil {
-		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-			"action": "RetirejsStartAnalysis",
-			"info":   "RETIREJS"}, "ERROR", "Unmarshall error (inside retirejs.go):", err); errLog != nil {
-			fmt.Println("glbgelf error: ", errLog)
-		}
-		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-			"action": "RetirejsStartAnalysis",
-			"info":   "RETIREJS"}, "ERROR", cOutput); errLog != nil {
-			fmt.Println("glbgelf error: ", errLog)
-		}
+		log.Error("RetirejsStartAnalysis", "RETIREJS", 1014, cOutput, err)
 		return
 	}
 
@@ -101,11 +88,7 @@ func RetirejsStartAnalysis(CID string, cOutput string) {
 		}
 		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
-			if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-				"action": "RetirejsStartAnalysis",
-				"info":   "RETIREJS"}, "ERROR", "Error updating AnalysisCollection (inside retirejs.go):", err); errLog != nil {
-				fmt.Println("glbgelf error: ", errLog)
-			}
+			log.Error("RetirejsStartAnalysis", "RETIREJS", 2007, err)
 		}
 		return
 	}
@@ -131,11 +114,7 @@ func RetirejsStartAnalysis(CID string, cOutput string) {
 	}
 	err = UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 	if err != nil {
-		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-			"action": "RetirejsStartAnalysis",
-			"info":   "RETIREJS"}, "ERROR", "Error updating AnalysisCollection (inside retirejs.go):", err); errLog != nil {
-			fmt.Println("glbgelf error: ", errLog)
-		}
+		log.Error("RetirejsStartAnalysis", "RETIREJS", 2007, err)
 		return
 	}
 }
