@@ -37,7 +37,7 @@ func ReceiveRequest(c echo.Context) error {
 	repository := types.Repository{}
 	err := c.Bind(&repository)
 	if err != nil {
-		log.Warning("ReceiveRequest", "ANALYSIS", 101, err)
+		log.Error("ReceiveRequest", "ANALYSIS", 1015, err)
 		return c.String(http.StatusBadRequest, "This is an invalid JSON.\n")
 	}
 
@@ -50,7 +50,7 @@ func ReceiveRequest(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "Internal error 1008.\n")
 	}
 	if !valid {
-		log.Warning("ReceiveRequest", "ANALYSIS", 102, repository.URL)
+		log.Error("ReceiveRequest", "ANALYSIS", 1016, repository.URL)
 		return c.String(http.StatusBadRequest, "This is not a valid repository URL.\n")
 	}
 	matches := r.FindString(repository.URL)
@@ -63,7 +63,7 @@ func ReceiveRequest(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "Internal error 1008.\n")
 	}
 	if !valid {
-		log.Warning("ReceiveRequest", "ANALYSIS", 103, repository.Branch)
+		log.Error("ReceiveRequest", "ANALYSIS", 1017, repository.Branch)
 		return c.String(http.StatusBadRequest, "This is not a valid branch.\n")
 	}
 
@@ -188,7 +188,7 @@ func monitorAnalysisUpdateStatus(RID string) error {
 	analysisQuery := map[string]interface{}{"RID": RID}
 	analysisResult, err := FindOneDBAnalysis(analysisQuery)
 	if err != nil {
-		log.Error("monitorAnalysisCheckStatus", "ANALYSIS", 2014, RID, err)
+		log.Error("monitorAnalysisUpdateStatus", "ANALYSIS", 2014, RID, err)
 		return err
 	}
 	// analyze each cResult from each container to determine what is the value of analysis.Result
@@ -207,7 +207,7 @@ func monitorAnalysisUpdateStatus(RID string) error {
 	}
 	err = UpdateOneDBAnalysisContainer(analysisQuery, updateAnalysisQuery)
 	if err != nil {
-		log.Error("monitorAnalysisCheckStatus", "ANALYSIS", 2007, err)
+		log.Error("monitorAnalysisUpdateStatus", "ANALYSIS", 2007, err)
 	}
 	return err
 }
@@ -238,7 +238,7 @@ func StatusAnalysis(c echo.Context) error {
 	regexpRID := `^[a-zA-Z0-9]*$`
 	valid, err := regexp.MatchString(regexpRID, RID)
 	if err != nil {
-		log.Error("StatusAnalysist", "ANALYSIS", 1008, "RID regexp ", err)
+		log.Error("StatusAnalysis", "ANALYSIS", 1008, "RID regexp ", err)
 		return c.String(http.StatusInternalServerError, "Internal error 1008.\n")
 	}
 	if !valid {
