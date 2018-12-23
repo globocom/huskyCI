@@ -25,7 +25,7 @@ COMMIT := $(shell git rev-parse $(TAG))
 LDFLAGS := '-X "main.version=$(TAG)" -X "main.commit=$(COMMIT)" -X "main.date=$(DATE)"'
 
 ## Installs a development environment using docker-compose
-install: generate-passwords create-certs compose check-env pull-images
+install: generate-passwords create-certs compose pull-images
 
 ## Gets all go test dependencies
 get-test-deps:
@@ -57,11 +57,10 @@ build:
 	$(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCIBIN)"
 
 
-## Run project using docker-compose
+## Composes HuskyCI environment using docker-compose
 compose:
-	docker-compose -f deployments/docker-compose.yml build
-	docker-compose -f deployments/docker-compose.yml down -v
-	docker-compose -f deployments/docker-compose.yml up -d --force-recreate
+	docker-compose -f deployments/docker-compose.yml down
+	docker-compose -f deployments/docker-compose.yml up -d --build --force-recreate
 
 ## Pulls every HuskyCI docker image into dockerAPI container
 pull-images:
