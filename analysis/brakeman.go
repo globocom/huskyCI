@@ -49,7 +49,7 @@ func BrakemanStartAnalysis(CID string, cOutput string) {
 		}
 		return
 	}
-  
+
 	// step 0.2: error cloning repository!
 	if strings.Contains(cOutput, "ERROR_CLONING") {
 		errorOutput := fmt.Sprintf("Container error: %s", cOutput)
@@ -84,11 +84,7 @@ func BrakemanStartAnalysis(CID string, cOutput string) {
 		}
 		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
-			if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-				"action": "BrakemanStartAnalysis",
-				"info":   "BRAKEMAN"}, "ERROR", "Error updating AnalysisCollection (inside brakeman.go):", err); errLog != nil {
-				fmt.Println("glbgelf error: ", errLog)
-			}
+			log.Error("BrakemanStartAnalysis", "BRAKEMAN", 2007, "Step 1.1 ", err)
 		}
 		return
 	}
