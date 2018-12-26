@@ -25,7 +25,7 @@ COMMIT := $(shell git rev-parse $(TAG))
 LDFLAGS := '-X "main.version=$(TAG)" -X "main.commit=$(COMMIT)" -X "main.date=$(DATE)"'
 
 ## Installs a development environment using docker-compose
-install: generate-passwords create-certs compose check-env pull-images
+install: generate-passwords create-certs compose pull-images
 
 ## Gets all go test dependencies
 get-test-deps:
@@ -46,7 +46,7 @@ check-env:
 	cat .env
 
 ## Perfoms all make tests
-test: get-deps lint check-sec
+test: get-test-deps lint check-sec
 
 ## Runs lint
 lint:
@@ -57,11 +57,10 @@ build:
 	$(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCIBIN)"
 
 
-## Run project using docker-compose
+## Composes HuskyCI environment using docker-compose
 compose:
-	docker-compose -f deployments/docker-compose.yml build
-	docker-compose -f deployments/docker-compose.yml down -v
-	docker-compose -f deployments/docker-compose.yml up -d --force-recreate
+	docker-compose -f deployments/docker-compose.yml down
+	docker-compose -f deployments/docker-compose.yml up -d --build --force-recreate
 
 ## Pulls every HuskyCI docker image into dockerAPI container
 pull-images:
@@ -69,7 +68,7 @@ pull-images:
 	docker exec dockerAPI /bin/sh -c "docker pull huskyci/gosec"
 	docker exec dockerAPI /bin/sh -c "docker pull huskyci/bandit"
 	docker exec dockerAPI /bin/sh -c "docker pull huskyci/brakeman"
-	#docker exec dockerAPI /bin/sh -c "docker pull huskyci/retirejs"
+	docker exec dockerAPI /bin/sh -c "docker pull huskyci/retirejs"
 
 ## Creates certs and sets all config to dockerAPI
 create-certs:

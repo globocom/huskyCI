@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/globocom/glbgelf"
+	"github.com/globocom/huskyci/log"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -48,27 +48,27 @@ func BanditStartAnalysis(CID string, cOutput string) {
 		}
 		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
-			if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-				"action": "BanditStartAnalysis",
-				"info":   "BANDIT"}, "ERROR", "Error updating AnalysisCollection (inside bandit.go):", err); errLog != nil {
-				fmt.Println("glbgelf error: ", errLog)
-			}
+			log.Error("BanditStartAnalysis", "BANDIT", 2007, "Step 1", err)
 		}
 		return
 	}
 
 	var banditResult BanditOutput
 	if err := json.Unmarshal([]byte(cOutput), &banditResult); err != nil {
-		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-			"action": "BanditStartAnalysis",
-			"info":   "BANDIT"}, "ERROR", "Unmarshall error (bandit.go):", err); errLog != nil {
-			fmt.Println("glbgelf error: ", errLog)
-		}
+		log.Error("BanditStartAnalysis", "BANDIT", 1006, cOutput, err)
+		return
+	}
 
-		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-			"action": "BanditStartAnalysis",
-			"info":   "BANDIT"}, "INFO", "cOutput result:", cOutput); errLog != nil {
-			fmt.Println("glbgelf error: ", errLog)
+	// Sets the container output to "No issues found" if banditResult returns an empty slice
+	if len(banditResult.Results) == 0 {
+		updateContainerAnalysisQuery := bson.M{
+			"$set": bson.M{
+				"containers.$.cOutput": "No issues found.",
+			},
+		}
+		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+		if err != nil {
+			log.Error("BanditStartAnalysis", "BANDIT", 2007, "Step 1,5", err)
 		}
 		return
 	}
@@ -82,11 +82,7 @@ func BanditStartAnalysis(CID string, cOutput string) {
 		}
 		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
-			if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-				"action": "BanditStartAnalysis",
-				"info":   "BANDIT"}, "ERROR", "Error updating AnalysisCollection (inside bandit.go):", err); errLog != nil {
-				fmt.Println("glbgelf error: ", errLog)
-			}
+			log.Error("BanditStartAnalysis", "BANDIT", 2007, "Step 2", err)
 		}
 	}
 
@@ -106,11 +102,7 @@ func BanditStartAnalysis(CID string, cOutput string) {
 		},
 	}
 	if err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery); err != nil {
-		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-			"action": "BanditStartAnalysis",
-			"info":   "BANDIT"}, "ERROR", "Error updating AnalysisCollection (inside bandit.go):", err); errLog != nil {
-			fmt.Println("glbgelf error: ", errLog)
-		}
+		log.Error("BanditStartAnalysis", "BANDIT", 2007, "Step 3", err)
 		return
 	}
 }

@@ -9,19 +9,24 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/globocom/glbgelf"
+	"github.com/globocom/huskyci/log"
 	"gopkg.in/mgo.v2/bson"
 )
 
 // BrakemanOutput is the struct that holds issues and stats found on a Brakeman scan.
 type BrakemanOutput struct {
-	Errors []ErrorItem `json:"errors"`
+	Warnings []WarningItem `json:"warnings"`
 }
 
-// ErrorItem is the struct that holds all detailed information of a vulnerability found.
-type ErrorItem struct {
-	Error    string `json:"error"`
-	Location string `json:"location"`
+// WarningItem is the struct that holds all detailed information of a vulnerability found.
+type WarningItem struct {
+	Type       string `json:"warning_type"`
+	Code       string `json:"code"`
+	Message    string `json:"message"`
+	File       string `json:"file"`
+	Line       int    `json:"line"`
+	Details    string `json:"link"`
+	Confidence string `json:"confidence"`
 }
 
 // BrakemanStartAnalysis analyses the output from Brakeman and sets a cResult based on it.
@@ -40,11 +45,7 @@ func BrakemanStartAnalysis(CID string, cOutput string) {
 		}
 		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
-			if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-				"action": "BrakemanStartAnalysis",
-				"info":   "BRAKEMAN"}, "ERROR", "Error updating AnalysisCollection (inside brakeman.go):", err); errLog != nil {
-				fmt.Println("glbgelf error: ", errLog)
-			}
+			log.Error("BrakemanStartAnalysis", "BRAKEMAN", 2007, "Step 0.1 ", err)
 		}
 		return
 	}
@@ -60,11 +61,7 @@ func BrakemanStartAnalysis(CID string, cOutput string) {
 		}
 		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
-			if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-				"action": "BrakemanStartAnalysis",
-				"info":   "BRAKEMAN"}, "ERROR", "Error updating AnalysisCollection (inside brakeman.go):", err); errLog != nil {
-				fmt.Println("glbgelf error: ", errLog)
-			}
+			log.Error("BrakemanStartAnalysis", "BRAKEMAN", 2007, "Step 0.2 ", err)
 		}
 		return
 	}
@@ -73,18 +70,32 @@ func BrakemanStartAnalysis(CID string, cOutput string) {
 	brakemanOutput := BrakemanOutput{}
 	err := json.Unmarshal([]byte(cOutput), &brakemanOutput)
 	if err != nil {
-		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-			"action": "BrakemanStartAnalysis",
-			"info":   "BRAKEMAN"}, "ERROR", "Unmarshall error (brakeman.go):", err); errLog != nil {
-			fmt.Println("glbgelf error: ", errLog)
+		log.Error("BrakemanStartAnalysis", "BRAKEMAN", 1005, cOutput, err)
+		return
+	}
+
+	// step 1.1: An empty errors slice means no vulnerabilities were found
+	if len(brakemanOutput.Warnings) == 0 {
+		updateContainerAnalysisQuery := bson.M{
+			"$set": bson.M{
+				"containers.$.cOutput": "No issues found.",
+				"containers.$.cResult": "passed",
+			},
+		}
+		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+		if err != nil {
+			log.Error("BrakemanStartAnalysis", "BRAKEMAN", 2007, "Step 1.1 ", err)
 		}
 		return
 	}
 
-	// step 2: find Issues that have severity "MEDIUM" or "HIGH" and confidence "HIGH".
+	// step 2: find Issues that have confidence "High" or "Medium".
 	cResult = "passed"
-	if len(brakemanOutput.Errors) > 0 {
-		cResult = "failed"
+	for _, warning := range brakemanOutput.Warnings {
+		if warning.Confidence == "High" || warning.Confidence == "Medium" {
+			cResult = "failed"
+			break
+		}
 	}
 
 	// step 3: update analysis' cResult into AnalyisCollection.
@@ -95,11 +106,7 @@ func BrakemanStartAnalysis(CID string, cOutput string) {
 	}
 	err = UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 	if err != nil {
-		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-			"action": "BrakemanStartAnalysis",
-			"info":   "BRAKEMAN"}, "ERROR", "Error updating AnalysisCollection (inside brakeman.go):", err); errLog != nil {
-			fmt.Println("glbgelf error: ", errLog)
-		}
+		log.Error("BrakemanStartAnalysis", "BRAKEMAN", 2007, "Step 3 ", err)
 		return
 	}
 }

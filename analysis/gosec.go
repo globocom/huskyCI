@@ -9,18 +9,18 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/globocom/glbgelf"
+	"github.com/globocom/huskyci/log"
 	"gopkg.in/mgo.v2/bson"
 )
 
 // GosecOutput is the struct that holds issues and stats found on a Gosec scan.
 type GosecOutput struct {
-	Issues []Issue
-	Stats  Stats
+	GosecIssues []GosecIssue
+	GosecStats  GosecStats
 }
 
-// Issue is the struct that holds all detailed information of a vulnerability found.
-type Issue struct {
+// GosecIssue is the struct that holds all detailed information of a vulnerability found.
+type GosecIssue struct {
 	Severity   string `json:"severity"`
 	Confidence string `json:"confidence"`
 	RuleID     string `json:"rule_id"`
@@ -30,8 +30,8 @@ type Issue struct {
 	Line       string `json:"line"`
 }
 
-// Stats is the struct that holds the stats found on a Gosec scan.
-type Stats struct {
+// GosecStats is the struct that holds the stats found on a Gosec scan.
+type GosecStats struct {
 	Files int `json:"files"`
 	Lines int `json:"lines"`
 	NoSec int `json:"nosec"`
@@ -54,11 +54,7 @@ func GosecStartAnalysis(CID string, cOutput string) {
 		}
 		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
-			if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-				"action": "GosecStartAnalysis",
-				"info":   "GOSEC"}, "ERROR", "Error updating AnalysisCollection (inside gosec.go):", err); errLog != nil {
-				fmt.Println("glbgelf error: ", errLog)
-			}
+			log.Error("GosecStartAnalysis", "GOSEC", 2007, "Step 0.1 ", err)
 		}
 		return
 	}
@@ -74,11 +70,7 @@ func GosecStartAnalysis(CID string, cOutput string) {
 		}
 		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
-			if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-				"action": "GosecStartAnalysis",
-				"info":   "GOSEC"}, "ERROR", "Error updating AnalysisCollection (inside gosec.go):", err); errLog != nil {
-				fmt.Println("glbgelf error: ", errLog)
-			}
+			log.Error("GosecStartAnalysis", "GOSEC", 2007, "Step 0.2 ", err)
 		}
 		return
 	}
@@ -87,22 +79,13 @@ func GosecStartAnalysis(CID string, cOutput string) {
 	gosecOutput := GosecOutput{}
 	err := json.Unmarshal([]byte(cOutput), &gosecOutput)
 	if err != nil {
-		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-			"action": "GosecStartAnalysis",
-			"info":   "GOSEC"}, "ERROR", "Unmarshall error (gosec.go):", err); errLog != nil {
-			fmt.Println("glbgelf error: ", errLog)
-		}
-		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-			"action": "GosecStartAnalysis",
-			"info":   "GOSEC"}, "ERROR", cOutput); errLog != nil {
-			fmt.Println("glbgelf error: ", errLog)
-		}
+		log.Error("GosecStartAnalysis", "GOSEC", 1002, cOutput, err)
 		return
 	}
 
 	// step 2: find Issues that have severity "MEDIUM" or "HIGH" and confidence "HIGH".
 	cResult = "passed"
-	for _, issue := range gosecOutput.Issues {
+	for _, issue := range gosecOutput.GosecIssues {
 		if (issue.Severity == "HIGH" || issue.Severity == "MEDIUM") && (issue.Confidence == "HIGH") {
 			cResult = "failed"
 			break
@@ -117,11 +100,7 @@ func GosecStartAnalysis(CID string, cOutput string) {
 	}
 	err = UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 	if err != nil {
-		if errLog := glbgelf.Logger.SendLog(map[string]interface{}{
-			"action": "GosecStartAnalysis",
-			"info":   "GOSEC"}, "ERROR", "Error updating AnalysisCollection (inside gosec.go):", err); errLog != nil {
-			fmt.Println("glbgelf error: ", errLog)
-		}
+		log.Error("GosecStartAnalysis", "GOSEC", 2007, "Step 3 ", err)
 		return
 	}
 }

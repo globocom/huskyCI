@@ -75,14 +75,37 @@ brakeman:
     echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
     echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
     mkdir app
-    git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% ./app/code --quiet 2> /tmp/errorGitCloneBandit
+    git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% ./app/code --quiet 2> /tmp/errorGitCloneBrakeman
     if [ $? -eq 0 ]; then
       brakeman -q -o results.json .
       jq -j -M -c . results.json
     else
       echo "ERROR_CLONING"
-      cat /tmp/errorGitCloneBandit
+      cat /tmp/errorGitCloneBrakeman
     fi
   language: Ruby
+  default: true
+  timeOutInSeconds: 360
+
+retirejs:
+  name: retirejs
+  image: huskyci/retirejs
+  cmd: |+
+    mkdir -p ~/.ssh &&
+    echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
+    chmod 600 ~/.ssh/huskyci_id_rsa &&
+    echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
+    echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
+    git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneRetirejs
+    if [ $? -eq 0 ]; then
+      cd code
+      npm install >/dev/null 2>&1
+      retire --outputformat json --exitwith 0
+    else
+      echo "ERROR_CLONING"
+      cat /tmp/errorGitCloneRetirejs
+    fi
+    
+  language: JavaScript
   default: true
   timeOutInSeconds: 360
