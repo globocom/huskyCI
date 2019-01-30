@@ -45,6 +45,7 @@ type APIConfig struct {
 	BanditSecurityTest   *types.SecurityTest
 	BrakemanSecurityTest *types.SecurityTest
 	RetirejsSecurityTest *types.SecurityTest
+	SafetySecurityTest   *types.SecurityTest
 }
 
 // APIConfiguration holds all API configuration.
@@ -70,6 +71,7 @@ func GetAPIConfig() *APIConfig {
 			BanditSecurityTest:   getBanditConfig(),
 			BrakemanSecurityTest: getBrakemanConfig(),
 			RetirejsSecurityTest: getRetirejsConfig(),
+			SafetySecurityTest:   getSafetyConfig(),
 		}
 	})
 	return APIConfiguration
@@ -216,6 +218,17 @@ func getRetirejsConfig() *types.SecurityTest {
 		Language:         viper.GetString("retirejs.language"),
 		Default:          viper.GetBool("retirejs.default"),
 		TimeOutInSeconds: viper.GetInt("retirejs.timeOutInSeconds"),
+	}
+}
+
+func getSafetyConfig() *types.SecurityTest {
+	return &types.SecurityTest{
+		Name:             viper.GetString("safety.name"),
+		Image:            viper.GetString("safety.image"),
+		Cmd:              viper.GetString("safety.cmd"),
+		Language:         viper.GetString("safety.language"),
+		Default:          viper.GetBool("safety.default"),
+		TimeOutInSeconds: viper.GetInt("safety.timeOutInSeconds"),
 	}
 }
 

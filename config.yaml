@@ -105,6 +105,24 @@ retirejs:
       echo "ERROR_CLONING"
       cat /tmp/errorGitCloneRetirejs
     fi
+
+safety:
+  name: safety
+  image: huskyci/safety
+  cmd: |+
+    mkdir -p ~/.ssh &&
+    echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
+    chmod 600 ~/.ssh/huskyci_id_rsa &&
+    echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
+    echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
+    git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneSafety
+    if [ $? -eq 0 ]; then
+      cd code
+      cat requirements.txt | safety check --stdin --json
+    else
+      echo "ERROR_CLONING"
+      cat /tmp/errorGitCloneSafety
+    fi
     
   language: JavaScript
   default: true
