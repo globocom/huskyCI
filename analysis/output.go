@@ -221,7 +221,7 @@ func PrintRetirejsOutput(containerOutput string) {
 		for _, result := range issue.RetirejsResults {
 			for _, vulnerability := range result.RetirejsVulnerabilities {
 				if vulnerability.Severity == "low" {
-					foundVuln = true
+					foundInfo = true
 					color.Blue("[HUSKYCI] [!] Severity: %s", vulnerability.Severity)
 					color.Blue("[HUSKYCI] [!] Details: %s", vulnerability.Info)
 					color.Blue("[HUSKYCI] [!] File: %s", issue.File)
@@ -287,7 +287,7 @@ func PrintBrakemanOutput(containerOutput string) {
 		}
 
 		if warning.Confidence == "Low" {
-			foundVuln = true
+			foundInfo = true
 			color.Blue("[HUSKYCI] [!] Confidence: %s", warning.Confidence)
 			color.Blue("[HUSKYCI] [!] Type: %s", warning.Type)
 			color.Blue("[HUSKYCI] [!] Details: %s", warning.Details)
