@@ -1,5 +1,8 @@
 # HuskyCI
 
+<img src="images/huskyCI-logo.png" align="center" height="" />
+<!-- logo font: Anton -->
+
 [![CircleCI](https://circleci.com/gh/globocom/huskyci/tree/master.svg?style=svg&circle-token=415bfb6b5aa0dfce8d2129878a66326da9533150)](https://circleci.com/gh/globocom/husky/tree/master)
 
 HuskyCI is an open source tool that performs security tests inside CI pipelines of multiple projects and centralizes all results into a database for further analysis and metrics.
