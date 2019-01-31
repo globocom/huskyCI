@@ -1,12 +1,12 @@
-# huskyci-client
+# huskyCI-client
 
-HuskyCI Client is an open source tool that performs security tests inside CI pipelines of multiple projects by sending requests to [HuskyCI][HuskyCI] and gathering its security tests results.
+huskyCI Client is an open source tool that performs security tests inside CI pipelines of multiple projects by sending requests to [HuskyCI][HuskyCI] and gathering its security tests results.
 
 The main goal of this project is to help development teams improve the quality of their code by finding vulnerabilities as soon as possible.
 
 ## What is this client all about?
 
-Well, actually it is just a binary built in Golang that performs the proper requests to HuskyCI API, waits security tests finish and inteprets the results by returning errors (if vulnerabilities are found) or not:
+Well, actually it is just a binary built in Golang that performs the proper requests to huskyCI API, waits security tests finish and inteprets the results by returning errors (if vulnerabilities are found) or not:
 
 ```
 $ ./huskyci-client
