@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/globocom/husky-client/analysis"
-	"github.com/globocom/husky-client/config"
-	"github.com/globocom/husky-client/types"
+	"github.com/globocom/huskyci-client/analysis"
+	"github.com/globocom/huskyci-client/config"
+	"github.com/globocom/huskyci-client/types"
 )
 
 func main() {

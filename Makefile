@@ -19,7 +19,7 @@ COLOR_RED = \033[31m
 
 PROJECT := HuskyCI-Client
 
-## Runs husky-client
+## Runs huskyci-client
 run:
 	go run main.go
 
