@@ -1,4 +1,4 @@
-# husky-client
+# huskyci-client
 
 HuskyCI Client is an open source tool that performs security tests inside CI pipelines of multiple projects by sending requests to [HuskyCI][HuskyCI] and gathering its security tests results.
 

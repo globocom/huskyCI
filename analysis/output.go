@@ -10,7 +10,7 @@ import (
 	"os"
 
 	"github.com/fatih/color"
-	"github.com/globocom/husky-client/types"
+	"github.com/globocom/huskyci-client/types"
 )
 
 // CheckContainerOutput will validate the output of a given container.
