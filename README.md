@@ -1,12 +1,15 @@
 # huskyCI-client
 
-huskyCI Client is an open source tool that performs security tests inside CI pipelines of multiple projects by sending requests to [HuskyCI][HuskyCI] and gathering its security tests results.
+<img src="images/huskyCI-logo.png" align="center" height="" />
+<!-- logo font: Anton -->
+
+huskyCI-client is an auxiliary tool of [huskyCI][huskyCI] project and may be used to perform security tests inside CI pipelines.
 
 The main goal of this project is to help development teams improve the quality of their code by finding vulnerabilities as soon as possible.
 
 ## What is this client all about?
 
-Well, actually it is just a binary built in Golang that performs the proper requests to huskyCI API, waits security tests finish and inteprets the results by returning errors (if vulnerabilities are found) or not:
+Well, actually it is a binary built in Golang that performs proper requests to huskyCI API, waits security tests finish and inteprets the results by returning errors (if vulnerabilities are found) or not:
 
 ```
 $ ./huskyci-client
@@ -32,7 +35,9 @@ $ ./huskyci-client
 exit status 1
 ```
 
-## Environment variables needed (use your own configuration):
+## Running locally
+
+huskyCI-client is built to be used inside containers' CI, however, you can test it locally using the following environment variables:
 
 ```sh
 echo 'export HUSKYCI_REPO_URL="https://github.com/tsuru/cst.git"' > .env
@@ -43,4 +48,4 @@ echo 'export HUSKYCI_API="http://127.0.0.1:8888"' >> .env
 
 This project is licensed under the BSD 3-Clause "New" or "Revised" License - read [LICENSE.md](LICENSE.md) file for details.
 
-[HuskyCI]: https://github.com/globocom/huskyci
+[huskyCI]: https://github.com/globocom/huskyci
