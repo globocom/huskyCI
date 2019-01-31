@@ -13,8 +13,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/globocom/husky-client/config"
-	"github.com/globocom/husky-client/types"
+	"github.com/globocom/huskyci-client/config"
+	"github.com/globocom/huskyci-client/types"
 )
 
 // StartAnalysis starts a container and returns its RID and error.
