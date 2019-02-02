@@ -51,7 +51,6 @@ services:
             - dockerapi
         external_links:
             - dockerapi:dockerapi
-        restart: unless-stoped
 
     mongodb:
         container_name: mongodb

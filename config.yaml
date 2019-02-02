@@ -108,7 +108,7 @@ retirejs:
 
 safety:
   name: safety
-  image: huskyci/safety
+  image: safety-docker
   cmd: |+
     mkdir -p ~/.ssh &&
     echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
@@ -124,6 +124,6 @@ safety:
       cat /tmp/errorGitCloneSafety
     fi
     
-  language: JavaScript
+  language: Python
   default: true
   timeOutInSeconds: 360

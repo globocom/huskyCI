@@ -52,6 +52,7 @@ var MsgCode = map[int]string{
 	203: "Brakeman securityTest not found.",
 	204: "Bandit securityTest not found.",
 	205: "RetireJS securityTest not found.",
+	206: "SAFETY securityTest not found.",
 
 	// MongoDB errors
 	2001: "Error connecting to MongoDB: ",

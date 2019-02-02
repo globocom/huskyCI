@@ -210,7 +210,7 @@ func checkDefaultSecurityTests(configAPI *apiContext.APIConfig) error {
 	safety, err := analysis.FindOneDBSecurityTest(safetyQuery)
 	if err == mgo.ErrNotFound {
 		// As Safety securityTest is not set into MongoDB, HuskyCI will insert it.
-		log.Warning("checkDefaultSecurityTests", "SERVER", 205)
+		log.Warning("checkDefaultSecurityTests", "SERVER", 206)
 		safety = *configAPI.SafetySecurityTest
 		if err := analysis.InsertDBSecurityTest(safety); err != nil {
 			return err
