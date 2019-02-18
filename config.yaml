@@ -106,6 +106,10 @@ retirejs:
       cat /tmp/errorGitCloneRetirejs
     fi
 
+  language: JavaScript
+  default: true
+  timeOutInSeconds: 360
+
 safety:
   name: safety
   image: safety-docker
