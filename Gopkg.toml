@@ -48,3 +48,7 @@
 [prune]
   go-tests = true
   unused-packages = true
+
+[[constraint]]
+  branch = "v2"
+  name = "gopkg.in/Graylog2/go-gelf.v2"

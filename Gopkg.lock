@@ -349,6 +349,7 @@
     "github.com/labstack/echo/middleware",
     "github.com/spf13/viper",
     "golang.org/x/net/context",
+    "gopkg.in/Graylog2/go-gelf.v2/gelf",
     "gopkg.in/mgo.v2",
     "gopkg.in/mgo.v2/bson",
   ]
