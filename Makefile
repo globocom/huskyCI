@@ -10,6 +10,7 @@ GOLINT ?= $(GOBIN)/golint
 GOSEC ?= $(GOBIN)/gosec
 
 HUSKYCIBIN ?= huskyci
+HUSKYCICLIENTBIN ?= huskyci-client
 
 COLOR_RESET = \033[0m
 COLOR_COMMAND = \033[36m
@@ -56,6 +57,13 @@ lint:
 build:
 	$(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCIBIN)"
 
+## Builds client to the executable file huskyci-client
+build-client:
+	cd client/cmd && $(GO) build -o "$(HUSKYCICLIENTBIN)" && mv "$(HUSKYCICLIENTBIN)" ../..
+
+## Runs huskyci-client
+run-client:
+	./"$(HUSKYCICLIENTBIN)"
 
 ## Composes HuskyCI environment using docker-compose
 compose:
