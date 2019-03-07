@@ -1,0 +1,13 @@
+version: 2
+
+jobs:
+  build:
+    docker:
+      - image: circleci/golang:1.10
+
+    working_directory: /go/src/github.com/globo.com/husky
+
+    steps:
+      - checkout
+      - run: go get -u golang.org/x/lint/golint && golint
+      - run: go get -u github.com/securego/gosec/cmd/gosec && gosec ./... 2>/dev/null
