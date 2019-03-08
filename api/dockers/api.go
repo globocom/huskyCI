@@ -17,9 +17,9 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
-	"github.com/globocom/huskyci/context"
-	"github.com/globocom/huskyci/log"
-	"github.com/globocom/huskyci/types"
+	"github.com/globocom/huskyci/api/context"
+	"github.com/globocom/huskyci/api/log"
+	"github.com/globocom/huskyci/api/types"
 	goContext "golang.org/x/net/context"
 )
 

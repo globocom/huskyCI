@@ -10,8 +10,8 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/globocom/huskyci/log"
-	"github.com/globocom/huskyci/types"
+	"github.com/globocom/huskyci/api/log"
+	"github.com/globocom/huskyci/api/types"
 	"gopkg.in/mgo.v2/bson"
 )
 
