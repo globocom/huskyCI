@@ -7,8 +7,8 @@ package db
 import (
 	"time"
 
-	config "github.com/globocom/huskyci/context"
-	"github.com/globocom/huskyci/log"
+	config "github.com/globocom/huskyci/api/context"
+	"github.com/globocom/huskyci/api/log"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )

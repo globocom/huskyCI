@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	docker "github.com/globocom/huskyci/dockers"
-	"github.com/globocom/huskyci/log"
-	"github.com/globocom/huskyci/types"
+	docker "github.com/globocom/huskyci/api/dockers"
+	"github.com/globocom/huskyci/api/log"
+	"github.com/globocom/huskyci/api/types"
 	"gopkg.in/mgo.v2/bson"
 )
 

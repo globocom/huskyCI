@@ -9,10 +9,10 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/globocom/huskyci/log"
-	"github.com/globocom/huskyci/types"
+	"github.com/globocom/huskyci/api/log"
+	"github.com/globocom/huskyci/api/types"
 	"github.com/labstack/echo"
-	"gopkg.in/mgo.v2"
+	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
