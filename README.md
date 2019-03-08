@@ -1,6 +1,6 @@
 # huskyCI - Performing security tests inside your CI
 
-<img src="images/huskyCI-logo.png" align="center" height="" />
+<img src="https://raw.githubusercontent.com/wiki/globocom/huskyci/images/huskyCI-logo.png" align="center" height="" />
 <!-- logo font: Anton -->
 
 [![CircleCI](https://circleci.com/gh/globocom/huskyci/tree/master.svg?style=svg&circle-token=415bfb6b5aa0dfce8d2129878a66326da9533150)](https://circleci.com/gh/globocom/husky/tree/master)
@@ -24,7 +24,7 @@ test-project:
 
 By adding this simple stage, requests will be made to huskyCI API and it will start analyzing new code submitted via Pull Request using well-known open source static analysis tools, as shown in the example bellow:
 
-![architecture](images/arch-example-huskyCI.png)
+![architecture](https://raw.githubusercontent.com/wiki/globocom/huskyci/images/arch-example-huskyCI.png)
 
 ## What is this huskyCI Client all about?
 
