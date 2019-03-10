@@ -90,12 +90,12 @@
   version = "v1.4.7"
 
 [[projects]]
-  digest = "1:a7a55aa6c1c3a06f9694957995001d915f7708a5cb300a9ce6f7f5f54855fcc3"
+  branch = "master"
+  digest = "1:0ed787f95e2a9cccee658e6ff68b73d5749286deda85bd5ef56cffc9974a86e2"
   name = "github.com/globocom/glbgelf"
   packages = ["."]
   pruneopts = "UT"
-  revision = "eda2a164a9d3f248b06487e8b2adca1f6d38f9df"
-  version = "2.0.0"
+  revision = "36e52796d86ac06d067bec9d2185fd8ecb994201"
 
 [[projects]]
   digest = "1:c0d19ab64b32ce9fe5cf4ddceba78d5bc9807f0016db6b1183599da3dcc24d10"
@@ -264,7 +264,7 @@
     "acme/autocert",
   ]
   pruneopts = "UT"
-  revision = "8dd112bcdc25174059e45e07517d9fc663123347"
+  revision = "c2843e01d9a2bc60bb26ad24e09734fdc2d9ec58"
 
 [[projects]]
   branch = "master"
@@ -277,18 +277,18 @@
     "proxy",
   ]
   pruneopts = "UT"
-  revision = "16b79f2e4e95ea23b2bf9903c9809ff7b013ce85"
+  revision = "c10a0554eabf8a6a7a6cc3097c9d9f43dcee0a43"
 
 [[projects]]
   branch = "master"
-  digest = "1:84634db3c6385a120c926d800106c52269a084b849c1c25e276284c9232ad641"
+  digest = "1:85cd5224b89829559e8327ba2e52e0df72638d33cf3082b066ea9dea34391e2f"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
   ]
   pruneopts = "UT"
-  revision = "572b51eaf7221935bdec454796989ba8318fa6f3"
+  revision = "10058d7d4faa7dd5ef860cbd31af00903076e7b8"
 
 [[projects]]
   digest = "1:8029e9743749d4be5bc9f7d42ea1659471767860f0cdc34d37c3111bd308a295"
@@ -349,7 +349,6 @@
     "github.com/labstack/echo/middleware",
     "github.com/spf13/viper",
     "golang.org/x/net/context",
-    "gopkg.in/Graylog2/go-gelf.v2/gelf",
     "gopkg.in/mgo.v2",
     "gopkg.in/mgo.v2/bson",
   ]
