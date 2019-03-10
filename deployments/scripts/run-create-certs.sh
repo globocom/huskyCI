@@ -5,6 +5,6 @@
 
 . .env
 rm -rf deployments/certs/*
-./scripts/create-certs.sh -m ca -pw $CERT_PASSPHRASE -t deployments/certs -e 900
-./scripts/create-certs.sh -m server -h dockerapi -pw $CERT_PASSPHRASE -t deployments/certs -e 365
-./scripts/create-certs.sh -m client -h huskyapi -pw $CERT_PASSPHRASE -t deployments/certs -e 365
+./deployments/scripts/create-certs.sh -m ca -pw $CERT_PASSPHRASE -t deployments/certs -e 900
+./deployments/scripts/create-certs.sh -m server -h dockerapi -pw $CERT_PASSPHRASE -t deployments/certs -e 365
+./deployments/scripts/create-certs.sh -m client -h huskyapi -pw $CERT_PASSPHRASE -t deployments/certs -e 365
