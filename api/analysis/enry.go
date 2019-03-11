@@ -82,9 +82,9 @@ func EnryStartAnalysis(CID string, cOutput string, RID string) {
 	newLanguageSecurityTests := []types.SecurityTest{}
 	for _, language := range repositoryLanguages {
 		languageSecurityTestQuery := map[string]interface{}{"language": language.Name, "default": true}
-		languageSecurityTestResult, err := FindOneDBSecurityTest(languageSecurityTestQuery)
+		languageSecurityTestResult, err := FindAllDBSecurityTest(languageSecurityTestQuery)
 		if err == nil {
-			newLanguageSecurityTests = append(newLanguageSecurityTests, languageSecurityTestResult)
+			newLanguageSecurityTests = append(newLanguageSecurityTests, languageSecurityTestResult...)
 		}
 	}
 
