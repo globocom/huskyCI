@@ -10,6 +10,7 @@ GOLINT ?= $(GOBIN)/golint
 GOSEC ?= $(GOBIN)/gosec
 
 HUSKYCIBIN ?= huskyci
+HUSKYCICLIENTBIN ?= huskyci-client
 
 COLOR_RESET = \033[0m
 COLOR_COMMAND = \033[36m
@@ -56,6 +57,13 @@ lint:
 build:
 	$(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCIBIN)"
 
+## Builds client to the executable file huskyci-client
+build-client:
+	cd client/cmd && $(GO) build -o "$(HUSKYCICLIENTBIN)" && mv "$(HUSKYCICLIENTBIN)" ../..
+
+## Runs huskyci-client
+run-client: build-client
+	./"$(HUSKYCICLIENTBIN)"
 
 ## Composes HuskyCI environment using docker-compose
 compose:
@@ -69,16 +77,17 @@ pull-images:
 	docker exec dockerAPI /bin/sh -c "docker pull huskyci/bandit"
 	docker exec dockerAPI /bin/sh -c "docker pull huskyci/brakeman"
 	docker exec dockerAPI /bin/sh -c "docker pull huskyci/retirejs"
+	docker exec dockerAPI /bin/sh -c "docker pull huskyci/safety"
 
 ## Creates certs and sets all config to dockerAPI
 create-certs:
-	chmod +x scripts/run-create-certs.sh
-	./scripts/run-create-certs.sh
+	chmod +x deployments/scripts/run-create-certs.sh
+	./deployments/scripts/run-create-certs.sh
 
 ## Generates passwords and set them as environment variables
 generate-passwords:
-	chmod +x scripts/generate-env-pass.sh
-	./scripts/generate-env-pass.sh
+	chmod +x deployments/scripts/generate-env-pass.sh
+	./deployments/scripts/generate-env-pass.sh
 
 ## Prints help message
 help:

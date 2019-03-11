@@ -45,6 +45,14 @@
   branch = "master"
   name = "golang.org/x/net"
 
+[[constraint]]
+  branch = "master"
+  name = "github.com/globocom/glbgelf"
+
 [prune]
   go-tests = true
   unused-packages = true
+
+[[override]]
+  branch = "v2"
+  name = "gopkg.in/Graylog2/go-gelf.v2"
