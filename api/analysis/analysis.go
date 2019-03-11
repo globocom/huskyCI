@@ -280,7 +280,7 @@ func CreateNewSecurityTest(c echo.Context) error {
 	err = InsertDBSecurityTest(securityTest)
 	if err != nil {
 		log.Error("CreateNewSecurityTest", "ANALYSIS", 2016, err)
-		return c.String(http.StatusInternalServerError, "Internal error 2015.\n")
+		return c.String(http.StatusInternalServerError, "Internal error 2016.\n")
 	}
 
 	log.Info("CreateNewSecurityTest", "ANALYSIS", 18, securityTest.Name)

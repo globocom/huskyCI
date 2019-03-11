@@ -36,7 +36,7 @@ services:
         build:
             context: ../
             dockerfile: deployments/huskyCI.Dockerfile
-        command: "go run server.go"
+        command: "go run api/server.go"
         volumes:
             - docker_vol:/var/lib/docker
             - ../deployments/certs/client-huskyapi-cert.pem:/go/src/github.com/globocom/huskyci/cert.pem:ro
