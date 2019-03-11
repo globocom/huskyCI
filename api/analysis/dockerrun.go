@@ -78,6 +78,8 @@ func DockerRun(RID string, analysis *types.Analysis, securityTest types.Security
 		BrakemanStartAnalysis(d.CID, cOutput)
 	case "retirejs":
 		RetirejsStartAnalysis(d.CID, cOutput)
+	case "safety":
+		SafetyStartAnalysis(d.CID, cOutput)
 	default:
 		log.Error("DockerRun", "DOCKERRUN", 3018, err)
 	}

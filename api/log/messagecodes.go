@@ -40,6 +40,7 @@ var MsgCode = map[int]string{
 	1015: "Received an invalid repository JSON: ",
 	1016: "Received an invalid repository URL: ",
 	1017: "Received an invalid repository branch: ",
+	1018: "Could not Unmarshall the following safetyOutput; ",
 
 	// MongoDB infos
 	21: "Connecting to MongoDB.",
@@ -52,6 +53,7 @@ var MsgCode = map[int]string{
 	203: "Brakeman securityTest not found.",
 	204: "Bandit securityTest not found.",
 	205: "RetireJS securityTest not found.",
+	206: "Safety securityTest not found.",
 
 	// MongoDB errors
 	2001: "Error connecting to MongoDB: ",
