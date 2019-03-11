@@ -121,11 +121,17 @@ safety:
     git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneSafety
     if [ $? -eq 0 ]; then
       cd code
-      safety check --json
+      cat *requirements* | grep '==' > safety_analysis_requirements.txt
+      if [ $? -eq 0 ]; then
+        safety check -r safety_analysis_requirements.txt --json > safety_analysis_output.json
+        cat safety_analysis_output.json
+      else
+        echo "ERROR_REQ_NOT_FOUND"
+      fi
     else
       echo "ERROR_CLONING"
       cat /tmp/errorGitCloneSafety
     fi
   language: Python
   default: true
-  timeOutInSeconds: 360
+  timeOutInSeconds: 180
