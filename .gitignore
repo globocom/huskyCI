@@ -11,3 +11,4 @@ coverage.txt
 huskyci
 dockers.env
 mongo-init.js
+huskyci-client

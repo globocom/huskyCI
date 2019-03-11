@@ -1,6 +1,6 @@
 # huskyCI - Performing security tests inside your CI
 
-<img src="images/huskyCI-logo.png" align="center" height="" />
+<img src="https://raw.githubusercontent.com/wiki/globocom/huskyci/images/huskyCI-logo.png" align="center" height="" />
 <!-- logo font: Anton -->
 
 [![CircleCI](https://circleci.com/gh/globocom/huskyci/tree/master.svg?style=svg&circle-token=415bfb6b5aa0dfce8d2129878a66326da9533150)](https://circleci.com/gh/globocom/husky/tree/master)
@@ -11,52 +11,12 @@ The main goal of this project is to help development teams improve the quality o
 
 ## How does it work?
 
-Imagine that an organization has projects like `awesome-golang-project`, `awesome-python-project` and `awesome-ruby-project`. In each project's CI configuration file, the following example code may be included:
+Check out our [wiki as the huskyCI works](https://github.com/globocom/huskyci/wiki/how-works)!
 
-```
-test-project:
-  stage: huskyCI
-  script:
-    - wget urlTo.huskyCI/huskyci-client
-    - chmod +x huskyci-client
-    - ./huskyci-client
-```
-
-By adding this simple stage, requests will be made to huskyCI API and it will start analyzing new code submitted via Pull Request using well-known open source static analysis tools, as shown in the example bellow:
-
-![architecture](images/arch-example-huskyCI.png)
-
-## What is this huskyCI Client all about?
-
-Well, actually [huskyCI Client][huskyCI Client] is just a binary built in Golang that performs the proper requests to huskyCI API, waits security tests finish and inteprets the results by returning errors (if vulnerabilities are found) or not:
-
-```
-$ ./huskyci-client
-
-[HUSKYCI][*] new-feature-branch -> https://url.to.repository/team/project.git
-[HUSKYCI][*] HuskyCI analysis started! UUT3MoVnLio9r5syzhbOIZYdLqbx4EDT
-
-[HUSKYCI][!] Severity: MEDIUM
-[HUSKYCI][!] Confidence: HIGH
-[HUSKYCI][!] Details: Potential file inclusion via variable
-[HUSKYCI][!] File: /go/src/code/example/example/example.go
-[HUSKYCI][!] Line: 76
-[HUSKYCI][!] Code: os.Open(path)
-
-[HUSKYCI][!] Severity: LOW
-[HUSKYCI][!] Confidence: HIGH
-[HUSKYCI][!] Details: Errors unhandled.
-[HUSKYCI][!] File: /go/src/code/example2/example2/example2.go
-[HUSKYCI][!] Line: 132
-[HUSKYCI][!] Code: subdirs, _ := ioutil.ReadDir(p)
-
-[HUSKYCI][X] :(
-exit status 1
-```
 
 ## Cool! So huskyCI can check vulnerabilities in all languages ever?
 
-Wow! Hold on! At this moment huskyCI can only perform static security analysis in Python ([Bandit][Bandit]), Ruby ([Brakeman][Brakeman]) and Golang ([Gosec][Gosec]). However, if you want to contribute to huskyCI by adding other cool security tests, you should check this documentation right away!
+Wow! Hold on! At this moment huskyCI can only perform static security analysis in Python ([Bandit][Bandit]), Ruby ([Brakeman][Brakeman]) and Golang ([Gosec][Gosec]). However, if you want to contribute to huskyCI by adding other cool security tests, you should check [this documentation](https://github.com/globocom/huskyci/wiki/how-add-new-security-tests) right away!
 
 ## Running locally
 
@@ -66,28 +26,6 @@ The easiest way to deploy huskyCI is by using Docker Compose, thus, you should h
 make install
 ```
 
-#### Starting a new analysis:
-
-Use the following curl command to manually start a new analysis:
-
-```
-curl -s -H "Content-Type: application/json" -d '{"repositoryURL":"https://github.com/tsuru/cst.git","repositoryBranch":"master"}' http://localhost:8888/husky
-```
-
-Result:
-
-```
-{"RID":"8L85jTJgtuN7o7pRi3sUQ3R4KuCjRcP9","details":"Request received.","result":"ok"}
-```
-
-#### Checking analysis status:
-
-Use the following curl command now to manually check the results of the analysis:
-
-```
-curl -s localhost:8888/husky/8L85jTJgtuN7o7pRi3sUQ3R4KuCjRcP9
-```
-
 ## Contributing
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests to huskyCI.
@@ -95,7 +33,7 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduc
 
 ## Documentation
 
-Check here!
+Take a look at our [documentation](https://github.com/globocom/huskyci/wiki)!
 
 ## License
 
