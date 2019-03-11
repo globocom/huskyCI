@@ -11,8 +11,7 @@ The main goal of this project is to help development teams improve the quality o
 
 ## How does it work?
 
-Check out our [wiki as the huskyCI works](https://github.com/globocom/huskyci/wiki/how-works)!
-
+Does your organization has projects like `awesome-golang-project`, `awesome-python-project` and `awesome-ruby-projectCheck`? You should check our [wiki](https://github.com/globocom/huskyci/wiki/How-does-huskyCI-work%3F) to understand how huskyCI could help you secure them!
 
 ## Cool! So huskyCI can check vulnerabilities in all languages ever?
 
@@ -33,7 +32,7 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduc
 
 ## Documentation
 
-Take a look at our [documentation](https://github.com/globocom/huskyci/wiki)!
+You can find our documentation in our [wiki](https://github.com/globocom/huskyci/wiki)! 
 
 ## License
 
