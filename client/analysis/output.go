@@ -309,3 +309,33 @@ func PrintBrakemanOutput(containerOutput string) {
 	}
 
 }
+
+// PrintSafetyOutput will print Brakeman output.
+func PrintSafetyOutput(containerOutput string) {
+	if containerOutput == "No issues found." {
+		color.Green("[HUSKYCI][*] Safety :)\n\n")
+		return
+	}
+
+	foundVuln := false
+	safetyOutput := types.SafetyOutput{}
+	err := json.Unmarshal([]byte(containerOutput), &safetyOutput)
+	if err != nil {
+		fmt.Println("[HUSKYCI][ERROR] Could not Unmarshal safetyOutput!", containerOutput)
+		os.Exit(1)
+	}
+
+	for _, issue := range safetyOutput.SafetyIssues {
+		foundVuln = true
+		color.Red("[HUSKYCI] [!] Vulnerable Dependency: %s", issue.Dependency)
+		color.Red("[HUSKYCI] [!] Vulnerable Below: %s", issue.Below)
+		color.Red("[HUSKYCI] [!] Current Version: %s", issue.Version)
+		color.Red("[HUSKYCI] [!] Comment: %s", issue.Comment)
+		fmt.Println()
+	}
+
+	if foundVuln {
+		color.Red("[HUSKYCI][X] Safety :(\n\n")
+		types.FoundVuln = true
+	}
+}
