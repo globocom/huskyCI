@@ -3,6 +3,8 @@
 
 FROM python:3.6-alpine
 
+COPY ./script.sh /
+
 RUN apk update && apk upgrade \
 	&& apk add --no-cache alpine-sdk bash openssh-client \
 	&& apk add git
