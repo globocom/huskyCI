@@ -232,7 +232,7 @@ func getSafetyConfig() *types.SecurityTest {
 	}
 }
 
-// loagViper loads Vipers configuration using config.yml file.
+// loadViper loads Vipers configuration using config.yml file.
 func loadViper() error {
 	viper.SetConfigName("config")
 	viper.AddConfigPath("api/")
