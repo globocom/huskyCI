@@ -62,7 +62,7 @@ build-client:
 	cd client/cmd && $(GO) build -o "$(HUSKYCICLIENTBIN)" && mv "$(HUSKYCICLIENTBIN)" ../..
 
 ## Runs huskyci-client
-run-client:
+run-client: build-client
 	./"$(HUSKYCICLIENTBIN)"
 
 ## Composes HuskyCI environment using docker-compose
@@ -77,6 +77,7 @@ pull-images:
 	docker exec dockerAPI /bin/sh -c "docker pull huskyci/bandit"
 	docker exec dockerAPI /bin/sh -c "docker pull huskyci/brakeman"
 	docker exec dockerAPI /bin/sh -c "docker pull huskyci/retirejs"
+	docker exec dockerAPI /bin/sh -c "docker pull huskyci/safety"
 
 ## Creates certs and sets all config to dockerAPI
 create-certs:
