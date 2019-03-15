@@ -109,3 +109,33 @@ retirejs:
   language: JavaScript
   default: true
   timeOutInSeconds: 360
+
+  safety:
+  name: safety
+  image: huskyci/safety
+  cmd: |+
+    mkdir -p ~/.ssh &&
+    echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
+    chmod 600 ~/.ssh/huskyci_id_rsa &&
+    echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
+    echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
+    git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneSafety
+    if [ $? -eq 0 ]; then
+      cd code
+      cat *requirements* | grep '=' | grep -v '#' > safety_analysis_requirements.txt 2> /tmp/errorGetRequirements
+      if [ $? -eq 0 ]; then
+        safety check -r safety_analysis_requirements.txt --json > safety_analysis_output.json 2> /tmp/errorUnpinnedReq
+        chmod +x /script.sh
+        /script.sh /code/safety_analysis_output.json
+        cat /tmp/errorUnpinnedReq 2> /dev/null
+        cat output.json
+      else
+        echo "ERROR_REQ_NOT_FOUND"
+      fi
+    else
+      echo "ERROR_CLONING"
+      cat /tmp/errorGitCloneSafety
+    fi
+  language: Python
+  default: true
+  timeOutInSeconds: 180

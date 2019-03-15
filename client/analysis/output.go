@@ -8,8 +8,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/fatih/color"
+	"github.com/globocom/huskyci/api/analysis"
 	"github.com/globocom/huskyci/client/types"
 )
 
@@ -26,6 +28,8 @@ func CheckContainerOutput(container types.Container) {
 		PrintRetirejsOutput(container.COutput)
 	case "brakeman":
 		PrintBrakemanOutput(container.COutput)
+	case "safety":
+		PrintSafetyOutput(container.COutput)
 	default:
 		fmt.Println("[HUSKYCI][ERROR] securityTest name not recognized:", container.SecurityTest.Name)
 		os.Exit(1)
@@ -307,5 +311,61 @@ func PrintBrakemanOutput(containerOutput string) {
 	} else {
 		color.Green("[HUSKYCI][*] Brakeman :)\n\n")
 	}
+
+}
+
+// PrintSafetyOutput will print Safety output.
+func PrintSafetyOutput(containerOutput string) {
+
+	if strings.Contains(containerOutput, "ERROR_REQ_NOT_FOUND") {
+		color.Red("[HUSKYCI][X] huskyCI couldn't find any requirements file...\n")
+		color.Red("[HUSKYCI][*] Safety :(\n\n")
+		return
+	}
+
+	// Safety might return a JSON with the "\" and "\"" characters, which needs to be sanitized to be unmarshalled correctly
+	sanitizateContainerOutput := strings.Replace(containerOutput, "\\", "\\\\", -1)
+	sanitizateContainerOutput2 := strings.Replace(sanitizateContainerOutput, "\\\"", "\\\\\"", -1)
+
+	// Safety container returns warnings and the json output in the same string, which need to be split
+	warningFound := strings.Contains(containerOutput, "Warning: unpinned requirement ")
+	if warningFound {
+		tmpcOutput := analysis.StringToLastLine(containerOutput)
+		warningOutput := analysis.GetAllLinesButLast(containerOutput)
+		containerOutput = tmpcOutput
+		for _, warning := range warningOutput {
+			color.Yellow("[HUSKYCI] [!]: %s", warning)
+		}
+	}
+
+	if containerOutput == "No issues found." && !warningFound {
+		color.Green("[HUSKYCI][*] Safety :)\n\n")
+		return
+	}
+
+	safetyOutput := types.SafetyOutput{}
+	err := json.Unmarshal([]byte(sanitizateContainerOutput2), &safetyOutput)
+	if err != nil {
+		fmt.Println("[HUSKYCI][ERROR] Could not Unmarshal safetyOutput!", err)
+		os.Exit(1)
+	}
+
+	foundVuln := false
+	for _, issue := range safetyOutput.SafetyIssues {
+		foundVuln = true
+		color.Red("[HUSKYCI] [!] Vulnerable Dependency: %s", issue.Dependency)
+		color.Red("[HUSKYCI] [!] Vulnerable Below: %s", issue.Below)
+		color.Red("[HUSKYCI] [!] Current Version: %s", issue.Version)
+		color.Red("[HUSKYCI] [!] Comment: %s", issue.Comment)
+		fmt.Println()
+	}
+
+	if foundVuln {
+		color.Red("[HUSKYCI][X] Safety :(\n\n")
+		types.FoundVuln = true
+		return
+	}
+
+	fmt.Printf("[HUSKYCI][*] Safety :|\n\n")
 
 }
