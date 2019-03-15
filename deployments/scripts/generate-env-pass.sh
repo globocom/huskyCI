@@ -24,8 +24,8 @@ echo "export MONGO_DATABASE_PASSWORD=\"$MONGO_DATABASE_PASSWORD_TMP\"" >> .env
 
 # Adding default envs vars to run client
 echo "export HUSKYCI_REPO_URL=\"$HUSKYCI_REPO_URL\"" >> .env
-echo "export HUSKYCI_REPO_URL=\"$HUSKYCI_REPO_BRANCH\"" >> .env
-echo "export HUSKYCI_REPO_URL=\"$HUSKYCI_API\"" >> .env
+echo "export HUSKYCI_REPO_BRANCH=\"$HUSKYCI_REPO_BRANCH\"" >> .env
+echo "export HUSKYCI_API=\"$HUSKYCI_API\"" >> .env
 
 # Preparing script to create mongoDB default user
 cat << EOF > deployments/mongo-init.js
