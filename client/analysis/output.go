@@ -323,10 +323,11 @@ func PrintSafetyOutput(containerOutput string) {
 		return
 	}
 
-	// Safety might return a JSON with the "\" character, which needs to be sanitized to be unmarshalled
+	// Safety might return a JSON with the "\" and "\"" characters, which needs to be sanitized to be unmarshalled correctly
 	sanitizateContainerOutput := strings.Replace(containerOutput, "\\", "\\\\", -1)
 	sanitizateContainerOutput2 := strings.Replace(sanitizateContainerOutput, "\\\"", "\\\\\"", -1)
 
+	// Safety container returns warnings and the json output in the same string, which need to be split
 	warningFound := strings.Contains(containerOutput, "Warning: unpinned requirement ")
 	if warningFound {
 		tmpcOutput := analysis.StringToLastLine(containerOutput)
