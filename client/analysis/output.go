@@ -318,11 +318,14 @@ func PrintBrakemanOutput(containerOutput string) {
 func PrintSafetyOutput(containerOutput string) {
 
 	if strings.Contains(containerOutput, "ERROR_REQ_NOT_FOUND") {
-		types.FoundVuln = true
 		color.Red("[HUSKYCI][X] huskyCI couldn't find any requirements file...\n")
 		color.Red("[HUSKYCI][*] Safety :(\n\n")
 		return
 	}
+
+	// Safety might return a JSON with the "\" character, which needs to be sanitized to be unmarshalled
+	sanitizateContainerOutput := strings.Replace(containerOutput, "\\", "\\\\", -1)
+	sanitizateContainerOutput2 := strings.Replace(sanitizateContainerOutput, "\\\"", "\\\\\"", -1)
 
 	warningFound := strings.Contains(containerOutput, "Warning: unpinned requirement ")
 	if warningFound {
@@ -339,11 +342,8 @@ func PrintSafetyOutput(containerOutput string) {
 		return
 	}
 
-	// Safety might return a JSON with the "\" character, which needs to be sanitized to be unmarshalled
-	sanitizateContainerOutput := strings.Replace(containerOutput, "\\", "\\\\", -1)
-
 	safetyOutput := types.SafetyOutput{}
-	err := json.Unmarshal([]byte(sanitizateContainerOutput), &safetyOutput)
+	err := json.Unmarshal([]byte(sanitizateContainerOutput2), &safetyOutput)
 	if err != nil {
 		fmt.Println("[HUSKYCI][ERROR] Could not Unmarshal safetyOutput!", err)
 		os.Exit(1)
@@ -362,5 +362,9 @@ func PrintSafetyOutput(containerOutput string) {
 	if foundVuln {
 		color.Red("[HUSKYCI][X] Safety :(\n\n")
 		types.FoundVuln = true
+		return
 	}
+
+	fmt.Printf("[HUSKYCI][*] Safety :|\n\n")
+
 }
