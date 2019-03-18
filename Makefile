@@ -55,7 +55,7 @@ lint:
 
 ## Builds Go project to the executable file huskyci
 build:
-	$(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCIBIN)"
+	cd api && $(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCIBIN)"
 
 ## Builds client to the executable file huskyci-client
 build-client:
