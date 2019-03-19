@@ -45,7 +45,7 @@ type CreateContainerPayload struct {
 // NewDocker returns a new docker.
 func NewDocker() (*Docker, error) {
 	configAPI := context.GetAPIConfig()
-	dockerHost := fmt.Sprintf("http://%s", configAPI.DockerHostsConfig.Host)
+	dockerHost := fmt.Sprintf("https://%s", configAPI.DockerHostsConfig.Host)
 
 	err := os.Setenv("DOCKER_HOST", dockerHost)
 	if err != nil {
