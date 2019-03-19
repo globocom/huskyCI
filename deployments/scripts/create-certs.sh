@@ -84,6 +84,10 @@ function checkCAFilesExist {
     fi
 }
 
+function createTLSCert {
+    openssl req -x509 -newkey rsa:4096 -keyout $TARGETDIR/api-tls-key.pem -out $TARGETDIR/api-tls-cert.pem -days 365 -nodes -subj '/CN=localhost'
+}
+
 function createServerCert {
     checkCAFilesExist
 
@@ -132,6 +136,8 @@ elif [[ $MODE = "server" ]]; then
     createServerCert
 elif [[ $MODE = "client" ]]; then
     createClientCert
+elif [[ $MODE = "tls" ]]; then
+    createTLSCert
 else
     usage
 fi
