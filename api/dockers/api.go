@@ -5,13 +5,9 @@
 package dockers
 
 import (
-	"crypto/tls"
-	"crypto/x509"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"os"
-	"strings"
 
 	dockerTypes "github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -20,13 +16,8 @@ import (
 	"github.com/globocom/huskyci/api/context"
 	"github.com/globocom/huskyci/api/log"
 	"github.com/globocom/huskyci/api/types"
+	"github.com/globocom/huskyci/util"
 	goContext "golang.org/x/net/context"
-)
-
-const (
-	certFile   = "cert.pem"
-	keyFile    = "key.pem"
-	carootFile = "ca.pem"
 )
 
 // Docker is the docker struct
@@ -64,43 +55,9 @@ func NewDocker() (*Docker, error) {
 	return docker, nil
 }
 
-// NewClientTLS returns an http client with certificate authentication.
-func (d Docker) NewClientTLS() (*http.Client, error) {
-	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
-	if err != nil {
-		log.Error("NewClientTLS", "DOCKERAPI", 3003, err)
-		return nil, err
-	}
-	caCert, err := ioutil.ReadFile(carootFile)
-	if err != nil {
-		log.Error("NewClientTLS", "DOCKERAPI", 3004, err)
-		return nil, err
-	}
-	caCertPool := x509.NewCertPool()
-	caCertPool.AppendCertsFromPEM(caCert)
-	tlsConfig := &tls.Config{
-		Certificates: []tls.Certificate{cert},
-		RootCAs:      caCertPool,
-	}
-	tlsConfig.BuildNameToCertificate()
-	client := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				MinVersion:               tls.VersionTLS11,
-				MaxVersion:               tls.VersionTLS12,
-				PreferServerCipherSuites: true,
-				InsecureSkipVerify:       false,
-				Certificates:             []tls.Certificate{cert},
-				RootCAs:                  caCertPool,
-			},
-		},
-	}
-	return client, nil
-}
-
 // CreateContainer creates a new container
 func (d Docker) CreateContainer(analysis types.Analysis, image string, cmd string) (string, error) {
-	cmd = handleCmd(analysis.URL, analysis.Branch, cmd)
+	cmd = util.HandleCmd(analysis.URL, analysis.Branch, cmd)
 	ctx := goContext.Background()
 	resp, err := d.client.ContainerCreate(ctx, &container.Config{
 		Image: image,
@@ -217,11 +174,4 @@ func HealthCheckDockerAPI() error {
 	ctx := goContext.Background()
 	_, err = d.client.Ping(ctx)
 	return err
-}
-
-// handleCmd will extract %GIT_REPO% and %GIT_BRANCH%  from cmd and replace it with the proper repository URL.
-func handleCmd(repositoryURL, repositoryBranch, cmd string) string {
-	replace1 := strings.Replace(cmd, "%GIT_REPO%", repositoryURL, -1)
-	replace2 := strings.Replace(replace1, "%GIT_BRANCH%", repositoryBranch, -1)
-	return replace2
 }
