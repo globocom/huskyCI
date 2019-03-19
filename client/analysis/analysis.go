@@ -10,11 +10,11 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"time"
 
 	"github.com/globocom/huskyci/client/config"
 	"github.com/globocom/huskyci/client/types"
+	"github.com/globocom/huskyci/util"
 )
 
 // StartAnalysis starts a container and returns its RID and error.
@@ -30,19 +30,14 @@ func StartAnalysis() (string, error) {
 		return "", err
 	}
 	huskyStartAnalysisURL := config.HuskyAPI + "/husky"
-	req, err := http.NewRequest("POST", huskyStartAnalysisURL, bytes.NewBuffer(marshalPayload))
+	httpsClient, err := util.NewClientTLS()
 	if err != nil {
 		return "", err
 	}
-	req.Header.Set("Content-Type", "application/json")
-
-	// sending POST to HuskyCI
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := httpsClient.Post(huskyStartAnalysisURL, "application/json", bytes.NewBuffer(marshalPayload))
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
 
 	// analyzing response
 	body, err := ioutil.ReadAll(resp.Body)
@@ -62,11 +57,12 @@ func GetAnalysis(RID string) (types.Analysis, error) {
 
 	analysis := types.Analysis{}
 
-	resp, err := http.Get(config.HuskyAPI + "/husky/" + RID)
+	httpsClient, err := util.NewClientTLS()
 	if err != nil {
 		return analysis, err
 	}
-	defer resp.Body.Close()
+
+	resp, err := httpsClient.Get(config.HuskyAPI + "/husky/" + RID)
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {

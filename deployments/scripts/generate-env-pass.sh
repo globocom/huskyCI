@@ -6,7 +6,7 @@
 # huskyCI client default vars
 HUSKYCI_REPO_URL="https://github.com/globocom/huskyci.git"
 HUSKYCI_REPO_BRANCH="master"
-HUSKYCI_API="http://localhost:8888"
+HUSKYCI_API="https://localhost:8888"
 
 # Generating "random" passwords
 CERT_PASSPHRASE_TMP="certPass$RANDOM$RANDOM"
