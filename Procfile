@@ -1,0 +1,1 @@
+web: ./api/huskyci
