@@ -42,7 +42,7 @@ func ReceiveRequest(c echo.Context) error {
 	}
 
 	// check-01: is this a git repository URL and a branch?
-	regexpGit := `((git|ssh|http(s)?)|(git@[\w\.]+))(:(//)?)([\w\.@\:/\-~]+)(\.git)(/)?`
+	regexpGit := `((git|ssh|http(s)?)|((git@|gitlab@)[\w\.]+))(:(//)?)([\w\.@\:/\-~]+)(\.git)(/)?`
 	r := regexp.MustCompile(regexpGit)
 	valid, err := regexp.MatchString(regexpGit, repository.URL)
 	if err != nil {
