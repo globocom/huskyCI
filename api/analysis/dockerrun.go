@@ -5,13 +5,12 @@
 package analysis
 
 import (
-	"os"
-	"strings"
 	"time"
 
 	docker "github.com/globocom/huskyci/api/dockers"
 	"github.com/globocom/huskyci/api/log"
 	"github.com/globocom/huskyci/api/types"
+	"github.com/globocom/huskyci/util"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -19,7 +18,7 @@ import (
 func DockerRun(RID string, analysis *types.Analysis, securityTest types.SecurityTest) {
 
 	newContainer := types.Container{SecurityTest: securityTest}
-	securityTest.Cmd = handlePrivateSSHKey(securityTest.Cmd)
+	securityTest.Cmd = util.HandlePrivateSSHKey(securityTest.Cmd)
 
 	d, err := docker.NewDocker()
 	if err != nil {
@@ -198,11 +197,6 @@ func dockerRunRegisterError(d *docker.Docker, analysis *types.Analysis) error {
 		return err
 	}
 	return nil
-}
-
-func handlePrivateSSHKey(rawString string) string {
-	cmdReplaced := strings.Replace(rawString, "GIT_PRIVATE_SSH_KEY", os.Getenv("GIT_PRIVATE_SSH_KEY"), -1)
-	return cmdReplaced
 }
 
 func dockerPullImage(d *docker.Docker, image string) error {

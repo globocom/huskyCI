@@ -82,8 +82,6 @@ var MsgCode = map[int]string{
 	// Docker API errors
 	3001: "Could not set DOCKER_HOST enviroment variable.",
 	3002: "Could not start a new Docker API client: ",
-	3003: "Could not read/parse private/public key pair: ",
-	3004: "Could not read carootFile: ",
 	3005: "Could not create a new container via d.client: ",
 	3006: "Could not get containers' logs: ",
 	3007: "Could not read containers' STDOUT: ",
@@ -98,4 +96,8 @@ var MsgCode = map[int]string{
 	3016: "Could not wait container via HuskyCI: ",
 	3017: "Could not read container output via HuskyCI: ",
 	3018: "Unexpected securityTest.Name: ",
+
+	// Util package errors
+	4001: "Could not read certificate file: ",
+	4002: "Could not append ceritificates: ",
 }

@@ -16,6 +16,7 @@ import (
 	docker "github.com/globocom/huskyci/api/dockers"
 	"github.com/globocom/huskyci/api/log"
 	"github.com/globocom/huskyci/api/types"
+	"github.com/globocom/huskyci/util"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	mgo "gopkg.in/mgo.v2"
@@ -57,7 +58,7 @@ func main() {
 	echoInstance.POST("/repository", analysis.CreateNewRepository)
 
 	huskyAPIport := fmt.Sprintf(":%d", configAPI.HuskyAPIPort)
-	echoInstance.Logger.Fatal(echoInstance.Start(huskyAPIport))
+	echoInstance.Logger.Fatal(echoInstance.StartTLS(huskyAPIport, util.CertFile, util.KeyFile))
 }
 
 func checkHuskyRequirements(configAPI *apiContext.APIConfig) error {
