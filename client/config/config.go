@@ -19,11 +19,15 @@ var HuskyAPI string
 // RepositoryBranch stores the repository branch of the project to be analyzed.
 var RepositoryBranch string
 
+// HuskyUseTLS stores if huskyCI is to use an HTTPS connection.
+var HuskyUseTLS bool
+
 // SetConfigs sets all configuration needed to start the client.
 func SetConfigs() {
 	RepositoryURL = os.Getenv(`HUSKYCI_REPO_URL`)
 	RepositoryBranch = os.Getenv(`HUSKYCI_REPO_BRANCH`)
 	HuskyAPI = os.Getenv(`HUSKYCI_API`)
+	HuskyUseTLS = getUseTLS()
 }
 
 // CheckEnvVars checks if all environment vars are set.
@@ -53,4 +57,13 @@ func CheckEnvVars() error {
 		return errors.New(finalError)
 	}
 	return nil
+}
+
+// getUseTLS returns TRUE or FALSE retrieved from an environment variable.
+func getUseTLS() bool {
+	option := os.Getenv("HUSKY_CLIENT_ENABLE_HTTPS")
+	if option == "true" || option == "1" || option == "TRUE" {
+		return true
+	}
+	return false
 }
