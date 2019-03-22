@@ -58,7 +58,12 @@ func main() {
 	echoInstance.POST("/repository", analysis.CreateNewRepository)
 
 	huskyAPIport := fmt.Sprintf(":%d", configAPI.HuskyAPIPort)
-	echoInstance.Logger.Fatal(echoInstance.StartTLS(huskyAPIport, util.CertFile, util.KeyFile))
+
+	if !configAPI.UseTLS {
+		echoInstance.Logger.Fatal(echoInstance.Start(huskyAPIport))
+	} else {
+		echoInstance.Logger.Fatal(echoInstance.StartTLS(huskyAPIport, util.CertFile, util.KeyFile))
+	}
 }
 
 func checkHuskyRequirements(configAPI *apiContext.APIConfig) error {

@@ -30,11 +30,12 @@ func StartAnalysis() (string, error) {
 		return "", err
 	}
 	huskyStartAnalysisURL := config.HuskyAPI + "/husky"
-	httpsClient, err := util.NewClientTLS()
+
+	httpClient, err := util.NewClient(config.HuskyUseTLS)
 	if err != nil {
 		return "", err
 	}
-	resp, err := httpsClient.Post(huskyStartAnalysisURL, "application/json", bytes.NewBuffer(marshalPayload))
+	resp, err := httpClient.Post(huskyStartAnalysisURL, "application/json", bytes.NewBuffer(marshalPayload))
 	if err != nil {
 		return "", err
 	}
@@ -57,12 +58,12 @@ func GetAnalysis(RID string) (types.Analysis, error) {
 
 	analysis := types.Analysis{}
 
-	httpsClient, err := util.NewClientTLS()
+	httpClient, err := util.NewClient(config.HuskyUseTLS)
 	if err != nil {
 		return analysis, err
 	}
 
-	resp, err := httpsClient.Get(config.HuskyAPI + "/husky/" + RID)
+	resp, err := httpClient.Get(config.HuskyAPI + "/husky/" + RID)
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
