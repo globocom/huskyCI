@@ -40,6 +40,7 @@ type APIConfig struct {
 	MongoDBConfig        *MongoConfig
 	DockerHostsConfig    *DockerHostsConfig
 	HuskyAPIPort         int
+	UseTLS               bool
 	EnrySecurityTest     *types.SecurityTest
 	GosecSecurityTest    *types.SecurityTest
 	BanditSecurityTest   *types.SecurityTest
@@ -66,6 +67,7 @@ func GetAPIConfig() *APIConfig {
 			MongoDBConfig:        getMongoConfig(),
 			DockerHostsConfig:    getDockerHostsConfig(),
 			HuskyAPIPort:         getAPIHostPort(),
+			UseTLS:               getUseTLS(),
 			EnrySecurityTest:     getEnryConfig(),
 			GosecSecurityTest:    getGosecConfig(),
 			BanditSecurityTest:   getBanditConfig(),
@@ -142,6 +144,15 @@ func getAPIHostPort() int {
 		apiPort = 8888
 	}
 	return apiPort
+}
+
+// getUseTLS returns TRUE or FALSE retrieved from an environment variable.
+func getUseTLS() bool {
+	option := os.Getenv("HUSKY_API_ENABLE_HTTPS")
+	if option == "true" || option == "1" || option == "TRUE" {
+		return true
+	}
+	return false
 }
 
 // getMongoTimeout returns MongoDB timeout retrieved form an environment variable.

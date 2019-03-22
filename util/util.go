@@ -18,38 +18,43 @@ const (
 	KeyFile = "api/api-tls-key.pem"
 )
 
-// NewClientTLS returns an http client with certificate authentication.
-func NewClientTLS() (*http.Client, error) {
+// NewClient returns an http client.
+func NewClient(httpsEnable bool) (*http.Client, error) {
 
-	// Tries to find system's certificate pool
-	caCertPool, _ := x509.SystemCertPool() // #nosec - SystemCertPool tries to get local cert pool, if it fails, a new cer pool is created
-	if caCertPool == nil {
-		caCertPool = x509.NewCertPool()
-	}
+	if httpsEnable {
+		// Tries to find system's certificate pool
+		caCertPool, _ := x509.SystemCertPool() // #nosec - SystemCertPool tries to get local cert pool, if it fails, a new cer pool is created
+		if caCertPool == nil {
+			caCertPool = x509.NewCertPool()
+		}
 
-	cert, err := ioutil.ReadFile(CertFile)
-	if err != nil {
-		log.Error("NewClientTLS", "UTIL", 4001, err)
-	}
-	if ok := caCertPool.AppendCertsFromPEM(cert); !ok {
-		log.Error("NewClientTLS", "UTIL", 4002, err)
-	}
+		cert, err := ioutil.ReadFile(CertFile)
+		if err != nil {
+			log.Error("NewClientTLS", "UTIL", 4001, err)
+		}
+		if ok := caCertPool.AppendCertsFromPEM(cert); !ok {
+			log.Error("NewClientTLS", "UTIL", 4002, err)
+		}
 
-	tlsConfig := &tls.Config{
-		RootCAs: caCertPool,
-	}
-	tlsConfig.BuildNameToCertificate()
-	client := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				MinVersion:               tls.VersionTLS11,
-				MaxVersion:               tls.VersionTLS12,
-				PreferServerCipherSuites: true,
-				InsecureSkipVerify:       false,
-				RootCAs:                  caCertPool,
+		tlsConfig := &tls.Config{
+			RootCAs: caCertPool,
+		}
+		tlsConfig.BuildNameToCertificate()
+		client := &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					MinVersion:               tls.VersionTLS11,
+					MaxVersion:               tls.VersionTLS12,
+					PreferServerCipherSuites: true,
+					InsecureSkipVerify:       false,
+					RootCAs:                  caCertPool,
+				},
 			},
-		},
+		}
+		return client, nil
 	}
+
+	client := &http.Client{}
 	return client, nil
 }
 
