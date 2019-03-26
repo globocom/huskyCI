@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/globocom/huskyci/api/log"
+	"github.com/globocom/huskyCI/api/log"
 )
 
 const (

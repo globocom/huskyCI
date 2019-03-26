@@ -4,7 +4,7 @@
 #
 
 # huskyCI client default vars
-HUSKYCI_REPO_URL="https://github.com/globocom/huskyci.git"
+HUSKYCI_REPO_URL="https://github.com/globocom/huskyCI.git"
 HUSKYCI_REPO_BRANCH="master"
 HUSKYCI_API="http://localhost:8888"
 HUSKY_API_ENABLE_HTTPS="false"     # If HTTPS is enabled, HUSKYCI_API must also be of an HTTPS URL

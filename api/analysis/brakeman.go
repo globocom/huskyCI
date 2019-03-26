@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/globocom/huskyci/api/log"
+	"github.com/globocom/huskyCI/api/log"
 	"gopkg.in/mgo.v2/bson"
 )
 

@@ -7,10 +7,10 @@ package analysis
 import (
 	"time"
 
-	docker "github.com/globocom/huskyci/api/dockers"
-	"github.com/globocom/huskyci/api/log"
-	"github.com/globocom/huskyci/api/types"
-	"github.com/globocom/huskyci/util"
+	docker "github.com/globocom/huskyCI/api/dockers"
+	"github.com/globocom/huskyCI/api/log"
+	"github.com/globocom/huskyCI/api/types"
+	"github.com/globocom/huskyCI/util"
 	"gopkg.in/mgo.v2/bson"
 )
 
