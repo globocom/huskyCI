@@ -28,6 +28,9 @@ LDFLAGS := '-X "main.version=$(TAG)" -X "main.commit=$(COMMIT)" -X "main.date=$(
 ## Installs a development environment using docker-compose
 install: generate-passwords create-certs compose pull-images
 
+## Installs a development environment using docker-compose but does not pull security tests' images
+install-no-pull: generate-passwords create-certs compose
+
 ## Gets all go test dependencies
 get-test-deps:
 	$(GO) get -u github.com/golang/dep/cmd/dep
