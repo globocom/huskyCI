@@ -98,25 +98,6 @@
   revision = "36e52796d86ac06d067bec9d2185fd8ecb994201"
 
 [[projects]]
-  branch = "refact-name"
-  digest = "1:006a6d2e49fa544d014909a71744c1cf3dabdba222f1115fe1bca5861c478f63"
-  name = "github.com/globocom/huskyCI"
-  packages = [
-    "api/analysis",
-    "api/context",
-    "api/db/mongo",
-    "api/dockers",
-    "api/log",
-    "api/types",
-    "client/analysis",
-    "client/config",
-    "client/types",
-    "util",
-  ]
-  pruneopts = "UT"
-  revision = "ebe6985cc460ae0e8fdbfa4bb4f9b225a42b4d85"
-
-[[projects]]
   digest = "1:c0d19ab64b32ce9fe5cf4ddceba78d5bc9807f0016db6b1183599da3dcc24d10"
   name = "github.com/hashicorp/hcl"
   packages = [
@@ -364,16 +345,6 @@
     "github.com/docker/docker/client",
     "github.com/fatih/color",
     "github.com/globocom/glbgelf",
-    "github.com/globocom/huskyCI/api/analysis",
-    "github.com/globocom/huskyCI/api/context",
-    "github.com/globocom/huskyCI/api/db/mongo",
-    "github.com/globocom/huskyCI/api/dockers",
-    "github.com/globocom/huskyCI/api/log",
-    "github.com/globocom/huskyCI/api/types",
-    "github.com/globocom/huskyCI/client/analysis",
-    "github.com/globocom/huskyCI/client/config",
-    "github.com/globocom/huskyCI/client/types",
-    "github.com/globocom/huskyCI/util",
     "github.com/labstack/echo",
     "github.com/labstack/echo/middleware",
     "github.com/spf13/viper",
