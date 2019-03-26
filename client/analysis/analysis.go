@@ -12,9 +12,9 @@ import (
 	"io/ioutil"
 	"time"
 
-	"github.com/globocom/huskyci/client/config"
-	"github.com/globocom/huskyci/client/types"
-	"github.com/globocom/huskyci/util"
+	"github.com/globocom/huskyCI/client/config"
+	"github.com/globocom/huskyCI/client/types"
+	"github.com/globocom/huskyCI/util"
 )
 
 // StartAnalysis starts a container and returns its RID and error.
