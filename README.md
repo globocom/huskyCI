@@ -1,9 +1,9 @@
 # huskyCI - Performing security tests inside your CI
 
-<img src="https://raw.githubusercontent.com/wiki/globocom/huskyci/images/huskyCI-logo.png" align="center" height="" />
+<img src="https://raw.githubusercontent.com/wiki/globocom/huskyCI/images/huskyCI-logo.png" align="center" height="" />
 <!-- logo font: Anton -->
 
-[![CircleCI](https://circleci.com/gh/globocom/huskyci/tree/master.svg?style=svg&circle-token=415bfb6b5aa0dfce8d2129878a66326da9533150)](https://circleci.com/gh/globocom/husky/tree/master)
+[![CircleCI](https://circleci.com/gh/globocom/huskyCI/tree/master.svg?style=svg&circle-token=415bfb6b5aa0dfce8d2129878a66326da9533150)](https://circleci.com/gh/globocom/huskyCI/tree/master)
 
 huskyCI is an open source tool that performs security tests inside CI pipelines of multiple projects and centralizes all results into a database for further analysis and metrics.
 
@@ -11,11 +11,11 @@ The main goal of this project is to help development teams improve the quality o
 
 ## How does it work?
 
-Does your organization has projects like `awesome-golang-project`, `awesome-python-project` and `awesome-ruby-projectCheck`? You should check our [wiki](https://github.com/globocom/huskyci/wiki/How-does-huskyCI-work%3F) to understand how huskyCI could help you secure them!
+Does your organization has projects like `awesome-golang-project`, `awesome-python-project` and `awesome-ruby-projectCheck`? You should check our [wiki](https://github.com/globocom/huskyCI/wiki/How-does-huskyCI-work%3F) to understand how huskyCI could help you secure them!
 
 ## Cool! So huskyCI can check vulnerabilities in all languages ever?
 
-Wow! Hold on! At this moment huskyCI can only perform static security analysis in Python ([Bandit][Bandit]), Ruby ([Brakeman][Brakeman]) and Golang ([Gosec][Gosec]). However, if you want to contribute to huskyCI by adding other cool security tests, you should check [this documentation](https://github.com/globocom/huskyci/wiki/how-add-new-security-tests) right away!
+Wow! Hold on! At this moment huskyCI can only perform static security analysis in Python ([Bandit][Bandit]), Ruby ([Brakeman][Brakeman]) and Golang ([Gosec][Gosec]). However, if you want to contribute to huskyCI by adding other cool security tests, you should check [this documentation](https://github.com/globocom/huskyCI/wiki/how-add-new-security-tests) right away!
 
 ## Running locally
 
@@ -32,7 +32,7 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduc
 
 ## Documentation
 
-You can find our documentation in our [wiki](https://github.com/globocom/huskyci/wiki)! 
+You can find our documentation in our [wiki](https://github.com/globocom/huskyCI/wiki)! 
 
 ## License
 
@@ -40,7 +40,7 @@ This project is licensed under the BSD 3-Clause "New" or "Revised" License - rea
 
 [Docker Install]:  https://docs.docker.com/install/
 [Docker Compose Install]: https://docs.docker.com/compose/install/
-[huskyCI Client]: https://github.com/globocom/huskyci-client
+[huskyCI Client]: https://github.com/globocom/huskyCI-client
 [Bandit]: https://github.com/PyCQA/bandit
 [Brakeman]: https://github.com/presidentbeef/brakeman
 [Gosec]: https://github.com/securego/gosec

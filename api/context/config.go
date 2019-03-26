@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/globocom/huskyci/api/types"
+	"github.com/globocom/huskyCI/api/types"
 	"github.com/spf13/viper"
 )
 

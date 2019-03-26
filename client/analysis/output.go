@@ -11,8 +11,8 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/globocom/huskyci/api/analysis"
-	"github.com/globocom/huskyci/client/types"
+	"github.com/globocom/huskyCI/api/analysis"
+	"github.com/globocom/huskyCI/client/types"
 )
 
 // CheckContainerOutput will validate the output of a given container.
