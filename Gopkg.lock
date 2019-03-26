@@ -98,6 +98,25 @@
   revision = "36e52796d86ac06d067bec9d2185fd8ecb994201"
 
 [[projects]]
+  branch = "refact-name"
+  digest = "1:006a6d2e49fa544d014909a71744c1cf3dabdba222f1115fe1bca5861c478f63"
+  name = "github.com/globocom/huskyCI"
+  packages = [
+    "api/analysis",
+    "api/context",
+    "api/db/mongo",
+    "api/dockers",
+    "api/log",
+    "api/types",
+    "client/analysis",
+    "client/config",
+    "client/types",
+    "util",
+  ]
+  pruneopts = "UT"
+  revision = "ebe6985cc460ae0e8fdbfa4bb4f9b225a42b4d85"
+
+[[projects]]
   digest = "1:c0d19ab64b32ce9fe5cf4ddceba78d5bc9807f0016db6b1183599da3dcc24d10"
   name = "github.com/hashicorp/hcl"
   packages = [
@@ -157,12 +176,12 @@
   version = "v0.0.9"
 
 [[projects]]
-  digest = "1:3bb9c8451d199650bfd303e0068d86f135952fead374ad87c09a9b8a2cc4bd7c"
+  digest = "1:e150b5fafbd7607e2d638e4e5cf43aa4100124e5593385147b0a74e2733d8b0d"
   name = "github.com/mattn/go-isatty"
   packages = ["."]
   pruneopts = "UT"
-  revision = "369ecd8cea9851e459abb67eb171853e3986591e"
-  version = "v0.0.6"
+  revision = "c2a7a6ca930a4cd0bc33a3f298eb71960732a3a7"
+  version = "v0.0.7"
 
 [[projects]]
   digest = "1:53bc4cd4914cd7cd52139990d5170d6dc99067ae31c56530621b18b35fc30318"
@@ -197,15 +216,15 @@
   version = "v0.8.1"
 
 [[projects]]
-  digest = "1:3e39bafd6c2f4bf3c76c3bfd16a2e09e016510ad5db90dc02b88e2f565d6d595"
+  digest = "1:bb495ec276ab82d3dd08504bbc0594a65de8c3b22c6f2aaa92d05b73fbf3a82e"
   name = "github.com/spf13/afero"
   packages = [
     ".",
     "mem",
   ]
   pruneopts = "UT"
-  revision = "f4711e4db9e9a1d3887343acb72b2bbfc2f686f5"
-  version = "v1.2.1"
+  revision = "588a75ec4f32903aa5e39a2619ba6a4631e28424"
+  version = "v1.2.2"
 
 [[projects]]
   digest = "1:08d65904057412fc0270fc4812a1c90c594186819243160dc779a402d4b6d0bc"
@@ -232,12 +251,12 @@
   version = "v1.0.3"
 
 [[projects]]
-  digest = "1:de37e343c64582d7026bf8ab6ac5b22a72eac54f3a57020db31524affed9f423"
+  digest = "1:1b773526998f3dbde3a51a4a5881680c4d237d3600f570d900f97ac93c7ba0a8"
   name = "github.com/spf13/viper"
   packages = ["."]
   pruneopts = "UT"
-  revision = "6d33b5a963d922d182c91e8a1c88d81fd150cfd4"
-  version = "v1.3.1"
+  revision = "9e56dacc08fbbf8c9ee2dbc717553c758ce42bc9"
+  version = "v1.3.2"
 
 [[projects]]
   digest = "1:c468422f334a6b46a19448ad59aaffdfc0a36b08fdcc1c749a0b29b6453d7e59"
@@ -248,12 +267,12 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:6f0258170b06ab9f8640a09dbabd1e0dadc57bd9e9add6d27e6c3336e9cb50ad"
+  digest = "1:4d29fdc69817829d8c78473d61613d984ce59675110cee7a2f0314f332cc70a2"
   name = "github.com/valyala/fasttemplate"
   packages = ["."]
   pruneopts = "UT"
-  revision = "189f40e8adae8acb7c6c3b065d7489f187a548e4"
-  version = "v1.0.0"
+  revision = "8b5e4e491ab636663841c42ea3c5a9adebabaf36"
+  version = "v1.0.1"
 
 [[projects]]
   branch = "master"
@@ -264,7 +283,7 @@
     "acme/autocert",
   ]
   pruneopts = "UT"
-  revision = "c2843e01d9a2bc60bb26ad24e09734fdc2d9ec58"
+  revision = "a5d413f7728c81fb97d96a2b722368945f651e78"
 
 [[projects]]
   branch = "master"
@@ -277,18 +296,18 @@
     "proxy",
   ]
   pruneopts = "UT"
-  revision = "c10a0554eabf8a6a7a6cc3097c9d9f43dcee0a43"
+  revision = "15845e8f865bdabdefb6e7da65b4d9e8de5e94ef"
 
 [[projects]]
   branch = "master"
-  digest = "1:85cd5224b89829559e8327ba2e52e0df72638d33cf3082b066ea9dea34391e2f"
+  digest = "1:6b3e6ddcebac95be1d690dbd53b5aa2e520715becb7e521bb526ccf3b4c53c15"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
   ]
   pruneopts = "UT"
-  revision = "10058d7d4faa7dd5ef860cbd31af00903076e7b8"
+  revision = "f49334f85ddcf0f08d7fb6dd7363e9e6d6b777eb"
 
 [[projects]]
   digest = "1:8029e9743749d4be5bc9f7d42ea1659471767860f0cdc34d37c3111bd308a295"
@@ -345,6 +364,16 @@
     "github.com/docker/docker/client",
     "github.com/fatih/color",
     "github.com/globocom/glbgelf",
+    "github.com/globocom/huskyCI/api/analysis",
+    "github.com/globocom/huskyCI/api/context",
+    "github.com/globocom/huskyCI/api/db/mongo",
+    "github.com/globocom/huskyCI/api/dockers",
+    "github.com/globocom/huskyCI/api/log",
+    "github.com/globocom/huskyCI/api/types",
+    "github.com/globocom/huskyCI/client/analysis",
+    "github.com/globocom/huskyCI/client/config",
+    "github.com/globocom/huskyCI/client/types",
+    "github.com/globocom/huskyCI/util",
     "github.com/labstack/echo",
     "github.com/labstack/echo/middleware",
     "github.com/spf13/viper",
