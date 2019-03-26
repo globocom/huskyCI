@@ -13,10 +13,10 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
-	"github.com/globocom/huskyci/api/context"
-	"github.com/globocom/huskyci/api/log"
-	"github.com/globocom/huskyci/api/types"
-	"github.com/globocom/huskyci/util"
+	"github.com/globocom/huskyCI/api/context"
+	"github.com/globocom/huskyCI/api/log"
+	"github.com/globocom/huskyCI/api/types"
+	"github.com/globocom/huskyCI/util"
 	goContext "golang.org/x/net/context"
 )
 

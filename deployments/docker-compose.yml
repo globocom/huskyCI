@@ -27,9 +27,9 @@ services:
             MONGO_TIMEOUT: 60
             DOCKER_HOSTS_LIST: dockerapi
             DOCKER_API_PORT: 2375
-            DOCKER_HOSTS_CERT: /go/src/github.com/globocom/huskyci/cert.pem
-            DOCKER_HOSTS_KEY: /go/src/github.com/globocom/huskyci/key.pem
-            DOCKER_CERT_PATH: /go/src/github.com/globocom/huskyci/
+            DOCKER_HOSTS_CERT: /go/src/github.com/globocom/huskyCI/cert.pem
+            DOCKER_HOSTS_KEY: /go/src/github.com/globocom/huskyCI/key.pem
+            DOCKER_CERT_PATH: /go/src/github.com/globocom/huskyCI/
             DOCKER_TLS_VERIFY: 1
         env_file:
             - dockers.env
@@ -39,9 +39,9 @@ services:
         command: "go run api/server.go"
         volumes:
             - docker_vol:/var/lib/docker
-            - ../deployments/certs/client-huskyapi-cert.pem:/go/src/github.com/globocom/huskyci/cert.pem:ro
-            - ../deployments/certs/client-huskyapi-key.pem:/go/src/github.com/globocom/huskyci/key.pem:ro
-            - ../deployments/certs/ca.pem:/go/src/github.com/globocom/huskyci/ca.pem:ro
+            - ../deployments/certs/client-huskyapi-cert.pem:/go/src/github.com/globocom/huskyCI/cert.pem:ro
+            - ../deployments/certs/client-huskyapi-key.pem:/go/src/github.com/globocom/huskyCI/key.pem:ro
+            - ../deployments/certs/ca.pem:/go/src/github.com/globocom/huskyCI/ca.pem:ro
         ports:
           - "8888:8888"
         networks:

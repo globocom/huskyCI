@@ -8,9 +8,9 @@ import (
 	"errors"
 	"time"
 
-	db "github.com/globocom/huskyci/api/db/mongo"
-	"github.com/globocom/huskyci/api/log"
-	"github.com/globocom/huskyci/api/types"
+	db "github.com/globocom/huskyCI/api/db/mongo"
+	"github.com/globocom/huskyCI/api/log"
+	"github.com/globocom/huskyCI/api/types"
 	"gopkg.in/mgo.v2/bson"
 )
 
