@@ -104,13 +104,12 @@ retirejs:
     else
       echo "ERROR_CLONING"
       cat /tmp/errorGitCloneRetirejs
-    fi
-    
+    fi    
   language: JavaScript
   default: true
   timeOutInSeconds: 360
 
-  safety:
+safety:
   name: safety
   image: huskyci/safety
   cmd: |+
