@@ -106,6 +106,6 @@ func MonitorAnalysis(RID string) (types.Analysis, error) {
 func AnalyzeResult(analysisResult types.Analysis) {
 	fmt.Println()
 	for _, container := range analysisResult.Containers {
-		CheckContainerOutput(container)
+		CheckMongoDBContainerOutput(container)
 	}
 }
