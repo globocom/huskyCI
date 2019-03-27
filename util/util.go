@@ -1,6 +1,7 @@
 package util
 
 import (
+	"bufio"
 	"crypto/tls"
 	"crypto/x509"
 	"io/ioutil"
@@ -69,4 +70,33 @@ func HandleCmd(repositoryURL, repositoryBranch, cmd string) string {
 func HandlePrivateSSHKey(rawString string) string {
 	cmdReplaced := strings.Replace(rawString, "GIT_PRIVATE_SSH_KEY", os.Getenv("GIT_PRIVATE_SSH_KEY"), -1)
 	return cmdReplaced
+}
+
+// GetLastLine receives a string with multiple lines and returns it's last
+func GetLastLine(s string) string {
+	var lines []string
+	scanner := bufio.NewScanner(strings.NewReader(s))
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+	return lines[len(lines)-1]
+}
+
+// GetAllLinesButLast receives a string with multiple lines and returns all but the last line.
+func GetAllLinesButLast(s string) []string {
+	var lines []string
+	scanner := bufio.NewScanner(strings.NewReader(s))
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+	lines = lines[:len(lines)-1]
+	return lines
+}
+
+// SanitizeSafetyJSON returns a sanitized string from Safety container logs.
+// Safety might return a JSON with the "\" and "\"" characters, which needs to be sanitized to be unmarshalled correctly.
+func SanitizeSafetyJSON(s string) string {
+	s1 := strings.Replace(s, "\\", "\\\\", -1)
+	s2 := strings.Replace(s1, "\\\"", "\\\\\"", -1)
+	return s2
 }
