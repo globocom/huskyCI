@@ -99,7 +99,12 @@ retirejs:
     git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneRetirejs
     if [ $? -eq 0 ]; then
       cd code
-      npm install >/dev/null 2>&1
+      ls yarn.lock >/dev/null 2>/dev/null
+      if [ $? -eq 0 ]; then
+        yarn install >/dev/null 2>&1
+      else 
+        npm install >/dev/null 2>&1
+      fi
       retire --outputformat json --exitwith 0
     else
       echo "ERROR_CLONING"
