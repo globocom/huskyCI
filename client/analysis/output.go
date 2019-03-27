@@ -192,12 +192,12 @@ func PrintRetirejsOutput(containerOutput string) {
 			for _, vulnerability := range result.RetirejsVulnerabilities {
 				if vulnerability.Severity == "high" {
 					foundVuln = true
-					color.Red("[HUSKYCI] [!] Severity: %s", vulnerability.Severity)
-					color.Red("[HUSKYCI] [!] Details: %s", vulnerability.Info)
-					color.Red("[HUSKYCI] [!] File: %s", issue.File)
-					color.Red("[HUSKYCI] [!] Component: %s", result.Component)
-					color.Red("[HUSKYCI] [!] Version: %s", result.Version)
-					color.Red("[HUSKYCI] [!] Vulnerable Below: %s", vulnerability.Below)
+					color.Red("[HUSKYCI][!] Severity: %s", vulnerability.Severity)
+					color.Red("[HUSKYCI][!] Details: %s", vulnerability.Info)
+					color.Red("[HUSKYCI][!] File: %s", issue.File)
+					color.Red("[HUSKYCI][!] Component: %s", result.Component)
+					color.Red("[HUSKYCI][!] Version: %s", result.Version)
+					color.Red("[HUSKYCI][!] Vulnerable Below: %s", vulnerability.Below)
 					fmt.Println()
 				}
 			}
@@ -209,12 +209,12 @@ func PrintRetirejsOutput(containerOutput string) {
 			for _, vulnerability := range result.RetirejsVulnerabilities {
 				if vulnerability.Severity == "medium" {
 					foundVuln = true
-					color.Yellow("[HUSKYCI] [!] Severity: %s", vulnerability.Severity)
-					color.Yellow("[HUSKYCI] [!] Details: %s", vulnerability.Info)
-					color.Yellow("[HUSKYCI] [!] File: %s", issue.File)
-					color.Yellow("[HUSKYCI] [!] Component: %s", result.Component)
-					color.Yellow("[HUSKYCI] [!] Version: %s", result.Version)
-					color.Yellow("[HUSKYCI] [!] Vulnerable Below: %s", vulnerability.Below)
+					color.Yellow("[HUSKYCI][!] Severity: %s", vulnerability.Severity)
+					color.Yellow("[HUSKYCI][!] Details: %s", vulnerability.Info)
+					color.Yellow("[HUSKYCI][!] File: %s", issue.File)
+					color.Yellow("[HUSKYCI][!] Component: %s", result.Component)
+					color.Yellow("[HUSKYCI][!] Version: %s", result.Version)
+					color.Yellow("[HUSKYCI][!] Vulnerable Below: %s", vulnerability.Below)
 					fmt.Println()
 				}
 			}
@@ -226,12 +226,12 @@ func PrintRetirejsOutput(containerOutput string) {
 			for _, vulnerability := range result.RetirejsVulnerabilities {
 				if vulnerability.Severity == "low" {
 					foundInfo = true
-					color.Blue("[HUSKYCI] [!] Severity: %s", vulnerability.Severity)
-					color.Blue("[HUSKYCI] [!] Details: %s", vulnerability.Info)
-					color.Blue("[HUSKYCI] [!] File: %s", issue.File)
-					color.Blue("[HUSKYCI] [!] Component: %s", result.Component)
-					color.Blue("[HUSKYCI] [!] Version: %s", result.Version)
-					color.Blue("[HUSKYCI] [!] Vulnerable Below: %s", vulnerability.Below)
+					color.Blue("[HUSKYCI][!] Severity: %s", vulnerability.Severity)
+					color.Blue("[HUSKYCI][!] Details: %s", vulnerability.Info)
+					color.Blue("[HUSKYCI][!] File: %s", issue.File)
+					color.Blue("[HUSKYCI][!] Component: %s", result.Component)
+					color.Blue("[HUSKYCI][!] Version: %s", result.Version)
+					color.Blue("[HUSKYCI][!] Vulnerable Below: %s", vulnerability.Below)
 					fmt.Println()
 				}
 			}
@@ -268,37 +268,37 @@ func PrintBrakemanOutput(containerOutput string) {
 	for _, warning := range brakemanOutput.Warnings {
 		if warning.Confidence == "High" {
 			foundVuln = true
-			color.Red("[HUSKYCI] [!] Confidence: %s", warning.Confidence)
-			color.Red("[HUSKYCI] [!] Type: %s", warning.Type)
-			color.Red("[HUSKYCI] [!] Details: %s", warning.Details)
-			color.Red("[HUSKYCI] [!] Info: %s", warning.Message)
-			color.Red("[HUSKYCI] [!] File: %s", warning.File)
-			color.Red("[HUSKYCI] [!] line: %d", warning.Line)
-			color.Red("[HUSKYCI] [!] Code: %s", warning.Code)
+			color.Red("[HUSKYCI][!] Confidence: %s", warning.Confidence)
+			color.Red("[HUSKYCI][!] Type: %s", warning.Type)
+			color.Red("[HUSKYCI][!] Details: %s", warning.Details)
+			color.Red("[HUSKYCI][!] Info: %s", warning.Message)
+			color.Red("[HUSKYCI][!] File: %s", warning.File)
+			color.Red("[HUSKYCI][!] line: %d", warning.Line)
+			color.Red("[HUSKYCI][!] Code: %s", warning.Code)
 			fmt.Println()
 		}
 
 		if warning.Confidence == "Medium" {
 			foundVuln = true
-			color.Yellow("[HUSKYCI] [!] Confidence: %s", warning.Confidence)
-			color.Yellow("[HUSKYCI] [!] Type: %s", warning.Type)
-			color.Yellow("[HUSKYCI] [!] Details: %s", warning.Details)
-			color.Yellow("[HUSKYCI] [!] Info: %s", warning.Message)
-			color.Yellow("[HUSKYCI] [!] File: %s", warning.File)
-			color.Yellow("[HUSKYCI] [!] line: %d", warning.Line)
-			color.Yellow("[HUSKYCI] [!] Code: %s", warning.Code)
+			color.Yellow("[HUSKYCI][!] Confidence: %s", warning.Confidence)
+			color.Yellow("[HUSKYCI][!] Type: %s", warning.Type)
+			color.Yellow("[HUSKYCI][!] Details: %s", warning.Details)
+			color.Yellow("[HUSKYCI][!] Info: %s", warning.Message)
+			color.Yellow("[HUSKYCI][!] File: %s", warning.File)
+			color.Yellow("[HUSKYCI][!] line: %d", warning.Line)
+			color.Yellow("[HUSKYCI][!] Code: %s", warning.Code)
 			fmt.Println()
 		}
 
 		if warning.Confidence == "Low" {
 			foundInfo = true
-			color.Blue("[HUSKYCI] [!] Confidence: %s", warning.Confidence)
-			color.Blue("[HUSKYCI] [!] Type: %s", warning.Type)
-			color.Blue("[HUSKYCI] [!] Details: %s", warning.Details)
-			color.Blue("[HUSKYCI] [!] Info: %s", warning.Message)
-			color.Blue("[HUSKYCI] [!] File: %s", warning.File)
-			color.Blue("[HUSKYCI] [!] line: %d", warning.Line)
-			color.Blue("[HUSKYCI] [!] Code: %s", warning.Code)
+			color.Blue("[HUSKYCI][!] Confidence: %s", warning.Confidence)
+			color.Blue("[HUSKYCI][!] Type: %s", warning.Type)
+			color.Blue("[HUSKYCI][!] Details: %s", warning.Details)
+			color.Blue("[HUSKYCI][!] Info: %s", warning.Message)
+			color.Blue("[HUSKYCI][!] File: %s", warning.File)
+			color.Blue("[HUSKYCI][!] line: %d", warning.Line)
+			color.Blue("[HUSKYCI][!] Code: %s", warning.Code)
 			fmt.Println()
 		}
 	}
@@ -334,7 +334,7 @@ func PrintSafetyOutput(containerOutput string) {
 		warningOutput := analysis.GetAllLinesButLast(containerOutput)
 		containerOutput = tmpcOutput
 		for _, warning := range warningOutput {
-			color.Yellow("[HUSKYCI] [!]: %s", warning)
+			color.Yellow("[HUSKYCI][!]: %s", warning)
 		}
 	}
 
@@ -353,10 +353,10 @@ func PrintSafetyOutput(containerOutput string) {
 	foundVuln := false
 	for _, issue := range safetyOutput.SafetyIssues {
 		foundVuln = true
-		color.Red("[HUSKYCI] [!] Vulnerable Dependency: %s", issue.Dependency)
-		color.Red("[HUSKYCI] [!] Vulnerable Below: %s", issue.Below)
-		color.Red("[HUSKYCI] [!] Current Version: %s", issue.Version)
-		color.Red("[HUSKYCI] [!] Comment: %s", issue.Comment)
+		color.Red("[HUSKYCI][!] Vulnerable Dependency: %s", issue.Dependency)
+		color.Red("[HUSKYCI][!] Vulnerable Below: %s", issue.Below)
+		color.Red("[HUSKYCI][!] Current Version: %s", issue.Version)
+		color.Red("[HUSKYCI][!] Comment: %s", issue.Comment)
 		fmt.Println()
 	}
 
