@@ -165,6 +165,7 @@ func MonitorAnalysis(analysis *types.Analysis) {
 				if err != nil {
 					// already being logged
 				}
+				return
 			} // cenario 3: retry after retryTick seconds!
 		}
 	}
