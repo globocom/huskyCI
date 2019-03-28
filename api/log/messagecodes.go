@@ -40,7 +40,7 @@ var MsgCode = map[int]string{
 	1015: "Received an invalid repository JSON: ",
 	1016: "Received an invalid repository URL: ",
 	1017: "Received an invalid repository branch: ",
-	1018: "Could not Unmarshall the following safetyOutput; ",
+	1018: "Could not Unmarshall the following safetyOutput: ",
 
 	// MongoDB infos
 	21: "Connecting to MongoDB.",

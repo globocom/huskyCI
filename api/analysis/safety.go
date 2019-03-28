@@ -5,12 +5,12 @@
 package analysis
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
 	"strings"
 
 	"github.com/globocom/huskyCI/api/log"
+	"github.com/globocom/huskyCI/util"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -31,18 +31,27 @@ type SafetyIssue struct {
 //SafetyStartAnalysis analyses the output from Safety and sets cResult based on it.
 func SafetyStartAnalysis(CID string, cOutput string) {
 
-	var cResult string
+	var outputJSON string
 	analysisQuery := map[string]interface{}{"containers.CID": CID}
 
-	warningFound := strings.Contains(cOutput, "Warning: unpinned requirement ")
-	if warningFound {
-		tmpcOutput := StringToLastLine(cOutput)
-		cOutput = tmpcOutput
+	requirementsNotFound := strings.Contains(cOutput, "ERROR_REQ_NOT_FOUND")
+	if requirementsNotFound {
+		updateContainerAnalysisQuery := bson.M{
+			"$set": bson.M{
+				"containers.$.cOutput": "Requirements not found or this project uses latest dependencies.",
+				"containers.$.cResult": "warning", // will not fail CI now
+			},
+		}
+		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+		if err != nil {
+			log.Warning("SafetyStartAnalysis", "SAFETY", 2007, err)
+		}
+		return
 	}
 
-	// step 0.1: error cloning repository!
-	if strings.Contains(cOutput, "ERROR_CLONING") {
-		errorOutput := fmt.Sprintf("Container error: %s", cOutput)
+	errorCloning := strings.Contains(cOutput, "ERROR_CLONING")
+	if errorCloning {
+		errorOutput := fmt.Sprintf("Error cloning: %s", cOutput)
 		updateContainerAnalysisQuery := bson.M{
 			"$set": bson.M{
 				"containers.$.cOutput": errorOutput,
@@ -56,19 +65,40 @@ func SafetyStartAnalysis(CID string, cOutput string) {
 		return
 	}
 
-	// step 1: Unmarshall cOutput into safetyOutput struct.
+	warningFound := strings.Contains(cOutput, "Warning: unpinned requirement ")
+	if warningFound {
+		outputJSON = util.GetLastLine(cOutput)
+		cOutput = outputJSON
+	}
+
+	cOutputSanitized := util.SanitizeSafetyJSON(cOutput)
+
 	safetyOutput := SafetyOutput{}
-	err := json.Unmarshal([]byte(cOutput), &safetyOutput)
+	err := json.Unmarshal([]byte(cOutputSanitized), &safetyOutput)
 	if err != nil {
 		log.Error("SafetyStartAnalysis", "SAFETY", 1018, cOutput, err)
 		return
 	}
 
-	// step 1.1: Sets the container output to "No issues found" if SafetyIssues returns an empty slice
-	if len(safetyOutput.SafetyIssues) == 0 && !warningFound {
+	if len(safetyOutput.SafetyIssues) == 0 {
+
+		if warningFound {
+			updateContainerAnalysisQuery := bson.M{
+				"$set": bson.M{
+					"containers.$.cResult": "warning",
+				},
+			}
+			err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+			if err != nil {
+				log.Error("SafetyStartAnalysis", "SAFETY", 2007, err)
+			}
+			return
+		}
+
 		updateContainerAnalysisQuery := bson.M{
 			"$set": bson.M{
 				"containers.$.cOutput": "No issues found.",
+				"containers.$.cResult": "passed",
 			},
 		}
 		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
@@ -78,42 +108,16 @@ func SafetyStartAnalysis(CID string, cOutput string) {
 		return
 	}
 
-	// step 2: finds Vulnerabilities
-	cResult = "passed"
-	if len(safetyOutput.SafetyIssues) != 0 {
-		cResult = "failed"
-	}
-
-	// step 3: update analysis' cResult into AnalyisCollection.
+	// issues found. client will have to handle with warnings and issues.
 	updateContainerAnalysisQuery := bson.M{
 		"$set": bson.M{
-			"containers.$.cResult": cResult,
+			"containers.$.cResult": "failed",
 		},
 	}
 	err = UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 	if err != nil {
 		log.Error("SafetyStartAnalysis", "SAFETY", 2007, err)
-		return
 	}
-}
+	return
 
-// StringToLastLine receives a string with multiple lines and returns it's last
-func StringToLastLine(s string) string {
-	var lines []string
-	scanner := bufio.NewScanner(strings.NewReader(s))
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
-	}
-	return lines[len(lines)-1]
-}
-
-// GetAllLinesButLast receives a string with multiple lines and returns all but the last line.
-func GetAllLinesButLast(s string) []string {
-	var lines []string
-	scanner := bufio.NewScanner(strings.NewReader(s))
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
-	}
-	lines = lines[:len(lines)-1]
-	return lines
 }
