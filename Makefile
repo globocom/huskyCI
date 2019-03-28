@@ -64,6 +64,10 @@ build:
 build-client:
 	cd client/cmd && $(GO) build -o "$(HUSKYCICLIENTBIN)" && mv "$(HUSKYCICLIENTBIN)" ../..
 
+## Builds client to the executable file huskyci-client
+build-client-linux:
+	cd client/cmd && GOOS=linux GOARCH=amd64 $(GO) build -o "$(HUSKYCICLIENTBIN)" && mv "$(HUSKYCICLIENTBIN)" ../..
+
 ## Runs huskyci-client
 run-client: build-client
 	./"$(HUSKYCICLIENTBIN)"

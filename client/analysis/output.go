@@ -11,12 +11,12 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/globocom/huskyCI/api/analysis"
 	"github.com/globocom/huskyCI/client/types"
+	"github.com/globocom/huskyCI/util"
 )
 
-// CheckContainerOutput will validate the output of a given container.
-func CheckContainerOutput(container types.Container) {
+// CheckMongoDBContainerOutput will validate the output of a given container.
+func CheckMongoDBContainerOutput(container types.Container) {
 
 	switch container.SecurityTest.Name {
 	case "enry":
@@ -37,9 +37,9 @@ func CheckContainerOutput(container types.Container) {
 }
 
 // PrintGosecOutput will print the Gosec output.
-func PrintGosecOutput(containerOutput string) {
+func PrintGosecOutput(mongoDBcontainerOutput string) {
 
-	if containerOutput == "No issues found." {
+	if mongoDBcontainerOutput == "No issues found." {
 		color.Green("[HUSKYCI][*] Gosec :)\n\n")
 		return
 	}
@@ -47,9 +47,9 @@ func PrintGosecOutput(containerOutput string) {
 	foundVuln := false
 	foundInfo := false
 	gosecOutput := types.GosecOutput{}
-	err := json.Unmarshal([]byte(containerOutput), &gosecOutput)
+	err := json.Unmarshal([]byte(mongoDBcontainerOutput), &gosecOutput)
 	if err != nil {
-		fmt.Println("[HUSKYCI][ERROR] Could not Unmarshal gosecOutput!", containerOutput)
+		fmt.Println("[HUSKYCI][ERROR] Could not Unmarshal gosecOutput!", mongoDBcontainerOutput)
 		os.Exit(1)
 	}
 
@@ -104,9 +104,9 @@ func PrintGosecOutput(containerOutput string) {
 }
 
 // PrintBanditOutput will print Bandit output.
-func PrintBanditOutput(containerOutput string) {
+func PrintBanditOutput(mongoDBcontainerOutput string) {
 
-	if containerOutput == "No issues found." {
+	if mongoDBcontainerOutput == "No issues found." {
 		color.Green("[HUSKYCI][*] Bandit :)\n\n")
 		return
 	}
@@ -114,9 +114,9 @@ func PrintBanditOutput(containerOutput string) {
 	foundVuln := false
 	foundInfo := false
 	banditOutput := types.BanditOutput{}
-	err := json.Unmarshal([]byte(containerOutput), &banditOutput)
+	err := json.Unmarshal([]byte(mongoDBcontainerOutput), &banditOutput)
 	if err != nil {
-		fmt.Println("[HUSKYCI][ERROR] Could not Unmarshal banditOutput!", containerOutput)
+		fmt.Println("[HUSKYCI][ERROR] Could not Unmarshal banditOutput!", mongoDBcontainerOutput)
 		os.Exit(1)
 	}
 
@@ -171,9 +171,9 @@ func PrintBanditOutput(containerOutput string) {
 }
 
 // PrintRetirejsOutput will print Retirejs output.
-func PrintRetirejsOutput(containerOutput string) {
+func PrintRetirejsOutput(mongoDBcontainerOutput string) {
 
-	if containerOutput == "No issues found." {
+	if mongoDBcontainerOutput == "No issues found." {
 		color.Green("[HUSKYCI][*] RetireJS :)\n\n")
 		return
 	}
@@ -181,9 +181,9 @@ func PrintRetirejsOutput(containerOutput string) {
 	foundVuln := false
 	foundInfo := false
 	retirejsOutput := types.RetirejsOutput{}
-	err := json.Unmarshal([]byte(containerOutput), &retirejsOutput)
+	err := json.Unmarshal([]byte(mongoDBcontainerOutput), &retirejsOutput)
 	if err != nil {
-		fmt.Println("[HUSKYCI][ERROR] Could not Unmarshal retirejsOutput!", containerOutput)
+		fmt.Println("[HUSKYCI][ERROR] Could not Unmarshal retirejsOutput!", mongoDBcontainerOutput)
 		os.Exit(1)
 	}
 
@@ -192,12 +192,12 @@ func PrintRetirejsOutput(containerOutput string) {
 			for _, vulnerability := range result.RetirejsVulnerabilities {
 				if vulnerability.Severity == "high" {
 					foundVuln = true
-					color.Red("[HUSKYCI] [!] Severity: %s", vulnerability.Severity)
-					color.Red("[HUSKYCI] [!] Details: %s", vulnerability.Info)
-					color.Red("[HUSKYCI] [!] File: %s", issue.File)
-					color.Red("[HUSKYCI] [!] Component: %s", result.Component)
-					color.Red("[HUSKYCI] [!] Version: %s", result.Version)
-					color.Red("[HUSKYCI] [!] Vulnerable Below: %s", vulnerability.Below)
+					color.Red("[HUSKYCI][!] Severity: %s", vulnerability.Severity)
+					color.Red("[HUSKYCI][!] Details: %s", vulnerability.Info)
+					color.Red("[HUSKYCI][!] File: %s", issue.File)
+					color.Red("[HUSKYCI][!] Component: %s", result.Component)
+					color.Red("[HUSKYCI][!] Version: %s", result.Version)
+					color.Red("[HUSKYCI][!] Vulnerable Below: %s", vulnerability.Below)
 					fmt.Println()
 				}
 			}
@@ -209,12 +209,12 @@ func PrintRetirejsOutput(containerOutput string) {
 			for _, vulnerability := range result.RetirejsVulnerabilities {
 				if vulnerability.Severity == "medium" {
 					foundVuln = true
-					color.Yellow("[HUSKYCI] [!] Severity: %s", vulnerability.Severity)
-					color.Yellow("[HUSKYCI] [!] Details: %s", vulnerability.Info)
-					color.Yellow("[HUSKYCI] [!] File: %s", issue.File)
-					color.Yellow("[HUSKYCI] [!] Component: %s", result.Component)
-					color.Yellow("[HUSKYCI] [!] Version: %s", result.Version)
-					color.Yellow("[HUSKYCI] [!] Vulnerable Below: %s", vulnerability.Below)
+					color.Yellow("[HUSKYCI][!] Severity: %s", vulnerability.Severity)
+					color.Yellow("[HUSKYCI][!] Details: %s", vulnerability.Info)
+					color.Yellow("[HUSKYCI][!] File: %s", issue.File)
+					color.Yellow("[HUSKYCI][!] Component: %s", result.Component)
+					color.Yellow("[HUSKYCI][!] Version: %s", result.Version)
+					color.Yellow("[HUSKYCI][!] Vulnerable Below: %s", vulnerability.Below)
 					fmt.Println()
 				}
 			}
@@ -226,12 +226,12 @@ func PrintRetirejsOutput(containerOutput string) {
 			for _, vulnerability := range result.RetirejsVulnerabilities {
 				if vulnerability.Severity == "low" {
 					foundInfo = true
-					color.Blue("[HUSKYCI] [!] Severity: %s", vulnerability.Severity)
-					color.Blue("[HUSKYCI] [!] Details: %s", vulnerability.Info)
-					color.Blue("[HUSKYCI] [!] File: %s", issue.File)
-					color.Blue("[HUSKYCI] [!] Component: %s", result.Component)
-					color.Blue("[HUSKYCI] [!] Version: %s", result.Version)
-					color.Blue("[HUSKYCI] [!] Vulnerable Below: %s", vulnerability.Below)
+					color.Blue("[HUSKYCI][!] Severity: %s", vulnerability.Severity)
+					color.Blue("[HUSKYCI][!] Details: %s", vulnerability.Info)
+					color.Blue("[HUSKYCI][!] File: %s", issue.File)
+					color.Blue("[HUSKYCI][!] Component: %s", result.Component)
+					color.Blue("[HUSKYCI][!] Version: %s", result.Version)
+					color.Blue("[HUSKYCI][!] Vulnerable Below: %s", vulnerability.Below)
 					fmt.Println()
 				}
 			}
@@ -250,8 +250,8 @@ func PrintRetirejsOutput(containerOutput string) {
 }
 
 // PrintBrakemanOutput will print Brakeman output.
-func PrintBrakemanOutput(containerOutput string) {
-	if containerOutput == "No issues found." {
+func PrintBrakemanOutput(mongoDBcontainerOutput string) {
+	if mongoDBcontainerOutput == "No issues found." {
 		color.Green("[HUSKYCI][*] Brakeman :)\n\n")
 		return
 	}
@@ -259,46 +259,46 @@ func PrintBrakemanOutput(containerOutput string) {
 	foundVuln := false
 	foundInfo := false
 	brakemanOutput := types.BrakemanOutput{}
-	err := json.Unmarshal([]byte(containerOutput), &brakemanOutput)
+	err := json.Unmarshal([]byte(mongoDBcontainerOutput), &brakemanOutput)
 	if err != nil {
-		fmt.Println("[HUSKYCI][ERROR] Could not Unmarshal brakemanOutput!", containerOutput)
+		fmt.Println("[HUSKYCI][ERROR] Could not Unmarshal brakemanOutput!", mongoDBcontainerOutput)
 		os.Exit(1)
 	}
 
 	for _, warning := range brakemanOutput.Warnings {
 		if warning.Confidence == "High" {
 			foundVuln = true
-			color.Red("[HUSKYCI] [!] Confidence: %s", warning.Confidence)
-			color.Red("[HUSKYCI] [!] Type: %s", warning.Type)
-			color.Red("[HUSKYCI] [!] Details: %s", warning.Details)
-			color.Red("[HUSKYCI] [!] Info: %s", warning.Message)
-			color.Red("[HUSKYCI] [!] File: %s", warning.File)
-			color.Red("[HUSKYCI] [!] line: %d", warning.Line)
-			color.Red("[HUSKYCI] [!] Code: %s", warning.Code)
+			color.Red("[HUSKYCI][!] Confidence: %s", warning.Confidence)
+			color.Red("[HUSKYCI][!] Type: %s", warning.Type)
+			color.Red("[HUSKYCI][!] Details: %s", warning.Details)
+			color.Red("[HUSKYCI][!] Info: %s", warning.Message)
+			color.Red("[HUSKYCI][!] File: %s", warning.File)
+			color.Red("[HUSKYCI][!] line: %d", warning.Line)
+			color.Red("[HUSKYCI][!] Code: %s", warning.Code)
 			fmt.Println()
 		}
 
 		if warning.Confidence == "Medium" {
 			foundVuln = true
-			color.Yellow("[HUSKYCI] [!] Confidence: %s", warning.Confidence)
-			color.Yellow("[HUSKYCI] [!] Type: %s", warning.Type)
-			color.Yellow("[HUSKYCI] [!] Details: %s", warning.Details)
-			color.Yellow("[HUSKYCI] [!] Info: %s", warning.Message)
-			color.Yellow("[HUSKYCI] [!] File: %s", warning.File)
-			color.Yellow("[HUSKYCI] [!] line: %d", warning.Line)
-			color.Yellow("[HUSKYCI] [!] Code: %s", warning.Code)
+			color.Yellow("[HUSKYCI][!] Confidence: %s", warning.Confidence)
+			color.Yellow("[HUSKYCI][!] Type: %s", warning.Type)
+			color.Yellow("[HUSKYCI][!] Details: %s", warning.Details)
+			color.Yellow("[HUSKYCI][!] Info: %s", warning.Message)
+			color.Yellow("[HUSKYCI][!] File: %s", warning.File)
+			color.Yellow("[HUSKYCI][!] line: %d", warning.Line)
+			color.Yellow("[HUSKYCI][!] Code: %s", warning.Code)
 			fmt.Println()
 		}
 
 		if warning.Confidence == "Low" {
 			foundInfo = true
-			color.Blue("[HUSKYCI] [!] Confidence: %s", warning.Confidence)
-			color.Blue("[HUSKYCI] [!] Type: %s", warning.Type)
-			color.Blue("[HUSKYCI] [!] Details: %s", warning.Details)
-			color.Blue("[HUSKYCI] [!] Info: %s", warning.Message)
-			color.Blue("[HUSKYCI] [!] File: %s", warning.File)
-			color.Blue("[HUSKYCI] [!] line: %d", warning.Line)
-			color.Blue("[HUSKYCI] [!] Code: %s", warning.Code)
+			color.Blue("[HUSKYCI][!] Confidence: %s", warning.Confidence)
+			color.Blue("[HUSKYCI][!] Type: %s", warning.Type)
+			color.Blue("[HUSKYCI][!] Details: %s", warning.Details)
+			color.Blue("[HUSKYCI][!] Info: %s", warning.Message)
+			color.Blue("[HUSKYCI][!] File: %s", warning.File)
+			color.Blue("[HUSKYCI][!] line: %d", warning.Line)
+			color.Blue("[HUSKYCI][!] Code: %s", warning.Code)
 			fmt.Println()
 		}
 	}
@@ -315,57 +315,62 @@ func PrintBrakemanOutput(containerOutput string) {
 }
 
 // PrintSafetyOutput will print Safety output.
-func PrintSafetyOutput(containerOutput string) {
+func PrintSafetyOutput(mongoDBcontainerOutput string) {
 
-	if strings.Contains(containerOutput, "ERROR_REQ_NOT_FOUND") {
-		color.Red("[HUSKYCI][X] huskyCI couldn't find any requirements file...\n")
-		color.Red("[HUSKYCI][*] Safety :(\n\n")
-		return
-	}
-
-	// Safety might return a JSON with the "\" and "\"" characters, which needs to be sanitized to be unmarshalled correctly
-	sanitizateContainerOutput := strings.Replace(containerOutput, "\\", "\\\\", -1)
-	sanitizateContainerOutput2 := strings.Replace(sanitizateContainerOutput, "\\\"", "\\\\\"", -1)
-
-	// Safety container returns warnings and the json output in the same string, which need to be split
-	warningFound := strings.Contains(containerOutput, "Warning: unpinned requirement ")
-	if warningFound {
-		tmpcOutput := analysis.StringToLastLine(containerOutput)
-		warningOutput := analysis.GetAllLinesButLast(containerOutput)
-		containerOutput = tmpcOutput
-		for _, warning := range warningOutput {
-			color.Yellow("[HUSKYCI] [!]: %s", warning)
-		}
-	}
-
-	if containerOutput == "No issues found." && !warningFound {
+	if mongoDBcontainerOutput == "No issues found." {
 		color.Green("[HUSKYCI][*] Safety :)\n\n")
 		return
 	}
 
-	safetyOutput := types.SafetyOutput{}
-	err := json.Unmarshal([]byte(sanitizateContainerOutput2), &safetyOutput)
-	if err != nil {
-		fmt.Println("[HUSKYCI][ERROR] Could not Unmarshal safetyOutput!", err)
-		os.Exit(1)
-	}
-
-	foundVuln := false
-	for _, issue := range safetyOutput.SafetyIssues {
-		foundVuln = true
-		color.Red("[HUSKYCI] [!] Vulnerable Dependency: %s", issue.Dependency)
-		color.Red("[HUSKYCI] [!] Vulnerable Below: %s", issue.Below)
-		color.Red("[HUSKYCI] [!] Current Version: %s", issue.Version)
-		color.Red("[HUSKYCI] [!] Comment: %s", issue.Comment)
-		fmt.Println()
-	}
-
-	if foundVuln {
-		color.Red("[HUSKYCI][X] Safety :(\n\n")
-		types.FoundVuln = true
+	if mongoDBcontainerOutput == "Requirements not found or this project uses latest dependencies." {
+		fmt.Printf("[HUSKYCI][*] Requirements not found or this project uses latest dependencies.\n")
+		fmt.Printf("[HUSKYCI][*] Safety :|\n\n")
 		return
 	}
 
-	fmt.Printf("[HUSKYCI][*] Safety :|\n\n")
+	// Safety returns warnings and the json output in the same string, which need to be split
+	var cOutputSanitized string
+	safetyOutput := types.SafetyOutput{}
+	warningFound := strings.Contains(mongoDBcontainerOutput, "Warning: unpinned requirement ")
+	if !warningFound {
+		// only issue found
+		cOutputSanitized = util.SanitizeSafetyJSON(mongoDBcontainerOutput)
+		err := json.Unmarshal([]byte(cOutputSanitized), &safetyOutput)
+		if err != nil {
+			fmt.Println("[HUSKYCI][ERROR] Could not Unmarshal safetyOutput: ", err)
+			os.Exit(1)
+		}
+	} else {
+		// issues and warnings found
+		onlyWarning := false
+		outputJSON := util.GetLastLine(mongoDBcontainerOutput)
+		outputWarnings := util.GetAllLinesButLast(mongoDBcontainerOutput)
+		cOutputSanitized = util.SanitizeSafetyJSON(outputJSON)
+		err := json.Unmarshal([]byte(cOutputSanitized), &safetyOutput)
+		if err != nil {
+			fmt.Println("[HUSKYCI][ERROR] Could not Unmarshal safetyOutput: ", err)
+			os.Exit(1)
+		}
+		if len(safetyOutput.SafetyIssues) == 0 {
+			onlyWarning = true
+		}
+		for _, warning := range outputWarnings {
+			color.Yellow("[HUSKYCI][!]: %s", warning)
+		}
+		if onlyWarning {
+			fmt.Printf("[HUSKYCI][*] Safety :|\n\n")
+			return
+		}
+	}
 
+	for _, issue := range safetyOutput.SafetyIssues {
+		color.Red("[HUSKYCI][!] Vulnerable Dependency: %s", issue.Dependency)
+		color.Red("[HUSKYCI][!] Vulnerable Below: %s", issue.Below)
+		color.Red("[HUSKYCI][!] Current Version: %s", issue.Version)
+		color.Red("[HUSKYCI][!] Comment: %s", issue.Comment)
+		fmt.Println()
+	}
+
+	color.Red("[HUSKYCI][X] Safety :(\n\n")
+	types.FoundVuln = true
 }
