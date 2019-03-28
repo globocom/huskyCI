@@ -5,6 +5,7 @@
 package analysis
 
 import (
+	"fmt"
 	"time"
 
 	docker "github.com/globocom/huskyCI/api/dockers"
@@ -201,23 +202,25 @@ func dockerRunRegisterError(d *docker.Docker, analysis *types.Analysis) error {
 
 func dockerPullImage(d *docker.Docker, image string) error {
 
-	if d.ImageIsLoaded(image) {
+	canonicalURL := fmt.Sprintf("docker.io/%s", image)
+
+	if d.ImageIsLoaded(canonicalURL) {
 		return nil
 	}
 
-	if err := d.PullImage(image); err != nil {
+	if err := d.PullImage(canonicalURL); err != nil {
 		return err
 	}
 
-	// wait for image to be pulled (2 Minutes)
-	timeout := time.Now().Add(2 * time.Minute)
+	// wait for image to be pulled (3 Minutes)
+	timeout := time.Now().Add(3 * time.Minute)
 	for {
-		if d.ImageIsLoaded(image) {
+		if d.ImageIsLoaded(canonicalURL) {
 			return nil
 		}
 		if time.Now().Before(timeout) {
-			time.Sleep(5 * time.Second)
-			log.Info("dockerPullImage", "DOCKERRUN", 31)
+			time.Sleep(30 * time.Second)
+			log.Info("dockerPullImage", "DOCKERRUN", 31, canonicalURL)
 		} else {
 			break
 		}
