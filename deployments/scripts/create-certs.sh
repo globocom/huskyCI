@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# This script will create certs so that DockerAPI only accepts authenticated requests
+# This script will create certs so that huskyCI_Docker_API only accepts authenticated requests
 # from HuskyCI.
 #
 # Check https://docs.docker.com/engine/security/https/ for more detailed info.

@@ -77,16 +77,16 @@ compose:
 	docker-compose -f deployments/docker-compose.yml down -v
 	docker-compose -f deployments/docker-compose.yml up -d --build --force-recreate
 
-## Pulls every HuskyCI docker image into dockerAPI container
+## Pulls every HuskyCI docker image into huskyCI_Docker_API container
 pull-images:
-	docker exec dockerAPI /bin/sh -c "docker pull huskyci/enry"
-	docker exec dockerAPI /bin/sh -c "docker pull huskyci/gosec"
-	docker exec dockerAPI /bin/sh -c "docker pull huskyci/bandit"
-	docker exec dockerAPI /bin/sh -c "docker pull huskyci/brakeman"
-	docker exec dockerAPI /bin/sh -c "docker pull huskyci/retirejs"
-	docker exec dockerAPI /bin/sh -c "docker pull huskyci/safety"
+	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/enry"
+	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/gosec"
+	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/bandit"
+	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/brakeman"
+	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/retirejs"
+	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/safety"
 
-## Creates certs and sets all config to dockerAPI
+## Creates certs and sets all config to huskyCI_Docker_API
 create-certs:
 	chmod +x deployments/scripts/run-create-certs.sh
 	./deployments/scripts/run-create-certs.sh
