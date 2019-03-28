@@ -204,7 +204,7 @@ func dockerPullImage(d *docker.Docker, image string) error {
 
 	canonicalURL := fmt.Sprintf("docker.io/%s", image)
 
-	if d.ImageIsLoaded(canonicalURL) {
+	if d.ImageIsLoaded(image) {
 		return nil
 	}
 
@@ -215,12 +215,12 @@ func dockerPullImage(d *docker.Docker, image string) error {
 	// wait for image to be pulled (3 Minutes)
 	timeout := time.Now().Add(3 * time.Minute)
 	for {
-		if d.ImageIsLoaded(canonicalURL) {
+		if d.ImageIsLoaded(image) {
 			return nil
 		}
 		if time.Now().Before(timeout) {
 			time.Sleep(30 * time.Second)
-			log.Info("dockerPullImage", "DOCKERRUN", 31, canonicalURL)
+			log.Info("dockerPullImage", "DOCKERRUN", 31, image)
 		} else {
 			break
 		}
