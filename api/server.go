@@ -15,8 +15,9 @@ import (
 	db "github.com/globocom/huskyCI/api/db/mongo"
 	docker "github.com/globocom/huskyCI/api/dockers"
 	"github.com/globocom/huskyCI/api/log"
+	"github.com/globocom/huskyCI/api/routes"
 	"github.com/globocom/huskyCI/api/types"
-	"github.com/globocom/huskyCI/util"
+	"github.com/globocom/huskyCI/api/util"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	mgo "gopkg.in/mgo.v2"
@@ -50,12 +51,27 @@ func main() {
 	echoInstance.Use(middleware.Recover())
 	echoInstance.Use(middleware.RequestID())
 
-	echoInstance.GET("/healthcheck", analysis.HealthCheck)
-	echoInstance.GET("/version", analysis.VersionHandler)
-	echoInstance.GET("/husky/:id", analysis.StatusAnalysis)
-	echoInstance.POST("/husky", analysis.ReceiveRequest)
-	echoInstance.POST("/securitytest", analysis.CreateNewSecurityTest)
-	echoInstance.POST("/repository", analysis.CreateNewRepository)
+	// generic routes
+	echoInstance.GET("/healthcheck", routes.HealthCheck)
+	echoInstance.GET("/version", routes.GetAPIVersion)
+
+	// analysis routes
+	echoInstance.GET("/analysis/:id", routes.GetAnalysis)
+	echoInstance.POST("/analysis", routes.ReceiveRequest)
+	// echoInstance.PUT("/analysis/:id", routes.UpdateAnalysis)
+	// echoInstance.DELETE("/analysis/:id", routes.DeleteAnalysis)
+
+	// securityTest routes
+	// echoInstance.GET("securityTest/:securityTestName", routes.GetSecurityTest)
+	echoInstance.POST("/securitytest", routes.CreateNewSecurityTest)
+	// echoInstance.PUT("/securityTest/:securityTestName", routes.UpdateSecurityTest)
+	// echoInstance.DELETE("/securityTest/:securityTestName", routes.DeleteSecurityTest)
+
+	// repository routes
+	// echoInstance.GET("/repository/:repoID", routes.GetRepository)
+	echoInstance.POST("/repository", routes.CreateNewRepository)
+	// echoInstance.PUT("/repository/:repoID)
+	// echoInstance.DELETE("/repository/:repoID)
 
 	huskyAPIport := fmt.Sprintf(":%d", configAPI.HuskyAPIPort)
 
@@ -230,12 +246,12 @@ func checkDefaultSecurityTests(configAPI *apiContext.APIConfig) error {
 
 func configAndPrintVersion(version, commit, date string) {
 
-	analysis.Version.Project = projectName
-	analysis.Version.Version = version
-	analysis.Version.Commit = commit
-	analysis.Version.Date = date
+	routes.Version.Project = projectName
+	routes.Version.Version = version
+	routes.Version.Commit = commit
+	routes.Version.Date = date
 
-	printVersion(analysis.Version)
+	printVersion(routes.Version)
 }
 
 func printVersion(versionAPI types.VersionAPI) {
