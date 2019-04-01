@@ -14,7 +14,7 @@ import (
 
 	"github.com/globocom/huskyCI/client/config"
 	"github.com/globocom/huskyCI/client/types"
-	"github.com/globocom/huskyCI/util"
+	"github.com/globocom/huskyCI/client/util"
 )
 
 // StartAnalysis starts a container and returns its RID and error.
@@ -29,7 +29,7 @@ func StartAnalysis() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	huskyStartAnalysisURL := config.HuskyAPI + "/husky"
+	huskyStartAnalysisURL := config.HuskyAPI + "/analysis"
 
 	httpClient, err := util.NewClient(config.HuskyUseTLS)
 	if err != nil {
@@ -63,7 +63,7 @@ func GetAnalysis(RID string) (types.Analysis, error) {
 		return analysis, err
 	}
 
-	resp, err := httpClient.Get(config.HuskyAPI + "/husky/" + RID)
+	resp, err := httpClient.Get(config.HuskyAPI + "/analysis/" + RID)
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
