@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/globocom/huskyCI/api/log"
-	"github.com/globocom/huskyCI/util"
+	"github.com/globocom/huskyCI/api/util"
 	"gopkg.in/mgo.v2/bson"
 )
 
