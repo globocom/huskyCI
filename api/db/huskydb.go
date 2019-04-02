@@ -1,16 +1,17 @@
-// Copyright 2018 Globo.com authors. All rights reserved.
+// Copyright 2019 Globo.com authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package analysis
+package db
 
 import (
 	"errors"
 	"time"
 
-	db "github.com/globocom/huskyCI/api/db/mongo"
+	mongoHuskyCI "github.com/globocom/huskyCI/api/db/mongo"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
+	"github.com/globocom/huskyCI/api/util"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -22,7 +23,7 @@ func FindOneDBRepository(mapParams map[string]interface{}) (types.Repository, er
 		repositoryQuery = append(repositoryQuery, bson.M{k: v})
 	}
 	repositoryFinalQuery := bson.M{"$and": repositoryQuery}
-	err := db.Conn.SearchOne(repositoryFinalQuery, nil, db.RepositoryCollection, &repositoryResponse)
+	err := mongoHuskyCI.Conn.SearchOne(repositoryFinalQuery, nil, mongoHuskyCI.RepositoryCollection, &repositoryResponse)
 	return repositoryResponse, err
 }
 
@@ -34,7 +35,7 @@ func FindOneDBSecurityTest(mapParams map[string]interface{}) (types.SecurityTest
 		securityTestQuery = append(securityTestQuery, bson.M{k: v})
 	}
 	securityTestFinalQuery := bson.M{"$and": securityTestQuery}
-	err := db.Conn.SearchOne(securityTestFinalQuery, nil, db.SecurityTestCollection, &securityTestResponse)
+	err := mongoHuskyCI.Conn.SearchOne(securityTestFinalQuery, nil, mongoHuskyCI.SecurityTestCollection, &securityTestResponse)
 	return securityTestResponse, err
 }
 
@@ -47,7 +48,7 @@ func FindOneDBAnalysis(mapParams map[string]interface{}) (types.Analysis, error)
 	}
 	analysisFinalQuery := bson.M{"$and": analysisQuery}
 
-	err := db.Conn.SearchOne(analysisFinalQuery, nil, db.AnalysisCollection, &analysisResponse)
+	err := mongoHuskyCI.Conn.SearchOne(analysisFinalQuery, nil, mongoHuskyCI.AnalysisCollection, &analysisResponse)
 	return analysisResponse, err
 }
 
@@ -59,7 +60,7 @@ func FindAllDBRepository(mapParams map[string]interface{}) ([]types.Repository, 
 	}
 	repositoryFinalQuery := bson.M{"$and": repositoryQuery}
 	repositoryResponse := []types.Repository{}
-	err := db.Conn.Search(repositoryFinalQuery, nil, db.RepositoryCollection, &repositoryResponse)
+	err := mongoHuskyCI.Conn.Search(repositoryFinalQuery, nil, mongoHuskyCI.RepositoryCollection, &repositoryResponse)
 	return repositoryResponse, err
 }
 
@@ -71,7 +72,7 @@ func FindAllDBSecurityTest(mapParams map[string]interface{}) ([]types.SecurityTe
 	}
 	securityTestFinalQuery := bson.M{"$and": securityTestQuery}
 	securityTestResponse := []types.SecurityTest{}
-	err := db.Conn.Search(securityTestFinalQuery, nil, db.SecurityTestCollection, &securityTestResponse)
+	err := mongoHuskyCI.Conn.Search(securityTestFinalQuery, nil, mongoHuskyCI.SecurityTestCollection, &securityTestResponse)
 	return securityTestResponse, err
 }
 
@@ -83,7 +84,7 @@ func FindAllDBAnalysis(mapParams map[string]interface{}) ([]types.Analysis, erro
 	}
 	analysisFinalQuery := bson.M{"$and": analysisQuery}
 	analysisResponse := []types.Analysis{}
-	err := db.Conn.Search(analysisFinalQuery, nil, db.AnalysisCollection, &analysisResponse)
+	err := mongoHuskyCI.Conn.Search(analysisFinalQuery, nil, mongoHuskyCI.AnalysisCollection, &analysisResponse)
 	return analysisResponse, err
 }
 
@@ -103,7 +104,7 @@ func InsertDBRepository(repository types.Repository) error {
 		}
 	} else {
 		// checking if a given securityTestName matches a securityTest
-		repository.SecurityTestName = removeDuplicates(repository.SecurityTestName)
+		repository.SecurityTestName = util.RemoveDuplicates(repository.SecurityTestName)
 		if len(repository.SecurityTestName) > maxQueryAllowed {
 			for _, securityTestName := range repository.SecurityTestName[:maxQueryAllowed] {
 				securityTestQuery := map[string]interface{}{"name": securityTestName}
@@ -137,7 +138,7 @@ func InsertDBRepository(repository types.Repository) error {
 		Languages:     repository.Languages,
 	}
 
-	err = db.Conn.Insert(newRepository, db.RepositoryCollection)
+	err = mongoHuskyCI.Conn.Insert(newRepository, mongoHuskyCI.RepositoryCollection)
 	return err
 }
 
@@ -151,7 +152,7 @@ func InsertDBSecurityTest(securityTest types.SecurityTest) error {
 		"default":        securityTest.Default,
 		"timeOutSeconds": securityTest.TimeOutInSeconds,
 	}
-	err := db.Conn.Insert(newSecurityTest, db.SecurityTestCollection)
+	err := mongoHuskyCI.Conn.Insert(newSecurityTest, mongoHuskyCI.SecurityTestCollection)
 	return err
 }
 
@@ -166,7 +167,7 @@ func InsertDBAnalysis(analysis types.Analysis) error {
 		"result":       analysis.Result,
 		"containers":   analysis.Containers,
 	}
-	err := db.Conn.Insert(newAnalysis, db.AnalysisCollection)
+	err := mongoHuskyCI.Conn.Insert(newAnalysis, mongoHuskyCI.AnalysisCollection)
 	return err
 }
 
@@ -177,7 +178,7 @@ func UpdateOneDBRepository(mapParams, updateQuery map[string]interface{}) error 
 		repositoryQuery = append(repositoryQuery, bson.M{k: v})
 	}
 	repositoryFinalQuery := bson.M{"$and": repositoryQuery}
-	err := db.Conn.Update(repositoryFinalQuery, updateQuery, db.RepositoryCollection)
+	err := mongoHuskyCI.Conn.Update(repositoryFinalQuery, updateQuery, mongoHuskyCI.RepositoryCollection)
 	return err
 }
 
@@ -188,7 +189,7 @@ func UpdateOneDBSecurityTest(mapParams map[string]interface{}, updatedSecurityTe
 		securityTestQuery = append(securityTestQuery, bson.M{k: v})
 	}
 	securityTestFinalQuery := bson.M{"$and": securityTestQuery}
-	err := db.Conn.Update(securityTestFinalQuery, updatedSecurityTest, db.SecurityTestCollection)
+	err := mongoHuskyCI.Conn.Update(securityTestFinalQuery, updatedSecurityTest, mongoHuskyCI.SecurityTestCollection)
 	return err
 }
 
@@ -199,7 +200,7 @@ func UpdateOneDBAnalysis(mapParams map[string]interface{}, updatedAnalysis types
 		analysisQuery = append(analysisQuery, bson.M{k: v})
 	}
 	analysisFinalQuery := bson.M{"$and": analysisQuery}
-	err := db.Conn.Update(analysisFinalQuery, updatedAnalysis, db.AnalysisCollection)
+	err := mongoHuskyCI.Conn.Update(analysisFinalQuery, updatedAnalysis, mongoHuskyCI.AnalysisCollection)
 	return err
 }
 
@@ -210,20 +211,6 @@ func UpdateOneDBAnalysisContainer(mapParams, updateQuery map[string]interface{})
 		analysisQuery = append(analysisQuery, bson.M{k: v})
 	}
 	analysisFinalQuery := bson.M{"$and": analysisQuery}
-	err := db.Conn.Update(analysisFinalQuery, updateQuery, db.AnalysisCollection)
+	err := mongoHuskyCI.Conn.Update(analysisFinalQuery, updateQuery, mongoHuskyCI.AnalysisCollection)
 	return err
-}
-
-// removeDuplicates remove duplicated itens from a slice.
-func removeDuplicates(s []string) []string {
-	mapS := make(map[string]string, len(s))
-	i := 0
-	for _, v := range s {
-		if _, ok := mapS[v]; !ok {
-			mapS[v] = v
-			s[i] = v
-			i++
-		}
-	}
-	return s[:i]
 }

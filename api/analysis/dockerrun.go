@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/globocom/huskyCI/api/db"
 	docker "github.com/globocom/huskyCI/api/dockers"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
@@ -98,7 +99,7 @@ func dockerRunCreateContainer(d *docker.Docker, analysis *types.Analysis, securi
 		log.Error("dockerRunCreateContainer", "DOCKERRUN", 3014, err)
 		newContainer.CStatus = "error"
 		analysis.Containers = append(analysis.Containers, newContainer)
-		err := UpdateOneDBAnalysis(analysisQuery, *analysis)
+		err := db.UpdateOneDBAnalysis(analysisQuery, *analysis)
 		if err != nil {
 			log.Error("dockerRunCreateContainer", "DOCKERRUN", 2007, err)
 			return err // implement a maxRetry?
@@ -111,7 +112,7 @@ func dockerRunCreateContainer(d *docker.Docker, analysis *types.Analysis, securi
 	newContainer.CID = CID
 	newContainer.CStatus = "created"
 	analysis.Containers = append(analysis.Containers, newContainer)
-	err = UpdateOneDBAnalysis(analysisQuery, *analysis)
+	err = db.UpdateOneDBAnalysis(analysisQuery, *analysis)
 	if err != nil {
 		log.Error("dockerRunCreateContainer", "DOCKERRUN", 2007, err)
 	}
@@ -129,7 +130,7 @@ func dockerRunStartContainer(d *docker.Docker, analysis *types.Analysis) error {
 				"containers.$.cStatus": "error",
 			},
 		}
-		err = UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+		err = db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
 			log.Error("dockerRunStartContainer", "DOCKERRUN", 2007, err)
 			return err
@@ -143,7 +144,7 @@ func dockerRunStartContainer(d *docker.Docker, analysis *types.Analysis) error {
 			"containers.$.startedAt": startedAt,
 		},
 	}
-	err = UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+	err = db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 	if err != nil {
 		return err
 	}
@@ -172,7 +173,7 @@ func dockerRunReadOutput(d *docker.Docker, analysis *types.Analysis) (string, er
 			"containers.$.cOutput":    cOutput,
 		},
 	}
-	err = UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+	err = db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 	if err != nil {
 		log.Error("dockerRunReadOutput", "DOCKERRUN", 2007, err)
 		return "", err
@@ -193,7 +194,7 @@ func dockerRunRegisterError(d *docker.Docker, analysis *types.Analysis) error {
 			"containers.$.cOutput":    "Error waiting the container to finish.",
 		},
 	}
-	err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+	err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 	if err != nil {
 		return err
 	}
