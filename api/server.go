@@ -5,34 +5,23 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
 
 	apiContext "github.com/globocom/huskyCI/api/context"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/routes"
-	"github.com/globocom/huskyCI/api/types"
 	"github.com/globocom/huskyCI/api/util"
 	apiUtil "github.com/globocom/huskyCI/api/util/api"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 )
 
-var (
-	version string
-	commit  string
-	date    string
-)
-
-const projectName = "HuskyCI"
-
 func main() {
 
 	log.InitLog()
 	log.Info("main", "SERVER", 11)
 
-	configAndPrintVersion(version, commit, date)
 	configAPI := apiContext.GetAPIConfig()
 
 	if err := apiUtil.CheckHuskyRequirements(configAPI); err != nil {
@@ -75,30 +64,5 @@ func main() {
 		echoInstance.Logger.Fatal(echoInstance.Start(huskyAPIport))
 	} else {
 		echoInstance.Logger.Fatal(echoInstance.StartTLS(huskyAPIport, util.CertFile, util.KeyFile))
-	}
-}
-
-func configAndPrintVersion(version, commit, date string) {
-
-	routes.Version.Project = projectName
-	routes.Version.Version = version
-	routes.Version.Commit = commit
-	routes.Version.Date = date
-
-	printVersion(routes.Version)
-}
-
-func printVersion(versionAPI types.VersionAPI) {
-	vFlag := flag.Bool("v", false, "print current version")
-	versionFlag := flag.Bool("version", false, "print current version")
-	flag.Parse()
-
-	if *vFlag || *versionFlag {
-		versionAPI.Print()
-		os.Exit(0)
-	}
-
-	if versionAPI.Version != "" {
-		versionAPI.Print()
 	}
 }
