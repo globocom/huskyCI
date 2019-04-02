@@ -10,6 +10,7 @@ import (
 	db "github.com/globocom/huskyCI/api/db/mongo"
 	docker "github.com/globocom/huskyCI/api/dockers"
 	"github.com/globocom/huskyCI/api/log"
+	"github.com/globocom/huskyCI/api/types"
 	mgo "gopkg.in/mgo.v2"
 )
 
@@ -20,25 +21,25 @@ func CheckHuskyRequirements(configAPI *apiContext.APIConfig) error {
 	if err := checkEnvVars(); err != nil {
 		return err
 	}
-	log.Info("checkHuskyRequirements", "SERVER", 12)
+	log.Info("CheckHuskyRequirements", "API-UTIL", 12)
 
 	// check if all docker hosts are up and running docker API.
 	if err := checkDockerHosts(configAPI); err != nil {
 		return err
 	}
-	log.Info("checkHuskyRequirements", "SERVER", 13)
+	log.Info("CheckHuskyRequirements", "API-UTIL", 13)
 
 	// check if MongoDB is acessible and credentials received are working.
 	if err := checkMongoDB(); err != nil {
 		return err
 	}
-	log.Info("checkHuskyRequirements", "SERVER", 14)
+	log.Info("CheckHuskyRequirements", "API-UTIL", 14)
 
 	// check if default securityTests are set into MongoDB.
-	if err := checkDefaultSecurityTests(configAPI); err != nil {
+	if err := checkEachSecurityTest(configAPI); err != nil {
 		return err
 	}
-	log.Info("checkHuskyRequirements", "SERVER", 15)
+	log.Info("CheckHuskyRequirements", "API-UTIL", 15)
 
 	return nil
 }
@@ -94,84 +95,47 @@ func checkMongoDB() error {
 	return nil
 }
 
-func checkDefaultSecurityTests(configAPI *apiContext.APIConfig) error {
-	enryQuery := map[string]interface{}{"name": "enry"}
-	enry, err := analysis.FindOneDBSecurityTest(enryQuery)
+func checkEachSecurityTest(configAPI *apiContext.APIConfig) error {
+	securityTests := []string{"enry", "gosec", "brakeman", "bandit", "retirejs", "safety"}
+	for _, securityTest := range securityTests {
+		if err := checkSecurityTest(securityTest, configAPI); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func checkSecurityTest(securityTestName string, configAPI *apiContext.APIConfig) error {
+
+	var securityTestConfig interface{}
+
+	switch securityTestName {
+	case "enry":
+		securityTestConfig = *configAPI.EnrySecurityTest
+	case "gosec":
+		securityTestConfig = *configAPI.GosecSecurityTest
+	case "brakeman":
+		securityTestConfig = *configAPI.BrakemanSecurityTest
+	case "bandit":
+		securityTestConfig = *configAPI.BanditSecurityTest
+	case "retirejs":
+		securityTestConfig = *configAPI.RetirejsSecurityTest
+	case "safety":
+		securityTestConfig = *configAPI.SafetySecurityTest
+	default:
+		return errors.New("securityTest name not defined")
+	}
+
+	securityTestQuery := map[string]interface{}{"name": securityTestName}
+	_, err := analysis.FindOneDBSecurityTest(securityTestQuery)
 	if err == mgo.ErrNotFound {
 		// As Enry securityTest is not set into MongoDB, HuskyCI will insert it.
-		log.Warning("checkDefaultSecurityTests", "SERVER", 201)
-		enry = *configAPI.EnrySecurityTest
-		if err := analysis.InsertDBSecurityTest(enry); err != nil {
+		tmpConvertInterface := securityTestConfig.(types.SecurityTest)
+		if err := analysis.InsertDBSecurityTest(tmpConvertInterface); err != nil {
 			return err
 		}
 	} else if err != nil {
 		return err
 	}
-
-	gosecQuery := map[string]interface{}{"name": "gosec"}
-	gosec, err := analysis.FindOneDBSecurityTest(gosecQuery)
-	if err == mgo.ErrNotFound {
-		// As Gosec securityTest is not set into MongoDB, HuskyCI will insert it.
-		log.Warning("checkDefaultSecurityTests", "SERVER", 202)
-		gosec = *configAPI.GosecSecurityTest
-		if err := analysis.InsertDBSecurityTest(gosec); err != nil {
-			return err
-		}
-	} else if err != nil {
-		return err
-	}
-
-	brakemanQuery := map[string]interface{}{"name": "brakeman"}
-	brakeman, err := analysis.FindOneDBSecurityTest(brakemanQuery)
-	if err == mgo.ErrNotFound {
-		// As Brakeman securityTest is not set into MongoDB, HuskyCI will insert it.
-		log.Warning("checkDefaultSecurityTests", "SERVER", 203)
-		brakeman = *configAPI.BrakemanSecurityTest
-		if err := analysis.InsertDBSecurityTest(brakeman); err != nil {
-			return err
-		}
-	} else if err != nil {
-		return err
-	}
-
-	banditQuery := map[string]interface{}{"name": "bandit"}
-	bandit, err := analysis.FindOneDBSecurityTest(banditQuery)
-	if err == mgo.ErrNotFound {
-		// As Bandit securityTest is not set into MongoDB, HuskyCI will insert it.
-		log.Warning("checkDefaultSecurityTests", "SERVER", 204)
-		bandit = *configAPI.BanditSecurityTest
-		if err := analysis.InsertDBSecurityTest(bandit); err != nil {
-			return err
-		}
-	} else if err != nil {
-		return err
-	}
-
-	retirejsQuery := map[string]interface{}{"name": "retirejs"}
-	retirejs, err := analysis.FindOneDBSecurityTest(retirejsQuery)
-	if err == mgo.ErrNotFound {
-		// As RetireJS securityTest is not set into MongoDB, HuskyCI will insert it.
-		log.Warning("checkDefaultSecurityTests", "SERVER", 205)
-		retirejs = *configAPI.RetirejsSecurityTest
-		if err := analysis.InsertDBSecurityTest(retirejs); err != nil {
-			return err
-		}
-	} else if err != nil {
-		return err
-	}
-
-	safetyQuery := map[string]interface{}{"name": "safety"}
-	safety, err := analysis.FindOneDBSecurityTest(safetyQuery)
-	if err == mgo.ErrNotFound {
-		// As Safety securityTest is not set into MongoDB, HuskyCI will insert it.
-		log.Warning("checkDefaultSecurityTests", "SERVER", 206)
-		safety = *configAPI.SafetySecurityTest
-		if err := analysis.InsertDBSecurityTest(safety); err != nil {
-			return err
-		}
-	} else if err != nil {
-		return err
-	}
-
 	return nil
 }
