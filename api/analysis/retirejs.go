@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/globocom/huskyCI/api/db"
 	"github.com/globocom/huskyCI/api/log"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -64,7 +65,7 @@ func RetirejsStartAnalysis(CID string, cOutput string) {
 				"containers.$.cResult": "failed",
 			},
 		}
-		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
 			log.Error("RetirejsStartAnalysis", "RETIREJS", 2007, err)
 		}
@@ -86,7 +87,7 @@ func RetirejsStartAnalysis(CID string, cOutput string) {
 				"containers.$.cOutput": "No issues found.",
 			},
 		}
-		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
 			log.Error("RetirejsStartAnalysis", "RETIREJS", 2007, err)
 		}
@@ -112,7 +113,7 @@ func RetirejsStartAnalysis(CID string, cOutput string) {
 			"containers.$.cResult": cResult,
 		},
 	}
-	err = UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+	err = db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 	if err != nil {
 		log.Error("RetirejsStartAnalysis", "RETIREJS", 2007, err)
 		return

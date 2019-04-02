@@ -3,7 +3,7 @@ package routes
 import (
 	"net/http"
 
-	"github.com/globocom/huskyCI/api/analysis"
+	"github.com/globocom/huskyCI/api/db"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
 	"github.com/labstack/echo"
@@ -20,7 +20,7 @@ func CreateNewRepository(c echo.Context) error {
 	}
 
 	repositoryQuery := map[string]interface{}{"URL": repository.URL}
-	_, err = analysis.FindOneDBRepository(repositoryQuery)
+	_, err = db.FindOneDBRepository(repositoryQuery)
 	if err != nil {
 		if err != mgo.ErrNotFound {
 			log.Warning("CreateNewRepository", "ANALYSIS", 110, repository.URL)
@@ -29,7 +29,7 @@ func CreateNewRepository(c echo.Context) error {
 		log.Error("CreateNewRepository", "ANALYSIS", 1013, err)
 	}
 
-	err = analysis.InsertDBRepository(repository)
+	err = db.InsertDBRepository(repository)
 	if err != nil {
 		log.Error("CreateNewRepository", "ANALYSIS", 2015, err)
 		return c.String(http.StatusInternalServerError, "Internal error 2015.\n")

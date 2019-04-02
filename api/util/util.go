@@ -68,3 +68,17 @@ func SanitizeSafetyJSON(s string) string {
 	s2 := strings.Replace(s1, "\\\"", "\\\\\"", -1)
 	return s2
 }
+
+// RemoveDuplicates remove duplicated itens from a slice.
+func RemoveDuplicates(s []string) []string {
+	mapS := make(map[string]string, len(s))
+	i := 0
+	for _, v := range s {
+		if _, ok := mapS[v]; !ok {
+			mapS[v] = v
+			s[i] = v
+			i++
+		}
+	}
+	return s[:i]
+}
