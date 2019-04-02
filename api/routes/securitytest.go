@@ -3,7 +3,7 @@ package routes
 import (
 	"net/http"
 
-	"github.com/globocom/huskyCI/api/analysis"
+	"github.com/globocom/huskyCI/api/db"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
 	"github.com/labstack/echo"
@@ -20,7 +20,7 @@ func CreateNewSecurityTest(c echo.Context) error {
 	}
 
 	securityTestQuery := map[string]interface{}{"name": securityTest.Name}
-	_, err = analysis.FindOneDBSecurityTest(securityTestQuery)
+	_, err = db.FindOneDBSecurityTest(securityTestQuery)
 	if err != nil {
 		if err != mgo.ErrNotFound {
 			log.Warning("CreateNewSecurityTest", "ANALYSIS", 109, securityTest.Name)
@@ -29,7 +29,7 @@ func CreateNewSecurityTest(c echo.Context) error {
 		log.Error("CreateNewSecurityTest", "ANALYSIS", 1012, err)
 	}
 
-	err = analysis.InsertDBSecurityTest(securityTest)
+	err = db.InsertDBSecurityTest(securityTest)
 	if err != nil {
 		log.Error("CreateNewSecurityTest", "ANALYSIS", 2016, err)
 		return c.String(http.StatusInternalServerError, "Internal error 2016.\n")

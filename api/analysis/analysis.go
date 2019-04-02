@@ -7,6 +7,7 @@ package analysis
 import (
 	"time"
 
+	"github.com/globocom/huskyCI/api/db"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
 	"gopkg.in/mgo.v2/bson"
@@ -25,7 +26,7 @@ func StartAnalysis(RID string, repository types.Repository) {
 	}
 
 	// step 1: insert new analysis into MongoDB.
-	err := InsertDBAnalysis(newAnalysis)
+	err := db.InsertDBAnalysis(newAnalysis)
 	if err != nil {
 		log.Error("StartAnalysis", "ANALYSIS", 2011, err)
 		return
@@ -33,7 +34,7 @@ func StartAnalysis(RID string, repository types.Repository) {
 
 	// step 2: start enry and EnryStartAnalysis will start all others securityTests
 	enryQuery := map[string]interface{}{"name": "enry"}
-	enrySecurityTest, err := FindOneDBSecurityTest(enryQuery)
+	enrySecurityTest, err := db.FindOneDBSecurityTest(enryQuery)
 	if err != nil {
 		log.Error("StartAnalysis", "ANALYSIS", 2011, "enry", err)
 		return
@@ -88,14 +89,14 @@ func registerAnalysisTimedOut(RID string) error {
 			"status": "timedout",
 		},
 	}
-	err := UpdateOneDBAnalysisContainer(analysisQuery, updateAnalysisQuery)
+	err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateAnalysisQuery)
 	return err
 }
 
 // monitorAnalysisUpdateStatus updates status and result of a given analysis.
 func monitorAnalysisUpdateStatus(RID string) error {
 	analysisQuery := map[string]interface{}{"RID": RID}
-	analysisResult, err := FindOneDBAnalysis(analysisQuery)
+	analysisResult, err := db.FindOneDBAnalysis(analysisQuery)
 	if err != nil {
 		log.Error("monitorAnalysisUpdateStatus", "ANALYSIS", 2014, RID, err)
 		return err
@@ -114,7 +115,7 @@ func monitorAnalysisUpdateStatus(RID string) error {
 			"result": finalResult,
 		},
 	}
-	err = UpdateOneDBAnalysisContainer(analysisQuery, updateAnalysisQuery)
+	err = db.UpdateOneDBAnalysisContainer(analysisQuery, updateAnalysisQuery)
 	if err != nil {
 		log.Error("monitorAnalysisUpdateStatus", "ANALYSIS", 2007, err)
 	}
@@ -125,7 +126,7 @@ func monitorAnalysisUpdateStatus(RID string) error {
 func monitorAnalysisCheckStatus(RID string) (bool, error) {
 	analysisFinished := false
 	analysisQuery := map[string]interface{}{"RID": RID}
-	analysisResult, err := FindOneDBAnalysis(analysisQuery)
+	analysisResult, err := db.FindOneDBAnalysis(analysisQuery)
 	if err != nil {
 		log.Error("monitorAnalysisCheckStatus", "ANALYSIS", 2014, RID, err)
 	}

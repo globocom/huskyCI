@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/globocom/huskyCI/api/db"
 	"github.com/globocom/huskyCI/api/log"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -46,7 +47,7 @@ func BanditStartAnalysis(CID string, cOutput string) {
 				"containers.$.cResult": "error",
 			},
 		}
-		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
 			log.Error("BanditStartAnalysis", "BANDIT", 2007, "Step 1", err)
 		}
@@ -66,7 +67,7 @@ func BanditStartAnalysis(CID string, cOutput string) {
 				"containers.$.cOutput": "No issues found.",
 			},
 		}
-		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
 			log.Error("BanditStartAnalysis", "BANDIT", 2007, "Step 1,5", err)
 		}
@@ -80,7 +81,7 @@ func BanditStartAnalysis(CID string, cOutput string) {
 				"containers.$.cResult": "error",
 			},
 		}
-		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
 			log.Error("BanditStartAnalysis", "BANDIT", 2007, "Step 2", err)
 		}
@@ -101,7 +102,7 @@ func BanditStartAnalysis(CID string, cOutput string) {
 			"containers.$.cResult": cResult,
 		},
 	}
-	if err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery); err != nil {
+	if err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery); err != nil {
 		log.Error("BanditStartAnalysis", "BANDIT", 2007, "Step 3", err)
 		return
 	}
