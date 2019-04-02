@@ -58,7 +58,7 @@ func main() {
 	// echoInstance.PUT("/repository/:repoID)
 	// echoInstance.DELETE("/repository/:repoID)
 
-	huskyAPIport := fmt.Sprintf(":%d", configAPI.HuskyAPIPort)
+	huskyAPIport := fmt.Sprintf(":%d", configAPI.Port)
 
 	if !configAPI.UseTLS {
 		echoInstance.Logger.Fatal(echoInstance.Start(huskyAPIport))
