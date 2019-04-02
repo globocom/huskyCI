@@ -12,7 +12,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/globocom/huskyCI/client/types"
-	"github.com/globocom/huskyCI/util"
+	"github.com/globocom/huskyCI/client/util"
 )
 
 // CheckMongoDBContainerOutput will validate the output of a given container.

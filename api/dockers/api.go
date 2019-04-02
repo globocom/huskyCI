@@ -16,7 +16,7 @@ import (
 	"github.com/globocom/huskyCI/api/context"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
-	"github.com/globocom/huskyCI/util"
+	"github.com/globocom/huskyCI/api/util"
 	goContext "golang.org/x/net/context"
 )
 
