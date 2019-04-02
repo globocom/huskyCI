@@ -5,6 +5,7 @@ import (
 	"regexp"
 
 	"github.com/globocom/huskyCI/api/analysis"
+	"github.com/globocom/huskyCI/api/db"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
 	"github.com/labstack/echo"
@@ -27,7 +28,7 @@ func GetAnalysis(c echo.Context) error {
 	}
 
 	analysisQuery := map[string]interface{}{"RID": RID}
-	analysisResult, err := analysis.FindOneDBAnalysis(analysisQuery)
+	analysisResult, err := db.FindOneDBAnalysis(analysisQuery)
 	if err != nil {
 		if err == mgo.ErrNotFound {
 			log.Warning("StatusAnalysis", "ANALYSIS", 106, RID)
@@ -78,11 +79,11 @@ func ReceiveRequest(c echo.Context) error {
 
 	// check-02: is this repository in MongoDB?
 	repositoryQuery := map[string]interface{}{"repositoryURL": repository.URL, "repositoryBranch": repository.Branch}
-	repositoryResult, err := analysis.FindOneDBRepository(repositoryQuery)
+	repositoryResult, err := db.FindOneDBRepository(repositoryQuery)
 	if err == nil {
 		// check-03: repository found! does it have a running status analysis?
 		analysisQuery := map[string]interface{}{"repositoryURL": repository.URL, "repositoryBranch": repository.Branch}
-		analysisResult, err := analysis.FindOneDBAnalysis(analysisQuery)
+		analysisResult, err := db.FindOneDBAnalysis(analysisQuery)
 		if err != nil {
 			if err != mgo.ErrNotFound {
 				if analysisResult.Status == "running" {
@@ -94,13 +95,13 @@ func ReceiveRequest(c echo.Context) error {
 		}
 	} else {
 		// repository not found! insert it into MongoDB with default securityTests
-		err = analysis.InsertDBRepository(repository)
+		err = db.InsertDBRepository(repository)
 		if err != nil {
 			log.Error("ReceiveRequest", "ANALYSIS", 1010, err)
 			return c.String(http.StatusInternalServerError, "Internal error 1010.\n")
 		}
 		repositoryQuery := map[string]interface{}{"repositoryURL": repository.URL, "repositoryBranch": repository.Branch}
-		repositoryResult, err = analysis.FindOneDBRepository(repositoryQuery)
+		repositoryResult, err = db.FindOneDBRepository(repositoryQuery)
 		if err != nil {
 			// well it was supposed to be there, after all, we just inserted it.
 			log.Error("ReceiveRequest", "ANALYSIS", 1011, err)

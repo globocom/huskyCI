@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/globocom/huskyCI/api/db"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/util"
 	"gopkg.in/mgo.v2/bson"
@@ -42,7 +43,7 @@ func SafetyStartAnalysis(CID string, cOutput string) {
 				"containers.$.cResult": "warning", // will not fail CI now
 			},
 		}
-		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
 			log.Warning("SafetyStartAnalysis", "SAFETY", 2007, err)
 		}
@@ -58,7 +59,7 @@ func SafetyStartAnalysis(CID string, cOutput string) {
 				"containers.$.cResult": "failed",
 			},
 		}
-		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
 			log.Error("SafetyStartAnalysis", "SAFETY", 2007, err)
 		}
@@ -88,7 +89,7 @@ func SafetyStartAnalysis(CID string, cOutput string) {
 					"containers.$.cResult": "warning",
 				},
 			}
-			err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+			err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 			if err != nil {
 				log.Error("SafetyStartAnalysis", "SAFETY", 2007, err)
 			}
@@ -101,7 +102,7 @@ func SafetyStartAnalysis(CID string, cOutput string) {
 				"containers.$.cResult": "passed",
 			},
 		}
-		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
 			log.Error("SafetyStartAnalysis", "SAFETY", 2007, err)
 		}
@@ -114,7 +115,7 @@ func SafetyStartAnalysis(CID string, cOutput string) {
 			"containers.$.cResult": "failed",
 		},
 	}
-	err = UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+	err = db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 	if err != nil {
 		log.Error("SafetyStartAnalysis", "SAFETY", 2007, err)
 	}
