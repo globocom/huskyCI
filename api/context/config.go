@@ -35,11 +35,18 @@ type DockerHostsConfig struct {
 	Host          string
 }
 
+// APIReleaseDetails holds all information regarding huskyCI release.
+type APIReleaseDetails struct {
+	APIVersion  string
+	DateRelease string
+}
+
 // APIConfig represents API configuration.
 type APIConfig struct {
 	MongoDBConfig        *MongoConfig
 	DockerHostsConfig    *DockerHostsConfig
 	HuskyAPIPort         int
+	APIReleaseDetails    APIReleaseDetails
 	UseTLS               bool
 	EnrySecurityTest     *types.SecurityTest
 	GosecSecurityTest    *types.SecurityTest
@@ -67,6 +74,7 @@ func GetAPIConfig() *APIConfig {
 			MongoDBConfig:        getMongoConfig(),
 			DockerHostsConfig:    getDockerHostsConfig(),
 			HuskyAPIPort:         getAPIHostPort(),
+			APIReleaseDetails:    getAPIReleaseDetails(),
 			UseTLS:               getUseTLS(),
 			EnrySecurityTest:     getEnryConfig(),
 			GosecSecurityTest:    getGosecConfig(),
@@ -104,6 +112,14 @@ func getDockerAPIPort() int {
 		return 2376
 	}
 	return dockerAPIport
+}
+
+// getAPIReleaseDetails returns API release details.
+func getAPIReleaseDetails() APIReleaseDetails {
+	return APIReleaseDetails{
+		APIVersion:  "1.0.2",
+		DateRelease: "2019-04-02",
+	}
 }
 
 // getMongoConfig returns all MongoConfig retrieved from environment variables.
