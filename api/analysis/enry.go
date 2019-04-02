@@ -10,6 +10,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/globocom/huskyCI/api/db"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
 	"gopkg.in/mgo.v2/bson"
@@ -20,7 +21,7 @@ func EnryStartAnalysis(CID string, cOutput string, RID string) {
 
 	// step 0.1: get analysis based on CID.
 	analysisQuery := map[string]interface{}{"containers.CID": CID}
-	analysis, err := FindOneDBAnalysis(analysisQuery)
+	analysis, err := db.FindOneDBAnalysis(analysisQuery)
 	if err != nil {
 		log.Error("EnryStartAnalysis", "ENRY", 2008, CID, err)
 		return
@@ -35,7 +36,7 @@ func EnryStartAnalysis(CID string, cOutput string, RID string) {
 				"containers.$.cResult": "failed",
 			},
 		}
-		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
 			log.Error("EnryStartAnalysis", "ENRY", 2007, err)
 		}
@@ -72,7 +73,7 @@ func EnryStartAnalysis(CID string, cOutput string, RID string) {
 
 	// step 2.1: querying MongoDB to gather up all securityTests that match (language=Generic and default=true).
 	genericSecurityTestQuery := map[string]interface{}{"language": "Generic", "default": true}
-	genericSecurityTests, err := FindAllDBSecurityTest(genericSecurityTestQuery)
+	genericSecurityTests, err := db.FindAllDBSecurityTest(genericSecurityTestQuery)
 	if err != nil {
 		log.Error("EnryStartAnalysis", "ENRY", 2009, err)
 		return
@@ -82,7 +83,7 @@ func EnryStartAnalysis(CID string, cOutput string, RID string) {
 	newLanguageSecurityTests := []types.SecurityTest{}
 	for _, language := range repositoryLanguages {
 		languageSecurityTestQuery := map[string]interface{}{"language": language.Name, "default": true}
-		languageSecurityTestResult, err := FindAllDBSecurityTest(languageSecurityTestQuery)
+		languageSecurityTestResult, err := db.FindAllDBSecurityTest(languageSecurityTestQuery)
 		if err == nil {
 			newLanguageSecurityTests = append(newLanguageSecurityTests, languageSecurityTestResult...)
 		}
@@ -98,7 +99,7 @@ func EnryStartAnalysis(CID string, cOutput string, RID string) {
 			"languages":     repositoryLanguages,
 		},
 	}
-	err = UpdateOneDBRepository(repositoryQuery, updateRepositoryQuery)
+	err = db.UpdateOneDBRepository(repositoryQuery, updateRepositoryQuery)
 	if err != nil {
 		log.Error("EnryStartAnalysis", "ENRY", 2010, err)
 		return
@@ -106,7 +107,7 @@ func EnryStartAnalysis(CID string, cOutput string, RID string) {
 
 	// step 4: update analysis with the all securityTests found.
 	analysis.SecurityTests = allSecurityTests
-	err = UpdateOneDBAnalysis(analysisQuery, analysis)
+	err = db.UpdateOneDBAnalysis(analysisQuery, analysis)
 	if err != nil {
 		log.Error("EnryStartAnalysis", "ENRY", 2007, err)
 		return

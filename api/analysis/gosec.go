@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/globocom/huskyCI/api/db"
 	"github.com/globocom/huskyCI/api/log"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -52,7 +53,7 @@ func GosecStartAnalysis(CID string, cOutput string) {
 				"containers.$.cResult": "passed",
 			},
 		}
-		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
 			log.Error("GosecStartAnalysis", "GOSEC", 2007, "Step 0.1 ", err)
 		}
@@ -68,7 +69,7 @@ func GosecStartAnalysis(CID string, cOutput string) {
 				"containers.$.cResult": "error",
 			},
 		}
-		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
 			log.Error("GosecStartAnalysis", "GOSEC", 2007, "Step 0.2 ", err)
 		}
@@ -98,7 +99,7 @@ func GosecStartAnalysis(CID string, cOutput string) {
 			"containers.$.cResult": cResult,
 		},
 	}
-	err = UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+	err = db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 	if err != nil {
 		log.Error("GosecStartAnalysis", "GOSEC", 2007, "Step 3 ", err)
 		return

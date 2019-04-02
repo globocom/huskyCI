@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/globocom/huskyCI/api/analysis"
 	apiContext "github.com/globocom/huskyCI/api/context"
-	db "github.com/globocom/huskyCI/api/db/mongo"
+	"github.com/globocom/huskyCI/api/db"
+	mongoHuskyCI "github.com/globocom/huskyCI/api/db/mongo"
 	docker "github.com/globocom/huskyCI/api/dockers"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
@@ -88,7 +88,7 @@ func checkDockerHosts(configAPI *apiContext.APIConfig) error {
 }
 
 func checkMongoDB() error {
-	if err := db.Connect(); err != nil {
+	if err := mongoHuskyCI.Connect(); err != nil {
 		mongoError := fmt.Sprintf("Check MongoDB: %s", err)
 		return errors.New(mongoError)
 	}
@@ -127,11 +127,11 @@ func checkSecurityTest(securityTestName string, configAPI *apiContext.APIConfig)
 	}
 
 	securityTestQuery := map[string]interface{}{"name": securityTestName}
-	_, err := analysis.FindOneDBSecurityTest(securityTestQuery)
+	_, err := db.FindOneDBSecurityTest(securityTestQuery)
 	if err == mgo.ErrNotFound {
 		// As Enry securityTest is not set into MongoDB, HuskyCI will insert it.
 		tmpConvertInterface := securityTestConfig.(types.SecurityTest)
-		if err := analysis.InsertDBSecurityTest(tmpConvertInterface); err != nil {
+		if err := db.InsertDBSecurityTest(tmpConvertInterface); err != nil {
 			return err
 		}
 	} else if err != nil {
