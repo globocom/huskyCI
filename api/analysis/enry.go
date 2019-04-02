@@ -32,8 +32,8 @@ func EnryStartAnalysis(CID string, cOutput string, RID string) {
 		errorOutput := fmt.Sprintf("Container error: %s", cOutput)
 		updateContainerAnalysisQuery := bson.M{
 			"$set": bson.M{
-				"containers.$.cOutput": errorOutput,
 				"containers.$.cResult": "failed",
+				"containers.$.cInfo":   errorOutput,
 			},
 		}
 		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
