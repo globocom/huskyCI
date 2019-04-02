@@ -39,8 +39,8 @@ func SafetyStartAnalysis(CID string, cOutput string) {
 	if requirementsNotFound {
 		updateContainerAnalysisQuery := bson.M{
 			"$set": bson.M{
-				"containers.$.cOutput": "Requirements not found or this project uses latest dependencies.",
 				"containers.$.cResult": "warning", // will not fail CI now
+				"containers.$.cInfo":   "Requirements not found or this project uses latest dependencies.",
 			},
 		}
 		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
@@ -55,8 +55,8 @@ func SafetyStartAnalysis(CID string, cOutput string) {
 		errorOutput := fmt.Sprintf("Error cloning: %s", cOutput)
 		updateContainerAnalysisQuery := bson.M{
 			"$set": bson.M{
-				"containers.$.cOutput": errorOutput,
-				"containers.$.cResult": "failed",
+				"containers.$.cResult": "error",
+				"containers.$.cInfo":   errorOutput,
 			},
 		}
 		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
@@ -87,6 +87,7 @@ func SafetyStartAnalysis(CID string, cOutput string) {
 			updateContainerAnalysisQuery := bson.M{
 				"$set": bson.M{
 					"containers.$.cResult": "warning",
+					"containers.$.cInfo":   "Warning found",
 				},
 			}
 			err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
@@ -98,8 +99,8 @@ func SafetyStartAnalysis(CID string, cOutput string) {
 
 		updateContainerAnalysisQuery := bson.M{
 			"$set": bson.M{
-				"containers.$.cOutput": "No issues found.",
 				"containers.$.cResult": "passed",
+				"containers.$.cInfo":   "No issues found.",
 			},
 		}
 		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
@@ -109,10 +110,11 @@ func SafetyStartAnalysis(CID string, cOutput string) {
 		return
 	}
 
-	// issues found. client will have to handle with warnings and issues.
+	// Issues found. client will have to handle with warnings and issues.
 	updateContainerAnalysisQuery := bson.M{
 		"$set": bson.M{
 			"containers.$.cResult": "failed",
+			"containers.$.cInfo":   "Issues found.",
 		},
 	}
 	err = db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
