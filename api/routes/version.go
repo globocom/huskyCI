@@ -11,8 +11,8 @@ import (
 func GetAPIVersion(c echo.Context) error {
 	configAPI := apiContext.APIConfiguration
 	requestResult := map[string]string{
-		"version": configAPI.APIReleaseDetails.APIVersion,
-		"date":    configAPI.APIReleaseDetails.DateRelease,
+		"version": configAPI.Version,
+		"date":    configAPI.ReleaseDate,
 	}
 	return c.JSON(http.StatusOK, requestResult)
 }
