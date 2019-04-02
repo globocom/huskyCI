@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/globocom/huskyCI/api/db"
 	"github.com/globocom/huskyCI/api/log"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -43,7 +44,7 @@ func BrakemanStartAnalysis(CID string, cOutput string) {
 				"containers.$.cResult": "passed",
 			},
 		}
-		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
 			log.Error("BrakemanStartAnalysis", "BRAKEMAN", 2007, "Step 0.1 ", err)
 		}
@@ -59,7 +60,7 @@ func BrakemanStartAnalysis(CID string, cOutput string) {
 				"containers.$.cResult": "failed",
 			},
 		}
-		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
 			log.Error("BrakemanStartAnalysis", "BRAKEMAN", 2007, "Step 0.2 ", err)
 		}
@@ -82,7 +83,7 @@ func BrakemanStartAnalysis(CID string, cOutput string) {
 				"containers.$.cResult": "passed",
 			},
 		}
-		err := UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
 			log.Error("BrakemanStartAnalysis", "BRAKEMAN", 2007, "Step 1.1 ", err)
 		}
@@ -104,7 +105,7 @@ func BrakemanStartAnalysis(CID string, cOutput string) {
 			"containers.$.cResult": cResult,
 		},
 	}
-	err = UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+	err = db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 	if err != nil {
 		log.Error("BrakemanStartAnalysis", "BRAKEMAN", 2007, "Step 3 ", err)
 		return
