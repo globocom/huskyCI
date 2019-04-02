@@ -40,8 +40,8 @@ func BrakemanStartAnalysis(CID string, cOutput string) {
 	if cOutput == "" {
 		updateContainerAnalysisQuery := bson.M{
 			"$set": bson.M{
-				"containers.$.cOutput": "No issues found.",
 				"containers.$.cResult": "passed",
+				"containers.$.cInfo":   "No issues found.",
 			},
 		}
 		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
@@ -56,8 +56,8 @@ func BrakemanStartAnalysis(CID string, cOutput string) {
 		errorOutput := fmt.Sprintf("Container error: %s", cOutput)
 		updateContainerAnalysisQuery := bson.M{
 			"$set": bson.M{
-				"containers.$.cOutput": errorOutput,
-				"containers.$.cResult": "failed",
+				"containers.$.cResult": "error",
+				"containers.$.cInfo":   errorOutput,
 			},
 		}
 		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
@@ -79,8 +79,8 @@ func BrakemanStartAnalysis(CID string, cOutput string) {
 	if len(brakemanOutput.Warnings) == 0 {
 		updateContainerAnalysisQuery := bson.M{
 			"$set": bson.M{
-				"containers.$.cOutput": "No issues found.",
 				"containers.$.cResult": "passed",
+				"containers.$.cInfo":   "No issues found.",
 			},
 		}
 		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
@@ -100,9 +100,14 @@ func BrakemanStartAnalysis(CID string, cOutput string) {
 	}
 
 	// step 3: update analysis' cResult into AnalyisCollection.
+	issueMessage := "No issues found."
+	if cResult != "passed" {
+		issueMessage = "Issues found."
+	}
 	updateContainerAnalysisQuery := bson.M{
 		"$set": bson.M{
 			"containers.$.cResult": cResult,
+			"containers.$.cInfo":   issueMessage,
 		},
 	}
 	err = db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)

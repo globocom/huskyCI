@@ -43,8 +43,8 @@ func BanditStartAnalysis(CID string, cOutput string) {
 		errorOutput := fmt.Sprintf("Container error: %s", cOutput)
 		updateContainerAnalysisQuery := bson.M{
 			"$set": bson.M{
-				"containers.$.cOutput": errorOutput,
 				"containers.$.cResult": "error",
+				"containers.$.cInfo":   errorOutput,
 			},
 		}
 		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
@@ -64,7 +64,8 @@ func BanditStartAnalysis(CID string, cOutput string) {
 	if len(banditResult.Results) == 0 {
 		updateContainerAnalysisQuery := bson.M{
 			"$set": bson.M{
-				"containers.$.cOutput": "No issues found.",
+				"containers.$.cResult": "passed",
+				"containers.$.cInfo":   "No issues found.",
 			},
 		}
 		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
@@ -97,9 +98,14 @@ func BanditStartAnalysis(CID string, cOutput string) {
 	}
 
 	// update the status of analysis.
+	issueMessage := "No issues found."
+	if cResult != "passed" {
+		issueMessage = "Issues found."
+	}
 	updateContainerAnalysisQuery := bson.M{
 		"$set": bson.M{
 			"containers.$.cResult": cResult,
+			"containers.$.cInfo":   issueMessage,
 		},
 	}
 	if err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery); err != nil {

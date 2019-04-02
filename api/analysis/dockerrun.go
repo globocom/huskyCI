@@ -191,7 +191,7 @@ func dockerRunRegisterError(d *docker.Docker, analysis *types.Analysis) error {
 			"containers.$.cStatus":    "finished",
 			"containers.$.finishedAt": finishedAt,
 			"containers.$.cResult":    "failed",
-			"containers.$.cOutput":    "Error waiting the container to finish.",
+			"containers.$.cInfo":      "Error waiting the container to finish.",
 		},
 	}
 	err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)

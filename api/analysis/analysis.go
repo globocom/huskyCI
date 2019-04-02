@@ -104,7 +104,7 @@ func monitorAnalysisUpdateStatus(RID string) error {
 	// analyze each cResult from each container to determine what is the value of analysis.Result
 	finalResult := "passed"
 	for _, container := range analysisResult.Containers {
-		if container.CResult == "failed" {
+		if container.CResult == "failed" || container.CResult == "error" {
 			finalResult = "failed"
 			break
 		}
