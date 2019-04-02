@@ -7,22 +7,31 @@
 
 huskyCI is an open source tool that performs security tests inside CI pipelines of multiple projects and centralizes all results into a database for further analysis and metrics.
 
-The main goal of this project is to help development teams improve the quality of their code by finding vulnerabilities as soon as possible.
 
 ## How does it work?
 
-Does your organization has projects like `awesome-golang-project`, `awesome-python-project` and `awesome-ruby-projectCheck`? You should check our [wiki](https://github.com/globocom/huskyCI/wiki/How-does-huskyCI-work%3F) to understand how huskyCI could help you secure them!
+The main goal of this project is to help development teams improve the quality of their code by finding vulnerabilities as soon as possible.
 
-## Cool! So huskyCI can check vulnerabilities in all languages ever?
+huskyCI can perform static security analysis in Python ([Bandit][Bandit] and [Safety][Safety]), Ruby ([Brakeman][Brakeman]), JavaScript ([RetireJS][RetireJS]) and Golang ([Gosec][Gosec]). You should check our [wiki](https://github.com/globocom/huskyCI/wiki/How-does-huskyCI-work%3F) to better understand how this tool could help securing your organization projects!
 
-Wow! Hold on! At this moment huskyCI can only perform static security analysis in Python ([Bandit][Bandit]), Ruby ([Brakeman][Brakeman]) and Golang ([Gosec][Gosec]). However, if you want to contribute to huskyCI by adding other cool security tests, you should check [this documentation](https://github.com/globocom/huskyCI/wiki/how-add-new-security-tests) right away!
 
-## Running locally
+## Installing
 
-The easiest way to deploy huskyCI is by using Docker Compose, thus, you should have [Docker][Docker Install] and [Docker Compose][Docker Compose Install] installed on your machine. After cloning the repository, just run this to provision your local environment:
+The easiest way to deploy huskyCI locally is by using Docker Compose, thus, you should have [Docker][Docker Install] and [Docker Compose][Docker Compose Install] installed on your machine. After cloning this repository, run this:
 
 ```
 make install
+```
+
+## Running
+
+After installing, a `.env` file will be generated which is needed to run huskyCI-client: 
+
+```sh
+. .env 
+```
+```sh
+make run-client
 ```
 
 ## Contributing
@@ -32,7 +41,7 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduc
 
 ## Documentation
 
-You can find our documentation in our [wiki](https://github.com/globocom/huskyCI/wiki)! 
+You can find huskyCI documentation [here](https://github.com/globocom/huskyCI/wiki). 
 
 ## License
 
@@ -42,5 +51,7 @@ This project is licensed under the BSD 3-Clause "New" or "Revised" License - rea
 [Docker Compose Install]: https://docs.docker.com/compose/install/
 [huskyCI Client]: https://github.com/globocom/huskyCI-client
 [Bandit]: https://github.com/PyCQA/bandit
+[Safety]: https://github.com/pyupio/safety
 [Brakeman]: https://github.com/presidentbeef/brakeman
 [Gosec]: https://github.com/securego/gosec
+[RetireJS]: https://github.com/retirejs/retire.js
