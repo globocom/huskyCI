@@ -46,6 +46,7 @@ type Container struct {
 	CStatus      string       `bson:"cStatus" json:"cStatus"`
 	COutput      string       `bson:"cOutput" json:"cOutput"`
 	CResult      string       `bson:"cResult" json:"cResult"`
+	CInfo        string       `bson:"cInfo" json:"cInfo"`
 	StartedAt    time.Time    `bson:"startedAt" json:"startedAt"`
 	FinishedAt   time.Time    `bson:"finishedAt" json:"finishedAt"`
 }
