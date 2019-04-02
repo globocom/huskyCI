@@ -107,7 +107,7 @@ func checkEachSecurityTest(configAPI *apiContext.APIConfig) error {
 
 func checkSecurityTest(securityTestName string, configAPI *apiContext.APIConfig) error {
 
-	var securityTestConfig interface{}
+	securityTestConfig := types.SecurityTest{}
 
 	switch securityTestName {
 	case "enry":
@@ -129,9 +129,8 @@ func checkSecurityTest(securityTestName string, configAPI *apiContext.APIConfig)
 	securityTestQuery := map[string]interface{}{"name": securityTestName}
 	_, err := db.FindOneDBSecurityTest(securityTestQuery)
 	if err == mgo.ErrNotFound {
-		// As Enry securityTest is not set into MongoDB, HuskyCI will insert it.
-		tmpConvertInterface := securityTestConfig.(types.SecurityTest)
-		if err := db.InsertDBSecurityTest(tmpConvertInterface); err != nil {
+		// As securityTest is not set into MongoDB, huskyCI will insert it.
+		if err := db.InsertDBSecurityTest(securityTestConfig); err != nil {
 			return err
 		}
 	} else if err != nil {
