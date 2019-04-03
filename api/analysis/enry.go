@@ -113,6 +113,16 @@ func EnryStartAnalysis(CID string, cOutput string, RID string) {
 		return
 	}
 
+	updateContainerAnalysisQuery := bson.M{
+		"$set": bson.M{
+			"containers.$.cInfo": "Finished successfully.",
+		},
+	}
+	err = db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+	if err != nil {
+		log.Error("EnryStartAnalysis", "ENRY", 2007, err)
+	}
+
 	// step 5: start all new securityTests.
 	for _, securityTest := range newLanguageSecurityTests {
 		// avoiding a loop here with this if condition.
