@@ -16,6 +16,9 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+// maxRetryStartContainer is maximum number of retries allowed
+var maxRetryStartContainer = 5
+
 // DockerRun starts a new container, runs a given securityTest in it and then updates AnalysisCollection.
 func DockerRun(RID string, analysis *types.Analysis, securityTest types.SecurityTest) {
 
@@ -91,6 +94,13 @@ func dockerRunCreateContainer(d *docker.Docker, analysis *types.Analysis, securi
 
 	analysisQuery := map[string]interface{}{"RID": analysis.RID}
 
+	// step 0: Verifies if the container has already been created
+	for _, container := range analysis.Containers {
+		if container.SecurityTest.Name == securityTest.Name {
+			return nil
+		}
+	}
+
 	// step 1: creating a new container.
 	CID, err := d.CreateContainer(*analysis, securityTest.Image, securityTest.Cmd)
 
@@ -122,9 +132,16 @@ func dockerRunCreateContainer(d *docker.Docker, analysis *types.Analysis, securi
 // dockerRunStartContainer starts a container, updates the corresponding analysis into MongoDB and returns an error.
 func dockerRunStartContainer(d *docker.Docker, analysis *types.Analysis) error {
 	analysisQuery := map[string]interface{}{"containers.CID": d.CID}
-	err := d.StartContainer()
+	var err error
+	// Tries to start a container maxRetryStartContainer times
+	for i := 0; i < maxRetryStartContainer; i++ {
+		err := d.StartContainer()
+		if err == nil {
+			break
+		}
+		log.Warning("dockerRunStartContainer", "DOCKERRUN", 3015, err)
+	}
 	if err != nil {
-		// error starting container. maxRetry?
 		updateContainerAnalysisQuery := bson.M{
 			"$set": bson.M{
 				"containers.$.cStatus": "error",
@@ -137,6 +154,8 @@ func dockerRunStartContainer(d *docker.Docker, analysis *types.Analysis) error {
 		}
 		return err
 	}
+	// err is nil, container started successfully
+	log.Info("dockerRunStartContainer", "DOCKERRUN", 32, d.CID)
 	startedAt := time.Now()
 	updateContainerAnalysisQuery := bson.M{
 		"$set": bson.M{
