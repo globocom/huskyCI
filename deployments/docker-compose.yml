@@ -36,7 +36,7 @@ services:
             DOCKER_TLS_VERIFY: 1
         build:
             context: ../
-            dockerfile: deployments/api.Dockerfile
+            dockerfile: deployments/dockerfiles/api.Dockerfile
         command: "go run api/server.go"
         volumes:
             - docker_vol:/var/lib/docker
@@ -61,7 +61,7 @@ services:
             DATABASE_PASS: huskyCIPassword
         build:
             context: ../
-            dockerfile: deployments/db.Dockerfile
+            dockerfile: deployments/dockerfiles/db.Dockerfile
         ports:
           - "27017:27017"
           - "27018:27018"
