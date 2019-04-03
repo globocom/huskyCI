@@ -41,7 +41,6 @@ type Analysis struct {
 // Container is the struct that stores all data from a container run.
 type Container struct {
 	CID          string       `bson:"CID" json:"CID"`
-	VM           string       `bson:"VM" json:"VM"`
 	SecurityTest SecurityTest `bson:"securityTest" json:"securityTest"`
 	CStatus      string       `bson:"cStatus" json:"cStatus"`
 	COutput      string       `bson:"cOutput" json:"cOutput"`
