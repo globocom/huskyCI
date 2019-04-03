@@ -13,6 +13,11 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+// securityTestDoneCounter keeps track of all the security tests that were already done,
+// it always starts with 0 and goes up to len(securityTests) - 1.
+// Enry is not taken into consideration, as all other security tests are called by it.
+var securityTestDoneCounter int
+
 // StartAnalysis starts the analysis given a RID and a repository.
 func StartAnalysis(RID string, repository types.Repository) {
 
@@ -124,6 +129,7 @@ func monitorAnalysisUpdateStatus(RID string) error {
 
 // monitorAnalysisCheckStatus checks if an analysis has already finished and returns the correspoding boolean.
 func monitorAnalysisCheckStatus(RID string) (bool, error) {
+	securityTestDoneCounter = 0
 	analysisFinished := false
 	analysisQuery := map[string]interface{}{"RID": RID}
 	analysisResult, err := db.FindOneDBAnalysis(analysisQuery)
@@ -135,8 +141,17 @@ func monitorAnalysisCheckStatus(RID string) (bool, error) {
 			analysisFinished = false
 			break
 		} else {
-			analysisFinished = true
+			// Enry must not be taken into account when verifying if the security tests have finished
+			containerIsDoneButIsNotEnry := container.SecurityTest.Name != "enry" || ((container.SecurityTest.Name != "enry") && (container.CResult == ""))
+			if containerIsDoneButIsNotEnry {
+				securityTestDoneCounter++
+				analysisFinished = true
+			}
 		}
+	}
+	// Makes sure all security tests found by Enry have finished
+	if (len(analysisResult.SecurityTests) - 1) != securityTestDoneCounter {
+		analysisFinished = false
 	}
 	return analysisFinished, err
 }
