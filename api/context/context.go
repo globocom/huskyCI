@@ -24,9 +24,10 @@ var onceConfig sync.Once
 type MongoConfig struct {
 	Address      string
 	DatabaseName string
-	Timeout      time.Duration
 	Username     string
 	Password     string
+	Port         int
+	Timeout      time.Duration
 	PoolLimit    int
 }
 
@@ -107,11 +108,11 @@ func getAPIPort() int {
 }
 
 func getAPIVersion() string {
-	return "1.0.2"
+	return "0.1.2"
 }
 
 func getAPIReleaseDate() string {
-	return "2019-04-02"
+	return "2019-05-02"
 }
 
 func getAPIUseTLS() bool {
@@ -141,26 +142,22 @@ func getGraylogIsDev() bool {
 }
 
 func getMongoConfig() *MongoConfig {
-	mongoHost := os.Getenv("MONGO_HOST")
-	mongoDatabaseName := os.Getenv("MONGO_DATABASE_NAME")
-	mongoUserName := os.Getenv("MONGO_DATABASE_USERNAME")
-	mongoPassword := os.Getenv("MONGO_DATABASE_PASSWORD")
-	mongoTimeout := getMongoTimeout()
+	mongoHost := os.Getenv("HUSKYCI_DATABASE_MONGO_ADDR")
 	mongoPort := getMongoPort()
 	mongoAddress := fmt.Sprintf("%s:%d", mongoHost, mongoPort)
-	mongoPoolLimit := getMongoPoolLimit()
 	return &MongoConfig{
 		Address:      mongoAddress,
-		DatabaseName: mongoDatabaseName,
-		Timeout:      mongoTimeout,
-		Username:     mongoUserName,
-		Password:     mongoPassword,
-		PoolLimit:    mongoPoolLimit,
+		DatabaseName: os.Getenv("HUSKYCI_DATABASE_MONGO_DBNAME"),
+		Username:     os.Getenv("HUSKYCI_DATABASE_MONGO_DBUSERNAME"),
+		Password:     os.Getenv("HUSKYCI_DATABASE_MONGO_DBPASSWORD"),
+		Port:         mongoPort,
+		Timeout:      getMongoTimeout(),
+		PoolLimit:    getMongoPoolLimit(),
 	}
 }
 
 func getMongoPort() int {
-	mongoPort, err := strconv.Atoi(os.Getenv("MONGO_PORT"))
+	mongoPort, err := strconv.Atoi(os.Getenv("HUSKYCI_DATABASE_MONGO_PORT"))
 	if err != nil {
 		return 27017
 	}
@@ -168,7 +165,7 @@ func getMongoPort() int {
 }
 
 func getMongoTimeout() time.Duration {
-	mongoTimeout, err := strconv.Atoi(os.Getenv("MONGO_TIMEOUT"))
+	mongoTimeout, err := strconv.Atoi(os.Getenv("HUSKYCI_DATABASE_MONGO_TIMEOUT"))
 	if err != nil {
 		return time.Duration(60) * time.Second
 	}
@@ -176,7 +173,7 @@ func getMongoTimeout() time.Duration {
 }
 
 func getMongoPoolLimit() int {
-	mongoPoolLimit, err := strconv.Atoi(os.Getenv("MONGO_POOL_LIMIT"))
+	mongoPoolLimit, err := strconv.Atoi(os.Getenv("HUSKYCI_DATABASE_MONGO_POOL_LIMIT"))
 	if err != nil && mongoPoolLimit <= 0 {
 		return 1000
 	}

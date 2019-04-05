@@ -47,18 +47,39 @@ func CheckHuskyRequirements(configAPI *apiContext.APIConfig) error {
 func checkEnvVars() error {
 
 	envVars := []string{
+		// Logging
+		// "HUSKYCI_LOGGING_GRAYLOG_ADDR", (optional)
+		// "HUSKYCI_LOGGING_GRAYLOG_PROTO", (optional)
+		// "HUSKYCI_LOGGING_GRAYLOG_APP_NAME", (optional)
+		// "HUSKYCI_LOGGING_GRAYLOG_TAG", (optional)
+		// "HUSKYCI_LOGGING_GRAYLOG_DEV", (optional)
+
+		// Database:
+		"HUSKYCI_DATABASE_MONGO_ADDR",
+		"HUSKYCI_DATABASE_MONGO_DBNAME",
+		"HUSKYCI_DATABASE_MONGO_DBUSERNAME",
+		"HUSKYCI_DATABASE_MONGO_DBPASSWORD",
+		// "HUSKYCI_DATABASE_MONGO_PORT", (optional)
+		// "HUSKYCI_DATABASE_MONGO_TIMEOUT", (optional)
+		// "HUSKYCI_DATABASE_MONGO_POOL_LIMIT", (optional)
+
+		// Docker API:
+		// "HUSKYCI_DOCKERAPI_ADDR",
+		// "HUSKYCI_DOCKERAPI_CERT_PATH",
+		// "HUSKYCI_DOCKERAPI_CERT_KEY",
+		// "HUSKYCI_DOCKERAPI_CERT_FILE",
+		// "HUSKYCI_DOCKERAPI_CERT_CA",
+		// "HUSKYCI_DOCKERAPI_PORT", (optional)
+		// "HUSKYCI_DOCKERAPI_TLS_VERIFY", (optional)
+
+		// huskyCI API:
+		// "HUSKYCI_API_PORT", (optional)
+		// "HUSKYCI_API_ENABLE_HTTPS", (optional)
+		// "HUSKYCI_API_GIT_PRIVATE_SSH_KEY", (optional)
+
 		"DOCKER_HOSTS_LIST",
-		"MONGO_HOST",
-		"MONGO_DATABASE_NAME",
-		"MONGO_DATABASE_USERNAME",
-		"MONGO_DATABASE_PASSWORD",
 		"DOCKER_HOSTS_CERT",
 		"DOCKER_HOSTS_KEY",
-		// "GIT_PRIVATE_SSH_KEY", optional
-		// "DOCKER_API_PORT", optional -> default value (2376)
-		// "MONGO_PORT", optional -> default value (27017)
-		// "HUSKY_API_PORT", optional -> default value (9999)
-		// "MONGO_TIMEOUT", optional -> default value (60s)
 	}
 
 	var envIsSet bool
