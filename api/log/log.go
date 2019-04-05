@@ -2,26 +2,20 @@ package log
 
 import (
 	"log"
-	"os"
-	"strings"
 
 	"github.com/globocom/glbgelf"
+	apiContext "github.com/globocom/huskyCI/api/context"
 )
 
 // InitLog starts glbgelf logging.
 func InitLog() {
-
-	isDev := true
-	graylogAddr := os.Getenv("HUSKYCI_GRAYLOG_ADDR")
-	gralogProto := os.Getenv("HUSKYCI_GRAYLOG_PROTO")
-	appName := os.Getenv("HUSKYCI_APP_NAME")
-	tags := os.Getenv("HUSKYCI_TAGS")
-
-	if strings.EqualFold(os.Getenv("HUSKYCI_DEV"), "false") {
-		isDev = false
-	}
-
-	glbgelf.InitLogger(graylogAddr, appName, tags, isDev, gralogProto)
+	graylogConfig := apiContext.APIConfiguration.GraylogConfig
+	isDev := graylogConfig.DevelopmentEnv
+	graylogAddr := graylogConfig.Address
+	gralogProto := graylogConfig.Protocol
+	appName := graylogConfig.AppName
+	tag := graylogConfig.Tag
+	glbgelf.InitLogger(graylogAddr, appName, tag, isDev, gralogProto)
 }
 
 // Info sends an info type log using glbgelf.
