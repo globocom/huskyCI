@@ -33,11 +33,13 @@ type MongoConfig struct {
 
 // DockerHostsConfig represents Docker Hosts configuration.
 type DockerHostsConfig struct {
-	Address       string
-	DockerAPIPort int
-	Certificate   string
-	Key           string
-	Host          string
+	Address         string
+	DockerAPIPort   int
+	Certificate     string
+	PathCertificate string
+	Key             string
+	Host            string
+	TLSVerify       int
 }
 
 // GraylogConfig represents Graylog configuration.
@@ -188,25 +190,36 @@ func getMongoPoolLimit() int {
 
 func getDockerHostsConfig() *DockerHostsConfig {
 	dockerAPIPort := getDockerAPIPort()
-	dockerHostsAddressesEnv := os.Getenv("DOCKER_HOSTS_LIST")
+	dockerHostsAddressesEnv := os.Getenv("HUSKYCI_DOCKERAPI_ADDR")
 	dockerHostsAddresses := strings.Split(dockerHostsAddressesEnv, " ")
-	dockerHostsCertificate := os.Getenv("DOCKER_HOSTS_CERT")
-	dockerHostsKey := os.Getenv("DOCKER_HOSTS_KEY")
+	dockerHostsCertificate := os.Getenv("HUSKYCI_DOCKERAPI_CERT_FILE")
+	dockerHostsPathCertificates := os.Getenv("HUSKYCI_DOCKERAPI_CERT_PATH")
+	dockerHostsKey := os.Getenv("HUSKYCI_DOCKERAPI_CERT_KEY")
 	return &DockerHostsConfig{
-		Address:       dockerHostsAddresses[0],
-		DockerAPIPort: dockerAPIPort,
-		Certificate:   dockerHostsCertificate,
-		Key:           dockerHostsKey,
-		Host:          fmt.Sprintf("%s:%d", dockerHostsAddresses[0], dockerAPIPort),
+		Address:         dockerHostsAddresses[0],
+		DockerAPIPort:   dockerAPIPort,
+		Certificate:     dockerHostsCertificate,
+		PathCertificate: dockerHostsPathCertificates,
+		Key:             dockerHostsKey,
+		Host:            fmt.Sprintf("%s:%d", dockerHostsAddresses[0], dockerAPIPort),
+		TLSVerify:       getDockerAPITLSVerify(),
 	}
 }
 
 func getDockerAPIPort() int {
-	dockerAPIport, err := strconv.Atoi(os.Getenv("DOCKER_API_PORT"))
+	dockerAPIport, err := strconv.Atoi(os.Getenv("HUSKYCI_DOCKERAPI_PORT"))
 	if err != nil {
 		return 2376
 	}
 	return dockerAPIport
+}
+
+func getDockerAPITLSVerify() int {
+	option := os.Getenv("HUSKYCI_DOCKERAPI_TLS_VERIFY")
+	if option == "false" || option == "0" || option == "FALSE" {
+		return 0
+	}
+	return 1
 }
 
 func getSecurityTestConfig(securityTestName string) *types.SecurityTest {
