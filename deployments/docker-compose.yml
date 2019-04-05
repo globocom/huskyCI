@@ -17,13 +17,13 @@ services:
     api:
         container_name: huskyCI_API
         environment:
+            HUSKYCI_DATABASE_MONGO_ADDR: mongodb
+            HUSKYCI_DATABASE_MONGO_DBNAME: huskyCIDB
+            HUSKYCI_DATABASE_MONGO_DBUSERNAME: huskyCIUser
+            HUSKYCI_DATABASE_MONGO_DBPASSWORD: huskyCIPassword
             HUSKY_API_ENABLE_HTTPS: "false"     
             GOPATH: /go/
             HUSKY_API_PORT: 8888
-            MONGO_HOST: mongodb
-            MONGO_DATABASE_NAME: huskyCIDB
-            MONGO_DATABASE_USERNAME: huskyCIUser
-            MONGO_DATABASE_PASSWORD: huskyCIPassword
             MONGO_PORT: 27017
             MONGO_TIMEOUT: 60
             MONGO_PORT: 27017
@@ -34,6 +34,8 @@ services:
             DOCKER_HOSTS_KEY: /go/src/github.com/globocom/huskyCI/key.pem
             DOCKER_CERT_PATH: /go/src/github.com/globocom/huskyCI/
             DOCKER_TLS_VERIFY: 1
+            # optional envs
+            HUSKYCI_LOGGING_GRAYLOG_APP_NAME: huskyCI
         build:
             context: ../
             dockerfile: deployments/dockerfiles/api.Dockerfile
