@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strconv"
 
 	dockerTypes "github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -38,9 +39,23 @@ func NewDocker() (*Docker, error) {
 	configAPI := context.GetAPIConfig()
 	dockerHost := fmt.Sprintf("https://%s", configAPI.DockerHostsConfig.Host)
 
+	// env vars needed by docker/docker library to create a NewEnvClient:
 	err := os.Setenv("DOCKER_HOST", dockerHost)
 	if err != nil {
 		log.Error("NewDocker", "DOCKERAPI", 3001, err)
+		return nil, err
+	}
+
+	err = os.Setenv("DOCKER_CERT_PATH", configAPI.DockerHostsConfig.PathCertificate)
+	if err != nil {
+		log.Error("NewDocker", "DOCKERAPI", 3019, err)
+		return nil, err
+	}
+
+	tlsVerify := strconv.Itoa(configAPI.DockerHostsConfig.TLSVerify)
+	err = os.Setenv("DOCKER_TLS_VERIFY", tlsVerify)
+	if err != nil {
+		log.Error("NewDocker", "DOCKERAPI", 3020, err)
 		return nil, err
 	}
 

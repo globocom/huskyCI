@@ -41,6 +41,7 @@ var MsgCode = map[int]string{
 	1016: "Received an invalid repository URL: ",
 	1017: "Received an invalid repository branch: ",
 	1018: "Could not Unmarshall the following safetyOutput: ",
+	1019: "Error loading viper: ",
 
 	// MongoDB infos
 	21: "Connecting to MongoDB.",
@@ -96,6 +97,8 @@ var MsgCode = map[int]string{
 	3016: "Could not wait container via HuskyCI: ",
 	3017: "Could not read container output via HuskyCI: ",
 	3018: "Unexpected securityTest.Name: ",
+	3019: "Could not set DOCKER_CERT_PATH enviroment variable: ",
+	3020: "Could not set DOCKER_TLS_VERIFY enviroment variable: ",
 
 	// Util package errors
 	4001: "Could not read certificate file: ",
