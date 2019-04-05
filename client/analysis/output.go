@@ -21,15 +21,15 @@ func CheckMongoDBContainerOutput(container types.Container) {
 	switch container.SecurityTest.Name {
 	case "enry":
 	case "gosec":
-		PrintGosecOutput(container.COutput)
+		PrintGosecOutput(container.COutput, container.CInfo)
 	case "bandit":
-		PrintBanditOutput(container.COutput)
+		PrintBanditOutput(container.COutput, container.CInfo)
 	case "retirejs":
-		PrintRetirejsOutput(container.COutput)
+		PrintRetirejsOutput(container.COutput, container.CInfo)
 	case "brakeman":
-		PrintBrakemanOutput(container.COutput)
+		PrintBrakemanOutput(container.COutput, container.CInfo)
 	case "safety":
-		PrintSafetyOutput(container.COutput)
+		PrintSafetyOutput(container.COutput, container.CInfo)
 	default:
 		fmt.Println("[HUSKYCI][ERROR] securityTest name not recognized:", container.SecurityTest.Name)
 		os.Exit(1)
@@ -37,9 +37,9 @@ func CheckMongoDBContainerOutput(container types.Container) {
 }
 
 // PrintGosecOutput will print the Gosec output.
-func PrintGosecOutput(mongoDBcontainerOutput string) {
+func PrintGosecOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo string) {
 
-	if mongoDBcontainerOutput == "No issues found." {
+	if mongoDBcontainerInfo == "No issues found." {
 		color.Green("[HUSKYCI][*] Gosec :)\n\n")
 		return
 	}
@@ -104,9 +104,9 @@ func PrintGosecOutput(mongoDBcontainerOutput string) {
 }
 
 // PrintBanditOutput will print Bandit output.
-func PrintBanditOutput(mongoDBcontainerOutput string) {
+func PrintBanditOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo string) {
 
-	if mongoDBcontainerOutput == "No issues found." {
+	if mongoDBcontainerInfo == "No issues found." {
 		color.Green("[HUSKYCI][*] Bandit :)\n\n")
 		return
 	}
@@ -171,9 +171,9 @@ func PrintBanditOutput(mongoDBcontainerOutput string) {
 }
 
 // PrintRetirejsOutput will print Retirejs output.
-func PrintRetirejsOutput(mongoDBcontainerOutput string) {
+func PrintRetirejsOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo string) {
 
-	if mongoDBcontainerOutput == "No issues found." {
+	if mongoDBcontainerInfo == "No issues found." {
 		color.Green("[HUSKYCI][*] RetireJS :)\n\n")
 		return
 	}
@@ -250,8 +250,8 @@ func PrintRetirejsOutput(mongoDBcontainerOutput string) {
 }
 
 // PrintBrakemanOutput will print Brakeman output.
-func PrintBrakemanOutput(mongoDBcontainerOutput string) {
-	if mongoDBcontainerOutput == "No issues found." {
+func PrintBrakemanOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo string) {
+	if mongoDBcontainerInfo == "No issues found." {
 		color.Green("[HUSKYCI][*] Brakeman :)\n\n")
 		return
 	}
@@ -315,9 +315,9 @@ func PrintBrakemanOutput(mongoDBcontainerOutput string) {
 }
 
 // PrintSafetyOutput will print Safety output.
-func PrintSafetyOutput(mongoDBcontainerOutput string) {
+func PrintSafetyOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo string) {
 
-	if mongoDBcontainerOutput == "No issues found." {
+	if mongoDBcontainerInfo == "No issues found." {
 		color.Green("[HUSKYCI][*] Safety :)\n\n")
 		return
 	}

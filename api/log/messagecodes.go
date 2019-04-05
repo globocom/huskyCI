@@ -76,6 +76,7 @@ var MsgCode = map[int]string{
 
 	// Docker API info
 	31: "Waiting pull image...",
+	32: "Container started successfully: ",
 
 	// Docker API warning
 	301: "",

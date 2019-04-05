@@ -17,7 +17,6 @@ type Repository struct {
 	Branch           string         `bson:"repositoryBranch" json:"repositoryBranch"`
 	SecurityTests    []SecurityTest `bson:"securityTests" json:"securityTests"`
 	SecurityTestName []string       `bson:"securityTestName,omitempty" json:"securityTestName"`
-	VM               string         `bson:"VM" json:"vm"`
 	CreatedAt        time.Time      `bson:"createdAt" json:"createdAt"`
 	DeletedAt        time.Time      `bson:"deletedAt" json:"deletedAt"`
 	Languages        []Language     `bson:"languages" json:"languages"`
@@ -49,7 +48,6 @@ type Analysis struct {
 // Container is the struct that stores all data from a container run.
 type Container struct {
 	CID          string       `bson:"CID" json:"CID"`
-	VM           string       `bson:"VM" json:"VM"`
 	SecurityTest SecurityTest `bson:"securityTest" json:"securityTest"`
 	CStatus      string       `bson:"cStatus" json:"cStatus"`
 	COuput       string       `bson:"cOutput" json:"cOutput"`
