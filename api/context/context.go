@@ -12,7 +12,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
 	"github.com/spf13/viper"
 )
@@ -40,12 +39,22 @@ type DockerHostsConfig struct {
 	Host          string
 }
 
+// GraylogConfig represents Graylog configuration.
+type GraylogConfig struct {
+	Address        string
+	Protocol       string
+	AppName        string
+	Tag            string
+	DevelopmentEnv bool
+}
+
 // APIConfig represents API configuration.
 type APIConfig struct {
 	Port                 int
 	Version              string
 	ReleaseDate          string
 	UseTLS               bool
+	GraylogConfig        *GraylogConfig
 	MongoDBConfig        *MongoConfig
 	DockerHostsConfig    *DockerHostsConfig
 	EnrySecurityTest     *types.SecurityTest
@@ -61,7 +70,7 @@ func init() {
 	viper.SetConfigName("config")
 	viper.AddConfigPath("api/")
 	if err := viper.ReadInConfig(); err != nil {
-		log.Error("init", "CONFIG", 1019, err)
+		fmt.Println("Error reading Viper config: ", err)
 		os.Exit(1)
 	}
 	return
@@ -75,6 +84,7 @@ func GetAPIConfig() *APIConfig {
 			Version:              getAPIVersion(),
 			ReleaseDate:          getAPIReleaseDate(),
 			UseTLS:               getAPIUseTLS(),
+			GraylogConfig:        getGraylogConfig(),
 			MongoDBConfig:        getMongoConfig(),
 			DockerHostsConfig:    getDockerHostsConfig(),
 			EnrySecurityTest:     getSecurityTest("enry"),
@@ -110,6 +120,24 @@ func getAPIUseTLS() bool {
 		return true
 	}
 	return false
+}
+
+func getGraylogConfig() *GraylogConfig {
+	return &GraylogConfig{
+		Address:        os.Getenv("HUSKYCI_LOGGING_GRAYLOG_ADDR"),
+		Protocol:       os.Getenv("HUSKYCI_LOGGING_GRAYLOG_PROTO"),
+		AppName:        os.Getenv("HUSKYCI_LOGGING_GRAYLOG_APP_NAME"),
+		Tag:            os.Getenv("HUSKYCI_LOGGING_GRAYLOG_TAG"),
+		DevelopmentEnv: getGraylogIsDev(),
+	}
+}
+
+func getGraylogIsDev() bool {
+	option := os.Getenv("HUSKYCI_LOGGING_GRAYLOG_DEV")
+	if option == "false" || option == "0" || option == "FALSE" {
+		return false
+	}
+	return true
 }
 
 func getMongoConfig() *MongoConfig {
