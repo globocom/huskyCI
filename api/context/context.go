@@ -55,6 +55,7 @@ type APIConfig struct {
 	Version              string
 	ReleaseDate          string
 	UseTLS               bool
+	GitPrivateSSHKey     string
 	GraylogConfig        *GraylogConfig
 	MongoDBConfig        *MongoConfig
 	DockerHostsConfig    *DockerHostsConfig
@@ -85,22 +86,23 @@ func GetAPIConfig() *APIConfig {
 			Version:              getAPIVersion(),
 			ReleaseDate:          getAPIReleaseDate(),
 			UseTLS:               getAPIUseTLS(),
+			GitPrivateSSHKey:     getGitPrivateSSHKey(),
 			GraylogConfig:        getGraylogConfig(),
 			MongoDBConfig:        getMongoConfig(),
 			DockerHostsConfig:    getDockerHostsConfig(),
-			EnrySecurityTest:     getSecurityTest("enry"),
-			GosecSecurityTest:    getSecurityTest("gosec"),
-			BanditSecurityTest:   getSecurityTest("bandit"),
-			BrakemanSecurityTest: getSecurityTest("brakeman"),
-			RetirejsSecurityTest: getSecurityTest("retirejs"),
-			SafetySecurityTest:   getSecurityTest("safety"),
+			EnrySecurityTest:     getSecurityTestConfig("enry"),
+			GosecSecurityTest:    getSecurityTestConfig("gosec"),
+			BanditSecurityTest:   getSecurityTestConfig("bandit"),
+			BrakemanSecurityTest: getSecurityTestConfig("brakeman"),
+			RetirejsSecurityTest: getSecurityTestConfig("retirejs"),
+			SafetySecurityTest:   getSecurityTestConfig("safety"),
 		}
 	})
 	return APIConfiguration
 }
 
 func getAPIPort() int {
-	apiPort, err := strconv.Atoi(os.Getenv("HUSKY_API_PORT"))
+	apiPort, err := strconv.Atoi(os.Getenv("HUSKYCI_API_PORT"))
 	if err != nil {
 		apiPort = 8888
 	}
@@ -116,11 +118,15 @@ func getAPIReleaseDate() string {
 }
 
 func getAPIUseTLS() bool {
-	option := os.Getenv("HUSKY_API_ENABLE_HTTPS")
+	option := os.Getenv("HUSKYCI_API_ENABLE_HTTPS")
 	if option == "true" || option == "1" || option == "TRUE" {
 		return true
 	}
 	return false
+}
+
+func getGitPrivateSSHKey() string {
+	return os.Getenv("HUSKYCI_API_GIT_PRIVATE_SSH_KEY")
 }
 
 func getGraylogConfig() *GraylogConfig {
@@ -203,7 +209,7 @@ func getDockerAPIPort() int {
 	return dockerAPIport
 }
 
-func getSecurityTest(securityTestName string) *types.SecurityTest {
+func getSecurityTestConfig(securityTestName string) *types.SecurityTest {
 	return &types.SecurityTest{
 		Name:             viper.GetString(fmt.Sprintf("%s.name", securityTestName)),
 		Image:            viper.GetString(fmt.Sprintf("%s.image", securityTestName)),
