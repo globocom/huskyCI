@@ -24,9 +24,9 @@ var HuskyUseTLS bool
 
 // SetConfigs sets all configuration needed to start the client.
 func SetConfigs() {
-	RepositoryURL = os.Getenv(`HUSKYCI_REPO_URL`)
-	RepositoryBranch = os.Getenv(`HUSKYCI_REPO_BRANCH`)
-	HuskyAPI = os.Getenv(`HUSKYCI_API`)
+	RepositoryURL = os.Getenv(`HUSKYCI_CLIENT_REPO_URL`)
+	RepositoryBranch = os.Getenv(`HUSKYCI_CLIENT_REPO_BRANCH`)
+	HuskyAPI = os.Getenv(`HUSKYCI_CLIENT_API_ADDR`)
 	HuskyUseTLS = getUseTLS()
 }
 
@@ -34,9 +34,10 @@ func SetConfigs() {
 func CheckEnvVars() error {
 
 	envVars := []string{
-		"HUSKYCI_REPO_URL",
-		"HUSKYCI_REPO_BRANCH",
-		"HUSKYCI_API",
+		"HUSKYCI_CLIENT_API_ADDR",
+		"HUSKYCI_CLIENT_REPO_URL",
+		"HUSKYCI_CLIENT_REPO_BRANCH",
+		// "HUSKYCI_CLIENT_API_USE_HTTPS" (optional)
 	}
 
 	var envIsSet bool
@@ -61,7 +62,7 @@ func CheckEnvVars() error {
 
 // getUseTLS returns TRUE or FALSE retrieved from an environment variable.
 func getUseTLS() bool {
-	option := os.Getenv("HUSKY_CLIENT_ENABLE_HTTPS")
+	option := os.Getenv("HUSKYCI_CLIENT_API_USE_HTTPS")
 	if option == "true" || option == "1" || option == "TRUE" {
 		return true
 	}
