@@ -19,10 +19,10 @@ import (
 
 func main() {
 
+	configAPI := apiContext.GetAPIConfig()
+
 	log.InitLog()
 	log.Info("main", "SERVER", 11)
-
-	configAPI := apiContext.GetAPIConfig()
 
 	if err := apiUtil.CheckHuskyRequirements(configAPI); err != nil {
 		log.Error("main", "SERVER", 1001, err)
@@ -58,7 +58,7 @@ func main() {
 	// echoInstance.PUT("/repository/:repoID)
 	// echoInstance.DELETE("/repository/:repoID)
 
-	huskyAPIport := fmt.Sprintf(":%d", configAPI.HuskyAPIPort)
+	huskyAPIport := fmt.Sprintf(":%d", configAPI.Port)
 
 	if !configAPI.UseTLS {
 		echoInstance.Logger.Fatal(echoInstance.Start(huskyAPIport))
