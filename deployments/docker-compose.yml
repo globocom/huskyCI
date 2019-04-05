@@ -21,13 +21,9 @@ services:
             HUSKYCI_DATABASE_MONGO_DBNAME: huskyCIDB
             HUSKYCI_DATABASE_MONGO_DBUSERNAME: huskyCIUser
             HUSKYCI_DATABASE_MONGO_DBPASSWORD: huskyCIPassword
-            HUSKY_API_ENABLE_HTTPS: "false"     
+            HUSKYCI_API_PORT: "false"     
+            HUSKYCI_API_PORT: 8888
             GOPATH: /go/
-            HUSKY_API_PORT: 8888
-            MONGO_PORT: 27017
-            MONGO_TIMEOUT: 60
-            MONGO_PORT: 27017
-            MONGO_TIMEOUT: 60
             DOCKER_HOSTS_LIST: dockerapi
             DOCKER_API_PORT: 2375
             DOCKER_HOSTS_CERT: /go/src/github.com/globocom/huskyCI/cert.pem
