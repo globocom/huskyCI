@@ -30,9 +30,7 @@ services:
             HUSKYCI_DOCKERAPI_TLS_VERIFY: 1
             # optional envs
             HUSKYCI_DOCKERAPI_PORT: 2375
-            HUSKYCI_LOGGING_GRAYLOG_APP_NAME: huskyCI
-            HUSKYCI_API_PORT: "false"     
-            HUSKYCI_API_PORT: 8888
+            HUSKYCI_LOGGING_GRAYLOG_APP_NAME: huskyCI   
         build:
             context: ../
             dockerfile: deployments/dockerfiles/api.Dockerfile
