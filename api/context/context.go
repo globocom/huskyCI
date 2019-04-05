@@ -116,7 +116,7 @@ func getAPIVersion() string {
 }
 
 func getAPIReleaseDate() string {
-	return "2019-05-02"
+	return "2019-04-05"
 }
 
 func getAPIUseTLS() bool {
