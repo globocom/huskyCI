@@ -17,21 +17,22 @@ services:
     api:
         container_name: huskyCI_API
         environment:
+            GOPATH: /go/
+            # required envs
             HUSKYCI_DATABASE_MONGO_ADDR: mongodb
             HUSKYCI_DATABASE_MONGO_DBNAME: huskyCIDB
             HUSKYCI_DATABASE_MONGO_DBUSERNAME: huskyCIUser
             HUSKYCI_DATABASE_MONGO_DBPASSWORD: huskyCIPassword
+            HUSKYCI_DOCKERAPI_ADDR: dockerapi
+            HUSKYCI_DOCKERAPI_CERT_FILE: /go/src/github.com/globocom/huskyCI/cert.pem
+            HUSKYCI_DOCKERAPI_CERT_KEY: /go/src/github.com/globocom/huskyCI/key.pem
+            HUSKYCI_DOCKERAPI_CERT_PATH: /go/src/github.com/globocom/huskyCI/
+            HUSKYCI_DOCKERAPI_TLS_VERIFY: 1
+            # optional envs
+            HUSKYCI_DOCKERAPI_PORT: 2375
+            HUSKYCI_LOGGING_GRAYLOG_APP_NAME: huskyCI
             HUSKYCI_API_PORT: "false"     
             HUSKYCI_API_PORT: 8888
-            GOPATH: /go/
-            DOCKER_HOSTS_LIST: dockerapi
-            DOCKER_API_PORT: 2375
-            DOCKER_HOSTS_CERT: /go/src/github.com/globocom/huskyCI/cert.pem
-            DOCKER_HOSTS_KEY: /go/src/github.com/globocom/huskyCI/key.pem
-            DOCKER_CERT_PATH: /go/src/github.com/globocom/huskyCI/
-            DOCKER_TLS_VERIFY: 1
-            # optional envs
-            HUSKYCI_LOGGING_GRAYLOG_APP_NAME: huskyCI
         build:
             context: ../
             dockerfile: deployments/dockerfiles/api.Dockerfile
