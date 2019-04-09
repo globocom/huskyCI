@@ -51,7 +51,7 @@ func ReceiveRequest(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "This is an invalid JSON.\n")
 	}
 
-	// check-01: is this a git repository URL and a branch?
+	// check-01-a: is this a git repository URL?
 	regexpGit := `((git|ssh|http(s)?)|((git@|gitlab@)[\w\.]+))(:(//)?)([\w\.@\:/\-~]+)(\.git)(/)?`
 	r := regexp.MustCompile(regexpGit)
 	valid, err := regexp.MatchString(regexpGit, repository.URL)
@@ -66,7 +66,8 @@ func ReceiveRequest(c echo.Context) error {
 	matches := r.FindString(repository.URL)
 	repository.URL = matches
 
-	regexpBranch := `^[a-zA-Z0-9_\.-]*$`
+	// check-01-b: is this a git repository branch?
+	regexpBranch := `^[a-zA-Z0-9_\/.-]*$`
 	valid, err = regexp.MatchString(regexpBranch, repository.Branch)
 	if err != nil {
 		log.Error("ReceiveRequest", "ANALYSIS", 1008, "Repository Branch regexp ", err)
