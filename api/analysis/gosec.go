@@ -85,7 +85,7 @@ func GosecStartAnalysis(CID string, cOutput string) {
 	}
 
 	// step 2: find Issues that have severity "MEDIUM" or "HIGH" and confidence "HIGH".
-	cResult = "passed"
+	cResult = "warning"
 	for _, issue := range gosecOutput.GosecIssues {
 		if (issue.Severity == "HIGH" || issue.Severity == "MEDIUM") && (issue.Confidence == "HIGH") {
 			cResult = "failed"
@@ -94,8 +94,8 @@ func GosecStartAnalysis(CID string, cOutput string) {
 	}
 
 	// step 3: update analysis' cResult into AnalyisCollection.
-	issueMessage := "No issues found."
-	if cResult != "passed" {
+	issueMessage := "Warning found."
+	if cResult != "warning" {
 		issueMessage = "Issues found."
 	}
 	updateContainerAnalysisQuery := bson.M{
