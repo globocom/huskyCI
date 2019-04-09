@@ -18,43 +18,12 @@ COLOR_YELLOW = \033[33m
 COLOR_GREEN = \033[32m
 COLOR_RED = \033[31m
 
-PROJECT := HuskyCI
+PROJECT := huskyCI
 
 TAG := $(shell git describe --tags --abbrev=0)
 DATE := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 COMMIT := $(shell git rev-parse $(TAG))
 LDFLAGS := '-X "main.version=$(TAG)" -X "main.commit=$(COMMIT)" -X "main.date=$(DATE)"'
-
-## Installs a development environment using docker-compose
-install: generate-passwords create-certs compose pull-images
-
-## Installs a development environment using docker-compose but does not pull security tests' images
-install-no-pull: generate-passwords create-certs compose
-
-## Gets all go test dependencies
-get-test-deps:
-	$(GO) get -u github.com/golang/dep/cmd/dep
-	$(GO) get -u golang.org/x/lint/golint
-	$(GO) get -u github.com/securego/gosec/cmd/gosec
-
-## Checks depencies of the project
-check-deps:
-	$(GODEP) ensure -v
-
-## Runs a security static analysis using Gosec
-check-sec:
-	$(GOSEC) ./... 2> /dev/null
-
-## Checks .env file from HuskyCI
-check-env:
-	cat .env
-
-## Perfoms all make tests
-test: get-test-deps lint check-sec
-
-## Runs lint
-lint:
-	$(GOLINT) $(shell $(GO) list ./...)
 
 ## Builds Go project to the executable file huskyci
 build:
@@ -68,23 +37,22 @@ build-client:
 build-client-linux:
 	cd client/cmd && GOOS=linux GOARCH=amd64 $(GO) build -o "$(HUSKYCICLIENTBIN)" && mv "$(HUSKYCICLIENTBIN)" ../..
 
-## Runs huskyci-client
-run-client: build-client
-	./"$(HUSKYCICLIENTBIN)"
+## Checks depencies of the project
+check-deps:
+	$(GODEP) ensure -v
 
-## Composes HuskyCI environment using docker-compose
+## Runs a security static analysis using Gosec
+check-sec:
+	$(GOSEC) ./... 2> /dev/null
+
+## Checks .env file from huskyCI
+check-env:
+	cat .env
+
+## Composes huskyCI environment using docker-compose
 compose:
 	docker-compose -f deployments/docker-compose.yml down -v
 	docker-compose -f deployments/docker-compose.yml up -d --build --force-recreate
-
-## Pulls every HuskyCI docker image into huskyCI_Docker_API container
-pull-images:
-	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/enry"
-	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/gosec"
-	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/bandit"
-	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/brakeman"
-	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/retirejs"
-	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/safety"
 
 ## Creates certs and sets all config to huskyCI_Docker_API
 create-certs:
@@ -95,6 +63,12 @@ create-certs:
 generate-passwords:
 	chmod +x deployments/scripts/generate-env-pass.sh
 	./deployments/scripts/generate-env-pass.sh
+
+## Gets all go test dependencies
+get-test-deps:
+	$(GO) get -u github.com/golang/dep/cmd/dep
+	$(GO) get -u golang.org/x/lint/golint
+	$(GO) get -u github.com/securego/gosec/cmd/gosec
 
 ## Prints help message
 help:
@@ -109,3 +83,29 @@ help:
 	} \
 	{ lastLine = $$0 }' $(MAKEFILE_LIST) | sort
 	printf "\n"
+
+## Installs a development environment using docker-compose
+install: generate-passwords create-certs compose
+
+## Installs a development environment using docker-compose but does not pull security tests' images
+install-pull-images: generate-passwords create-certs compose pull-images
+
+## Runs lint
+lint:
+	$(GOLINT) $(shell $(GO) list ./...)
+
+## Pulls every HuskyCI docker image into huskyCI_Docker_API container
+pull-images:
+	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/enry"
+	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/gosec"
+	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/bandit"
+	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/brakeman"
+	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/retirejs"
+	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/safety"
+
+## Runs huskyci-client
+run-client: build-client
+	./"$(HUSKYCICLIENTBIN)"
+
+## Perfoms all make tests
+test: get-test-deps lint check-sec
