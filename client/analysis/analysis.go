@@ -40,17 +40,9 @@ func StartAnalysis() (string, error) {
 		return "", err
 	}
 
-	// analyzing response
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-	responsePayload := types.JSONResponse{}
-	err = json.Unmarshal(body, &responsePayload)
-	if err != nil {
-		return "", err
-	}
-	return responsePayload.RID, nil
+	defer resp.Body.Close()
+	RID := resp.Header.Get("X-Request-Id")
+	return RID, nil
 }
 
 // GetAnalysis gets the results of an analysis.
