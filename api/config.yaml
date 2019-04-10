@@ -105,7 +105,7 @@ retirejs:
       else 
         npm install >/dev/null 2>&1
       fi
-      retire --outputformat json --exitwith 0
+      retire -n -p --outputformat json --exitwith 0
     else
       echo "ERROR_CLONING"
       cat /tmp/errorGitCloneRetirejs
