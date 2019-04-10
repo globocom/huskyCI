@@ -8,6 +8,7 @@ import (
 	"github.com/globocom/huskyCI/api/db"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
+	"github.com/globocom/huskyCI/api/util"
 	"github.com/labstack/echo"
 	mgo "gopkg.in/mgo.v2"
 )
@@ -19,22 +20,27 @@ func GetAnalysis(c echo.Context) error {
 	regexpRID := `^[a-zA-Z0-9]*$`
 	valid, err := regexp.MatchString(regexpRID, RID)
 	if err != nil {
-		log.Error("StatusAnalysis", "ANALYSIS", 1008, "RID regexp ", err)
-		return c.String(http.StatusInternalServerError, "Internal error 1008.\n")
+		log.Error("GetAnalysis", "ANALYSIS", 1008, "RID regexp ", err)
+		requestResponse := util.RequestResponse(false, "internal error")
+		return c.JSON(http.StatusInternalServerError, requestResponse)
 	}
 	if !valid {
-		log.Warning("StatusAnalysis", "ANALYSIS", 107, RID)
-		return c.String(http.StatusBadRequest, "This is not a valid RID.\n")
+		log.Warning("GetAnalysis", "ANALYSIS", 107, RID)
+		requestResponse := util.RequestResponse(false, "invalid RID")
+		return c.JSON(http.StatusBadRequest, requestResponse)
 	}
 
 	analysisQuery := map[string]interface{}{"RID": RID}
 	analysisResult, err := db.FindOneDBAnalysis(analysisQuery)
 	if err != nil {
 		if err == mgo.ErrNotFound {
-			log.Warning("StatusAnalysis", "ANALYSIS", 106, RID)
-			return c.String(http.StatusNotFound, "Analysis not found.\n")
+			log.Warning("GetAnalysis", "ANALYSIS", 106, RID)
+			requestResponse := util.RequestResponse(false, "analysis not found")
+			return c.JSON(http.StatusNotFound, requestResponse)
 		}
-		return c.String(http.StatusInternalServerError, "Internal Error.\n")
+		log.Error("GetAnalysis", "ANALYSIS", 1020, err)
+		requestResponse := util.RequestResponse(false, "internal error")
+		return c.JSON(http.StatusInternalServerError, requestResponse)
 	}
 	return c.JSON(http.StatusOK, analysisResult)
 }
