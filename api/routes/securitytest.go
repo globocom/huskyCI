@@ -6,6 +6,7 @@ import (
 	"github.com/globocom/huskyCI/api/db"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
+	"github.com/globocom/huskyCI/api/util"
 	"github.com/labstack/echo"
 	mgo "gopkg.in/mgo.v2"
 )
@@ -16,7 +17,8 @@ func CreateNewSecurityTest(c echo.Context) error {
 	err := c.Bind(&securityTest)
 	if err != nil {
 		log.Warning("CreateNewSecurityTest", "ANALYSIS", 108)
-		return c.String(http.StatusBadRequest, "This is not a valid securityTest JSON.\n")
+		requestResponse := util.RequestResponse(false, "invalid security test JSON")
+		return c.JSON(http.StatusBadRequest, requestResponse)
 	}
 
 	securityTestQuery := map[string]interface{}{"name": securityTest.Name}
@@ -24,7 +26,8 @@ func CreateNewSecurityTest(c echo.Context) error {
 	if err != nil {
 		if err != mgo.ErrNotFound {
 			log.Warning("CreateNewSecurityTest", "ANALYSIS", 109, securityTest.Name)
-			return c.String(http.StatusConflict, "This securityTest is already in MongoDB.\n")
+			requestResponse := util.RequestResponse(false, "this security test is already registered")
+			return c.JSON(http.StatusConflict, requestResponse)
 		}
 		log.Error("CreateNewSecurityTest", "ANALYSIS", 1012, err)
 	}
@@ -32,9 +35,11 @@ func CreateNewSecurityTest(c echo.Context) error {
 	err = db.InsertDBSecurityTest(securityTest)
 	if err != nil {
 		log.Error("CreateNewSecurityTest", "ANALYSIS", 2016, err)
-		return c.String(http.StatusInternalServerError, "Internal error 2016.\n")
+		requestResponse := util.RequestResponse(false, "internal error")
+		return c.JSON(http.StatusInternalServerError, requestResponse)
 	}
 
 	log.Info("CreateNewSecurityTest", "ANALYSIS", 18, securityTest.Name)
-	return c.String(http.StatusCreated, "SecurityTest sucessfully created.\n")
+	requestResponse := util.RequestResponse(true, "")
+	return c.JSON(http.StatusCreated, requestResponse)
 }
