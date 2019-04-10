@@ -47,6 +47,7 @@ func GetAnalysis(c echo.Context) error {
 
 // ReceiveRequest receives the request and performs several checks before starting a new analysis.
 func ReceiveRequest(c echo.Context) error {
+
 	RID := c.Response().Header().Get(echo.HeaderXRequestID)
 
 	// check-00: is this a valid JSON?
@@ -54,7 +55,8 @@ func ReceiveRequest(c echo.Context) error {
 	err := c.Bind(&repository)
 	if err != nil {
 		log.Error("ReceiveRequest", "ANALYSIS", 1015, err)
-		return c.String(http.StatusBadRequest, "This is an invalid JSON.\n")
+		requestResponse := util.RequestResponse(false, "invalid repository JSON")
+		return c.JSON(http.StatusBadRequest, requestResponse)
 	}
 
 	// check-01-a: is this a git repository URL?
@@ -63,11 +65,13 @@ func ReceiveRequest(c echo.Context) error {
 	valid, err := regexp.MatchString(regexpGit, repository.URL)
 	if err != nil {
 		log.Error("ReceiveRequest", "ANALYSIS", 1008, "Repository URL regexp ", err)
-		return c.String(http.StatusInternalServerError, "Internal error 1008.\n")
+		requestResponse := util.RequestResponse(false, "internal error")
+		return c.JSON(http.StatusInternalServerError, requestResponse)
 	}
 	if !valid {
 		log.Error("ReceiveRequest", "ANALYSIS", 1016, repository.URL)
-		return c.String(http.StatusBadRequest, "This is not a valid repository URL.\n")
+		requestResponse := util.RequestResponse(false, "invalid repository URL")
+		return c.JSON(http.StatusBadRequest, requestResponse)
 	}
 	matches := r.FindString(repository.URL)
 	repository.URL = matches
@@ -77,11 +81,13 @@ func ReceiveRequest(c echo.Context) error {
 	valid, err = regexp.MatchString(regexpBranch, repository.Branch)
 	if err != nil {
 		log.Error("ReceiveRequest", "ANALYSIS", 1008, "Repository Branch regexp ", err)
-		return c.String(http.StatusInternalServerError, "Internal error 1008.\n")
+		requestResponse := util.RequestResponse(false, "internal error")
+		return c.JSON(http.StatusInternalServerError, requestResponse)
 	}
 	if !valid {
 		log.Error("ReceiveRequest", "ANALYSIS", 1017, repository.Branch)
-		return c.String(http.StatusBadRequest, "This is not a valid branch.\n")
+		requestResponse := util.RequestResponse(false, "invalid repository branch")
+		return c.JSON(http.StatusBadRequest, requestResponse)
 	}
 
 	// check-02: is this repository in MongoDB?
@@ -95,7 +101,8 @@ func ReceiveRequest(c echo.Context) error {
 			if err != mgo.ErrNotFound {
 				if analysisResult.Status == "running" {
 					log.Warning("ReceiveRequest", "ANALYSIS", 104, analysisResult.URL)
-					return c.String(http.StatusConflict, "An analysis is already in place for this URL.\n")
+					requestResponse := util.RequestResponse(false, "an analysis is already in place for this URL and branch")
+					return c.JSON(http.StatusConflict, requestResponse)
 				}
 			}
 			log.Error("ReceiveRequest", "ANALYSIS", 1009, err)
@@ -105,18 +112,21 @@ func ReceiveRequest(c echo.Context) error {
 		err = db.InsertDBRepository(repository)
 		if err != nil {
 			log.Error("ReceiveRequest", "ANALYSIS", 1010, err)
-			return c.String(http.StatusInternalServerError, "Internal error 1010.\n")
+			requestResponse := util.RequestResponse(false, "internal error")
+			return c.JSON(http.StatusInternalServerError, requestResponse)
 		}
 		repositoryQuery := map[string]interface{}{"repositoryURL": repository.URL, "repositoryBranch": repository.Branch}
 		repositoryResult, err = db.FindOneDBRepository(repositoryQuery)
 		if err != nil {
 			// well it was supposed to be there, after all, we just inserted it.
 			log.Error("ReceiveRequest", "ANALYSIS", 1011, err)
-			return c.String(http.StatusInternalServerError, "Internal error 1011.\n")
+			requestResponse := util.RequestResponse(false, "internal error")
+			return c.JSON(http.StatusInternalServerError, requestResponse)
 		}
 	}
 
 	log.Info("ReceiveRequest", "ANALYSIS", 16, repository.Branch, repository.URL)
 	go analysis.StartAnalysis(RID, repositoryResult)
-	return c.JSON(http.StatusOK, map[string]string{"RID": RID, "result": "ok", "details": "Request received."})
+	requestResponse := util.RequestResponse(true, "")
+	return c.JSON(http.StatusCreated, requestResponse)
 }
