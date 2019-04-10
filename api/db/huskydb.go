@@ -165,6 +165,7 @@ func InsertDBAnalysis(analysis types.Analysis) error {
 		"status":       analysis.Status,
 		"result":       analysis.Result,
 		"containers":   analysis.Containers,
+		"startedAt":    analysis.StartedAt,
 	}
 	err := mongoHuskyCI.Conn.Insert(newAnalysis, mongoHuskyCI.AnalysisCollection)
 	return err
