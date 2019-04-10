@@ -19,13 +19,6 @@ type JSONPayload struct {
 	RepositoryBranch string `json:"repositoryBranch"`
 }
 
-// JSONResponse is a struct that represents the JSON reponse of a HuskyCI API request.
-type JSONResponse struct {
-	RID     string `json:"RID"`
-	Details string `json:"details"`
-	Result  string `json:"result"`
-}
-
 // Analysis is the struct that stores all data from analysis performed.
 type Analysis struct {
 	ID            bson.ObjectId  `bson:"_id,omitempty"`

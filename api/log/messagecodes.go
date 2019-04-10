@@ -42,6 +42,7 @@ var MsgCode = map[int]string{
 	1017: "Received an invalid repository branch: ",
 	1018: "Could not Unmarshall the following safetyOutput: ",
 	1019: "Error loading viper: ",
+	1020: "Error searching for an analysis: ",
 
 	// MongoDB infos
 	21: "Connecting to MongoDB.",
