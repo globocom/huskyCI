@@ -28,6 +28,7 @@ func StartAnalysis(RID string, repository types.Repository) {
 		Branch:     repository.Branch,
 		Status:     "running",
 		Containers: make([]types.Container, 0),
+		StartedAt:  time.Now(),
 	}
 
 	// step 1: insert new analysis into MongoDB.
@@ -116,8 +117,9 @@ func monitorAnalysisUpdateStatus(RID string) error {
 	}
 	updateAnalysisQuery := bson.M{
 		"$set": bson.M{
-			"status": "finished",
-			"result": finalResult,
+			"status":     "finished",
+			"result":     finalResult,
+			"finishedAt": time.Now(),
 		},
 	}
 	err = db.UpdateOneDBAnalysisContainer(analysisQuery, updateAnalysisQuery)
