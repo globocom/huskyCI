@@ -112,11 +112,11 @@ func getAPIPort() int {
 }
 
 func getAPIVersion() string {
-	return "0.1.2"
+	return "0.2.0"
 }
 
 func getAPIReleaseDate() string {
-	return "2019-04-05"
+	return "2019-04-11"
 }
 
 func getAPIUseTLS() bool {
