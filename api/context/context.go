@@ -69,7 +69,9 @@ type APIConfig struct {
 	SafetySecurityTest   *types.SecurityTest
 }
 
-func init() {
+// GetAPIConfig returns the instance of an APIConfig.
+func GetAPIConfig() *APIConfig {
+
 	// load Viper using api/config.yml
 	viper.SetConfigName("config")
 	viper.AddConfigPath("api/")
@@ -77,11 +79,7 @@ func init() {
 		fmt.Println("Error reading Viper config: ", err)
 		os.Exit(1)
 	}
-	return
-}
 
-// GetAPIConfig returns the instance of an APIConfig.
-func GetAPIConfig() *APIConfig {
 	onceConfig.Do(func() {
 		APIConfiguration = &APIConfig{
 			Port:                 getAPIPort(),
