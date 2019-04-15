@@ -40,8 +40,19 @@ func StartAnalysis() (string, error) {
 		return "", err
 	}
 
+	if resp.StatusCode != 201 {
+		errorMsg := fmt.Sprintf("Error sending request to start analysis! StatusCode received: %d", resp.StatusCode)
+		return "", errors.New(errorMsg)
+	}
+
 	defer resp.Body.Close()
 	RID := resp.Header.Get("X-Request-Id")
+
+	if RID == "" {
+		errorMsg := fmt.Sprintf("Error sending request to start analysis. RID is empty!")
+		return "", errors.New(errorMsg)
+	}
+
 	return RID, nil
 }
 
