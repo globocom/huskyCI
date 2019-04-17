@@ -322,8 +322,8 @@ func PrintSafetyOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo strin
 		return
 	}
 
-	if mongoDBcontainerOutput == "Requirements not found or this project uses latest dependencies." {
-		fmt.Printf("[HUSKYCI][*] Requirements not found or this project uses latest dependencies.\n")
+	if mongoDBcontainerInfo == "Requirements not found or this project uses latest dependencies." {
+		fmt.Printf("[HUSKYCI][*] requirements.txt not found or this project uses latest dependencies.\n")
 		fmt.Printf("[HUSKYCI][*] Safety :|\n\n")
 		return
 	}
