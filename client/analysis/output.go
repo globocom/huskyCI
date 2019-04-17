@@ -93,7 +93,7 @@ func PrintGosecOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo string
 	}
 
 	if foundVuln {
-		color.Red("[HUSKYCI][X] :(\n\n")
+		color.Red("[HUSKYCI][X] Gosec :(\n\n")
 		types.FoundVuln = true
 	} else if foundInfo {
 		fmt.Printf("[HUSKYCI][*] Gosec :|\n\n")
