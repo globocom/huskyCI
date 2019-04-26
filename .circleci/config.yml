@@ -11,4 +11,4 @@ jobs:
       - checkout
       - run: go get -u golang.org/x/lint/golint && golint
       - run: go get -u github.com/golang/dep/cmd/dep && dep ensure
-      - run: go get -u github.com/securego/gosec/cmd/gosec && gosec ./... 2>/dev/null
+      - run: go get -u github.com/securego/gosec/cmd/gosec && gosec ./...
