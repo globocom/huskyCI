@@ -69,6 +69,8 @@ get-test-deps:
 	$(GO) get -u github.com/golang/dep/cmd/dep
 	$(GO) get -u golang.org/x/lint/golint
 	$(GO) get -u github.com/securego/gosec/cmd/gosec
+	$(GO) get -u github.com/onsi/ginkgo/ginkgo
+	$(GO) get -u github.com/onsi/gomega/...
 
 ## Prints help message
 help:
@@ -107,5 +109,9 @@ pull-images:
 run-client: build-client
 	./"$(HUSKYCICLIENTBIN)"
 
+## Runs ginkgo
+ginkgo:
+	ginkgo -r -keepGoing 
+	
 ## Perfoms all make tests
-test: get-test-deps lint check-sec
+test: get-test-deps lint check-sec ginkgo
