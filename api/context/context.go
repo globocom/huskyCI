@@ -79,12 +79,17 @@ func GetAPIConfig() *APIConfig {
 		fmt.Println("Error reading Viper config: ", err)
 		os.Exit(1)
 	}
+	SetOnceConfig()
+	return APIConfiguration
+}
 
+// SetOnceConfig sets APIConfiguration once
+func SetOnceConfig() {
 	onceConfig.Do(func() {
 		APIConfiguration = &APIConfig{
 			Port:                 getAPIPort(),
-			Version:              getAPIVersion(),
-			ReleaseDate:          getAPIReleaseDate(),
+			Version:              GetAPIVersion(),
+			ReleaseDate:          GetAPIReleaseDate(),
 			UseTLS:               getAPIUseTLS(),
 			GitPrivateSSHKey:     getGitPrivateSSHKey(),
 			GraylogConfig:        getGraylogConfig(),
@@ -98,7 +103,6 @@ func GetAPIConfig() *APIConfig {
 			SafetySecurityTest:   getSecurityTestConfig("safety"),
 		}
 	})
-	return APIConfiguration
 }
 
 func getAPIPort() int {
@@ -109,11 +113,13 @@ func getAPIPort() int {
 	return apiPort
 }
 
-func getAPIVersion() string {
+// GetAPIVersion returns current API version
+func GetAPIVersion() string {
 	return "0.2.0"
 }
 
-func getAPIReleaseDate() string {
+// GetAPIReleaseDate returns current API release date
+func GetAPIReleaseDate() string {
 	return "2019-04-11"
 }
 
