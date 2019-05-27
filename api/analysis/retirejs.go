@@ -72,6 +72,21 @@ func RetirejsStartAnalysis(CID string, cOutput string) {
 		return
 	}
 
+	if strings.Contains(cOutput, "ERROR_RUNNING_RETIREJS") {
+		errorOutput := fmt.Sprintf("Container error: %s", cOutput)
+		updateContainerAnalysisQuery := bson.M{
+			"$set": bson.M{
+				"containers.$.cResult": "error",
+				"containers.$.cInfo":   errorOutput,
+			},
+		}
+		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+		if err != nil {
+			log.Error("RetirejsStartAnalysis", "RETIREJS", 2007, err)
+		}
+		return
+	}
+
 	// step 1: Unmarshall cOutput into RetireOutput struct.
 	retirejsOutput := RetirejsOutput{}
 	err := json.Unmarshal([]byte(cOutput), &retirejsOutput)
