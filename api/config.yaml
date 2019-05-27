@@ -94,22 +94,37 @@ retirejs:
     mkdir -p ~/.ssh &&
     echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
     chmod 600 ~/.ssh/huskyci_id_rsa &&
-    echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
-    echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
+    echo 'IdentityFile ~/.ssh/huskyci_id_rsa' >> /etc/ssh/ssh_config &&
+    echo 'StrictHostKeyChecking no' >> /etc/ssh/ssh_config &&
     git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneRetirejs
     if [ $? -eq 0 ]; then
       cd code
-      ls yarn.lock >/dev/null 2>/dev/null
-      if [ $? -eq 0 ]; then
+      if [ $(ls yarn.lock 2>/dev/null) ]; then
         yarn install >/dev/null 2>&1
-      else 
+        ableToRun='true'
+      elif [ $(ls src/yarn.lock >/dev/null 2>&1) ]; then
+        cd src/
+        yarn install >/dev/null 2>&1
+        ableToRun='true'
+      elif [ $(ls package.json >/dev/null 2>&1) || $(ls package-lock.json >/dev/null 2>&1) ]; then
         npm install >/dev/null 2>&1
+        ableToRun='true'
+      elif [ $(ls src/package.json >/dev/null 2>&1) || $(ls src/package-lock.json >/dev/null 2>&1) ]; then
+        cd src/
+        npm install >/dev/null 2>&1
+        ableToRun='true'
+      else
+        ableToRun='false'
       fi
-      retire -n -p --outputformat json --exitwith 0
+      if [ $ableToRun == 'true' ]; then
+        retire -n --outputformat json --exitwith 0
+      else
+        echo 'ERROR_RUNNING_RETIREJS'
+      fi
     else
-      echo "ERROR_CLONING"
+      echo 'ERROR_CLONING'
       cat /tmp/errorGitCloneRetirejs
-    fi    
+    fi
   language: JavaScript
   default: true
   timeOutInSeconds: 360
