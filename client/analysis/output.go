@@ -178,6 +178,11 @@ func PrintRetirejsOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo str
 		return
 	}
 
+	if strings.Contains(mongoDBcontainerInfo, "ERROR_RUNNING_RETIREJS") {
+		fmt.Printf("[HUSKYCI][*] RetireJS :|\n\n")
+		return
+	}
+
 	foundVuln := false
 	foundInfo := false
 	retirejsOutput := types.RetirejsOutput{}
