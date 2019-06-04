@@ -106,10 +106,10 @@ retirejs:
         cd src/
         yarn install >/dev/null 2>&1
         ableToRun='true'
-      elif [ $(ls package.json >/dev/null 2>&1) || $(ls package-lock.json >/dev/null 2>&1) ]; then
+      elif [ $(ls package.json >/dev/null 2>&1) ] || [ $(ls package-lock.json >/dev/null 2>&1) ]; then
         npm install >/dev/null 2>&1
         ableToRun='true'
-      elif [ $(ls src/package.json >/dev/null 2>&1) || $(ls src/package-lock.json >/dev/null 2>&1) ]; then
+      elif [ $(ls src/package.json >/dev/null 2>&1) ] || [ $(ls src/package-lock.json >/dev/null 2>&1) ]; then
         cd src/
         npm install >/dev/null 2>&1
         ableToRun='true'
