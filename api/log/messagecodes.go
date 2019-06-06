@@ -101,6 +101,11 @@ var MsgCode = map[int]string{
 	3018: "Unexpected securityTest.Name: ",
 	3019: "Could not set DOCKER_CERT_PATH enviroment variable: ",
 	3020: "Could not set DOCKER_TLS_VERIFY enviroment variable: ",
+	3021: "Could not list current active containers: ",
+	3022: "Could not stop a container via d.client: ",
+	3023: "Could not remove a container via d.client: ",
+	3024: "Could not call die containers: ",
+	3025: "Could not update listed containers: ",
 
 	// Util package errors
 	4001: "Could not read certificate file: ",
