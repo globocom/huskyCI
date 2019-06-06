@@ -33,13 +33,14 @@ type MongoConfig struct {
 
 // DockerHostsConfig represents Docker Hosts configuration.
 type DockerHostsConfig struct {
-	Address         string
-	DockerAPIPort   int
-	Certificate     string
-	PathCertificate string
-	Key             string
-	Host            string
-	TLSVerify       int
+	Address              string
+	DockerAPIPort        int
+	Certificate          string
+	PathCertificate      string
+	Key                  string
+	Host                 string
+	TLSVerify            int
+	MaxContainersAllowed int
 }
 
 // GraylogConfig represents Graylog configuration.
@@ -200,13 +201,14 @@ func getDockerHostsConfig() *DockerHostsConfig {
 	dockerHostsPathCertificates := os.Getenv("HUSKYCI_DOCKERAPI_CERT_PATH")
 	dockerHostsKey := os.Getenv("HUSKYCI_DOCKERAPI_CERT_KEY")
 	return &DockerHostsConfig{
-		Address:         dockerHostsAddresses[0],
-		DockerAPIPort:   dockerAPIPort,
-		Certificate:     dockerHostsCertificate,
-		PathCertificate: dockerHostsPathCertificates,
-		Key:             dockerHostsKey,
-		Host:            fmt.Sprintf("%s:%d", dockerHostsAddresses[0], dockerAPIPort),
-		TLSVerify:       getDockerAPITLSVerify(),
+		Address:              dockerHostsAddresses[0],
+		DockerAPIPort:        dockerAPIPort,
+		Certificate:          dockerHostsCertificate,
+		PathCertificate:      dockerHostsPathCertificates,
+		Key:                  dockerHostsKey,
+		Host:                 fmt.Sprintf("%s:%d", dockerHostsAddresses[0], dockerAPIPort),
+		TLSVerify:            getDockerAPITLSVerify(),
+		MaxContainersAllowed: getMaxContainersAllowed(),
 	}
 }
 
@@ -235,4 +237,12 @@ func getSecurityTestConfig(securityTestName string) *types.SecurityTest {
 		Default:          viper.GetBool(fmt.Sprintf("%s.default", securityTestName)),
 		TimeOutInSeconds: viper.GetInt(fmt.Sprintf("%s.timeOutInSeconds", securityTestName)),
 	}
+}
+
+func getMaxContainersAllowed() int {
+	maxContainersAllowed, err := strconv.Atoi(os.Getenv("HUSKYCI_DOCKERAPI_MAX_CONTAINERS_BEFORE_CLEANING"))
+	if err != nil {
+		return 50
+	}
+	return maxContainersAllowed
 }

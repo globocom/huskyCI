@@ -71,6 +71,7 @@ func checkEnvVars() error {
 		// "HUSKYCI_DOCKERAPI_CERT_CA", (optional)
 		// "HUSKYCI_DOCKERAPI_PORT", (optional)
 		// "HUSKYCI_DOCKERAPI_TLS_VERIFY", (optional)
+		// "HUSKYCI_DOCKERAPI_MAX_CONTAINERS_BEFORE_CLEANING", (optional)
 
 		// huskyCI API:
 		// "HUSKYCI_API_PORT", (optional)
