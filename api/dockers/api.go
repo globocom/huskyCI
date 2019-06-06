@@ -106,6 +106,73 @@ func (d Docker) WaitContainer(timeOutInSeconds int) error {
 	return err
 }
 
+// StopContainer stops an active container by it's CID
+func (d Docker) StopContainer() error {
+	ctx := goContext.Background()
+	err := d.client.ContainerStop(ctx, d.CID, nil)
+	if err != nil {
+		log.Error("StopContainer", "DOCKERAPI", 3022, err)
+	}
+	return err
+}
+
+// RemoveContainer removes a container by it's CID
+func (d Docker) RemoveContainer() error {
+	ctx := goContext.Background()
+	err := d.client.ContainerRemove(ctx, d.CID, dockerTypes.ContainerRemoveOptions{})
+	if err != nil {
+		log.Error("RemoveContainer", "DOCKERAPI", 3023, err)
+	}
+	return err
+}
+
+// ListContainers returns a Docker type list with CIDs of current active containers
+func (d Docker) ListContainers() ([]Docker, error) {
+	ctx := goContext.Background()
+	options := dockerTypes.ContainerListOptions{
+		Quiet: true,
+		All:   true,
+	}
+
+	containerList, err := d.client.ContainerList(ctx, options)
+	if err != nil {
+		log.Error("ListContainer", "DOCKERAPI", 3021, err)
+		return nil, err
+	}
+
+	var dockerList []Docker
+	for _, c := range containerList {
+		docker := Docker{
+			CID:    c.ID,
+			client: d.client,
+		}
+		dockerList = append(dockerList, docker)
+	}
+
+	return dockerList, nil
+}
+
+// DieContainers stops and removes all containers
+func (d Docker) DieContainers() error {
+	containerList, err := d.ListContainers()
+	if err != nil {
+		return err
+	}
+	for _, c := range containerList {
+		err := c.StopContainer()
+		if err != nil {
+			return err
+		}
+	}
+	for _, c := range containerList {
+		err := c.RemoveContainer()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // ReadOutput returns STDOUT of a given containerID.
 func (d Docker) ReadOutput() (string, error) {
 	ctx := goContext.Background()
