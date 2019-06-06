@@ -179,6 +179,7 @@ func PrintRetirejsOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo str
 	}
 
 	if strings.Contains(mongoDBcontainerInfo, "ERROR_RUNNING_RETIREJS") {
+		fmt.Printf("[HUSKYCI][*] It looks like your project doesn't have package.json or yarn.lock. huskyCI was not able to run RetireJS properly.\n\n")
 		fmt.Printf("[HUSKYCI][*] RetireJS :|\n\n")
 		return
 	}
