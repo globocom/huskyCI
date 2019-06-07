@@ -126,12 +126,16 @@ func (d Docker) RemoveContainer() error {
 	return err
 }
 
-// ListContainers returns a Docker type list with CIDs of current active containers
-func (d Docker) ListContainers() ([]Docker, error) {
+// ListContainers returns a Docker type list with CIDs of stopped containers
+func (d Docker) ListStoppedContainers() ([]Docker, error) {
+
 	ctx := goContext.Background()
+	dockerFilters := filters.NewArgs()
+	dockerFilters.Add("status", "exited")
 	options := dockerTypes.ContainerListOptions{
-		Quiet: true,
-		All:   true,
+		Quiet:   true,
+		All:     true,
+		Filters: dockerFilters,
 	}
 
 	containerList, err := d.client.ContainerList(ctx, options)
@@ -154,7 +158,7 @@ func (d Docker) ListContainers() ([]Docker, error) {
 
 // DieContainers stops and removes all containers
 func (d Docker) DieContainers() error {
-	containerList, err := d.ListContainers()
+	containerList, err := d.ListStoppedContainers()
 	if err != nil {
 		return err
 	}
