@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/globocom/huskyCI/api/context"
 	"github.com/globocom/huskyCI/api/db"
 	docker "github.com/globocom/huskyCI/api/dockers"
 	"github.com/globocom/huskyCI/api/log"
@@ -18,6 +19,9 @@ import (
 
 // maxRetryStartContainer is maximum number of retries allowed
 var maxRetryStartContainer = 5
+
+// listedContainers is number of containers listed
+var listedContainers = 0
 
 // DockerRun starts a new container, runs a given securityTest in it and then updates AnalysisCollection.
 func DockerRun(RID string, analysis *types.Analysis, securityTest types.SecurityTest) {
@@ -86,6 +90,13 @@ func DockerRun(RID string, analysis *types.Analysis, securityTest types.Security
 		SafetyStartAnalysis(d.CID, cOutput)
 	default:
 		log.Error("DockerRun", "DOCKERRUN", 3018, err)
+	}
+
+	// step 6: update active containers counter and check if it's time to kill all containers
+	err = updateAndCheckContainerList(d)
+	if err != nil {
+		log.Error("DockerRun", "DOCKERRUN", 3025, err)
+		return
 	}
 }
 
@@ -246,5 +257,20 @@ func dockerPullImage(d *docker.Docker, image string) error {
 		}
 	}
 
+	return nil
+}
+
+func updateAndCheckContainerList(d *docker.Docker) error {
+	configAPI := context.GetAPIConfig()
+	maxContainersAllowed := configAPI.DockerHostsConfig.MaxContainersAllowed
+	listedContainers++
+	if listedContainers >= maxContainersAllowed {
+		err := d.DieContainers()
+		if err != nil {
+			log.Error("updateAndCheckContainerList", "DOCKERRUN", 3024, err)
+			return err
+		}
+		listedContainers = 0
+	}
 	return nil
 }
