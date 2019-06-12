@@ -68,7 +68,12 @@ func checkEnvVars() error {
 		"HUSKYCI_DOCKERAPI_CERT_PATH",
 		"HUSKYCI_DOCKERAPI_CERT_FILE",
 		"HUSKYCI_DOCKERAPI_CERT_KEY",
+		// "HUSKYCI_DOCKERAPI_CERT_FILE_VALUE", (optional)
+		// "HUSKYCI_DOCKERAPI_CERT_KEY_VALUE", (optional)
+		// "HUSKYCI_DOCKERAPI_API_TLS_CERT_VALUE", (optional)
+		// "HUSKYCI_DOCKERAPI_API_TLS_KEY_VALUE", (optional)
 		// "HUSKYCI_DOCKERAPI_CERT_CA", (optional)
+		// "HUSKYCI_DOCKERAPI_CERT_CA_VALUE", (optional)
 		// "HUSKYCI_DOCKERAPI_PORT", (optional)
 		// "HUSKYCI_DOCKERAPI_TLS_VERIFY", (optional)
 		// "HUSKYCI_DOCKERAPI_MAX_CONTAINERS_BEFORE_CLEANING", (optional)
@@ -102,6 +107,11 @@ func checkEnvVars() error {
 }
 
 func checkDockerHosts(configAPI *apiContext.APIConfig) error {
+	// writes necessary keys for TLS to respective files
+	if err := createAPIKeys(); err != nil {
+		return err
+	}
+
 	return docker.HealthCheckDockerAPI()
 }
 
@@ -154,5 +164,84 @@ func checkSecurityTest(securityTestName string, configAPI *apiContext.APIConfig)
 	} else if err != nil {
 		return err
 	}
+	return nil
+}
+
+func createAPIKeys() error {
+	certValue, check := os.LookupEnv("HUSKYCI_DOCKERAPI_CERT_FILE_VALUE")
+	if check {
+		f, err := os.OpenFile("/home/application/current/api/cert.pem", os.O_WRONLY|os.O_CREATE, 0600)
+		if err != nil {
+			return err
+		}
+
+		_, err = f.WriteString(certValue)
+		if err != nil {
+			return err
+		}
+
+		defer f.Close()
+	}
+
+	certKeyValue, check := os.LookupEnv("HUSKYCI_DOCKERAPI_CERT_KEY_VALUE")
+	if check {
+		f, err := os.OpenFile("/home/application/current/api/key.pem", os.O_WRONLY|os.O_CREATE, 0600)
+		if err != nil {
+			return err
+		}
+
+		_, err = f.WriteString(certKeyValue)
+		if err != nil {
+			return err
+		}
+
+		defer f.Close()
+	}
+
+	apiCertValue, check := os.LookupEnv("HUSKYCI_DOCKERAPI_API_TLS_CERT_VALUE")
+	if check {
+		f, err := os.OpenFile("/home/application/current/api/api-tls-cert.pem", os.O_WRONLY|os.O_CREATE, 0600)
+		if err != nil {
+			return err
+		}
+
+		_, err = f.WriteString(apiCertValue)
+		if err != nil {
+			return err
+		}
+
+		defer f.Close()
+	}
+
+	apiKeyValue, check := os.LookupEnv("HUSKYCI_DOCKERAPI_API_TLS_KEY_VALUE")
+	if check {
+		f, err := os.OpenFile("/home/application/current/api/api-tls-key.pem", os.O_WRONLY|os.O_CREATE, 0600)
+		if err != nil {
+			return err
+		}
+
+		_, err = f.WriteString(apiKeyValue)
+		if err != nil {
+			return err
+		}
+
+		defer f.Close()
+	}
+
+	caValue, check := os.LookupEnv("HUSKYCI_DOCKERAPI_CERT_CA_VALUE")
+	if check {
+		f, err := os.OpenFile("/home/application/current/api/ca.pem", os.O_WRONLY|os.O_CREATE, 0600)
+		if err != nil {
+			return err
+		}
+
+		_, err = f.WriteString(caValue)
+		if err != nil {
+			return err
+		}
+
+		defer f.Close()
+	}
+
 	return nil
 }
