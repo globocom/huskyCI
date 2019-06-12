@@ -4,12 +4,12 @@
 FROM golang:alpine as builder
 
 RUN apk update && apk upgrade \
-	&& apk add --no-cache alpine-sdk git \
-	&& apk --update add jq
+	&& apk add --no-cache alpine-sdk 
 
 RUN go get gopkg.in/src-d/enry.v1/...
 
 # From the base image
 FROM alpine:3.8
+
+RUN apk add --update --no-cache git openssh-client
 COPY --from=builder /go/bin/enry /usr/bin/
-COPY --from=builder /usr/bin/jq /usr/bin/
