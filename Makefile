@@ -89,7 +89,7 @@ help:
 ## Installs a development environment using docker-compose
 install: generate-passwords create-certs compose
 
-## Installs a development environment using docker-compose but does not pull security tests' images
+## Installs a development environment using docker-compose and pulls security tests' images
 install-pull-images: generate-passwords create-certs compose pull-images
 
 ## Runs lint
