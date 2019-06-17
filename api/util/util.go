@@ -83,3 +83,16 @@ func RemoveDuplicates(s []string) []string {
 	}
 	return s[:i]
 }
+
+// CreateContainerName generates a name for a container based on project's URL and branch
+// Example:
+//  - Input: {repositoryURL: https://github.com/globocom/huskyCI.git, repositoryBranch: "master", imageName: "huskyci/enry"}
+//  - Output: globocom_huskyCI_master_enry
+func CreateContainerName(repositoryURL, repositoryBranch, image string) string {
+	imageSlices := strings.Split(image, "/")
+	imageName := imageSlices[len(imageSlices)-1]
+	url := strings.TrimSuffix(repositoryURL, ".git")
+	urlSlices := strings.Split(url, "/")[3:]
+	myStrings := []string{strings.Join(urlSlices, "_"), repositoryBranch, imageName}
+	return strings.Join(myStrings, "_")
+}
