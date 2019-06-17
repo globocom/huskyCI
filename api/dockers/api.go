@@ -73,12 +73,13 @@ func NewDocker() (*Docker, error) {
 // CreateContainer creates a new container
 func (d Docker) CreateContainer(analysis types.Analysis, image string, cmd string) (string, error) {
 	cmd = util.HandleCmd(analysis.URL, analysis.Branch, cmd)
+	containerName := util.CreateContainerName(analysis.URL, analysis.Branch, image)
 	ctx := goContext.Background()
 	resp, err := d.client.ContainerCreate(ctx, &container.Config{
 		Image: image,
 		Tty:   true,
 		Cmd:   []string{"/bin/sh", "-c", cmd},
-	}, nil, nil, "")
+	}, nil, nil, containerName)
 
 	if err != nil {
 		log.Error("CreateContainer", "DOCKERAPI", 3005, err)
