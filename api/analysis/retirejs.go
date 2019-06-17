@@ -16,38 +16,32 @@ import (
 
 //RetirejsOutput is the struct that holds issues, messages and errors found on a Retire scan.
 type RetirejsOutput struct {
-	RetirejsIssues []RetirejsIssue `json:"data"`
-	Messages       json.RawMessage `json:"messages"`
-	Errors         json.RawMessage `json:"errors"`
+	RetirejsResult []RetirejsResult `json:"results"`
 }
 
-//RetirejsIssue is a struct that holds the results that were scanned and the file they came from.
-type RetirejsIssue struct {
-	File            string           `json:"file"`
-	RetirejsResults []RetirejsResult `json:"results"`
-}
-
-//RetirejsResult is a struct that holds the vulnerabilities found on a component being used by the code being analysed.
+//RetirejsResult is a struct that holds the scanned results.
 type RetirejsResult struct {
-	Version                 string                  `json:"version"`
-	Component               string                  `json:"component"`
-	Detection               string                  `json:"detection"`
-	RetirejsVulnerabilities []RetirejsVulnerability `json:"vulnerabilities"`
+	Component       string                    `json:"component"`
+	Version         string                    `json:"version"`
+	Level           int                       `json:"level"`
+	Vulnerabilities []RetireJSVulnerabilities `json:"vulnerabilities"`
 }
 
-//RetirejsVulnerability is a struct that holds info on what vulnerabilies were found.
-type RetirejsVulnerability struct {
-	Info                []string           `json:"info"`
-	Below               string             `json:"below"`
-	Severity            string             `json:"severity"`
-	RetirejsIdentifiers RetirejsIdentifier `json:"identifiers"`
+//RetireJSVulnerabilities is a struct that holds the vulnerabilities found on a scan.
+type RetireJSVulnerabilities struct {
+	Info        []RetireJSVulnerabilityInfo        `json:"info"`
+	Severity    string                             `json:"severity"`
+	Identifiers []RetireJSVulnerabilityIdentifiers `json:"identifiers"`
 }
 
-//RetirejsIdentifier is a struct that holds details on the vulnerabilities found.
-type RetirejsIdentifier struct {
-	IssueFound string   `json:"issue"`
-	Summary    string   `json:"summary"`
-	CVE        []string `json:"CVE"`
+//RetireJSVulnerabilityInfo is a struct that holds additional info on a vulnerability found.
+type RetireJSVulnerabilityInfo struct {
+	Info string
+}
+
+//RetireJSVulnerabilityIdentifiers is a struct that holds identifiying information on a vulnerability found.
+type RetireJSVulnerabilityIdentifiers struct {
+	Summary string
 }
 
 //RetirejsStartAnalysis analyses the output from RetireJS and sets cResult basdes on it.
@@ -88,7 +82,7 @@ func RetirejsStartAnalysis(CID string, cOutput string) {
 	}
 
 	// step 1: Unmarshall cOutput into RetireOutput struct.
-	retirejsOutput := RetirejsOutput{}
+	retirejsOutput := []RetirejsOutput{}
 	err := json.Unmarshal([]byte(cOutput), &retirejsOutput)
 	if err != nil {
 		log.Error("RetirejsStartAnalysis", "RETIREJS", 1014, cOutput, err)
@@ -96,7 +90,7 @@ func RetirejsStartAnalysis(CID string, cOutput string) {
 	}
 
 	// step 1.1: Sets the container output to "No issues found" if RetirejsIssues returns an empty slice
-	if len(retirejsOutput.RetirejsIssues) == 0 {
+	if len(retirejsOutput.RetirejsResult) == 0 {
 		updateContainerAnalysisQuery := bson.M{
 			"$set": bson.M{
 				"containers.$.cResult": "passed",
@@ -112,13 +106,12 @@ func RetirejsStartAnalysis(CID string, cOutput string) {
 
 	// step 2: find Vulnerabilities that have severity "medium" or "high".
 	cResult = "passed"
-	for _, issue := range retirejsOutput.RetirejsIssues {
-		for _, result := range issue.RetirejsResults {
-			for _, vulnerability := range result.RetirejsVulnerabilities {
+	for _, output := range retirejsOutput {
+		for _, result := range output.Results {
+			for _, vulnerability := range result.Vulnerabilities {
 				if vulnerability.Severity == "high" || vulnerability.Severity == "medium" {
-					cResult = "failed"
-					break
-				}
+				cResult = "failed"
+				break
 			}
 		}
 	}
