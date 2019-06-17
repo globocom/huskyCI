@@ -55,7 +55,7 @@ func StartAnalysis(RID string, repository types.Repository) {
 // MonitorAnalysis querys an analysis every retryTick seconds to check if it has already finished.
 func MonitorAnalysis(analysis *types.Analysis) {
 
-	timeout := time.After(10 * time.Minute)
+	timeout := time.After(90 * time.Minute)
 	retryTick := time.Tick(5 * time.Second)
 
 	for {
