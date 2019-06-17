@@ -78,6 +78,7 @@ var MsgCode = map[int]string{
 	// Docker API info
 	31: "Waiting pull image...",
 	32: "Container started successfully: ",
+	33: "Max container count reached. huskyCI is about to kill containers. ",
 
 	// Docker API warning
 	301: "",
