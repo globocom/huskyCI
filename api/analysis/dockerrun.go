@@ -265,6 +265,8 @@ func updateAndCheckContainerList(d *docker.Docker) error {
 	maxContainersAllowed := configAPI.DockerHostsConfig.MaxContainersAllowed
 	listedContainers++
 	if listedContainers >= maxContainersAllowed {
+		messageLog := fmt.Sprintf("Maximum allowed: %d -- Listed containers: %d", maxContainersAllowed, listedContainers)
+		log.Info("updateAndCheckContainerList", "DOCKERRUN", 33, messageLog)
 		err := d.DieContainers()
 		if err != nil {
 			log.Error("updateAndCheckContainerList", "DOCKERRUN", 3024, err)
