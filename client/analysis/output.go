@@ -179,65 +179,68 @@ func PrintRetirejsOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo str
 	}
 
 	if strings.Contains(mongoDBcontainerInfo, "ERROR_RUNNING_RETIREJS") {
-		fmt.Printf("[HUSKYCI][*] It looks like your project doesn't have package.json or yarn.lock. huskyCI was not able to run RetireJS properly.\n\n")
+		fmt.Printf("[HUSKYCI][*] It looks like your project doesn't have package.json or yarn.lock. huskyCI was not able to run RetireJS properly.\n")
 		fmt.Printf("[HUSKYCI][*] RetireJS :|\n\n")
 		return
 	}
 
 	foundVuln := false
 	foundInfo := false
-	retirejsOutput := types.RetirejsOutput{}
+	retirejsOutput := []types.ResultsStruct{}
 	err := json.Unmarshal([]byte(mongoDBcontainerOutput), &retirejsOutput)
 	if err != nil {
-		fmt.Println("[HUSKYCI][ERROR] Could not Unmarshal retirejsOutput!", mongoDBcontainerOutput)
+		fmt.Println("[HUSKYCI][ERROR] Could not Unmarshal retirejsOutput!", err)
 		os.Exit(1)
 	}
 
-	for _, issue := range retirejsOutput.RetirejsIssues {
-		for _, result := range issue.RetirejsResults {
-			for _, vulnerability := range result.RetirejsVulnerabilities {
+	for _, output := range retirejsOutput {
+		for _, result := range output.Results {
+			for _, vulnerability := range result.Vulnerabilities {
 				if vulnerability.Severity == "high" {
 					foundVuln = true
 					color.Red("[HUSKYCI][!] Severity: %s", vulnerability.Severity)
-					color.Red("[HUSKYCI][!] Details: %s", vulnerability.Info)
-					color.Red("[HUSKYCI][!] File: %s", issue.File)
 					color.Red("[HUSKYCI][!] Component: %s", result.Component)
 					color.Red("[HUSKYCI][!] Version: %s", result.Version)
-					color.Red("[HUSKYCI][!] Vulnerable Below: %s", vulnerability.Below)
+					for _, info := range vulnerability.Info {
+						color.Red("[HUSKYCI][!] Info: %s", info)
+					}
+					color.Red("[HUSKYCI][!] Identifiers: %s", vulnerability.Identifiers.Summary)
 					fmt.Println()
 				}
 			}
 		}
 	}
 
-	for _, issue := range retirejsOutput.RetirejsIssues {
-		for _, result := range issue.RetirejsResults {
-			for _, vulnerability := range result.RetirejsVulnerabilities {
+	for _, output := range retirejsOutput {
+		for _, result := range output.Results {
+			for _, vulnerability := range result.Vulnerabilities {
 				if vulnerability.Severity == "medium" {
 					foundVuln = true
 					color.Yellow("[HUSKYCI][!] Severity: %s", vulnerability.Severity)
-					color.Yellow("[HUSKYCI][!] Details: %s", vulnerability.Info)
-					color.Yellow("[HUSKYCI][!] File: %s", issue.File)
 					color.Yellow("[HUSKYCI][!] Component: %s", result.Component)
 					color.Yellow("[HUSKYCI][!] Version: %s", result.Version)
-					color.Yellow("[HUSKYCI][!] Vulnerable Below: %s", vulnerability.Below)
+					for _, info := range vulnerability.Info {
+						color.Yellow("[HUSKYCI][!] Info: %s", info)
+					}
+					color.Yellow("[HUSKYCI][!] Identifiers: %s", vulnerability.Identifiers.Summary)
 					fmt.Println()
 				}
 			}
 		}
 	}
 
-	for _, issue := range retirejsOutput.RetirejsIssues {
-		for _, result := range issue.RetirejsResults {
-			for _, vulnerability := range result.RetirejsVulnerabilities {
+	for _, output := range retirejsOutput {
+		for _, result := range output.Results {
+			for _, vulnerability := range result.Vulnerabilities {
 				if vulnerability.Severity == "low" {
-					foundInfo = true
+					foundVuln = true
 					color.Blue("[HUSKYCI][!] Severity: %s", vulnerability.Severity)
-					color.Blue("[HUSKYCI][!] Details: %s", vulnerability.Info)
-					color.Blue("[HUSKYCI][!] File: %s", issue.File)
 					color.Blue("[HUSKYCI][!] Component: %s", result.Component)
 					color.Blue("[HUSKYCI][!] Version: %s", result.Version)
-					color.Blue("[HUSKYCI][!] Vulnerable Below: %s", vulnerability.Below)
+					for _, info := range vulnerability.Info {
+						color.Blue("[HUSKYCI][!] Info: %s", info)
+					}
+					color.Blue("[HUSKYCI][!] Identifiers: %s", vulnerability.Identifiers.Summary)
 					fmt.Println()
 				}
 			}
