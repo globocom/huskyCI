@@ -90,7 +90,7 @@ func RetirejsStartAnalysis(CID string, cOutput string) {
 	}
 
 	// step 1.1: Sets the container output to "No issues found" if RetirejsIssues returns an empty slice
-	if len(retirejsOutput.RetirejsResult) == 0 {
+	if len(retirejsOutput) == 0 {
 		updateContainerAnalysisQuery := bson.M{
 			"$set": bson.M{
 				"containers.$.cResult": "passed",
@@ -107,7 +107,7 @@ func RetirejsStartAnalysis(CID string, cOutput string) {
 	// step 2: find Vulnerabilities that have severity "medium" or "high".
 	cResult = "passed"
 	for _, output := range retirejsOutput {
-		for _, result := range output.Results {
+		for _, result := range output.RetirejsResult {
 			for _, vulnerability := range result.Vulnerabilities {
 				if vulnerability.Severity == "high" || vulnerability.Severity == "medium" {
 				cResult = "failed"
@@ -132,4 +132,5 @@ func RetirejsStartAnalysis(CID string, cOutput string) {
 		log.Error("RetirejsStartAnalysis", "RETIREJS", 2007, err)
 		return
 	}
+}
 }
