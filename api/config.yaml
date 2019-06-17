@@ -99,25 +99,24 @@ retirejs:
     git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneRetirejs
     if [ $? -eq 0 ]; then
       cd code
-      if [ $(ls yarn.lock 2>/dev/null) ]; then
+      if [ -f yarn.lock ]; then
         yarn install >/dev/null 2>&1
-        ableToRun='true'
-      elif [ $(ls src/yarn.lock >/dev/null 2>&1) ]; then
+        retire -n --outputformat json --outputpath /tmp/results.json --exitwith 0 2>/dev/null
+        cat /tmp/results.json
+      elif [ -f src/yarn.lock ]; then
         cd src/
         yarn install >/dev/null 2>&1
-        ableToRun='true'
-      elif [ $(ls package.json >/dev/null 2>&1) ] || [ $(ls package-lock.json >/dev/null 2>&1) ]; then
+        retire -n --outputformat json --outputpath /tmp/results.json --exitwith 0 2>/dev/null
+        cat /tmp/results.json
+      elif [ -f package.json ] || [ -f package-lock.json ]; then
         npm install >/dev/null 2>&1
-        ableToRun='true'
-      elif [ $(ls src/package.json >/dev/null 2>&1) ] || [ $(ls src/package-lock.json >/dev/null 2>&1) ]; then
+        retire -n --outputformat json --outputpath /tmp/results.json --exitwith 0 2>/dev/null
+        cat /tmp/results.json 
+      elif [ -f src/package.json ] || [ -f src/package-lock.json ]; then
         cd src/
         npm install >/dev/null 2>&1
-        ableToRun='true'
-      else
-        ableToRun='false'
-      fi
-      if [ $ableToRun == 'true' ]; then
-        retire -n --outputformat json --exitwith 0
+        retire -n --outputformat json --outputpath /tmp/results.json --exitwith 0 2>/dev/null
+        cat /tmp/results.json 
       else
         echo 'ERROR_RUNNING_RETIREJS'
       fi
