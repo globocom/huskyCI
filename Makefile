@@ -43,6 +43,7 @@ check-deps:
 
 ## Runs a security static analysis using Gosec
 check-sec:
+	$(GO) get -u github.com/securego/gosec/cmd/gosec
 	$(GOSEC) ./... 2> /dev/null
 
 ## Checks .env file from huskyCI
@@ -68,7 +69,6 @@ generate-passwords:
 get-test-deps:
 	$(GO) get -u github.com/golang/dep/cmd/dep
 	$(GO) get -u golang.org/x/lint/golint
-	$(GO) get -u github.com/securego/gosec/cmd/gosec
 	$(GO) get -u github.com/onsi/ginkgo/ginkgo
 	$(GO) get -u github.com/onsi/gomega/...
 
@@ -114,4 +114,4 @@ ginkgo:
 	ginkgo -r -keepGoing 
 	
 ## Perfoms all make tests
-test: get-test-deps lint check-sec ginkgo
+test: get-test-deps lint ginkgo
