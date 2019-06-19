@@ -13,10 +13,29 @@ The main goal of this project is to help development teams improve the quality o
 
 huskyCI can perform static security analysis in Python ([Bandit][Bandit] and [Safety][Safety]), Ruby ([Brakeman][Brakeman]), JavaScript ([RetireJS][RetireJS]) and Golang ([Gosec][Gosec]). You should check our [wiki](https://github.com/globocom/huskyCI/wiki/How-does-huskyCI-work%3F) to better understand how this tool could help securing your organization projects!
 
+## Requirements
 
+#### Docker and Docker-Compose
+
+The easiest way to deploy huskyCI locally is by using Docker Compose, thus, you should have [Docker][Docker Install] and [Docker Compose][Docker Compose Install] installed on your machine.
+
+#### Golang
+
+You must also have [Go](https://golang.org/doc/install) installed and huskyCI needs to be inside your [$GOPATH](https://github.com/golang/go/wiki/GOPATH) to run properly.
+
+Mac OS:
+```sh
+brew install go
+```
+
+Linux:
+```sh
+sudo apt-get install golang-go
+```
+ 
 ## Installing
 
-The easiest way to deploy huskyCI locally is by using Docker Compose, thus, you should have [Docker][Docker Install] and [Docker Compose][Docker Compose Install] installed on your machine. After cloning this repository, run this:
+ After cloning this repository, simply run the command inside huskyCI's folder:
 
 ```
 make install
@@ -24,7 +43,16 @@ make install
 
 ## Running
  
-After installing, a `.env` file will be generated which is needed to run huskyCI-client: 
+After installing, an `.env` file with instructions to huskyCI will be generated:
+```sh
+$ cat .env
+export HUSKYCI_CLIENT_REPO_URL="https://github.com/globocom/huskyCI.git"
+export HUSKYCI_CLIENT_REPO_BRANCH="master"
+export HUSKYCI_CLIENT_API_ADDR="http://localhost:8888"
+export HUSKYCI_CLIENT_API_USE_HTTPS="false"
+```
+
+You can change the repository and branch being analysed by modifying the contents of `HUSKYCI_CLIENT_REPO_URL` and `HUSKYCI_CLIENT_REPO_BRANCH`. Then simply source it through the command:
 
 ```sh
 . .env 
@@ -35,7 +63,7 @@ Mac OS:
 make run-client
 ```
 
-Ubuntu:
+Linux:
 ```sh
 make run-client-linux
 ```
