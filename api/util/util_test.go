@@ -37,4 +37,32 @@ var _ = Describe("Util", func() {
 		})
 	})
 
+	Describe("HandleCmd", func() {
+		inputRepositoryURL := "https://github.com/globocom/secDevLabs.git"
+		inputRepositoryBranch := "myBranch"
+		inputCMD := "git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneRetirejs"
+		expected := "git clone -b myBranch --single-branch https://github.com/globocom/secDevLabs.git code --quiet 2> /tmp/errorGitCloneRetirejs"
+
+		Context("When inputRepositoryURL, inputRepositoryBranch and inputCMD is not empty", func() {
+			It("Should return a string based on these params", func() {
+				Expect(util.HandleCmd(inputRepositoryURL, inputRepositoryBranch, inputCMD)).To(Equal(expected))
+			})
+		})
+		Context("When inputRepositoryURL is empty", func() {
+			It("Should return an empty string.", func() {
+				Expect(util.CreateContainerName("", inputRepositoryBranch, inputCMD)).To(Equal(""))
+			})
+		})
+		Context("When inputRepositoryBranch is empty", func() {
+			It("Should return an empty string.", func() {
+				Expect(util.CreateContainerName(inputRepositoryURL, "", inputCMD)).To(Equal(""))
+			})
+		})
+		Context("When inputCMD is empty", func() {
+			It("Should return an empty string.", func() {
+				Expect(util.CreateContainerName(inputRepositoryURL, inputRepositoryBranch, "")).To(Equal(""))
+			})
+		})
+	})
+
 })

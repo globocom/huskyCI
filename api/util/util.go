@@ -30,9 +30,12 @@ func RequestResponse(success bool, errMsg string) map[string]interface{} {
 
 // HandleCmd will extract %GIT_REPO% and %GIT_BRANCH% from cmd and replace it with the proper repository URL.
 func HandleCmd(repositoryURL, repositoryBranch, cmd string) string {
-	replace1 := strings.Replace(cmd, "%GIT_REPO%", repositoryURL, -1)
-	replace2 := strings.Replace(replace1, "%GIT_BRANCH%", repositoryBranch, -1)
-	return replace2
+	if repositoryURL != "" && repositoryBranch != "" && cmd != "" {
+		replace1 := strings.Replace(cmd, "%GIT_REPO%", repositoryURL, -1)
+		replace2 := strings.Replace(replace1, "%GIT_BRANCH%", repositoryBranch, -1)
+		return replace2
+	}
+	return ""
 }
 
 // HandlePrivateSSHKey will extract %GIT_PRIVATE_SSH_KEY% from cmd and replace it with the proper private SSH key.
