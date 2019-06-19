@@ -2,9 +2,8 @@ package util
 
 import (
 	"bufio"
+	"os"
 	"strings"
-
-	apiContext "github.com/globocom/huskyCI/api/context"
 )
 
 const (
@@ -26,7 +25,8 @@ func HandleCmd(repositoryURL, repositoryBranch, cmd string) string {
 
 // HandlePrivateSSHKey will extract %GIT_PRIVATE_SSH_KEY% from cmd and replace it with the proper private SSH key.
 func HandlePrivateSSHKey(rawString string) string {
-	cmdReplaced := strings.Replace(rawString, "GIT_PRIVATE_SSH_KEY", apiContext.APIConfiguration.GitPrivateSSHKey, -1)
+	privKey := os.Getenv("HUSKYCI_API_GIT_PRIVATE_SSH_KEY")
+	cmdReplaced := strings.Replace(rawString, "GIT_PRIVATE_SSH_KEY", privKey, -1)
 	return cmdReplaced
 }
 
