@@ -8,7 +8,6 @@ import (
 	"github.com/globocom/huskyCI/api/db"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
-	"github.com/globocom/huskyCI/api/util"
 	"github.com/labstack/echo"
 	mgo "gopkg.in/mgo.v2"
 )
@@ -21,13 +20,13 @@ func GetAnalysis(c echo.Context) error {
 	valid, err := regexp.MatchString(regexpRID, RID)
 	if err != nil {
 		log.Error("GetAnalysis", "ANALYSIS", 1008, "RID regexp ", err)
-		requestResponse := util.RequestResponse(false, "internal error")
-		return c.JSON(http.StatusInternalServerError, requestResponse)
+		reply := map[string]interface{}{"success": false, "error": "internal error"}
+		return c.JSON(http.StatusInternalServerError, reply)
 	}
 	if !valid {
 		log.Warning("GetAnalysis", "ANALYSIS", 107, RID)
-		requestResponse := util.RequestResponse(false, "invalid RID")
-		return c.JSON(http.StatusBadRequest, requestResponse)
+		reply := map[string]interface{}{"success": false, "error": "invalid RID"}
+		return c.JSON(http.StatusBadRequest, reply)
 	}
 
 	analysisQuery := map[string]interface{}{"RID": RID}
@@ -35,12 +34,12 @@ func GetAnalysis(c echo.Context) error {
 	if err != nil {
 		if err == mgo.ErrNotFound {
 			log.Warning("GetAnalysis", "ANALYSIS", 106, RID)
-			requestResponse := util.RequestResponse(false, "analysis not found")
-			return c.JSON(http.StatusNotFound, requestResponse)
+			reply := map[string]interface{}{"success": false, "error": "analysis not found"}
+			return c.JSON(http.StatusNotFound, reply)
 		}
 		log.Error("GetAnalysis", "ANALYSIS", 1020, err)
-		requestResponse := util.RequestResponse(false, "internal error")
-		return c.JSON(http.StatusInternalServerError, requestResponse)
+		reply := map[string]interface{}{"success": false, "error": "internal error"}
+		return c.JSON(http.StatusInternalServerError, reply)
 	}
 	return c.JSON(http.StatusOK, analysisResult)
 }
@@ -55,8 +54,8 @@ func ReceiveRequest(c echo.Context) error {
 	err := c.Bind(&repository)
 	if err != nil {
 		log.Error("ReceiveRequest", "ANALYSIS", 1015, err)
-		requestResponse := util.RequestResponse(false, "invalid repository JSON")
-		return c.JSON(http.StatusBadRequest, requestResponse)
+		reply := map[string]interface{}{"success": false, "error": "invalid repository JSON"}
+		return c.JSON(http.StatusBadRequest, reply)
 	}
 
 	// check-01-a: is this a git repository URL?
@@ -65,13 +64,13 @@ func ReceiveRequest(c echo.Context) error {
 	valid, err := regexp.MatchString(regexpGit, repository.URL)
 	if err != nil {
 		log.Error("ReceiveRequest", "ANALYSIS", 1008, "Repository URL regexp ", err)
-		requestResponse := util.RequestResponse(false, "internal error")
-		return c.JSON(http.StatusInternalServerError, requestResponse)
+		reply := map[string]interface{}{"success": false, "error": "internal error"}
+		return c.JSON(http.StatusInternalServerError, reply)
 	}
 	if !valid {
 		log.Error("ReceiveRequest", "ANALYSIS", 1016, repository.URL)
-		requestResponse := util.RequestResponse(false, "invalid repository URL")
-		return c.JSON(http.StatusBadRequest, requestResponse)
+		reply := map[string]interface{}{"success": false, "error": "invalid repository URL"}
+		return c.JSON(http.StatusBadRequest, reply)
 	}
 	matches := r.FindString(repository.URL)
 	repository.URL = matches
@@ -81,13 +80,13 @@ func ReceiveRequest(c echo.Context) error {
 	valid, err = regexp.MatchString(regexpBranch, repository.Branch)
 	if err != nil {
 		log.Error("ReceiveRequest", "ANALYSIS", 1008, "Repository Branch regexp ", err)
-		requestResponse := util.RequestResponse(false, "internal error")
-		return c.JSON(http.StatusInternalServerError, requestResponse)
+		reply := map[string]interface{}{"success": false, "error": "internal error"}
+		return c.JSON(http.StatusInternalServerError, reply)
 	}
 	if !valid {
 		log.Error("ReceiveRequest", "ANALYSIS", 1017, repository.Branch)
-		requestResponse := util.RequestResponse(false, "invalid repository branch")
-		return c.JSON(http.StatusBadRequest, requestResponse)
+		reply := map[string]interface{}{"success": false, "error": "invalid repository branch"}
+		return c.JSON(http.StatusBadRequest, reply)
 	}
 
 	// check-02: is this repository in MongoDB?
@@ -101,8 +100,8 @@ func ReceiveRequest(c echo.Context) error {
 			if err != mgo.ErrNotFound {
 				if analysisResult.Status == "running" {
 					log.Warning("ReceiveRequest", "ANALYSIS", 104, analysisResult.URL)
-					requestResponse := util.RequestResponse(false, "an analysis is already in place for this URL and branch")
-					return c.JSON(http.StatusConflict, requestResponse)
+					reply := map[string]interface{}{"success": false, "error": "an analysis is already in place for this URL and branch"}
+					return c.JSON(http.StatusConflict, reply)
 				}
 			}
 			log.Error("ReceiveRequest", "ANALYSIS", 1009, err)
@@ -112,21 +111,21 @@ func ReceiveRequest(c echo.Context) error {
 		err = db.InsertDBRepository(repository)
 		if err != nil {
 			log.Error("ReceiveRequest", "ANALYSIS", 1010, err)
-			requestResponse := util.RequestResponse(false, "internal error")
-			return c.JSON(http.StatusInternalServerError, requestResponse)
+			reply := map[string]interface{}{"success": false, "error": "internal error"}
+			return c.JSON(http.StatusInternalServerError, reply)
 		}
 		repositoryQuery := map[string]interface{}{"repositoryURL": repository.URL, "repositoryBranch": repository.Branch}
 		repositoryResult, err = db.FindOneDBRepository(repositoryQuery)
 		if err != nil {
 			// well it was supposed to be there, after all, we just inserted it.
 			log.Error("ReceiveRequest", "ANALYSIS", 1011, err)
-			requestResponse := util.RequestResponse(false, "internal error")
-			return c.JSON(http.StatusInternalServerError, requestResponse)
+			reply := map[string]interface{}{"success": false, "error": "internal error"}
+			return c.JSON(http.StatusInternalServerError, reply)
 		}
 	}
 
 	log.Info("ReceiveRequest", "ANALYSIS", 16, repository.Branch, repository.URL)
 	go analysis.StartAnalysis(RID, repositoryResult)
-	requestResponse := util.RequestResponse(true, "")
-	return c.JSON(http.StatusCreated, requestResponse)
+	reply := map[string]interface{}{"success": true, "error": ""}
+	return c.JSON(http.StatusCreated, reply)
 }

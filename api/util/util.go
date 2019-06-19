@@ -14,20 +14,6 @@ const (
 	KeyFile = "api/api-tls-key.pem"
 )
 
-// RequestResponse returns a map string interface to be used in echo JSON requests response.
-func RequestResponse(success bool, errMsg string) map[string]interface{} {
-	if errMsg == "" {
-		return map[string]interface{}{
-			"success": success,
-			"error":   "none",
-		}
-	}
-	return map[string]interface{}{
-		"success": success,
-		"error":   errMsg,
-	}
-}
-
 // HandleCmd will extract %GIT_REPO% and %GIT_BRANCH% from cmd and replace it with the proper repository URL.
 func HandleCmd(repositoryURL, repositoryBranch, cmd string) string {
 	if repositoryURL != "" && repositoryBranch != "" && cmd != "" {
