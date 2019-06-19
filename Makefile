@@ -62,8 +62,8 @@ create-certs:
 
 ## Generates passwords and set them as environment variables
 generate-passwords:
-	chmod +x deployments/scripts/generate-env-pass.sh
-	./deployments/scripts/generate-env-pass.sh
+	chmod +x deployments/scripts/generate-env.sh
+	./deployments/scripts/generate-env.sh
 
 ## Gets all go test dependencies
 get-test-deps:
