@@ -109,6 +109,10 @@ pull-images:
 run-client: build-client
 	./"$(HUSKYCICLIENTBIN)"
 
+## Run huskyci-client compiling it in Linux arch
+run-client-linux: build-client-linux
+	./"$(HUSKYCICLIENTBIN)"
+
 ## Runs ginkgo
 ginkgo:
 	ginkgo -r -keepGoing 
