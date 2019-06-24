@@ -45,6 +45,10 @@ func GetLastLine(s string) string {
 
 // GetAllLinesButLast receives a string with multiple lines and returns all but the last line.
 func GetAllLinesButLast(s string) []string {
+	if s == "" {
+		emptyStringSlice := []string{}
+		return emptyStringSlice
+	}
 	var lines []string
 	scanner := bufio.NewScanner(strings.NewReader(s))
 	for scanner.Scan() {
