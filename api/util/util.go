@@ -32,6 +32,9 @@ func HandlePrivateSSHKey(rawString string) string {
 
 // GetLastLine receives a string with multiple lines and returns it's last
 func GetLastLine(s string) string {
+	if s == "" {
+		return ""
+	}
 	var lines []string
 	scanner := bufio.NewScanner(strings.NewReader(s))
 	for scanner.Scan() {
