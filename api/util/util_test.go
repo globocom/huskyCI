@@ -101,7 +101,24 @@ Line4`
 			})
 		})
 		Context("When rawString is empty", func() {
-			It("Should return an empty string.", func() {
+			It("Should return an empty slice of string.", func() {
+				Expect(util.GetAllLinesButLast("")).To(Equal([]string{}))
+			})
+		})
+	})
+
+	Describe("RemoveDuplicates", func() {
+
+		rawSliceString := []string{"item1", "item2", "item3", "item1", "item2"}
+		expected := []string{"item1", "item2", "item3"}
+
+		Context("When rawSliceString is not empty", func() {
+			It("Should return the slice of strings except the last line", func() {
+				Expect(util.RemoveDuplicates(rawSliceString)).To(Equal(expected))
+			})
+		})
+		Context("When rawSliceString is empty", func() {
+			It("Should return an empty slice of string.", func() {
 				Expect(util.GetAllLinesButLast("")).To(Equal([]string{}))
 			})
 		})
