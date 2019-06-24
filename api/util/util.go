@@ -60,6 +60,9 @@ func GetAllLinesButLast(s string) []string {
 // SanitizeSafetyJSON returns a sanitized string from Safety container logs.
 // Safety might return a JSON with the "\" and "\"" characters, which needs to be sanitized to be unmarshalled correctly.
 func SanitizeSafetyJSON(s string) string {
+	if s == "" {
+		return ""
+	}
 	s1 := strings.Replace(s, "\\", "\\\\", -1)
 	s2 := strings.Replace(s1, "\\\"", "\\\\\"", -1)
 	return s2
