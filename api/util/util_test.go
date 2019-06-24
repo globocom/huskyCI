@@ -11,34 +11,6 @@ import (
 
 var _ = Describe("Util", func() {
 
-	Describe("CreateContainerName", func() {
-		inputURL := "https://github.com/globocom/secDevLabs.git"
-		inputBranch := "myBranch"
-		inputImage := "secdevLabs/bandit"
-		expected := "globocom_secDevLabs_myBranch_bandit"
-
-		Context("When inputURL, imputBranch and inputImage are not empty", func() {
-			It("Should return a container name based on these params", func() {
-				Expect(util.CreateContainerName(inputURL, inputBranch, inputImage)).To(Equal(expected))
-			})
-		})
-		Context("When inputURL is empty", func() {
-			It("Should return empty string and docker will generate a default name", func() {
-				Expect(util.CreateContainerName("", inputBranch, inputImage)).To(Equal(""))
-			})
-		})
-		Context("When inputBranch is empty", func() {
-			It("Should return empty string and docker will generate a default name", func() {
-				Expect(util.CreateContainerName(inputURL, "", inputImage)).To(Equal(""))
-			})
-		})
-		Context("When inputImage is empty", func() {
-			It("Should return empty string and docker will generate a default name", func() {
-				Expect(util.CreateContainerName(inputURL, inputBranch, "")).To(Equal(""))
-			})
-		})
-	})
-
 	Describe("HandleCmd", func() {
 		inputRepositoryURL := "https://github.com/globocom/secDevLabs.git"
 		inputRepositoryBranch := "myBranch"
@@ -93,6 +65,52 @@ var _ = Describe("Util", func() {
 		Context("When rawString and HUSKYCI_API_GIT_PRIVATE_SSH_KEY are empty", func() {
 			It("Should return an empty string.", func() {
 				Expect(util.HandlePrivateSSHKey("")).To(Equal(""))
+			})
+		})
+	})
+
+	Describe("GetLastLine", func() {
+
+		rawString := `Warning: unpinned requirement
+{"name":"enry", "vulnerability":"low"}`
+		expected := `{"name":"enry", "vulnerability":"low"}`
+
+		Context("When rawString is not empty", func() {
+			It("Should return the string that is in the last position", func() {
+				Expect(util.GetLastLine(rawString)).To(Equal(expected))
+			})
+		})
+		Context("When rawString is empty", func() {
+			It("Should return an empty string.", func() {
+				Expect(util.GetLastLine("")).To(Equal(""))
+			})
+		})
+	})
+
+	Describe("CreateContainerName", func() {
+		inputURL := "https://github.com/globocom/secDevLabs.git"
+		inputBranch := "myBranch"
+		inputImage := "secdevLabs/bandit"
+		expected := "globocom_secDevLabs_myBranch_bandit"
+
+		Context("When inputURL, imputBranch and inputImage are not empty", func() {
+			It("Should return a container name based on these params", func() {
+				Expect(util.CreateContainerName(inputURL, inputBranch, inputImage)).To(Equal(expected))
+			})
+		})
+		Context("When inputURL is empty", func() {
+			It("Should return empty string and docker will generate a default name", func() {
+				Expect(util.CreateContainerName("", inputBranch, inputImage)).To(Equal(""))
+			})
+		})
+		Context("When inputBranch is empty", func() {
+			It("Should return empty string and docker will generate a default name", func() {
+				Expect(util.CreateContainerName(inputURL, "", inputImage)).To(Equal(""))
+			})
+		})
+		Context("When inputImage is empty", func() {
+			It("Should return empty string and docker will generate a default name", func() {
+				Expect(util.CreateContainerName(inputURL, inputBranch, "")).To(Equal(""))
 			})
 		})
 	})
