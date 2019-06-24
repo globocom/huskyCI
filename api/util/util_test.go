@@ -87,6 +87,26 @@ var _ = Describe("Util", func() {
 		})
 	})
 
+	Describe("GetAllLinesButLast", func() {
+
+		rawString := `Line1
+Line2
+Line3
+Line4`
+		expected := []string{"Line1", "Line2", "Line3"}
+
+		Context("When rawString is not empty", func() {
+			It("Should return the slice of strings except the last line", func() {
+				Expect(util.GetAllLinesButLast(rawString)).To(Equal(expected))
+			})
+		})
+		Context("When rawString is empty", func() {
+			It("Should return an empty string.", func() {
+				Expect(util.GetAllLinesButLast("")).To(Equal([]string{}))
+			})
+		})
+	})
+
 	Describe("CreateContainerName", func() {
 		inputURL := "https://github.com/globocom/secDevLabs.git"
 		inputBranch := "myBranch"
