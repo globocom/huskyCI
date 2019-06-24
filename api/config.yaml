@@ -143,7 +143,7 @@ safety:
       if [ $(cat requirements.txt | grep '=' | grep -v '#' 1> safety_huskyci_analysis_requirements.txt 2> /tmp/errorFindRequirements) ]; then
         safety check -r safety_analysis_requirements.txt --json > safety_huskyci_analysis_output.json 2> /tmp/errorUnpinnedReq
         chmod +x /script.sh
-        /script.sh /code/safety_analysis_output.json
+        /script.sh /code/safety_huskyci_analysis_output.json
         cat /tmp/errorUnpinnedReq 2> /dev/null
         cat output.json
       else
