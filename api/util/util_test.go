@@ -124,6 +124,23 @@ Line4`
 		})
 	})
 
+	Describe("SanitizeSafetyJSON", func() {
+
+		rawSliceString := `{"result":"This vulnerability was found \\ and should be replaced.}`
+		expected := `{"result":"This vulnerability was found \\\\ and should be replaced.}`
+
+		Context("When rawSliceString is not empty", func() {
+			It("Should return the string expected.", func() {
+				Expect(util.SanitizeSafetyJSON(rawSliceString)).To(Equal(expected))
+			})
+		})
+		Context("When rawSliceString is empty", func() {
+			It("Should return an empty string.", func() {
+				Expect(util.SanitizeSafetyJSON("")).To(Equal(""))
+			})
+		})
+	})
+
 	Describe("CreateContainerName", func() {
 		inputURL := "https://github.com/globocom/secDevLabs.git"
 		inputBranch := "myBranch"
