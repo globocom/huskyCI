@@ -4,10 +4,13 @@
 # 
 
 file=$1
-tmpFile=tmp.json
-outputFile=output.json
+tmpFile="tmp.json"
+outputFile="output.json"
 i=0
 k=0
+
+touch $tmpFile
+touch $outputFile
 
 while read -r line; do
     if [ $i -eq 0 ]; then
