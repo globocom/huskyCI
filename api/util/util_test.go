@@ -113,7 +113,7 @@ Line4`
 		expected := []string{"item1", "item2", "item3"}
 
 		Context("When rawSliceString is not empty", func() {
-			It("Should return the slice of strings except the last line", func() {
+			It("Should return slice of non-duplicate elements", func() {
 				Expect(util.RemoveDuplicates(rawSliceString)).To(Equal(expected))
 			})
 		})
