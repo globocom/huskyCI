@@ -53,3 +53,45 @@ type SecurityTest struct {
 	Default          bool          `bson:"default" json:"default"`
 	TimeOutInSeconds int           `bson:"timeOutSeconds" json:"timeOutSeconds"`
 }
+
+// HuskyCIVulnerability is the struct that stores vulnerability information.
+type HuskyCIVulnerability struct {
+	SecurityTool   string
+	Severity       string
+	Confidence     string
+	File           string
+	Line           string
+	Code           string
+	Details        string
+	Type           string
+	VunerableBelow string
+}
+
+// JSONOutput is a truct that represents huskyCI output in a JSON format.
+type JSONOutput struct {
+	GoResults         GoResults         `json:"golang"`
+	PythonResults     PythonResults     `json:"python"`
+	JavaScriptResults JavaScriptResults `json:"javascript"`
+	RubyResults       RubyResults       `json:"ruby"`
+}
+
+// GoResults represents all Golang security tests results.
+type GoResults struct {
+	GosecOutput []HuskyCIVulnerability
+}
+
+// PythonResults represents all Python security tests results.
+type PythonResults struct {
+	BanditOutput []HuskyCIVulnerability
+	SafetyOutput []HuskyCIVulnerability
+}
+
+// JavaScriptResults represents all JavaScript security tests results.
+type JavaScriptResults struct {
+	RetirejsResult []HuskyCIVulnerability
+}
+
+// RubyResults represents all Ruby security tests results.
+type RubyResults struct {
+	BrakemanOutput []HuskyCIVulnerability
+}
