@@ -111,4 +111,6 @@ func AnalyzeResult(analysisResult types.Analysis) {
 	for _, container := range analysisResult.Containers {
 		CheckMongoDBContainerOutput(container)
 	}
+
+	// Call print json output or on screen function here
 }
