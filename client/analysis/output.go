@@ -8,12 +8,18 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
-	"github.com/fatih/color"
 	"github.com/globocom/huskyCI/client/types"
 	"github.com/globocom/huskyCI/client/util"
 )
+
+var outputJSON types.JSONOutput
+var goResults types.GoResults
+var pythonResults types.PythonResults
+var javaScriptResults types.JavaScriptResults
+var rubyResults types.RubyResults
 
 // CheckMongoDBContainerOutput will validate the output of a given container.
 func CheckMongoDBContainerOutput(container types.Container) {
@@ -21,31 +27,34 @@ func CheckMongoDBContainerOutput(container types.Container) {
 	switch container.SecurityTest.Name {
 	case "enry":
 	case "gosec":
-		PrintGosecOutput(container.COutput, container.CInfo)
+		PrepareGosecOutput(container.COutput, container.CInfo)
+		outputJSON.GoResults = goResults
 	case "bandit":
-		PrintBanditOutput(container.COutput, container.CInfo)
+		PrepareBanditOutput(container.COutput, container.CInfo)
+		outputJSON.PythonResults.BanditOutput = pythonResults.BanditOutput
 	case "retirejs":
-		PrintRetirejsOutput(container.COutput, container.CInfo)
+		PrepareRetirejsOutput(container.COutput, container.CInfo)
+		outputJSON.JavaScriptResults.RetirejsResult = javaScriptResults.RetirejsResult
 	case "brakeman":
-		PrintBrakemanOutput(container.COutput, container.CInfo)
+		PrepareBrakemanOutput(container.COutput, container.CInfo)
+		outputJSON.RubyResults.BrakemanOutput = rubyResults.BrakemanOutput
 	case "safety":
-		PrintSafetyOutput(container.COutput, container.CInfo)
+		PrepareSafetyOutput(container.COutput, container.CInfo)
+		outputJSON.PythonResults.SafetyOutput = pythonResults.SafetyOutput
 	default:
 		fmt.Println("[HUSKYCI][ERROR] securityTest name not recognized:", container.SecurityTest.Name)
 		os.Exit(1)
 	}
 }
 
-// PrintGosecOutput will print the Gosec output.
-func PrintGosecOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo string) {
+// PrepareGosecOutput will prepare Gosec output.
+func PrepareGosecOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo string) {
 
 	if mongoDBcontainerInfo == "No issues found." {
-		color.Green("[HUSKYCI][*] Gosec :)\n\n")
 		return
 	}
 
 	foundVuln := false
-	foundInfo := false
 	gosecOutput := types.GosecOutput{}
 	err := json.Unmarshal([]byte(mongoDBcontainerOutput), &gosecOutput)
 	if err != nil {
@@ -54,65 +63,31 @@ func PrintGosecOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo string
 	}
 
 	for _, issue := range gosecOutput.GosecIssues {
-		if (issue.Severity == "HIGH") && (issue.Confidence == "HIGH") {
-			foundVuln = true
-			color.Red("[HUSKYCI][!] Severity: %s", issue.Severity)
-			color.Red("[HUSKYCI][!] Confidence: %s", issue.Confidence)
-			color.Red("[HUSKYCI][!] Details: %s", issue.Details)
-			color.Red("[HUSKYCI][!] File: %s", issue.File)
-			color.Red("[HUSKYCI][!] Line: %d", issue.Line)
-			color.Red("[HUSKYCI][!] Code: %s", issue.Code)
-			fmt.Println()
-		}
-	}
+		gosecVuln := types.HuskyCIVulnerability{}
+		gosecVuln.SecurityTool = "gosec"
+		gosecVuln.Severity = issue.Severity
+		gosecVuln.Confidence = issue.Confidence
+		gosecVuln.Details = issue.Details
+		gosecVuln.File = issue.File
+		gosecVuln.Line = issue.Line
+		gosecVuln.Code = issue.Code
 
-	for _, issue := range gosecOutput.GosecIssues {
-		if (issue.Severity == "MEDIUM") && (issue.Confidence == "HIGH") {
-			foundVuln = true
-			color.Yellow("[HUSKYCI][!] Severity: %s", issue.Severity)
-			color.Yellow("[HUSKYCI][!] Confidence: %s", issue.Confidence)
-			color.Yellow("[HUSKYCI][!] Details: %s", issue.Details)
-			color.Yellow("[HUSKYCI][!] File: %s", issue.File)
-			color.Yellow("[HUSKYCI][!] Line: %d", issue.Line)
-			color.Yellow("[HUSKYCI][!] Code: %s", issue.Code)
-			fmt.Println()
-		}
-	}
-
-	for _, issue := range gosecOutput.GosecIssues {
-		if issue.Severity == "LOW" {
-			foundInfo = true
-			color.Blue("[HUSKYCI][!] Severity: %s", issue.Severity)
-			color.Blue("[HUSKYCI][!] Confidence: %s", issue.Confidence)
-			color.Blue("[HUSKYCI][!] Details: %s", issue.Details)
-			color.Blue("[HUSKYCI][!] File: %s", issue.File)
-			color.Blue("[HUSKYCI][!] Line: %d", issue.Line)
-			color.Blue("[HUSKYCI][!] Code: %s", issue.Code)
-			fmt.Println()
-		}
+		goResults.GosecOutput = append(goResults.GosecOutput, gosecVuln)
 	}
 
 	if foundVuln {
-		color.Red("[HUSKYCI][X] Gosec :(\n\n")
 		types.FoundVuln = true
-	} else if foundInfo {
-		fmt.Printf("[HUSKYCI][*] Gosec :|\n\n")
-	} else {
-		color.Green("[HUSKYCI][*] Gosec :)\n\n")
 	}
-
 }
 
-// PrintBanditOutput will print Bandit output.
-func PrintBanditOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo string) {
+// PrepareBanditOutput will prepare Bandit output.
+func PrepareBanditOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo string) {
 
 	if mongoDBcontainerInfo == "No issues found." {
-		color.Green("[HUSKYCI][*] Bandit :)\n\n")
 		return
 	}
 
 	foundVuln := false
-	foundInfo := false
 	banditOutput := types.BanditOutput{}
 	err := json.Unmarshal([]byte(mongoDBcontainerOutput), &banditOutput)
 	if err != nil {
@@ -121,71 +96,43 @@ func PrintBanditOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo strin
 	}
 
 	for _, issue := range banditOutput.Results {
-		if (issue.IssueSeverity == "HIGH") && (issue.IssueConfidence == "HIGH") {
-			foundVuln = true
-			color.Red("[HUSKYCI][!] Severity: %s", issue.IssueSeverity)
-			color.Red("[HUSKYCI][!] Confidence: %s", issue.IssueConfidence)
-			color.Red("[HUSKYCI][!] Details: %s", issue.IssueText)
-			color.Red("[HUSKYCI][!] File: %s", issue.Filename)
-			color.Red("[HUSKYCI][!] Line: %d", issue.LineNumber)
-			color.Red("[HUSKYCI][!] Code:\n%s", issue.Code)
-			fmt.Println()
-		}
-	}
+		banditVuln := types.HuskyCIVulnerability{}
+		banditVuln.SecurityTool = "bandit"
+		banditVuln.Severity = issue.IssueSeverity
+		banditVuln.Confidence = issue.IssueConfidence
+		banditVuln.Details = issue.IssueText
+		banditVuln.File = issue.Filename
+		banditVuln.Line = strconv.Itoa(issue.LineNumber)
+		banditVuln.Code = issue.Code
 
-	for _, issue := range banditOutput.Results {
-		if (issue.IssueSeverity == "MEDIUM") && (issue.IssueConfidence == "HIGH") {
-			foundVuln = true
-			color.Yellow("[HUSKYCI][!] Severity: %s", issue.IssueSeverity)
-			color.Yellow("[HUSKYCI][!] Confidence: %s", issue.IssueConfidence)
-			color.Yellow("[HUSKYCI][!] Details: %s", issue.IssueText)
-			color.Yellow("[HUSKYCI][!] File: %s", issue.Filename)
-			color.Yellow("[HUSKYCI][!] Line: %d", issue.LineNumber)
-			color.Yellow("[HUSKYCI][!] Code:\n%s", issue.Code)
-			fmt.Println()
-		}
-	}
-
-	for _, issue := range banditOutput.Results {
-		if issue.IssueSeverity == "LOW" {
-			foundInfo = true
-			color.Blue("[HUSKYCI][!] Severity: %s", issue.IssueSeverity)
-			color.Blue("[HUSKYCI][!] Confidence: %s", issue.IssueConfidence)
-			color.Blue("[HUSKYCI][!] Details: %s", issue.IssueText)
-			color.Blue("[HUSKYCI][!] File: %s", issue.Filename)
-			color.Blue("[HUSKYCI][!] Line: %d", issue.LineNumber)
-			color.Blue("[HUSKYCI][!] Code:\n%s", issue.Code)
-			fmt.Println()
-		}
+		pythonResults.BanditOutput = append(pythonResults.BanditOutput, banditVuln)
 	}
 
 	if foundVuln {
-		color.Red("[HUSKYCI][X] Bandit :(\n\n")
 		types.FoundVuln = true
-	} else if foundInfo {
-		fmt.Printf("[HUSKYCI][*] Bandit :|\n\n")
-	} else {
-		color.Green("[HUSKYCI][*] Bandit :)\n\n")
 	}
-
 }
 
-// PrintRetirejsOutput will print Retirejs output.
-func PrintRetirejsOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo string) {
+// PrepareRetirejsOutput will prepare Retirejs output.
+func PrepareRetirejsOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo string) {
 
 	if mongoDBcontainerInfo == "No issues found." {
-		color.Green("[HUSKYCI][*] RetireJS :)\n\n")
 		return
 	}
 
 	if strings.Contains(mongoDBcontainerInfo, "ERROR_RUNNING_RETIREJS") {
-		fmt.Printf("[HUSKYCI][*] It looks like your project doesn't have package.json or yarn.lock. huskyCI was not able to run RetireJS properly.\n")
-		fmt.Printf("[HUSKYCI][*] RetireJS :|\n\n")
+		retirejsVuln := types.HuskyCIVulnerability{}
+		retirejsVuln.SecurityTool = "retirejs"
+		retirejsVuln.Severity = "info"
+		retirejsVuln.Confidence = "high"
+		retirejsVuln.Details = "It looks like your project doesn't have package.json or yarn.lock. huskyCI was not able to run RetireJS properly."
+
+		javaScriptResults.RetirejsResult = append(javaScriptResults.RetirejsResult, retirejsVuln)
+
 		return
 	}
 
 	foundVuln := false
-	foundInfo := false
 	retirejsOutput := []types.ResultsStruct{}
 	err := json.Unmarshal([]byte(mongoDBcontainerOutput), &retirejsOutput)
 	if err != nil {
@@ -196,77 +143,32 @@ func PrintRetirejsOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo str
 	for _, output := range retirejsOutput {
 		for _, result := range output.Results {
 			for _, vulnerability := range result.Vulnerabilities {
-				if vulnerability.Severity == "high" {
-					foundVuln = true
-					color.Red("[HUSKYCI][!] Severity: %s", vulnerability.Severity)
-					color.Red("[HUSKYCI][!] Component: %s", result.Component)
-					color.Red("[HUSKYCI][!] Version: %s", result.Version)
-					for _, info := range vulnerability.Info {
-						color.Red("[HUSKYCI][!] Info: %s", info)
-					}
-					color.Red("[HUSKYCI][!] Identifiers: %s", vulnerability.Identifiers.Summary)
-					fmt.Println()
+				retirejsVuln := types.HuskyCIVulnerability{}
+				retirejsVuln.SecurityTool = "retirejs"
+				retirejsVuln.Severity = vulnerability.Severity
+				for _, info := range vulnerability.Info {
+					retirejsVuln.Details = retirejsVuln.Details + info
 				}
-			}
-		}
-	}
+				retirejsVuln.Details = retirejsVuln.Details + vulnerability.Identifiers.Summary
 
-	for _, output := range retirejsOutput {
-		for _, result := range output.Results {
-			for _, vulnerability := range result.Vulnerabilities {
-				if vulnerability.Severity == "medium" {
-					foundVuln = true
-					color.Yellow("[HUSKYCI][!] Severity: %s", vulnerability.Severity)
-					color.Yellow("[HUSKYCI][!] Component: %s", result.Component)
-					color.Yellow("[HUSKYCI][!] Version: %s", result.Version)
-					for _, info := range vulnerability.Info {
-						color.Yellow("[HUSKYCI][!] Info: %s", info)
-					}
-					color.Yellow("[HUSKYCI][!] Identifiers: %s", vulnerability.Identifiers.Summary)
-					fmt.Println()
-				}
-			}
-		}
-	}
-
-	for _, output := range retirejsOutput {
-		for _, result := range output.Results {
-			for _, vulnerability := range result.Vulnerabilities {
-				if vulnerability.Severity == "low" {
-					foundVuln = true
-					color.Blue("[HUSKYCI][!] Severity: %s", vulnerability.Severity)
-					color.Blue("[HUSKYCI][!] Component: %s", result.Component)
-					color.Blue("[HUSKYCI][!] Version: %s", result.Version)
-					for _, info := range vulnerability.Info {
-						color.Blue("[HUSKYCI][!] Info: %s", info)
-					}
-					color.Blue("[HUSKYCI][!] Identifiers: %s", vulnerability.Identifiers.Summary)
-					fmt.Println()
-				}
+				javaScriptResults.RetirejsResult = append(javaScriptResults.RetirejsResult, retirejsVuln)
 			}
 		}
 	}
 
 	if foundVuln {
-		color.Red("[HUSKYCI][X] RetireJS :(\n\n")
 		types.FoundVuln = true
-	} else if foundInfo {
-		fmt.Printf("[HUSKYCI][*] RetireJS :|\n\n")
-	} else {
-		color.Green("[HUSKYCI][*] RetireJS :)\n\n")
 	}
-
 }
 
-// PrintBrakemanOutput will print Brakeman output.
-func PrintBrakemanOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo string) {
+// PrepareBrakemanOutput will prepare Brakeman output.
+func PrepareBrakemanOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo string) {
+
 	if mongoDBcontainerInfo == "No issues found." {
-		color.Green("[HUSKYCI][*] Brakeman :)\n\n")
 		return
 	}
 
 	foundVuln := false
-	foundInfo := false
 	brakemanOutput := types.BrakemanOutput{}
 	err := json.Unmarshal([]byte(mongoDBcontainerOutput), &brakemanOutput)
 	if err != nil {
@@ -275,65 +177,39 @@ func PrintBrakemanOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo str
 	}
 
 	for _, warning := range brakemanOutput.Warnings {
-		if warning.Confidence == "High" {
-			foundVuln = true
-			color.Red("[HUSKYCI][!] Confidence: %s", warning.Confidence)
-			color.Red("[HUSKYCI][!] Type: %s", warning.Type)
-			color.Red("[HUSKYCI][!] Details: %s", warning.Details)
-			color.Red("[HUSKYCI][!] Info: %s", warning.Message)
-			color.Red("[HUSKYCI][!] File: %s", warning.File)
-			color.Red("[HUSKYCI][!] line: %d", warning.Line)
-			color.Red("[HUSKYCI][!] Code: %s", warning.Code)
-			fmt.Println()
-		}
+		brakemanVuln := types.HuskyCIVulnerability{}
+		brakemanVuln.SecurityTool = "brakeman"
+		brakemanVuln.Confidence = warning.Confidence
+		brakemanVuln.Details = warning.Details + warning.Message
+		brakemanVuln.File = warning.File
+		brakemanVuln.Line = strconv.Itoa(warning.Line)
+		brakemanVuln.Code = warning.Code
+		brakemanVuln.Type = warning.Type
 
-		if warning.Confidence == "Medium" {
-			foundVuln = true
-			color.Yellow("[HUSKYCI][!] Confidence: %s", warning.Confidence)
-			color.Yellow("[HUSKYCI][!] Type: %s", warning.Type)
-			color.Yellow("[HUSKYCI][!] Details: %s", warning.Details)
-			color.Yellow("[HUSKYCI][!] Info: %s", warning.Message)
-			color.Yellow("[HUSKYCI][!] File: %s", warning.File)
-			color.Yellow("[HUSKYCI][!] line: %d", warning.Line)
-			color.Yellow("[HUSKYCI][!] Code: %s", warning.Code)
-			fmt.Println()
-		}
-
-		if warning.Confidence == "Low" {
-			foundInfo = true
-			color.Blue("[HUSKYCI][!] Confidence: %s", warning.Confidence)
-			color.Blue("[HUSKYCI][!] Type: %s", warning.Type)
-			color.Blue("[HUSKYCI][!] Details: %s", warning.Details)
-			color.Blue("[HUSKYCI][!] Info: %s", warning.Message)
-			color.Blue("[HUSKYCI][!] File: %s", warning.File)
-			color.Blue("[HUSKYCI][!] line: %d", warning.Line)
-			color.Blue("[HUSKYCI][!] Code: %s", warning.Code)
-			fmt.Println()
-		}
+		rubyResults.BrakemanOutput = append(rubyResults.BrakemanOutput, brakemanVuln)
 	}
 
 	if foundVuln {
-		color.Red("[HUSKYCI][X] Brakeman :(\n\n")
 		types.FoundVuln = true
-	} else if foundInfo {
-		fmt.Printf("[HUSKYCI][*] Brakeman :|\n\n")
-	} else {
-		color.Green("[HUSKYCI][*] Brakeman :)\n\n")
 	}
-
 }
 
-// PrintSafetyOutput will print Safety output.
-func PrintSafetyOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo string) {
+// PrepareSafetyOutput will prepare Safety output.
+func PrepareSafetyOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo string) {
 
 	if mongoDBcontainerInfo == "No issues found." {
-		color.Green("[HUSKYCI][*] Safety :)\n\n")
 		return
 	}
 
 	if mongoDBcontainerInfo == "Requirements not found or this project uses latest dependencies." {
-		fmt.Printf("[HUSKYCI][*] requirements.txt not found or this project uses latest dependencies.\n")
-		fmt.Printf("[HUSKYCI][*] Safety :|\n\n")
+		safetyVuln := types.HuskyCIVulnerability{}
+		safetyVuln.SecurityTool = "safety"
+		safetyVuln.Severity = "info"
+		safetyVuln.Confidence = "high"
+		safetyVuln.Details = "requirements.txt not found or this project uses latest dependencies"
+
+		pythonResults.SafetyOutput = append(pythonResults.SafetyOutput, safetyVuln)
+
 		return
 	}
 
@@ -364,22 +240,28 @@ func PrintSafetyOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo strin
 			onlyWarning = true
 		}
 		for _, warning := range outputWarnings {
-			color.Yellow("[HUSKYCI][!]: %s", warning)
+			safetyVuln := types.HuskyCIVulnerability{}
+			safetyVuln.SecurityTool = "safety"
+			safetyVuln.Severity = "warning"
+			safetyVuln.Details = warning
+
+			pythonResults.SafetyOutput = append(pythonResults.SafetyOutput, safetyVuln)
 		}
 		if onlyWarning {
-			fmt.Printf("[HUSKYCI][*] Safety :|\n\n")
 			return
 		}
 	}
 
 	for _, issue := range safetyOutput.SafetyIssues {
-		color.Red("[HUSKYCI][!] Vulnerable Dependency: %s", issue.Dependency)
-		color.Red("[HUSKYCI][!] Vulnerable Below: %s", issue.Below)
-		color.Red("[HUSKYCI][!] Current Version: %s", issue.Version)
-		color.Red("[HUSKYCI][!] Comment: %s", issue.Comment)
-		fmt.Println()
+		safetyVuln := types.HuskyCIVulnerability{}
+		safetyVuln.SecurityTool = "safety"
+		safetyVuln.Severity = "high"
+		safetyVuln.Details = issue.Comment
+		safetyVuln.Code = issue.Version
+		safetyVuln.VunerableBelow = issue.Below
+
+		pythonResults.SafetyOutput = append(pythonResults.SafetyOutput, safetyVuln)
 	}
 
-	color.Red("[HUSKYCI][X] Safety :(\n\n")
 	types.FoundVuln = true
 }
