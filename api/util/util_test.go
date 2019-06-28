@@ -142,9 +142,9 @@ Line4`
 	})
 
 	Describe("CreateContainerName", func() {
-		inputURLType1 := "https://github.com/some-user/my-repo.git"
+		inputURLType1 := "https://github.com/some-user/my-repo.git/"
 		inputURLType2 := "github@github.com:some-user/my-repo.git/"
-		inputURLType3 := "git://github.com/some-user/my-repo.git"
+		inputURLType3 := "git://github.com/some-user/my-repo.git/"
 		inputBranch := "my-branch"
 		inputImage := "my-repo/bandit"
 		expected := "some-user_my-repo_my-branch_bandit"

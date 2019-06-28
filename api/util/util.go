@@ -90,35 +90,44 @@ func CreateContainerName(repositoryURL, repositoryBranch, image string) string {
 	if repositoryURL == "" || repositoryBranch == "" || image == "" {
 		return ""
 	}
+
+	//Trim '/' and '.git' from end of string
 	cleanURL := strings.TrimSuffix(repositoryURL, "/")
 	cleanURL = strings.TrimSuffix(cleanURL, ".git")
 
+	//Get index of the begining of repository name and image name strings
 	repoNameStartIndex := strings.LastIndex(cleanURL, "/")
 	imageNameStartIndex := strings.LastIndex(image, "/")
 
-	if repoNameStartIndex == -1 || imageNameStartIndex == -1 {
-		//Not a valid git repository or image
+	//Check if index is valid
+	if repoNameStartIndex == -1 || len(cleanURL) < repoNameStartIndex+1 || imageNameStartIndex == -1 || len(cleanURL) < imageNameStartIndex+1 {
 		return ""
 	}
 
+	//Get substrings starting from each index
 	repositoryName := cleanURL[repoNameStartIndex+1:]
 	imageName := image[imageNameStartIndex+1:]
 
+	//Trim repository name and '/'
 	repositoryOwner := strings.TrimSuffix(cleanURL, repositoryName)
 	repositoryOwner = strings.TrimSuffix(repositoryOwner, "/")
 
+	//Get index of the beggining of repository owner string
+	// --Repository has format: "https://github.com/some-user/my-repo.git/"
 	repoOwnerStartIndex1 := strings.LastIndex(repositoryOwner, "/")
+	// --Repository has format: "github@github.com:some-user/my-repo.git/"
 	repoOwnerStartIndex2 := strings.LastIndex(repositoryOwner, ":")
 
-	if repoOwnerStartIndex1 != -1 {
+	//Check if index is valid
+	if repoOwnerStartIndex1 != -1 && len(repositoryOwner) >= repoOwnerStartIndex1+1 {
 		repositoryOwner = repositoryOwner[repoOwnerStartIndex1+1:]
-	} else if repoOwnerStartIndex2 != -1 {
+	} else if repoOwnerStartIndex2 != -1 && len(repositoryOwner) >= repoOwnerStartIndex2+1 {
 		repositoryOwner = repositoryOwner[repoOwnerStartIndex2+1:]
 	} else {
-		//Not a valid repository owner
 		return ""
 	}
 
+	//Join all strings
 	s := []string{repositoryOwner, repositoryName, repositoryBranch, imageName}
 	containerName := strings.Join(s, "_")
 
