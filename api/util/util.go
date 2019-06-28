@@ -87,13 +87,40 @@ func RemoveDuplicates(s []string) []string {
 //  - Input: {repositoryURL: https://github.com/globocom/huskyCI.git, repositoryBranch: "master", imageName: "huskyci/enry"}
 //  - Output: globocom_huskyCI_master_enry
 func CreateContainerName(repositoryURL, repositoryBranch, image string) string {
-	if repositoryURL != "" && repositoryBranch != "" && image != "" {
-		imageSlices := strings.Split(image, "/")
-		imageName := imageSlices[len(imageSlices)-1]
-		url := strings.TrimSuffix(repositoryURL, ".git")
-		urlSlices := strings.Split(url, "/")[3:]
-		myStrings := []string{strings.Join(urlSlices, "_"), repositoryBranch, imageName}
-		return strings.Join(myStrings, "_")
+	if repositoryURL == "" || repositoryBranch == "" || image == "" {
+		return ""
 	}
-	return ""
+	cleanURL := strings.TrimSuffix(repositoryURL, "/")
+	cleanURL = strings.TrimSuffix(cleanURL, ".git")
+
+	repoNameStartIndex := strings.LastIndex(cleanURL, "/")
+	imageNameStartIndex := strings.LastIndex(image, "/")
+
+	if repoNameStartIndex == -1 || imageNameStartIndex == -1 {
+		//Not a valid git repository or image
+		return ""
+	}
+
+	repositoryName := cleanURL[repoNameStartIndex+1:]
+	imageName := image[imageNameStartIndex+1:]
+
+	repositoryOwner := strings.TrimSuffix(cleanURL, repositoryName)
+	repositoryOwner = strings.TrimSuffix(repositoryOwner, "/")
+
+	repoOwnerStartIndex1 := strings.LastIndex(repositoryOwner, "/")
+	repoOwnerStartIndex2 := strings.LastIndex(repositoryOwner, ":")
+
+	if repoOwnerStartIndex1 != -1 {
+		repositoryOwner = repositoryOwner[repoOwnerStartIndex1+1:]
+	} else if repoOwnerStartIndex2 != -1 {
+		repositoryOwner = repositoryOwner[repoOwnerStartIndex2+1:]
+	} else {
+		//Not a valid repository owner
+		return ""
+	}
+
+	s := []string{repositoryOwner, repositoryName, repositoryBranch, imageName}
+	containerName := strings.Join(s, "_")
+
+	return containerName
 }

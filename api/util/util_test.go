@@ -142,31 +142,34 @@ Line4`
 	})
 
 	Describe("CreateContainerName", func() {
-		inputURL := "https://github.com/globocom/secDevLabs.git"
-		inputBranch := "myBranch"
-		inputImage := "secdevLabs/bandit"
-		expected := "globocom_secDevLabs_myBranch_bandit"
+		inputURLType1 := "https://github.com/some-user/my-repo.git"
+		inputURLType2 := "github@github.com:some-user/my-repo.git/"
+		inputURLType3 := "git://github.com/some-user/my-repo.git"
+		inputBranch := "my-branch"
+		inputImage := "my-repo/bandit"
+		expected := "some-user_my-repo_my-branch_bandit"
 
 		Context("When inputURL, imputBranch and inputImage are not empty", func() {
-			It("Should return a container name based on these params", func() {
-				Expect(util.CreateContainerName(inputURL, inputBranch, inputImage)).To(Equal(expected))
+			It("Should return a container name from URL type 1", func() {
+				Expect(util.CreateContainerName(inputURLType1, inputBranch, inputImage)).To(Equal(expected))
+			})
+			It("Should return a container name from URL type 2", func() {
+				Expect(util.CreateContainerName(inputURLType2, inputBranch, inputImage)).To(Equal(expected))
+			})
+			It("Should return a container name from URL type 3", func() {
+				Expect(util.CreateContainerName(inputURLType3, inputBranch, inputImage)).To(Equal(expected))
+			})
+			It("Should return an empty string if inputURL is not valid", func() {
+				Expect(util.CreateContainerName("not-a-git-repo", inputBranch, inputImage)).To(Equal(""))
+			})
+			It("Should return an empty string if inputImage is not valid", func() {
+				Expect(util.CreateContainerName(inputURLType1, inputBranch, "random:string")).To(Equal(""))
 			})
 		})
-		Context("When inputURL is empty", func() {
+		Context("When inputURL, inputBranch or inputBranch are empty", func() {
 			It("Should return empty string and docker will generate a default name", func() {
 				Expect(util.CreateContainerName("", inputBranch, inputImage)).To(Equal(""))
 			})
 		})
-		Context("When inputBranch is empty", func() {
-			It("Should return empty string and docker will generate a default name", func() {
-				Expect(util.CreateContainerName(inputURL, "", inputImage)).To(Equal(""))
-			})
-		})
-		Context("When inputImage is empty", func() {
-			It("Should return empty string and docker will generate a default name", func() {
-				Expect(util.CreateContainerName(inputURL, inputBranch, "")).To(Equal(""))
-			})
-		})
 	})
-
 })
