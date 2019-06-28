@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/globocom/huskyCI/client/types"
 	"github.com/globocom/huskyCI/client/util"
 )
@@ -146,6 +147,8 @@ func PrepareRetirejsOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo s
 				retirejsVuln := types.HuskyCIVulnerability{}
 				retirejsVuln.SecurityTool = "retirejs"
 				retirejsVuln.Severity = vulnerability.Severity
+				retirejsVuln.Code = result.Component
+				retirejsVuln.Version = result.Version
 				for _, info := range vulnerability.Info {
 					retirejsVuln.Details = retirejsVuln.Details + info
 				}
@@ -264,4 +267,132 @@ func PrepareSafetyOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo str
 	}
 
 	types.FoundVuln = true
+}
+
+// PrintJSONOutput prints the analysis output in a JSON format
+func PrintJSONOutput() error {
+	jsonReady, err := json.Marshal(outputJSON)
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(jsonReady))
+	return nil
+}
+
+// PrinthuskyCIOutput prints the analysis output in huskyCI's format
+func PrinthuskyCIOutput() {
+	for _, issue := range outputJSON.GoResults.GosecOutput {
+		if (issue.Severity == "HIGH") && (issue.Confidence == "HIGH") {
+			color.Red("[HUSKYCI][!] Severity: %s", issue.Severity)
+			color.Red("[HUSKYCI][!] Confidence: %s", issue.Confidence)
+			color.Red("[HUSKYCI][!] Details: %s", issue.Details)
+			color.Red("[HUSKYCI][!] File: %s", issue.File)
+			color.Red("[HUSKYCI][!] Line: %s", issue.Line)
+			color.Red("[HUSKYCI][!] Code: %s", issue.Code)
+			fmt.Println()
+		} else if (issue.Severity == "MEDIUM") && (issue.Confidence == "HIGH") {
+			color.Yellow("[HUSKYCI][!] Severity: %s", issue.Severity)
+			color.Yellow("[HUSKYCI][!] Confidence: %s", issue.Confidence)
+			color.Yellow("[HUSKYCI][!] Details: %s", issue.Details)
+			color.Yellow("[HUSKYCI][!] File: %s", issue.File)
+			color.Yellow("[HUSKYCI][!] Line: %s", issue.Line)
+			color.Yellow("[HUSKYCI][!] Code: %s", issue.Code)
+			fmt.Println()
+		} else if issue.Severity == "LOW" {
+			color.Blue("[HUSKYCI][!] Severity: %s", issue.Severity)
+			color.Blue("[HUSKYCI][!] Confidence: %s", issue.Confidence)
+			color.Blue("[HUSKYCI][!] Details: %s", issue.Details)
+			color.Blue("[HUSKYCI][!] File: %s", issue.File)
+			color.Blue("[HUSKYCI][!] Line: %s", issue.Line)
+			color.Blue("[HUSKYCI][!] Code: %s", issue.Code)
+			fmt.Println()
+		}
+	}
+
+	for _, issue := range outputJSON.PythonResults.BanditOutput {
+		if (issue.Severity == "HIGH") && (issue.Confidence == "HIGH") {
+			color.Red("[HUSKYCI][!] Severity: %s", issue.Severity)
+			color.Red("[HUSKYCI][!] Confidence: %s", issue.Confidence)
+			color.Red("[HUSKYCI][!] Details: %s", issue.Details)
+			color.Red("[HUSKYCI][!] File: %s", issue.File)
+			color.Red("[HUSKYCI][!] Line: %s", issue.Line)
+			color.Red("[HUSKYCI][!] Code:\n%s", issue.Code)
+			fmt.Println()
+		} else if (issue.Severity == "MEDIUM") && (issue.Confidence == "HIGH") {
+			color.Yellow("[HUSKYCI][!] Severity: %s", issue.Severity)
+			color.Yellow("[HUSKYCI][!] Confidence: %s", issue.Confidence)
+			color.Yellow("[HUSKYCI][!] Details: %s", issue.Details)
+			color.Yellow("[HUSKYCI][!] File: %s", issue.File)
+			color.Yellow("[HUSKYCI][!] Line: %s", issue.Line)
+			color.Yellow("[HUSKYCI][!] Code:\n%s", issue.Code)
+			fmt.Println()
+		} else if issue.Severity == "LOW" {
+			color.Blue("[HUSKYCI][!] Severity: %s", issue.Severity)
+			color.Blue("[HUSKYCI][!] Confidence: %s", issue.Confidence)
+			color.Blue("[HUSKYCI][!] Details: %s", issue.Details)
+			color.Blue("[HUSKYCI][!] File: %s", issue.File)
+			color.Blue("[HUSKYCI][!] Line: %s", issue.Line)
+			color.Blue("[HUSKYCI][!] Code:\n%s", issue.Code)
+			fmt.Println()
+		}
+	}
+
+	for _, issue := range outputJSON.PythonResults.SafetyOutput {
+		color.Red("[HUSKYCI][!] Severity: %s", issue.Severity)
+		color.Red("[HUSKYCI][!] Details: %s", issue.Details)
+		color.Red("[HUSKYCI][!] Code:\n%s", issue.Code)
+		color.Red("[HUSKYCI][!] Vulnerable Below:\n%s", issue.VunerableBelow)
+		fmt.Println()
+	}
+
+	for _, issue := range outputJSON.RubyResults.BrakemanOutput {
+		if issue.Confidence == "High" {
+			color.Red("[HUSKYCI][!] Confidence: %s", issue.Confidence)
+			color.Red("[HUSKYCI][!] Details: %s", issue.Details)
+			color.Red("[HUSKYCI][!] File: %s", issue.File)
+			color.Red("[HUSKYCI][!] Line: %s", issue.Line)
+			color.Red("[HUSKYCI][!] Code: %s", issue.Code)
+			color.Red("[HUSKYCI][!] Type: %s", issue.Type)
+			fmt.Println()
+		} else if issue.Confidence == "MEDIUM" {
+			color.Yellow("[HUSKYCI][!] Confidence: %s", issue.Confidence)
+			color.Yellow("[HUSKYCI][!] Details: %s", issue.Details)
+			color.Yellow("[HUSKYCI][!] File: %s", issue.File)
+			color.Yellow("[HUSKYCI][!] Line: %s", issue.Line)
+			color.Yellow("[HUSKYCI][!] Code: %s", issue.Code)
+			color.Yellow("[HUSKYCI][!] Type: %s", issue.Type)
+			fmt.Println()
+		} else if issue.Confidence == "LOW" {
+			color.Blue("[HUSKYCI][!] Confidence: %s", issue.Confidence)
+			color.Blue("[HUSKYCI][!] Details: %s", issue.Details)
+			color.Blue("[HUSKYCI][!] File: %s", issue.File)
+			color.Blue("[HUSKYCI][!] Line: %s", issue.Line)
+			color.Blue("[HUSKYCI][!] Code: %s", issue.Code)
+			color.Blue("[HUSKYCI][!] Type: %s", issue.Type)
+			fmt.Println()
+		}
+	}
+
+	for _, issue := range outputJSON.JavaScriptResults.RetirejsResult {
+		if issue.Severity == "high" {
+			color.Red("[HUSKYCI][!] Severity: %s", issue.Severity)
+			color.Red("[HUSKYCI][!] Code: %s", issue.Code)
+			color.Red("[HUSKYCI][!] Version: %s", issue.Version)
+			color.Red("[HUSKYCI][!] Details: %s", issue.Details)
+			fmt.Println()
+		} else if issue.Severity == "medium" {
+			color.Yellow("[HUSKYCI][!] Severity: %s", issue.Severity)
+			color.Yellow("[HUSKYCI][!] Code: %s", issue.Code)
+			color.Yellow("[HUSKYCI][!] Version: %s", issue.Version)
+			color.Yellow("[HUSKYCI][!] Details: %s", issue.Details)
+			fmt.Println()
+		} else if issue.Severity == "low" {
+			color.Blue("[HUSKYCI][!] Severity: %s", issue.Severity)
+			color.Blue("[HUSKYCI][!] Code: %s", issue.Code)
+			color.Blue("[HUSKYCI][!] Version: %s", issue.Version)
+			color.Blue("[HUSKYCI][!] Details: %s", issue.Details)
+			fmt.Println()
+		}
+
+	}
 }
