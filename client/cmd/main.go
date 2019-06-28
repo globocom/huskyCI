@@ -42,7 +42,15 @@ func main() {
 	}
 
 	// step 3: analyze result and return to CI the final result.
-	analysis.AnalyzeResult(huskyAnalysis)
+	if len(os.Args) > 1 {
+		err = analysis.AnalyzeResult(huskyAnalysis, os.Args[1])
+	} else {
+		err = analysis.AnalyzeResult(huskyAnalysis, "")
+	}
+	if err != nil {
+		fmt.Println("[HUSKYCI][ERROR] Printing output:", err)
+		os.Exit(1)
+	}
 
 	if types.FoundVuln == true {
 		os.Exit(1)
