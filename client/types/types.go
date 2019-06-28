@@ -56,15 +56,16 @@ type SecurityTest struct {
 
 // HuskyCIVulnerability is the struct that stores vulnerability information.
 type HuskyCIVulnerability struct {
-	SecurityTool   string
-	Severity       string
-	Confidence     string
-	File           string
-	Line           string
-	Code           string
-	Details        string
-	Type           string
-	VunerableBelow string
+	SecurityTool   string `json:"securitytool"`
+	Severity       string `json:"severity"`
+	Confidence     string `json:"confidence"`
+	File           string `json:"file"`
+	Line           string `json:"line"`
+	Code           string `json:"code"`
+	Details        string `json:"details"`
+	Type           string `json:"type"`
+	VunerableBelow string `json:"vulnerablebelow"`
+	Version        string `json:"version"`
 }
 
 // JSONOutput is a truct that represents huskyCI output in a JSON format.
