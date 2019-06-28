@@ -106,11 +106,20 @@ func MonitorAnalysis(RID string) (types.Analysis, error) {
 }
 
 // AnalyzeResult analyzes the result received from HuskyCI API.
-func AnalyzeResult(analysisResult types.Analysis) {
+func AnalyzeResult(analysisResult types.Analysis, cmdInput string) error {
 	fmt.Println()
 	for _, container := range analysisResult.Containers {
 		CheckMongoDBContainerOutput(container)
 	}
 
-	// Call print json output or on screen function here
+	if cmdInput == "JSON" {
+		err := PrintJSONOutput()
+		if err != nil {
+			return err
+		}
+	} else {
+		PrinthuskyCIOutput()
+	}
+
+	return nil
 }
