@@ -203,8 +203,10 @@ func PrepareBrakemanOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo s
 		rubyResults.BrakemanOutput = append(rubyResults.BrakemanOutput, brakemanVuln)
 
 		if brakemanVuln.Confidence == "High" || brakemanVuln.Confidence == "Medium" {
+			brakemanVuln.Severity = "High"
 			types.FoundVuln = true
 		} else {
+			brakemanVuln.Severity = "Low"
 			types.FoundInfo = true
 		}
 	}
@@ -352,4 +354,137 @@ func printhuskyCIOutput() {
 		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
 		fmt.Println()
 	}
+}
+
+func printSummary() {
+
+	var gosecFound, banditFound, safetyFound, brakemanFound, retirejsFound bool
+	var gosecLow, gosecMedium, gosecHigh int
+	var banditLow, banditMedium, banditHigh int
+	var safetyLow, safetyMedium, safetyHigh int
+	var brakemanLow, brakemanMedium, brakemanHigh int
+	var retirejsLow, retirejsMedium, retirejsHigh int
+	var totalHigh, totalMedium, totalLow int
+
+	// GoSec summary
+	for _, issue := range outputJSON.GoResults.GosecOutput {
+		switch issue.Severity {
+		case "LOW":
+			gosecFound = true
+			gosecLow++
+		case "MEDIUM":
+			gosecFound = true
+			gosecMedium++
+		case "HIGH":
+			gosecFound = true
+			gosecHigh++
+		}
+	}
+	if gosecFound {
+		fmt.Printf("[HUSKYCI][SUMMARY] Go -> GoSec\n")
+		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", gosecHigh)
+		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", gosecMedium)
+		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", gosecLow)
+		fmt.Println()
+	}
+
+	// Bandit summary
+	for _, issue := range outputJSON.PythonResults.BanditOutput {
+		switch issue.Severity {
+		case "LOW":
+			banditFound = true
+			banditLow++
+		case "MEDIUM":
+			banditFound = true
+			banditMedium++
+		case "HIGH":
+			banditFound = true
+			banditHigh++
+		}
+	}
+	if banditFound {
+		fmt.Printf("[HUSKYCI][SUMMARY] Python -> Bandit\n")
+		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", banditHigh)
+		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", banditMedium)
+		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", banditLow)
+		fmt.Println()
+	}
+
+	// Safety summary
+	for _, issue := range outputJSON.PythonResults.SafetyOutput {
+		switch issue.Severity {
+		case "info":
+			safetyFound = true
+			safetyLow++
+		case "warning":
+			safetyFound = true
+			safetyLow++
+		case "high":
+			safetyFound = true
+			safetyHigh++
+		}
+	}
+	if safetyFound {
+		fmt.Printf("[HUSKYCI][SUMMARY] Python -> Safety\n")
+		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", safetyHigh)
+		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", safetyMedium)
+		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", safetyLow)
+		fmt.Println()
+	}
+
+	// Brakeman summary
+	for _, issue := range outputJSON.RubyResults.BrakemanOutput {
+		switch issue.Severity {
+		case "Low":
+			brakemanFound = true
+			brakemanLow++
+		case "Medium":
+			brakemanFound = true
+			brakemanMedium++
+		case "High":
+			brakemanFound = true
+			brakemanHigh++
+		}
+	}
+	if brakemanFound {
+		fmt.Printf("[HUSKYCI][SUMMARY] Ruby -> Brakeman\n")
+		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", brakemanHigh)
+		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", brakemanMedium)
+		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", brakemanLow)
+		fmt.Println()
+	}
+
+	// RetireJS summary
+	for _, issue := range outputJSON.JavaScriptResults.RetirejsResult {
+		switch issue.Severity {
+		case "low":
+			retirejsFound = true
+			retirejsLow++
+		case "medium":
+			retirejsFound = true
+			retirejsMedium++
+		case "high":
+			retirejsFound = true
+			retirejsHigh++
+		}
+	}
+	if retirejsFound {
+		fmt.Printf("[HUSKYCI][SUMMARY] JavaScript -> RetireJS\n")
+		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", retirejsHigh)
+		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", retirejsMedium)
+		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", retirejsLow)
+		fmt.Println()
+	}
+
+	if gosecFound || banditFound || safetyFound || brakemanFound || retirejsFound {
+		totalLow = gosecLow + banditLow + safetyLow + brakemanLow + retirejsLow
+		totalMedium = gosecMedium + banditMedium + safetyMedium + brakemanMedium + retirejsMedium
+		totalHigh = gosecHigh + banditHigh + safetyHigh + brakemanHigh + brakemanHigh
+		fmt.Printf("[HUSKYCI][SUMMARY] Total\n")
+		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", totalHigh)
+		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", totalMedium)
+		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", totalLow)
+		fmt.Println()
+	}
+
 }
