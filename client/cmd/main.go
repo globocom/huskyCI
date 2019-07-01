@@ -41,21 +41,24 @@ func main() {
 		os.Exit(1)
 	}
 
-	// step 3: analyze result and return to CI the final result.
+	// step 3: analyze result
+	analysis.AnalyzeResult(huskyAnalysis)
+
+	// step 4: print output
+	formatOutput := ""
 	if len(os.Args) > 1 {
-		err = analysis.AnalyzeResult(huskyAnalysis, os.Args[1])
-	} else {
-		err = analysis.AnalyzeResult(huskyAnalysis, "")
+		formatOutput = "JSON"
 	}
+	err = analysis.PrintResults(formatOutput)
 	if err != nil {
 		fmt.Println("[HUSKYCI][ERROR] Printing output:", err)
 		os.Exit(1)
 	}
 
+	// step 5: block developer CI if vulnerabilities were found
 	if types.FoundVuln == true {
 		os.Exit(1)
 	}
 
 	os.Exit(0)
-
 }
