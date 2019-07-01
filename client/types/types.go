@@ -56,43 +56,43 @@ type SecurityTest struct {
 
 // HuskyCIVulnerability is the struct that stores vulnerability information.
 type HuskyCIVulnerability struct {
-	SecurityTool   string `json:"securitytool"`
-	Severity       string `json:"severity"`
-	Confidence     string `json:"confidence"`
-	File           string `json:"file"`
-	Line           string `json:"line"`
-	Code           string `json:"code"`
-	Details        string `json:"details"`
-	Type           string `json:"type"`
-	VunerableBelow string `json:"vulnerablebelow"`
-	Version        string `json:"version"`
+	SecurityTool   string `json:"securitytool,omitempty"`
+	Severity       string `json:"severity,omitempty"`
+	Confidence     string `json:"confidence,omitempty"`
+	File           string `json:"file,omitempty"`
+	Line           string `json:"line,omitempty"`
+	Code           string `json:"code,omitempty"`
+	Details        string `json:"details,omitempty"`
+	Type           string `json:"type,omitempty"`
+	VunerableBelow string `json:"vulnerablebelow,omitempty"`
+	Version        string `json:"version,omitempty"`
 }
 
 // JSONOutput is a truct that represents huskyCI output in a JSON format.
 type JSONOutput struct {
-	GoResults         GoResults         `json:"golang"`
-	PythonResults     PythonResults     `json:"python"`
-	JavaScriptResults JavaScriptResults `json:"javascript"`
-	RubyResults       RubyResults       `json:"ruby"`
+	GoResults         GoResults         `json:"goresults,omitempty"`
+	PythonResults     PythonResults     `json:"pythonresults,omitempty"`
+	JavaScriptResults JavaScriptResults `json:"javascriptresults,omitempty"`
+	RubyResults       RubyResults       `json:"rubyresults,omitempty"`
 }
 
 // GoResults represents all Golang security tests results.
 type GoResults struct {
-	GosecOutput []HuskyCIVulnerability
+	GosecOutput []HuskyCIVulnerability `json:"gosecoutput,omitempty"`
 }
 
 // PythonResults represents all Python security tests results.
 type PythonResults struct {
-	BanditOutput []HuskyCIVulnerability
-	SafetyOutput []HuskyCIVulnerability
+	BanditOutput []HuskyCIVulnerability `json:"banditoutput,omitempty"`
+	SafetyOutput []HuskyCIVulnerability `json:"safetyoutput,omitempty"`
 }
 
 // JavaScriptResults represents all JavaScript security tests results.
 type JavaScriptResults struct {
-	RetirejsResult []HuskyCIVulnerability
+	RetirejsResult []HuskyCIVulnerability `json:"retirejsoutput,omitempty"`
 }
 
 // RubyResults represents all Ruby security tests results.
 type RubyResults struct {
-	BrakemanOutput []HuskyCIVulnerability
+	BrakemanOutput []HuskyCIVulnerability `json:"brakemanoutput,omitempty"`
 }
