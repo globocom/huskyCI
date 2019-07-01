@@ -32,7 +32,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Println("[HUSKYCI][*] HuskyCI analysis started!", RID)
+	fmt.Println("[HUSKYCI][*] huskyCI analysis started!", RID)
 
 	// step 2: keep querying husky API to check if a given analysis has already finished.
 	huskyAnalysis, err := analysis.MonitorAnalysis(RID)
@@ -60,5 +60,13 @@ func main() {
 		os.Exit(1)
 	}
 
+	if types.FoundInfo == true {
+		fmt.Printf("[HUSKYCI][*] Some low/info issues were found :|\n")
+		fmt.Println()
+		os.Exit(0)
+	}
+
+	fmt.Printf("[HUSKYCI][*] Nice! No issues Found :)\n")
+	fmt.Println()
 	os.Exit(0)
 }
