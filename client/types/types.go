@@ -13,6 +13,9 @@ import (
 // FoundVuln is the boolean that will be checked to return an os.exit(0) or os.exit(1)
 var FoundVuln bool
 
+// FoundInfo is the boolean that will be checked to verify if only low/info severity vulnerabilites were found.
+var FoundInfo bool
+
 // JSONPayload is a struct that represents the JSON payload needed to make a HuskyCI API request.
 type JSONPayload struct {
 	RepositoryURL    string `json:"repositoryURL"`
