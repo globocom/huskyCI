@@ -59,6 +59,7 @@ type SecurityTest struct {
 
 // HuskyCIVulnerability is the struct that stores vulnerability information.
 type HuskyCIVulnerability struct {
+	Language       string `json:"language"`
 	SecurityTool   string `json:"securitytool,omitempty"`
 	Severity       string `json:"severity,omitempty"`
 	Confidence     string `json:"confidence,omitempty"`

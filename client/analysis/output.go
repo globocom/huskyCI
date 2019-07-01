@@ -63,7 +63,8 @@ func PrepareGosecOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo stri
 
 	for _, issue := range gosecOutput.GosecIssues {
 		gosecVuln := types.HuskyCIVulnerability{}
-		gosecVuln.SecurityTool = "gosec"
+		gosecVuln.Language = "Go"
+		gosecVuln.SecurityTool = "GoSec"
 		gosecVuln.Severity = issue.Severity
 		gosecVuln.Confidence = issue.Confidence
 		gosecVuln.Details = issue.Details
@@ -97,7 +98,8 @@ func PrepareBanditOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo str
 
 	for _, issue := range banditOutput.Results {
 		banditVuln := types.HuskyCIVulnerability{}
-		banditVuln.SecurityTool = "bandit"
+		banditVuln.Language = "Python"
+		banditVuln.SecurityTool = "Bandit"
 		banditVuln.Severity = issue.IssueSeverity
 		banditVuln.Confidence = issue.IssueConfidence
 		banditVuln.Details = issue.IssueText
@@ -124,7 +126,8 @@ func PrepareRetirejsOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo s
 
 	if strings.Contains(mongoDBcontainerInfo, "ERROR_RUNNING_RETIREJS") {
 		retirejsVuln := types.HuskyCIVulnerability{}
-		retirejsVuln.SecurityTool = "retirejs"
+		retirejsVuln.Language = "JavaScript"
+		retirejsVuln.SecurityTool = "RetireJS"
 		retirejsVuln.Severity = "info"
 		retirejsVuln.Confidence = "high"
 		retirejsVuln.Details = "It looks like your project doesn't have package.json or yarn.lock. huskyCI was not able to run RetireJS properly."
@@ -146,7 +149,8 @@ func PrepareRetirejsOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo s
 		for _, result := range output.Results {
 			for _, vulnerability := range result.Vulnerabilities {
 				retirejsVuln := types.HuskyCIVulnerability{}
-				retirejsVuln.SecurityTool = "retirejs"
+				retirejsVuln.Language = "JavaScript"
+				retirejsVuln.SecurityTool = "RetireJS"
 				retirejsVuln.Severity = vulnerability.Severity
 				retirejsVuln.Code = result.Component
 				retirejsVuln.Version = result.Version
@@ -187,7 +191,8 @@ func PrepareBrakemanOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo s
 
 	for _, warning := range brakemanOutput.Warnings {
 		brakemanVuln := types.HuskyCIVulnerability{}
-		brakemanVuln.SecurityTool = "brakeman"
+		brakemanVuln.Language = "Ruby"
+		brakemanVuln.SecurityTool = "Brakeman"
 		brakemanVuln.Confidence = warning.Confidence
 		brakemanVuln.Details = warning.Details + warning.Message
 		brakemanVuln.File = warning.File
@@ -214,7 +219,8 @@ func PrepareSafetyOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo str
 
 	if mongoDBcontainerInfo == "Requirements not found or this project uses latest dependencies." {
 		safetyVuln := types.HuskyCIVulnerability{}
-		safetyVuln.SecurityTool = "safety"
+		safetyVuln.Language = "Python"
+		safetyVuln.SecurityTool = "Safety"
 		safetyVuln.Severity = "info"
 		safetyVuln.Details = "requirements.txt not found or this project uses latest dependencies"
 
@@ -251,7 +257,8 @@ func PrepareSafetyOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo str
 		}
 		for _, warning := range outputWarnings {
 			safetyVuln := types.HuskyCIVulnerability{}
-			safetyVuln.SecurityTool = "safety"
+			safetyVuln.Language = "Python"
+			safetyVuln.SecurityTool = "Safety"
 			safetyVuln.Severity = "warning"
 			safetyVuln.Details = warning
 
@@ -265,7 +272,8 @@ func PrepareSafetyOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo str
 
 	for _, issue := range safetyOutput.SafetyIssues {
 		safetyVuln := types.HuskyCIVulnerability{}
-		safetyVuln.SecurityTool = "safety"
+		safetyVuln.Language = "Python"
+		safetyVuln.SecurityTool = "Safety"
 		safetyVuln.Severity = "high"
 		safetyVuln.Details = issue.Comment
 		safetyVuln.Code = issue.Version
@@ -290,6 +298,8 @@ func printJSONOutput() error {
 // PrinthuskyCIOutput prints the analysis output in huskyCI's format
 func printhuskyCIOutput() {
 	for _, issue := range outputJSON.GoResults.GosecOutput {
+		fmt.Printf("[HUSKYCI][!] Language: %s\n", issue.Language)
+		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
 		fmt.Printf("[HUSKYCI][!] Severity: %s\n", issue.Severity)
 		fmt.Printf("[HUSKYCI][!] Confidence: %s\n", issue.Confidence)
 		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
@@ -300,6 +310,8 @@ func printhuskyCIOutput() {
 	}
 
 	for _, issue := range outputJSON.PythonResults.BanditOutput {
+		fmt.Printf("[HUSKYCI][!] Language: %s\n", issue.Language)
+		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
 		fmt.Printf("[HUSKYCI][!] Severity: %s\n", issue.Severity)
 		fmt.Printf("[HUSKYCI][!] Confidence: %s\n", issue.Confidence)
 		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
@@ -310,14 +322,18 @@ func printhuskyCIOutput() {
 	}
 
 	for _, issue := range outputJSON.PythonResults.SafetyOutput {
+		fmt.Printf("[HUSKYCI][!] Language: %s\n", issue.Language)
+		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
 		fmt.Printf("[HUSKYCI][!] Severity: %s\n", issue.Severity)
 		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
-		fmt.Printf("[HUSKYCI][!] Code:\n%s\n", issue.Code)
-		fmt.Printf("[HUSKYCI][!] Vulnerable Below:\n%s\n", issue.VunerableBelow)
+		fmt.Printf("[HUSKYCI][!] Code: %s\n", issue.Code)
+		fmt.Printf("[HUSKYCI][!] Vulnerable Below: %s\n", issue.VunerableBelow)
 		fmt.Println()
 	}
 
 	for _, issue := range outputJSON.RubyResults.BrakemanOutput {
+		fmt.Printf("[HUSKYCI][!] Language: %s\n", issue.Language)
+		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
 		fmt.Printf("[HUSKYCI][!] Confidence: %s\n", issue.Confidence)
 		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
 		fmt.Printf("[HUSKYCI][!] File: %s\n", issue.File)
@@ -328,6 +344,8 @@ func printhuskyCIOutput() {
 	}
 
 	for _, issue := range outputJSON.JavaScriptResults.RetirejsResult {
+		fmt.Printf("[HUSKYCI][!] Language: %s\n", issue.Language)
+		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
 		fmt.Printf("[HUSKYCI][!] Severity: %s\n", issue.Severity)
 		fmt.Printf("[HUSKYCI][!] Code: %s\n", issue.Code)
 		fmt.Printf("[HUSKYCI][!] Version: %s\n", issue.Version)
