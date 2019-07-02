@@ -288,6 +288,7 @@ func PrepareSafetyOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo str
 
 // PrintJSONOutput prints the analysis output in a JSON format
 func printJSONOutput() error {
+	calculateSummary()
 	jsonReady := []byte{}
 	var err error
 	if jsonReady, err = json.Marshal(outputJSON); err != nil {
@@ -299,6 +300,7 @@ func printJSONOutput() error {
 
 // PrinthuskyCIOutput prints the analysis output in huskyCI's format
 func printhuskyCIOutput() {
+	calculateSummary()
 	for _, issue := range outputJSON.GoResults.GosecOutput {
 		fmt.Printf("[HUSKYCI][!] Language: %s\n", issue.Language)
 		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
@@ -308,6 +310,13 @@ func printhuskyCIOutput() {
 		fmt.Printf("[HUSKYCI][!] File: %s\n", issue.File)
 		fmt.Printf("[HUSKYCI][!] Line: %s\n", issue.Line)
 		fmt.Printf("[HUSKYCI][!] Code: %s\n", issue.Code)
+		fmt.Println()
+	}
+	if outputJSON.Summary.GosecSummary.FoundVuln {
+		fmt.Printf("[HUSKYCI][SUMMARY] Go -> GoSec\n")
+		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", outputJSON.Summary.GosecSummary.HighVuln)
+		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", outputJSON.Summary.GosecSummary.MediumVuln)
+		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", outputJSON.Summary.GosecSummary.LowVuln)
 		fmt.Println()
 	}
 
@@ -322,6 +331,13 @@ func printhuskyCIOutput() {
 		fmt.Printf("[HUSKYCI][!] Code:\n%s\n", issue.Code)
 		fmt.Println()
 	}
+	if outputJSON.Summary.BanditSummary.FoundVuln {
+		fmt.Printf("[HUSKYCI][SUMMARY] Python -> Bandit\n")
+		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", outputJSON.Summary.BanditSummary.HighVuln)
+		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", outputJSON.Summary.BanditSummary.MediumVuln)
+		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", outputJSON.Summary.BanditSummary.LowVuln)
+		fmt.Println()
+	}
 
 	for _, issue := range outputJSON.PythonResults.SafetyOutput {
 		fmt.Printf("[HUSKYCI][!] Language: %s\n", issue.Language)
@@ -332,6 +348,12 @@ func printhuskyCIOutput() {
 			fmt.Printf("[HUSKYCI][!] Code: %s\n", issue.Code)
 			fmt.Printf("[HUSKYCI][!] Vulnerable Below: %s\n", issue.VunerableBelow)
 		}
+		fmt.Println()
+	}
+	if outputJSON.Summary.SafetySummary.FoundVuln {
+		fmt.Printf("[HUSKYCI][SUMMARY] Python -> Safety\n")
+		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", outputJSON.Summary.BanditSummary.HighVuln)
+		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", outputJSON.Summary.BanditSummary.LowVuln)
 		fmt.Println()
 	}
 
@@ -346,6 +368,13 @@ func printhuskyCIOutput() {
 		fmt.Printf("[HUSKYCI][!] Type: %s\n", issue.Type)
 		fmt.Println()
 	}
+	if outputJSON.Summary.BrakemanSummary.FoundVuln {
+		fmt.Printf("[HUSKYCI][SUMMARY] Ruby -> Brakeman\n")
+		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", outputJSON.Summary.BrakemanSummary.HighVuln)
+		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", outputJSON.Summary.BrakemanSummary.MediumVuln)
+		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", outputJSON.Summary.BrakemanSummary.LowVuln)
+		fmt.Println()
+	}
 
 	for _, issue := range outputJSON.JavaScriptResults.RetirejsResult {
 		fmt.Printf("[HUSKYCI][!] Language: %s\n", issue.Language)
@@ -356,137 +385,109 @@ func printhuskyCIOutput() {
 		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
 		fmt.Println()
 	}
+	if outputJSON.Summary.RetirejsSummary.FoundVuln {
+		fmt.Printf("[HUSKYCI][SUMMARY] JavaScript -> RetireJS\n")
+		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", outputJSON.Summary.RetirejsSummary.HighVuln)
+		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", outputJSON.Summary.RetirejsSummary.MediumVuln)
+		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", outputJSON.Summary.RetirejsSummary.LowVuln)
+		fmt.Println()
+	}
+
+	fmt.Printf("[HUSKYCI][SUMMARY] Total\n")
+	fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", outputJSON.Summary.TotalSummary.HighVuln)
+	fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", outputJSON.Summary.TotalSummary.MediumVuln)
+	fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", outputJSON.Summary.TotalSummary.LowVuln)
+	fmt.Println()
 }
 
-func printSummary() {
-
-	var gosecFound, banditFound, safetyFound, brakemanFound, retirejsFound bool
-	var gosecLow, gosecMedium, gosecHigh int
-	var banditLow, banditMedium, banditHigh int
-	var safetyLow, safetyMedium, safetyHigh int
-	var brakemanLow, brakemanMedium, brakemanHigh int
-	var retirejsLow, retirejsMedium, retirejsHigh int
-	var totalHigh, totalMedium, totalLow int
+// calculateSummary calculates how many low, medium and high vulnerabilites were found.
+func calculateSummary() {
+	var totalLow, totalMedium, totalHigh int
 
 	// GoSec summary
 	for _, issue := range outputJSON.GoResults.GosecOutput {
 		switch issue.Severity {
 		case "LOW":
-			gosecFound = true
-			gosecLow++
+			outputJSON.Summary.GosecSummary.FoundVuln = true
+			outputJSON.Summary.GosecSummary.LowVuln++
 		case "MEDIUM":
-			gosecFound = true
-			gosecMedium++
+			outputJSON.Summary.GosecSummary.FoundVuln = true
+			outputJSON.Summary.GosecSummary.MediumVuln++
 		case "HIGH":
-			gosecFound = true
-			gosecHigh++
+			outputJSON.Summary.GosecSummary.FoundVuln = true
+			outputJSON.Summary.GosecSummary.HighVuln++
 		}
-	}
-	if gosecFound {
-		fmt.Printf("[HUSKYCI][SUMMARY] Go -> GoSec\n")
-		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", gosecHigh)
-		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", gosecMedium)
-		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", gosecLow)
-		fmt.Println()
 	}
 
 	// Bandit summary
 	for _, issue := range outputJSON.PythonResults.BanditOutput {
 		switch issue.Severity {
 		case "LOW":
-			banditFound = true
-			banditLow++
+			outputJSON.Summary.BanditSummary.FoundVuln = true
+			outputJSON.Summary.BanditSummary.LowVuln++
 		case "MEDIUM":
-			banditFound = true
-			banditMedium++
+			outputJSON.Summary.BanditSummary.FoundVuln = true
+			outputJSON.Summary.BanditSummary.MediumVuln++
 		case "HIGH":
-			banditFound = true
-			banditHigh++
+			outputJSON.Summary.BanditSummary.FoundVuln = true
+			outputJSON.Summary.BanditSummary.HighVuln++
 		}
-	}
-	if banditFound {
-		fmt.Printf("[HUSKYCI][SUMMARY] Python -> Bandit\n")
-		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", banditHigh)
-		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", banditMedium)
-		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", banditLow)
-		fmt.Println()
 	}
 
 	// Safety summary
 	for _, issue := range outputJSON.PythonResults.SafetyOutput {
 		switch issue.Severity {
 		case "info":
-			safetyFound = true
-			safetyLow++
+			outputJSON.Summary.SafetySummary.FoundVuln = true
+			outputJSON.Summary.SafetySummary.LowVuln++
 		case "warning":
-			safetyFound = true
-			safetyLow++
+			outputJSON.Summary.SafetySummary.FoundVuln = true
+			outputJSON.Summary.SafetySummary.LowVuln++
 		case "high":
-			safetyFound = true
-			safetyHigh++
+			outputJSON.Summary.SafetySummary.FoundVuln = true
+			outputJSON.Summary.SafetySummary.HighVuln++
 		}
-	}
-	if safetyFound {
-		fmt.Printf("[HUSKYCI][SUMMARY] Python -> Safety\n")
-		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", safetyHigh)
-		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", safetyMedium)
-		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", safetyLow)
-		fmt.Println()
 	}
 
 	// Brakeman summary
 	for _, issue := range outputJSON.RubyResults.BrakemanOutput {
 		switch issue.Severity {
 		case "Low":
-			brakemanFound = true
-			brakemanLow++
+			outputJSON.Summary.BrakemanSummary.FoundVuln = true
+			outputJSON.Summary.BrakemanSummary.LowVuln++
 		case "Medium":
-			brakemanFound = true
-			brakemanMedium++
+			outputJSON.Summary.BrakemanSummary.FoundVuln = true
+			outputJSON.Summary.BrakemanSummary.MediumVuln++
 		case "High":
-			brakemanFound = true
-			brakemanHigh++
+			outputJSON.Summary.BrakemanSummary.FoundVuln = true
+			outputJSON.Summary.BrakemanSummary.HighVuln++
 		}
-	}
-	if brakemanFound {
-		fmt.Printf("[HUSKYCI][SUMMARY] Ruby -> Brakeman\n")
-		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", brakemanHigh)
-		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", brakemanMedium)
-		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", brakemanLow)
-		fmt.Println()
 	}
 
 	// RetireJS summary
 	for _, issue := range outputJSON.JavaScriptResults.RetirejsResult {
 		switch issue.Severity {
 		case "low":
-			retirejsFound = true
-			retirejsLow++
+			outputJSON.Summary.RetirejsSummary.FoundVuln = true
+			outputJSON.Summary.RetirejsSummary.LowVuln++
 		case "medium":
-			retirejsFound = true
-			retirejsMedium++
+			outputJSON.Summary.RetirejsSummary.FoundVuln = true
+			outputJSON.Summary.RetirejsSummary.MediumVuln++
 		case "high":
-			retirejsFound = true
-			retirejsHigh++
+			outputJSON.Summary.RetirejsSummary.FoundVuln = true
+			outputJSON.Summary.RetirejsSummary.HighVuln++
 		}
 	}
-	if retirejsFound {
-		fmt.Printf("[HUSKYCI][SUMMARY] JavaScript -> RetireJS\n")
-		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", retirejsHigh)
-		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", retirejsMedium)
-		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", retirejsLow)
-		fmt.Println()
-	}
 
-	if gosecFound || banditFound || safetyFound || brakemanFound || retirejsFound {
-		totalLow = gosecLow + banditLow + safetyLow + brakemanLow + retirejsLow
-		totalMedium = gosecMedium + banditMedium + safetyMedium + brakemanMedium + retirejsMedium
-		totalHigh = gosecHigh + banditHigh + safetyHigh + brakemanHigh + brakemanHigh
-		fmt.Printf("[HUSKYCI][SUMMARY] Total\n")
-		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", totalHigh)
-		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", totalMedium)
-		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", totalLow)
-		fmt.Println()
+	if outputJSON.Summary.GosecSummary.FoundVuln || outputJSON.Summary.BanditSummary.FoundVuln || outputJSON.Summary.SafetySummary.FoundVuln || outputJSON.Summary.BrakemanSummary.FoundVuln || outputJSON.Summary.RetirejsSummary.FoundVuln {
+		totalLow = outputJSON.Summary.RetirejsSummary.LowVuln + outputJSON.Summary.BrakemanSummary.LowVuln + outputJSON.Summary.SafetySummary.LowVuln + outputJSON.Summary.BanditSummary.LowVuln + outputJSON.Summary.GosecSummary.LowVuln
+		totalMedium = outputJSON.Summary.RetirejsSummary.MediumVuln + outputJSON.Summary.BrakemanSummary.MediumVuln + outputJSON.Summary.SafetySummary.MediumVuln + outputJSON.Summary.BanditSummary.MediumVuln + outputJSON.Summary.GosecSummary.MediumVuln
+		totalHigh = outputJSON.Summary.RetirejsSummary.HighVuln + outputJSON.Summary.BrakemanSummary.HighVuln + outputJSON.Summary.SafetySummary.HighVuln + outputJSON.Summary.BanditSummary.HighVuln + outputJSON.Summary.GosecSummary.HighVuln
+
+		outputJSON.Summary.TotalSummary.FoundVuln = true
+		outputJSON.Summary.TotalSummary.HighVuln = totalHigh
+		outputJSON.Summary.TotalSummary.MediumVuln = totalMedium
+		outputJSON.Summary.TotalSummary.LowVuln = totalLow
 	}
 
 }
