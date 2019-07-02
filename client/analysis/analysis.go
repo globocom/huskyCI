@@ -124,7 +124,7 @@ func PrintResults(formatOutput string) error {
 		printhuskyCIOutput()
 	}
 
-	printSummary()
+	calculateSummary()
 
 	return nil
 }
