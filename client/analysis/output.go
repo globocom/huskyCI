@@ -328,8 +328,10 @@ func printhuskyCIOutput() {
 		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
 		fmt.Printf("[HUSKYCI][!] Severity: %s\n", issue.Severity)
 		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
-		fmt.Printf("[HUSKYCI][!] Code: %s\n", issue.Code)
-		fmt.Printf("[HUSKYCI][!] Vulnerable Below: %s\n", issue.VunerableBelow)
+		if issue.Details != "requirements.txt not found or this project uses latest dependencies" {
+			fmt.Printf("[HUSKYCI][!] Code: %s\n", issue.Code)
+			fmt.Printf("[HUSKYCI][!] Vulnerable Below: %s\n", issue.VunerableBelow)
+		}
 		fmt.Println()
 	}
 
