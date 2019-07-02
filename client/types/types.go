@@ -78,6 +78,7 @@ type JSONOutput struct {
 	PythonResults     PythonResults     `json:"pythonresults,omitempty"`
 	JavaScriptResults JavaScriptResults `json:"javascriptresults,omitempty"`
 	RubyResults       RubyResults       `json:"rubyresults,omitempty"`
+	Summary           Summary           `json:"summary,omitempty"`
 }
 
 // GoResults represents all Golang security tests results.
@@ -99,4 +100,22 @@ type JavaScriptResults struct {
 // RubyResults represents all Ruby security tests results.
 type RubyResults struct {
 	BrakemanOutput []HuskyCIVulnerability `json:"brakemanoutput,omitempty"`
+}
+
+// Summary holds a summary of the information on all security tests.
+type Summary struct {
+	GosecSummary    HuskyCISummary `json:"gosecsummary,omitempty"`
+	BanditSummary   HuskyCISummary `json:"banditsummary,omitempty"`
+	SafetySummary   HuskyCISummary `json:"safetysummary,omitempty"`
+	RetirejsSummary HuskyCISummary `json:"retirejssummary,omitempty"`
+	BrakemanSummary HuskyCISummary `json:"brakemansummary,omitempty"`
+	TotalSummary    HuskyCISummary `json:"totalsummary,omitempty"`
+}
+
+// HuskyCISummary is the struct that holds summary information.
+type HuskyCISummary struct {
+	FoundVuln  bool `json:"foundvuln,omitempty"`
+	LowVuln    int  `json:"lowvuln,omitempty"`
+	MediumVuln int  `json:"mediumvuln,omitempty"`
+	HighVuln   int  `json:"highvuln,omitempty"`
 }
