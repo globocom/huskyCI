@@ -66,7 +66,9 @@ func main() {
 		os.Exit(0)
 	}
 
-	fmt.Printf("[HUSKYCI][*] Nice! No issues Found :)\n")
-	fmt.Println()
+	if len(os.Args) < 1 {
+		fmt.Printf("[HUSKYCI][*] Nice! No issues Found :)\n")
+		fmt.Println()
+	}
 	os.Exit(0)
 }
