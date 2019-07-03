@@ -100,7 +100,9 @@ func MonitorAnalysis(RID string) (types.Analysis, error) {
 			if analysis.Status == "finished" {
 				return analysis, nil
 			}
-			fmt.Println("[HUSKYCI][!] Hold on! HuskyCI is still running...")
+			if !types.IsJSONoutput {
+				fmt.Println("[HUSKYCI][!] Hold on! huskyCI is still running...")
+			}
 		}
 	}
 }
@@ -117,7 +119,7 @@ func PrintResults(formatOutput string) error {
 
 	prepareAllSummary()
 
-	if formatOutput == "JSON" {
+	if types.IsJSONoutput {
 		err := printJSONOutput()
 		if err != nil {
 			return err
