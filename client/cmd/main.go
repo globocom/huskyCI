@@ -25,26 +25,26 @@ func main() {
 	config.SetConfigs()
 	fmt.Println(fmt.Sprintf("[HUSKYCI][*] %s -> %s", config.RepositoryBranch, config.RepositoryURL))
 
-	// step 1: start analysis and get a RID.
+	// step 1: start analysis and get its RID.
 	RID, err := analysis.StartAnalysis()
 	if err != nil {
-		fmt.Println("[HUSKYCI][ERROR] Sending request to HuskyCI:", err)
+		fmt.Println("[HUSKYCI][ERROR] Sending request to huskyCI:", err)
 		os.Exit(1)
 	}
 
 	fmt.Println("[HUSKYCI][*] huskyCI analysis started!", RID)
 
-	// step 2: keep querying husky API to check if a given analysis has already finished.
+	// step 2: keep querying huskyCI API to check if a given analysis has already finished.
 	huskyAnalysis, err := analysis.MonitorAnalysis(RID)
 	if err != nil {
 		fmt.Println(fmt.Sprintf("[HUSKYCI][ERROR] Monitoring analysis %s: %s", RID, err))
 		os.Exit(1)
 	}
 
-	// step 3: analyze result
-	analysis.AnalyzeResult(huskyAnalysis)
+	// step 3: prepares huskyCI results into structs
+	analysis.PrepareResults(huskyAnalysis)
 
-	// step 4: print output
+	// step 4: print output based on os.Args(1) parameter received
 	formatOutput := ""
 	if len(os.Args) > 1 {
 		formatOutput = "JSON"
@@ -57,18 +57,20 @@ func main() {
 
 	// step 5: block developer CI if vulnerabilities were found
 	if types.FoundVuln == true {
+		if len(os.Args) < 1 {
+			fmt.Printf("[HUSKYCI][*] Some high issues were found :(\n")
+			os.Exit(1)
+		}
 		os.Exit(1)
 	}
 
-	if types.FoundInfo == true {
+	if types.FoundInfo == true && len(os.Args) < 1 {
 		fmt.Printf("[HUSKYCI][*] Some low/info issues were found :|\n")
-		fmt.Println()
 		os.Exit(0)
 	}
 
 	if len(os.Args) < 1 {
-		fmt.Printf("[HUSKYCI][*] Nice! No issues Found :)\n")
-		fmt.Println()
+		fmt.Printf("[HUSKYCI][*] Nice! No issues were found :)\n")
 	}
 	os.Exit(0)
 }
