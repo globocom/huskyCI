@@ -23,15 +23,14 @@ func main() {
 		os.Exit(1)
 	}
 	config.SetConfigs()
-	fmt.Println(fmt.Sprintf("[HUSKYCI][*] %s -> %s", config.RepositoryBranch, config.RepositoryURL))
 
 	// step 1: start analysis and get its RID.
+	fmt.Println(fmt.Sprintf("[HUSKYCI][*] %s -> %s", config.RepositoryBranch, config.RepositoryURL))
 	RID, err := analysis.StartAnalysis()
 	if err != nil {
 		fmt.Println("[HUSKYCI][ERROR] Sending request to huskyCI:", err)
 		os.Exit(1)
 	}
-
 	fmt.Println("[HUSKYCI][*] huskyCI analysis started!", RID)
 
 	// step 2: keep querying huskyCI API to check if a given analysis has already finished.
@@ -56,21 +55,25 @@ func main() {
 	}
 
 	// step 5: block developer CI if vulnerabilities were found
-	if types.FoundVuln == true {
-		if len(os.Args) < 1 {
-			fmt.Printf("[HUSKYCI][*] Some high issues were found :(\n")
-			os.Exit(1)
+	if types.FoundVuln == false && types.FoundInfo == false {
+		if len(os.Args) <= 1 {
+			fmt.Printf("[HUSKYCI][*] Nice! No issues were found :)\n")
 		}
-		os.Exit(1)
-	}
-
-	if types.FoundInfo == true && len(os.Args) < 1 {
-		fmt.Printf("[HUSKYCI][*] Some low/info issues were found :|\n")
 		os.Exit(0)
 	}
 
-	if len(os.Args) < 1 {
-		fmt.Printf("[HUSKYCI][*] Nice! No issues were found :)\n")
+	if types.FoundVuln == false && types.FoundInfo == true {
+		if len(os.Args) <= 1 {
+			fmt.Printf("[HUSKYCI][*] Some LOW/INFO issues were found :|\n")
+		}
+		os.Exit(0)
 	}
-	os.Exit(0)
+
+	if types.FoundVuln == true {
+		if len(os.Args) <= 1 {
+			fmt.Printf("[HUSKYCI][*] Some HIGH/MEDIUM issues were found :(\n")
+		}
+	}
+
+	os.Exit(1)
 }

@@ -137,7 +137,6 @@ func prepareRetirejsOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo s
 		return
 	}
 
-	foundVuln := false
 	retirejsOutput := []types.ResultsStruct{}
 	err := json.Unmarshal([]byte(mongoDBcontainerOutput), &retirejsOutput)
 	if err != nil {
@@ -168,10 +167,6 @@ func prepareRetirejsOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo s
 				}
 			}
 		}
-	}
-
-	if foundVuln {
-		types.FoundVuln = true
 	}
 }
 
@@ -477,9 +472,9 @@ func printAllSummary() {
 
 	if outputJSON.Summary.SafetySummary.FoundVuln || outputJSON.Summary.SafetySummary.FoundInfo {
 		fmt.Printf("[HUSKYCI][SUMMARY] Python -> Safety\n")
-		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", outputJSON.Summary.BanditSummary.HighVuln)
-		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", outputJSON.Summary.BanditSummary.MediumVuln)
-		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", outputJSON.Summary.BanditSummary.LowVuln)
+		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", outputJSON.Summary.SafetySummary.HighVuln)
+		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", outputJSON.Summary.SafetySummary.MediumVuln)
+		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", outputJSON.Summary.SafetySummary.LowVuln)
 		fmt.Println()
 	}
 
