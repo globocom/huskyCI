@@ -16,38 +16,77 @@ import (
 func main() {
 
 	types.FoundVuln = false
+	types.IsJSONoutput = false
+
+	if len(os.Args) > 1 {
+		if os.Args[1] == "JSON" {
+			types.IsJSONoutput = true
+		}
+	}
 
 	// step 0: check and set huskyci-client configuration
 	if err := config.CheckEnvVars(); err != nil {
-		fmt.Println("[HUSKYCI][ERROR] Check environment variables:", err)
+		if !types.IsJSONoutput {
+			fmt.Println("[HUSKYCI][ERROR] Check environment variables:", err)
+		}
 		os.Exit(1)
 	}
 	config.SetConfigs()
-	fmt.Println(fmt.Sprintf("[HUSKYCI][*] %s -> %s", config.RepositoryBranch, config.RepositoryURL))
 
-	// step 1: start analysis and get a RID.
+	// step 1: start analysis and get its RID.
+	if !types.IsJSONoutput {
+		fmt.Println(fmt.Sprintf("[HUSKYCI][*] %s -> %s", config.RepositoryBranch, config.RepositoryURL))
+	}
 	RID, err := analysis.StartAnalysis()
 	if err != nil {
-		fmt.Println("[HUSKYCI][ERROR] Sending request to HuskyCI:", err)
+		fmt.Println("[HUSKYCI][ERROR] Sending request to huskyCI:", err)
 		os.Exit(1)
 	}
+	if !types.IsJSONoutput {
+		fmt.Println("[HUSKYCI][*] huskyCI analysis started!", RID)
+	}
 
-	fmt.Println("[HUSKYCI][*] HuskyCI analysis started!", RID)
-
-	// step 2: keep querying husky API to check if a given analysis has already finished.
+	// step 2: keep querying huskyCI API to check if a given analysis has already finished.
 	huskyAnalysis, err := analysis.MonitorAnalysis(RID)
 	if err != nil {
 		fmt.Println(fmt.Sprintf("[HUSKYCI][ERROR] Monitoring analysis %s: %s", RID, err))
 		os.Exit(1)
 	}
 
-	// step 3: analyze result and return to CI the final result.
-	analysis.AnalyzeResult(huskyAnalysis)
+	// step 3: prepares huskyCI results into structs
+	analysis.PrepareResults(huskyAnalysis)
 
-	if types.FoundVuln == true {
+	// step 4: print output based on os.Args(1) parameter received
+	formatOutput := ""
+	if len(os.Args) > 1 {
+		formatOutput = "JSON"
+	}
+	err = analysis.PrintResults(formatOutput)
+	if err != nil {
+		fmt.Println("[HUSKYCI][ERROR] Printing output:", err)
 		os.Exit(1)
 	}
 
-	os.Exit(0)
+	// step 5: block developer CI if vulnerabilities were found
+	if types.FoundVuln == false && types.FoundInfo == false {
+		if !types.IsJSONoutput {
+			fmt.Printf("[HUSKYCI][*] Nice! No issues were found :)\n")
+		}
+		os.Exit(0)
+	}
 
+	if types.FoundVuln == false && types.FoundInfo == true {
+		if !types.IsJSONoutput {
+			fmt.Printf("[HUSKYCI][*] Some LOW/INFO issues were found :|\n")
+		}
+		os.Exit(0)
+	}
+
+	if types.FoundVuln == true {
+		if !types.IsJSONoutput {
+			fmt.Printf("[HUSKYCI][*] Some HIGH/MEDIUM issues were found :(\n")
+		}
+	}
+
+	os.Exit(1)
 }

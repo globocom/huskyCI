@@ -13,6 +13,12 @@ import (
 // FoundVuln is the boolean that will be checked to return an os.exit(0) or os.exit(1)
 var FoundVuln bool
 
+// FoundInfo is the boolean that will be checked to verify if only low/info severity vulnerabilites were found.
+var FoundInfo bool
+
+// IsJSONoutput is the boolean that will be checked to verity if the output is expected to be printed in a JSON format
+var IsJSONoutput bool
+
 // JSONPayload is a struct that represents the JSON payload needed to make a HuskyCI API request.
 type JSONPayload struct {
 	RepositoryURL    string `json:"repositoryURL"`
@@ -56,42 +62,64 @@ type SecurityTest struct {
 
 // HuskyCIVulnerability is the struct that stores vulnerability information.
 type HuskyCIVulnerability struct {
-	SecurityTool   string
-	Severity       string
-	Confidence     string
-	File           string
-	Line           string
-	Code           string
-	Details        string
-	Type           string
-	VunerableBelow string
+	Language       string `json:"language,omitempty"`
+	SecurityTool   string `json:"securitytool,omitempty"`
+	Severity       string `json:"severity,omitempty"`
+	Confidence     string `json:"confidence,omitempty"`
+	File           string `json:"file,omitempty"`
+	Line           string `json:"line,omitempty"`
+	Code           string `json:"code,omitempty"`
+	Details        string `json:"details,omitempty"`
+	Type           string `json:"type,omitempty"`
+	VunerableBelow string `json:"vulnerablebelow,omitempty"`
+	Version        string `json:"version,omitempty"`
 }
 
 // JSONOutput is a truct that represents huskyCI output in a JSON format.
 type JSONOutput struct {
-	GoResults         GoResults         `json:"golang"`
-	PythonResults     PythonResults     `json:"python"`
-	JavaScriptResults JavaScriptResults `json:"javascript"`
-	RubyResults       RubyResults       `json:"ruby"`
+	GoResults         GoResults         `json:"goresults,omitempty"`
+	PythonResults     PythonResults     `json:"pythonresults,omitempty"`
+	JavaScriptResults JavaScriptResults `json:"javascriptresults,omitempty"`
+	RubyResults       RubyResults       `json:"rubyresults,omitempty"`
+	Summary           Summary           `json:"summary,omitempty"`
 }
 
 // GoResults represents all Golang security tests results.
 type GoResults struct {
-	GosecOutput []HuskyCIVulnerability
+	GosecOutput []HuskyCIVulnerability `json:"gosecoutput,omitempty"`
 }
 
 // PythonResults represents all Python security tests results.
 type PythonResults struct {
-	BanditOutput []HuskyCIVulnerability
-	SafetyOutput []HuskyCIVulnerability
+	BanditOutput []HuskyCIVulnerability `json:"banditoutput,omitempty"`
+	SafetyOutput []HuskyCIVulnerability `json:"safetyoutput,omitempty"`
 }
 
 // JavaScriptResults represents all JavaScript security tests results.
 type JavaScriptResults struct {
-	RetirejsResult []HuskyCIVulnerability
+	RetirejsResult []HuskyCIVulnerability `json:"retirejsoutput,omitempty"`
 }
 
 // RubyResults represents all Ruby security tests results.
 type RubyResults struct {
-	BrakemanOutput []HuskyCIVulnerability
+	BrakemanOutput []HuskyCIVulnerability `json:"brakemanoutput,omitempty"`
+}
+
+// Summary holds a summary of the information on all security tests.
+type Summary struct {
+	GosecSummary    HuskyCISummary `json:"gosecsummary,omitempty"`
+	BanditSummary   HuskyCISummary `json:"banditsummary,omitempty"`
+	SafetySummary   HuskyCISummary `json:"safetysummary,omitempty"`
+	RetirejsSummary HuskyCISummary `json:"retirejssummary,omitempty"`
+	BrakemanSummary HuskyCISummary `json:"brakemansummary,omitempty"`
+	TotalSummary    HuskyCISummary `json:"totalsummary,omitempty"`
+}
+
+// HuskyCISummary is the struct that holds summary information.
+type HuskyCISummary struct {
+	FoundVuln  bool `json:"foundvuln,omitempty"`
+	FoundInfo  bool `json:"foundinfo,omitempty"`
+	LowVuln    int  `json:"lowvuln,omitempty"`
+	MediumVuln int  `json:"mediumvuln,omitempty"`
+	HighVuln   int  `json:"highvuln,omitempty"`
 }

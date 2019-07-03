@@ -109,6 +109,10 @@ pull-images:
 run-client: build-client
 	./"$(HUSKYCICLIENTBIN)"
 
+## Runs huskyci-client with JSON output
+run-client-json: build-client
+	./"$(HUSKYCICLIENTBIN)" JSON
+
 ## Run huskyci-client compiling it in Linux arch
 run-client-linux: build-client-linux
 	./"$(HUSKYCICLIENTBIN)"
