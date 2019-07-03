@@ -107,7 +107,6 @@ func MonitorAnalysis(RID string) (types.Analysis, error) {
 
 // PrepareResults analyzes the result received from HuskyCI API.
 func PrepareResults(analysisResult types.Analysis) {
-	fmt.Println()
 	for _, container := range analysisResult.Containers {
 		prepareSecurityTestResult(container)
 	}
