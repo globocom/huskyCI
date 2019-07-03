@@ -115,6 +115,7 @@ type Summary struct {
 // HuskyCISummary is the struct that holds summary information.
 type HuskyCISummary struct {
 	FoundVuln  bool `json:"foundvuln,omitempty"`
+	FoundInfo  bool `json:"foundinfo,omitempty"`
 	LowVuln    int  `json:"lowvuln,omitempty"`
 	MediumVuln int  `json:"mediumvuln,omitempty"`
 	HighVuln   int  `json:"highvuln,omitempty"`
