@@ -214,12 +214,13 @@ func prepareSafetyOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo str
 		return
 	}
 
-	if mongoDBcontainerInfo == "Requirements not found or this project uses latest dependencies." {
+	if mongoDBcontainerInfo == "Requirements not found." {
 		safetyVuln := types.HuskyCIVulnerability{}
 		safetyVuln.Language = "Python"
 		safetyVuln.SecurityTool = "Safety"
 		safetyVuln.Severity = "info"
-		safetyVuln.Details = "requirements.txt not found or this project uses latest dependencies"
+		safetyVuln.Details = "requirements.txt not found"
+		types.FoundInfo = true
 
 		pythonResults.SafetyOutput = append(pythonResults.SafetyOutput, safetyVuln)
 
@@ -296,6 +297,7 @@ func printJSONOutput() error {
 func printSTDOUTOutput() {
 
 	for _, issue := range outputJSON.GoResults.GosecOutput {
+		fmt.Println()
 		fmt.Printf("[HUSKYCI][!] Language: %s\n", issue.Language)
 		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
 		fmt.Printf("[HUSKYCI][!] Severity: %s\n", issue.Severity)
@@ -304,10 +306,10 @@ func printSTDOUTOutput() {
 		fmt.Printf("[HUSKYCI][!] File: %s\n", issue.File)
 		fmt.Printf("[HUSKYCI][!] Line: %s\n", issue.Line)
 		fmt.Printf("[HUSKYCI][!] Code: %s\n", issue.Code)
-		fmt.Println()
 	}
 
 	for _, issue := range outputJSON.PythonResults.BanditOutput {
+		fmt.Println()
 		fmt.Printf("[HUSKYCI][!] Language: %s\n", issue.Language)
 		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
 		fmt.Printf("[HUSKYCI][!] Severity: %s\n", issue.Severity)
@@ -316,22 +318,22 @@ func printSTDOUTOutput() {
 		fmt.Printf("[HUSKYCI][!] File: %s\n", issue.File)
 		fmt.Printf("[HUSKYCI][!] Line: %s\n", issue.Line)
 		fmt.Printf("[HUSKYCI][!] Code:\n%s\n", issue.Code)
-		fmt.Println()
 	}
 
 	for _, issue := range outputJSON.PythonResults.SafetyOutput {
+		fmt.Println()
 		fmt.Printf("[HUSKYCI][!] Language: %s\n", issue.Language)
 		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
 		fmt.Printf("[HUSKYCI][!] Severity: %s\n", issue.Severity)
 		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
-		if issue.Details != "requirements.txt not found or this project uses latest dependencies" {
+		if issue.Details != "requirements.txt not found" {
 			fmt.Printf("[HUSKYCI][!] Code: %s\n", issue.Code)
 			fmt.Printf("[HUSKYCI][!] Vulnerable Below: %s\n", issue.VunerableBelow)
 		}
-		fmt.Println()
 	}
 
 	for _, issue := range outputJSON.RubyResults.BrakemanOutput {
+		fmt.Println()
 		fmt.Printf("[HUSKYCI][!] Language: %s\n", issue.Language)
 		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
 		fmt.Printf("[HUSKYCI][!] Confidence: %s\n", issue.Confidence)
@@ -344,13 +346,13 @@ func printSTDOUTOutput() {
 	}
 
 	for _, issue := range outputJSON.JavaScriptResults.RetirejsResult {
+		fmt.Println()
 		fmt.Printf("[HUSKYCI][!] Language: %s\n", issue.Language)
 		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
 		fmt.Printf("[HUSKYCI][!] Severity: %s\n", issue.Severity)
 		fmt.Printf("[HUSKYCI][!] Code: %s\n", issue.Code)
 		fmt.Printf("[HUSKYCI][!] Version: %s\n", issue.Version)
 		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
-		fmt.Println()
 	}
 
 	printAllSummary()
@@ -455,51 +457,51 @@ func prepareAllSummary() {
 func printAllSummary() {
 
 	if outputJSON.Summary.GosecSummary.FoundVuln || outputJSON.Summary.GosecSummary.FoundInfo {
+		fmt.Println()
 		fmt.Printf("[HUSKYCI][SUMMARY] Go -> GoSec\n")
 		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", outputJSON.Summary.GosecSummary.HighVuln)
 		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", outputJSON.Summary.GosecSummary.MediumVuln)
 		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", outputJSON.Summary.GosecSummary.LowVuln)
-		fmt.Println()
 	}
 
 	if outputJSON.Summary.BanditSummary.FoundVuln || outputJSON.Summary.BanditSummary.FoundInfo {
+		fmt.Println()
 		fmt.Printf("[HUSKYCI][SUMMARY] Python -> Bandit\n")
 		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", outputJSON.Summary.BanditSummary.HighVuln)
 		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", outputJSON.Summary.BanditSummary.MediumVuln)
 		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", outputJSON.Summary.BanditSummary.LowVuln)
-		fmt.Println()
 	}
 
 	if outputJSON.Summary.SafetySummary.FoundVuln || outputJSON.Summary.SafetySummary.FoundInfo {
+		fmt.Println()
 		fmt.Printf("[HUSKYCI][SUMMARY] Python -> Safety\n")
 		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", outputJSON.Summary.SafetySummary.HighVuln)
 		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", outputJSON.Summary.SafetySummary.MediumVuln)
 		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", outputJSON.Summary.SafetySummary.LowVuln)
-		fmt.Println()
 	}
 
 	if outputJSON.Summary.BrakemanSummary.FoundVuln || outputJSON.Summary.BrakemanSummary.FoundInfo {
+		fmt.Println()
 		fmt.Printf("[HUSKYCI][SUMMARY] Ruby -> Brakeman\n")
 		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", outputJSON.Summary.BrakemanSummary.HighVuln)
 		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", outputJSON.Summary.BrakemanSummary.MediumVuln)
 		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", outputJSON.Summary.BrakemanSummary.LowVuln)
-		fmt.Println()
 	}
 
 	if outputJSON.Summary.RetirejsSummary.FoundVuln || outputJSON.Summary.RetirejsSummary.FoundInfo {
+		fmt.Println()
 		fmt.Printf("[HUSKYCI][SUMMARY] JavaScript -> RetireJS\n")
 		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", outputJSON.Summary.RetirejsSummary.HighVuln)
 		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", outputJSON.Summary.RetirejsSummary.MediumVuln)
 		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", outputJSON.Summary.RetirejsSummary.LowVuln)
-		fmt.Println()
 	}
 
 	if outputJSON.Summary.TotalSummary.FoundVuln || outputJSON.Summary.TotalSummary.FoundInfo {
+		fmt.Println()
 		fmt.Printf("[HUSKYCI][SUMMARY] Total\n")
 		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", outputJSON.Summary.TotalSummary.HighVuln)
 		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", outputJSON.Summary.TotalSummary.MediumVuln)
 		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", outputJSON.Summary.TotalSummary.LowVuln)
 		fmt.Println()
 	}
-
 }
