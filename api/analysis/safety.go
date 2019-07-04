@@ -40,7 +40,7 @@ func SafetyStartAnalysis(CID string, cOutput string) {
 		updateContainerAnalysisQuery := bson.M{
 			"$set": bson.M{
 				"containers.$.cResult": "warning", // will not fail CI now
-				"containers.$.cInfo":   "Requirements not found or this project uses latest dependencies.",
+				"containers.$.cInfo":   "Requirements not found.",
 			},
 		}
 		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
