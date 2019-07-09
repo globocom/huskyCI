@@ -287,7 +287,7 @@ func prepareSafetyOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo str
 		safetyVuln.SecurityTool = "Safety"
 		safetyVuln.Severity = "high"
 		safetyVuln.Details = issue.Comment
-		safetyVuln.Code = issue.Version
+		safetyVuln.Code = issue.Dependency + " " + issue.Version
 		safetyVuln.VunerableBelow = issue.Below
 
 		pythonResults.SafetyOutput = append(pythonResults.SafetyOutput, safetyVuln)
@@ -338,11 +338,11 @@ func printSTDOUTOutput() {
 		fmt.Printf("[HUSKYCI][!] Language: %s\n", issue.Language)
 		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
 		fmt.Printf("[HUSKYCI][!] Severity: %s\n", issue.Severity)
-		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
 		if issue.Details != "requirements.txt not found" && !strings.Contains(issue.Details, "Unpinned requirement ") {
 			fmt.Printf("[HUSKYCI][!] Code: %s\n", issue.Code)
 			fmt.Printf("[HUSKYCI][!] Vulnerable Below: %s\n", issue.VunerableBelow)
 		}
+		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
 	}
 
 	for _, issue := range outputJSON.RubyResults.BrakemanOutput {
