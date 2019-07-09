@@ -86,3 +86,16 @@ func SanitizeSafetyJSON(s string) string {
 	s2 := strings.Replace(s1, "\\\"", "\\\\\"", -1)
 	return s2
 }
+
+// AdjustWarningMessage returns the Safety Warning string that will be printed.
+func AdjustWarningMessage(warningRaw string) string {
+	warning := strings.Split(warningRaw, ":")
+	if len(warning) > 1 {
+		warning[1] = strings.Replace(warning[1], "safety_huskyci_analysis_requirements_raw.txt", "'requirements.txt'", -1)
+		warning[1] = strings.Replace(warning[1], " unpinned", "Unpinned", -1)
+
+		return (warning[1] + " huskyCI can check it if you pin it in a format such as this: \"mypacket==3.2.9\" :D")
+	}
+
+	return warningRaw
+}
