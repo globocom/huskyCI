@@ -143,7 +143,10 @@ safety:
       if [ -f requirements.txt ]; then
         cat requirements.txt | grep '=' | grep -v '#' 1> safety_huskyci_analysis_requirements.txt
         safety check -r safety_huskyci_analysis_requirements.txt --json > safety_huskyci_analysis_output.json 2> /tmp/errorRunning
-        if [ $? -eq 0 ]; then
+        if [ -f /tmp/errorRunning ]; then
+          if grep -q "unpinned requirement" "/tmp/errorRunning"; then
+            cat /tmp/errorRunning
+          fi
           chmod +x /script.sh
           /script.sh safety_huskyci_analysis_output.json
           cat output.json
