@@ -227,12 +227,25 @@ func prepareSafetyOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo str
 		return
 	}
 
+	if mongoDBcontainerInfo == "Internal error running Safety." {
+		safetyVuln := types.HuskyCIVulnerability{}
+		safetyVuln.Language = "Python"
+		safetyVuln.SecurityTool = "Safety"
+		safetyVuln.Severity = "info"
+		safetyVuln.Details = "Internal error running Safety."
+		types.FoundInfo = true
+
+		pythonResults.SafetyOutput = append(pythonResults.SafetyOutput, safetyVuln)
+
+		return
+	}
+
 	// Safety returns warnings and the json output in the same string, which need to be split
 	var cOutputSanitized string
 	safetyOutput := types.SafetyOutput{}
 	warningFound := strings.Contains(mongoDBcontainerOutput, "Warning: unpinned requirement ")
 	if !warningFound {
-		// only issue found
+		// only issues found
 		cOutputSanitized = util.SanitizeSafetyJSON(mongoDBcontainerOutput)
 		err := json.Unmarshal([]byte(cOutputSanitized), &safetyOutput)
 		if err != nil {
@@ -258,7 +271,7 @@ func prepareSafetyOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo str
 			safetyVuln.Language = "Python"
 			safetyVuln.SecurityTool = "Safety"
 			safetyVuln.Severity = "warning"
-			safetyVuln.Details = warning
+			safetyVuln.Details = util.AdjustWarningMessage(warning)
 
 			pythonResults.SafetyOutput = append(pythonResults.SafetyOutput, safetyVuln)
 			types.FoundInfo = true
@@ -274,7 +287,7 @@ func prepareSafetyOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo str
 		safetyVuln.SecurityTool = "Safety"
 		safetyVuln.Severity = "high"
 		safetyVuln.Details = issue.Comment
-		safetyVuln.Code = issue.Version
+		safetyVuln.Code = issue.Dependency + " " + issue.Version
 		safetyVuln.VunerableBelow = issue.Below
 
 		pythonResults.SafetyOutput = append(pythonResults.SafetyOutput, safetyVuln)
@@ -325,11 +338,11 @@ func printSTDOUTOutput() {
 		fmt.Printf("[HUSKYCI][!] Language: %s\n", issue.Language)
 		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
 		fmt.Printf("[HUSKYCI][!] Severity: %s\n", issue.Severity)
-		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
-		if issue.Details != "requirements.txt not found" {
+		if issue.Details != "requirements.txt not found" && !strings.Contains(issue.Details, "Unpinned requirement ") {
 			fmt.Printf("[HUSKYCI][!] Code: %s\n", issue.Code)
 			fmt.Printf("[HUSKYCI][!] Vulnerable Below: %s\n", issue.VunerableBelow)
 		}
+		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
 	}
 
 	for _, issue := range outputJSON.RubyResults.BrakemanOutput {
