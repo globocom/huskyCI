@@ -245,7 +245,7 @@ func prepareSafetyOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo str
 	safetyOutput := types.SafetyOutput{}
 	warningFound := strings.Contains(mongoDBcontainerOutput, "Warning: unpinned requirement ")
 	if !warningFound {
-		// only issue found
+		// only issues found
 		cOutputSanitized = util.SanitizeSafetyJSON(mongoDBcontainerOutput)
 		err := json.Unmarshal([]byte(cOutputSanitized), &safetyOutput)
 		if err != nil {
@@ -271,7 +271,7 @@ func prepareSafetyOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo str
 			safetyVuln.Language = "Python"
 			safetyVuln.SecurityTool = "Safety"
 			safetyVuln.Severity = "warning"
-			safetyVuln.Details = warning
+			safetyVuln.Details = util.AdjustWarningMessage(warning)
 
 			pythonResults.SafetyOutput = append(pythonResults.SafetyOutput, safetyVuln)
 			types.FoundInfo = true
@@ -339,7 +339,7 @@ func printSTDOUTOutput() {
 		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
 		fmt.Printf("[HUSKYCI][!] Severity: %s\n", issue.Severity)
 		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
-		if issue.Details != "requirements.txt not found" {
+		if issue.Details != "requirements.txt not found" && !strings.Contains(issue.Details, "Unpinned requirement ") {
 			fmt.Printf("[HUSKYCI][!] Code: %s\n", issue.Code)
 			fmt.Printf("[HUSKYCI][!] Vulnerable Below: %s\n", issue.VunerableBelow)
 		}
