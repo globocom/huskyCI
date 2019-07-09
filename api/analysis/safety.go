@@ -6,7 +6,6 @@ package analysis
 
 import (
 	"encoding/json"
-	"fmt"
 	"strings"
 
 	"github.com/globocom/huskyCI/api/db"
@@ -35,6 +34,21 @@ func SafetyStartAnalysis(CID string, cOutput string) {
 	var outputJSON string
 	analysisQuery := map[string]interface{}{"containers.CID": CID}
 
+	errorSafety := strings.Contains(cOutput, "ERROR_RUNNING_SAFETY")
+	if errorSafety {
+		updateContainerAnalysisQuery := bson.M{
+			"$set": bson.M{
+				"containers.$.cResult": "warning", // will not fail CI now
+				"containers.$.cInfo":   "Internal error running Safety.",
+			},
+		}
+		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+		if err != nil {
+			log.Warning("SafetyStartAnalysis", "SAFETY", 2007, err)
+		}
+		return
+	}
+
 	requirementsNotFound := strings.Contains(cOutput, "ERROR_REQ_NOT_FOUND")
 	if requirementsNotFound {
 		updateContainerAnalysisQuery := bson.M{
@@ -52,11 +66,10 @@ func SafetyStartAnalysis(CID string, cOutput string) {
 
 	errorCloning := strings.Contains(cOutput, "ERROR_CLONING")
 	if errorCloning {
-		errorOutput := fmt.Sprintf("Error cloning: %s", cOutput)
 		updateContainerAnalysisQuery := bson.M{
 			"$set": bson.M{
 				"containers.$.cResult": "error",
-				"containers.$.cInfo":   errorOutput,
+				"containers.$.cInfo":   "Error clonning repository.",
 			},
 		}
 		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)

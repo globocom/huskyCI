@@ -227,6 +227,19 @@ func prepareSafetyOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo str
 		return
 	}
 
+	if mongoDBcontainerInfo == "Internal error running Safety." {
+		safetyVuln := types.HuskyCIVulnerability{}
+		safetyVuln.Language = "Python"
+		safetyVuln.SecurityTool = "Safety"
+		safetyVuln.Severity = "info"
+		safetyVuln.Details = "Internal error running Safety."
+		types.FoundInfo = true
+
+		pythonResults.SafetyOutput = append(pythonResults.SafetyOutput, safetyVuln)
+
+		return
+	}
+
 	// Safety returns warnings and the json output in the same string, which need to be split
 	var cOutputSanitized string
 	safetyOutput := types.SafetyOutput{}
