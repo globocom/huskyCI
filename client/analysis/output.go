@@ -154,7 +154,7 @@ func prepareRetirejsOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo s
 				retirejsVuln.Code = result.Component
 				retirejsVuln.Version = result.Version
 				for _, info := range vulnerability.Info {
-					retirejsVuln.Details = retirejsVuln.Details + info
+					retirejsVuln.Details = retirejsVuln.Details + info + "\n"
 				}
 				retirejsVuln.Details = retirejsVuln.Details + vulnerability.Identifiers.Summary
 
