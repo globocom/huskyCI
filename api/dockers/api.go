@@ -72,7 +72,7 @@ func NewDocker() (*Docker, error) {
 
 // CreateContainer creates a new container
 func (d Docker) CreateContainer(analysis types.Analysis, image string, cmd string) (string, error) {
-	cmd = util.HandleCmd(analysis.URL, analysis.Branch, cmd)
+	cmd = util.HandleCmd(analysis.URL, analysis.Branch, analysis.InternalDepURL, cmd)
 	ctx := goContext.Background()
 	resp, err := d.client.ContainerCreate(ctx, &container.Config{
 		Image: image,
