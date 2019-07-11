@@ -107,6 +107,9 @@ type RubyResults struct {
 
 // Summary holds a summary of the information on all security tests.
 type Summary struct {
+	URL             string         `json:"repositoryURL"`
+	Branch          string         `json:"repositoryBranch"`
+	RID             string         `json:"RID"`
 	GosecSummary    HuskyCISummary `json:"gosecsummary,omitempty"`
 	BanditSummary   HuskyCISummary `json:"banditsummary,omitempty"`
 	SafetySummary   HuskyCISummary `json:"safetysummary,omitempty"`

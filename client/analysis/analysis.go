@@ -53,6 +53,11 @@ func StartAnalysis() (string, error) {
 		return "", errors.New(errorMsg)
 	}
 
+	// Setting analysis values on the JSON output
+	outputJSON.Summary.URL = requestPayload.RepositoryURL
+	outputJSON.Summary.Branch = requestPayload.RepositoryBranch
+	outputJSON.Summary.RID = RID
+
 	return RID, nil
 }
 
