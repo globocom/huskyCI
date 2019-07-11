@@ -90,17 +90,19 @@ func ReceiveRequest(c echo.Context) error {
 	}
 
 	// check-01-c: is this a valid dependency URL?
-	regexpInternalDepURL := `https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)`
-	valid, err = regexp.MatchString(regexpInternalDepURL, repository.InternalDepURL)
-	if err != nil {
-		log.Error("ReceiveRequest", "ANALYSIS", 1008, "Repository Branch regexp ", err)
-		reply := map[string]interface{}{"success": false, "error": "internal error"}
-		return c.JSON(http.StatusInternalServerError, reply)
-	}
-	if !valid {
-		log.Error("ReceiveRequest", "ANALYSIS", 1021, repository.Branch)
-		reply := map[string]interface{}{"success": false, "error": "invalid internal dependency URL"}
-		return c.JSON(http.StatusBadRequest, reply)
+	if repository.InternalDepURL != "" {
+		regexpInternalDepURL := `https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)`
+		valid, err = regexp.MatchString(regexpInternalDepURL, repository.InternalDepURL)
+		if err != nil {
+			log.Error("ReceiveRequest", "ANALYSIS", 1008, "Repository Branch regexp ", err)
+			reply := map[string]interface{}{"success": false, "error": "internal error"}
+			return c.JSON(http.StatusInternalServerError, reply)
+		}
+		if !valid {
+			log.Error("ReceiveRequest", "ANALYSIS", 1021, repository.Branch)
+			reply := map[string]interface{}{"success": false, "error": "invalid internal dependency URL"}
+			return c.JSON(http.StatusBadRequest, reply)
+		}
 	}
 
 	// check-02: is this repository in MongoDB?
