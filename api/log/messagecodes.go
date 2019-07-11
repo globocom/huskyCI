@@ -43,6 +43,7 @@ var MsgCode = map[int]string{
 	1018: "Could not Unmarshall the following safetyOutput: ",
 	1019: "Error loading viper: ",
 	1020: "Error searching for an analysis: ",
+	1021: "Received an invalid internal dependency URL",
 
 	// MongoDB infos
 	21: "Connecting to MongoDB.",
