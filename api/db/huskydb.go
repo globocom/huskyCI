@@ -129,12 +129,13 @@ func InsertDBRepository(repository types.Repository) error {
 	}
 
 	newRepository := types.Repository{
-		URL:           repository.URL,
-		Branch:        repository.Branch,
-		SecurityTests: securityTestList,
-		CreatedAt:     repository.CreatedAt,
-		DeletedAt:     repository.DeletedAt,
-		Languages:     repository.Languages,
+		URL:            repository.URL,
+		Branch:         repository.Branch,
+		SecurityTests:  securityTestList,
+		CreatedAt:      repository.CreatedAt,
+		DeletedAt:      repository.DeletedAt,
+		Languages:      repository.Languages,
+		InternalDepURL: repository.InternalDepURL,
 	}
 
 	err = mongoHuskyCI.Conn.Insert(newRepository, mongoHuskyCI.RepositoryCollection)
