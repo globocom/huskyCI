@@ -96,9 +96,13 @@ retirejs:
     chmod 600 ~/.ssh/huskyci_id_rsa &&
     echo 'IdentityFile ~/.ssh/huskyci_id_rsa' >> /etc/ssh/ssh_config &&
     echo 'StrictHostKeyChecking no' >> /etc/ssh/ssh_config &&
+    useInternalDependencies=0
     git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneRetirejs
     if [ $? -eq 0 ]; then
       cd code
+      if [ "%INTERNAL_DEP_URL%" != "" ]; then
+        useInternalDependencies=1
+      fi
       if [ -f yarn.lock ]; then
         yarn install >/dev/null 2>&1
         retire -n --outputformat json --outputpath /tmp/results.json --exitwith 0 2>/dev/null
@@ -109,11 +113,17 @@ retirejs:
         retire -n --outputformat json --outputpath /tmp/results.json --exitwith 0 2>/dev/null
         cat /tmp/results.json
       elif [ -f package.json ] || [ -f package-lock.json ]; then
+        if [ $useInternalDependencies == 1 ]; then
+          npm config set registry %INTERNAL_DEP_URL%
+        fi
         npm install >/dev/null 2>&1
         retire -n --outputformat json --outputpath /tmp/results.json --exitwith 0 2>/dev/null
         cat /tmp/results.json 
       elif [ -f src/package.json ] || [ -f src/package-lock.json ]; then
         cd src/
+        if [ $useInternalDependencies == 1 ]; then
+          npm config set registry %INTERNAL_DEP_URL%
+        fi
         npm install >/dev/null 2>&1
         retire -n --outputformat json --outputpath /tmp/results.json --exitwith 0 2>/dev/null
         cat /tmp/results.json 
