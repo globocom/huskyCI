@@ -23,12 +23,13 @@ func StartAnalysis(RID string, repository types.Repository) {
 
 	// step 0: create a new analysis struct
 	newAnalysis := types.Analysis{
-		RID:        RID,
-		URL:        repository.URL,
-		Branch:     repository.Branch,
-		Status:     "running",
-		Containers: make([]types.Container, 0),
-		StartedAt:  time.Now(),
+		RID:            RID,
+		URL:            repository.URL,
+		Branch:         repository.Branch,
+		Status:         "running",
+		Containers:     make([]types.Container, 0),
+		StartedAt:      time.Now(),
+		InternalDepURL: repository.InternalDepURL,
 	}
 
 	// step 1: insert new analysis into MongoDB.
