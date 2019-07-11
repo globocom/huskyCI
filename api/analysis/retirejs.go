@@ -29,14 +29,9 @@ type RetirejsResult struct {
 
 //RetireJSVulnerabilities is a struct that holds the vulnerabilities found on a scan.
 type RetireJSVulnerabilities struct {
-	Info        []RetireJSVulnerabilityInfo        `json:"info"`
-	Severity    string                             `json:"severity"`
-	Identifiers []RetireJSVulnerabilityIdentifiers `json:"identifiers"`
-}
-
-//RetireJSVulnerabilityInfo is a struct that holds additional info on a vulnerability found.
-type RetireJSVulnerabilityInfo struct {
-	Info string
+	Info        []string                         `json:"info"`
+	Severity    string                           `json:"severity"`
+	Identifiers RetireJSVulnerabilityIdentifiers `json:"identifiers"`
 }
 
 //RetireJSVulnerabilityIdentifiers is a struct that holds identifiying information on a vulnerability found.
@@ -110,27 +105,27 @@ func RetirejsStartAnalysis(CID string, cOutput string) {
 		for _, result := range output.RetirejsResult {
 			for _, vulnerability := range result.Vulnerabilities {
 				if vulnerability.Severity == "high" || vulnerability.Severity == "medium" {
-				cResult = "failed"
-				break
+					cResult = "failed"
+					break
+				}
 			}
 		}
-	}
 
-	// step 3: update analysis' cResult into AnalyisCollection.
-	issueMessage := "No issues found."
-	if cResult != "passed" {
-		issueMessage = "Issues found."
+		// step 3: update analysis' cResult into AnalyisCollection.
+		issueMessage := "No issues found."
+		if cResult != "passed" {
+			issueMessage = "Issues found."
+		}
+		updateContainerAnalysisQuery := bson.M{
+			"$set": bson.M{
+				"containers.$.cResult": cResult,
+				"containers.$.cInfo":   issueMessage,
+			},
+		}
+		err = db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+		if err != nil {
+			log.Error("RetirejsStartAnalysis", "RETIREJS", 2007, err)
+			return
+		}
 	}
-	updateContainerAnalysisQuery := bson.M{
-		"$set": bson.M{
-			"containers.$.cResult": cResult,
-			"containers.$.cInfo":   issueMessage,
-		},
-	}
-	err = db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
-	if err != nil {
-		log.Error("RetirejsStartAnalysis", "RETIREJS", 2007, err)
-		return
-	}
-}
 }
