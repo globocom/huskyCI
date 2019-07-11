@@ -23,18 +23,20 @@ var IsJSONoutput bool
 type JSONPayload struct {
 	RepositoryURL    string `json:"repositoryURL"`
 	RepositoryBranch string `json:"repositoryBranch"`
+	InternalDepURL   string `json:"internaldepURL"`
 }
 
 // Analysis is the struct that stores all data from analysis performed.
 type Analysis struct {
-	ID            bson.ObjectId  `bson:"_id,omitempty"`
-	RID           string         `bson:"RID" json:"RID"`
-	URL           string         `bson:"repositoryURL" json:"repositoryURL"`
-	Branch        string         `bson:"repositoryBranch" json:"repositoryBranch"`
-	SecurityTests []SecurityTest `bson:"securityTests" json:"securityTests"`
-	Status        string         `bson:"status" json:"status"`
-	Result        string         `bson:"result" json:"result"`
-	Containers    []Container    `bson:"containers" json:"containers"`
+	ID             bson.ObjectId  `bson:"_id,omitempty"`
+	RID            string         `bson:"RID" json:"RID"`
+	URL            string         `bson:"repositoryURL" json:"repositoryURL"`
+	Branch         string         `bson:"repositoryBranch" json:"repositoryBranch"`
+	SecurityTests  []SecurityTest `bson:"securityTests" json:"securityTests"`
+	Status         string         `bson:"status" json:"status"`
+	Result         string         `bson:"result" json:"result"`
+	Containers     []Container    `bson:"containers" json:"containers"`
+	InternalDepURL string         `bson:"internaldepURL" json:"internaldepURL"`
 }
 
 // Container is the struct that stores all data from a container run.

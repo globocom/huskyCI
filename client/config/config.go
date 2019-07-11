@@ -19,6 +19,9 @@ var HuskyAPI string
 // RepositoryBranch stores the repository branch of the project to be analyzed.
 var RepositoryBranch string
 
+// InternalDepURL stores the URL needed by NPM to properly install internal dependencies.
+var InternalDepURL string
+
 // HuskyUseTLS stores if huskyCI is to use an HTTPS connection.
 var HuskyUseTLS bool
 
@@ -27,6 +30,7 @@ func SetConfigs() {
 	RepositoryURL = os.Getenv(`HUSKYCI_CLIENT_REPO_URL`)
 	RepositoryBranch = os.Getenv(`HUSKYCI_CLIENT_REPO_BRANCH`)
 	HuskyAPI = os.Getenv(`HUSKYCI_CLIENT_API_ADDR`)
+	InternalDepURL = os.Getenv(`HUSKYCI_CLIENT_NPM_DEP_URL`)
 	HuskyUseTLS = getUseTLS()
 }
 
@@ -38,6 +42,7 @@ func CheckEnvVars() error {
 		"HUSKYCI_CLIENT_REPO_URL",
 		"HUSKYCI_CLIENT_REPO_BRANCH",
 		// "HUSKYCI_CLIENT_API_USE_HTTPS" (optional)
+		// "HUSKYCI_CLIENT_NPM_DEP_URL" (optional)
 	}
 
 	var envIsSet bool

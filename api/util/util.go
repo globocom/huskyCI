@@ -13,12 +13,13 @@ const (
 	KeyFile = "api/api-tls-key.pem"
 )
 
-// HandleCmd will extract %GIT_REPO% and %GIT_BRANCH% from cmd and replace it with the proper repository URL.
-func HandleCmd(repositoryURL, repositoryBranch, cmd string) string {
+// HandleCmd will extract %GIT_REPO%, %GIT_BRANCH% and %INTERNAL_DEP_URL% from cmd and replace it with the proper repository URL.
+func HandleCmd(repositoryURL, repositoryBranch, internalDepURL, cmd string) string {
 	if repositoryURL != "" && repositoryBranch != "" && cmd != "" {
 		replace1 := strings.Replace(cmd, "%GIT_REPO%", repositoryURL, -1)
 		replace2 := strings.Replace(replace1, "%GIT_BRANCH%", repositoryBranch, -1)
-		return replace2
+		replace3 := strings.Replace(replace2, "%INTERNAL_DEP_URL%", internalDepURL, -1)
+		return replace3
 	}
 	return ""
 }

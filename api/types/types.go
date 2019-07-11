@@ -20,6 +20,7 @@ type Repository struct {
 	CreatedAt        time.Time      `bson:"createdAt" json:"createdAt"`
 	DeletedAt        time.Time      `bson:"deletedAt" json:"deletedAt"`
 	Languages        []Language     `bson:"languages" json:"languages"`
+	InternalDepURL   string         `bson:"internaldepURL" json:"internaldepURL"`
 }
 
 // SecurityTest is the struct that stores all data from the security tests to be executed.
@@ -35,16 +36,17 @@ type SecurityTest struct {
 
 // Analysis is the struct that stores all data from analysis performed.
 type Analysis struct {
-	ID            bson.ObjectId  `bson:"_id,omitempty"`
-	RID           string         `bson:"RID" json:"RID"`
-	URL           string         `bson:"repositoryURL" json:"repositoryURL"`
-	Branch        string         `bson:"repositoryBranch" json:"repositoryBranch"`
-	SecurityTests []SecurityTest `bson:"securityTests" json:"securityTests"`
-	Status        string         `bson:"status" json:"status"`
-	Result        string         `bson:"result" json:"result"`
-	Containers    []Container    `bson:"containers" json:"containers"`
-	StartedAt     time.Time      `bson:"startedAt" json:"startedAt"`
-	FinishedAt    time.Time      `bson:"finishedAt" json:"finishedAt"`
+	ID             bson.ObjectId  `bson:"_id,omitempty"`
+	RID            string         `bson:"RID" json:"RID"`
+	URL            string         `bson:"repositoryURL" json:"repositoryURL"`
+	Branch         string         `bson:"repositoryBranch" json:"repositoryBranch"`
+	SecurityTests  []SecurityTest `bson:"securityTests" json:"securityTests"`
+	Status         string         `bson:"status" json:"status"`
+	Result         string         `bson:"result" json:"result"`
+	Containers     []Container    `bson:"containers" json:"containers"`
+	StartedAt      time.Time      `bson:"startedAt" json:"startedAt"`
+	FinishedAt     time.Time      `bson:"finishedAt" json:"finishedAt"`
+	InternalDepURL string         `bson:"internaldepURL" json:"internaldepURL"`
 }
 
 // Container is the struct that stores all data from a container run.
