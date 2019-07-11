@@ -117,6 +117,10 @@ run-client-json: build-client
 run-client-linux: build-client-linux
 	./"$(HUSKYCICLIENTBIN)"
 
+## Run huskyci-client compiling it in Linux arch with JSON output
+run-client-linux-json: build-client-linux
+	./"$(HUSKYCICLIENTBIN)" JSON
+
 ## Runs ginkgo
 ginkgo:
 	ginkgo -r -keepGoing 
