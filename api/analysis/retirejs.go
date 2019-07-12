@@ -110,22 +110,24 @@ func RetirejsStartAnalysis(CID string, cOutput string) {
 				}
 			}
 		}
-
-		// step 3: update analysis' cResult into AnalyisCollection.
-		issueMessage := "No issues found."
-		if cResult != "passed" {
-			issueMessage = "Issues found."
-		}
-		updateContainerAnalysisQuery := bson.M{
-			"$set": bson.M{
-				"containers.$.cResult": cResult,
-				"containers.$.cInfo":   issueMessage,
-			},
-		}
-		err = db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
-		if err != nil {
-			log.Error("RetirejsStartAnalysis", "RETIREJS", 2007, err)
-			return
-		}
 	}
+
+	// step 3: update analysis' cResult into AnalyisCollection.
+	issueMessage := "No issues found."
+	if cResult != "passed" {
+		issueMessage = "Issues found."
+	}
+	updateContainerAnalysisQuery := bson.M{
+		"$set": bson.M{
+			"containers.$.cResult": cResult,
+			"containers.$.cInfo":   issueMessage,
+		},
+	}
+	err = db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+	if err != nil {
+		log.Error("RetirejsStartAnalysis", "RETIREJS", 2007, err)
+	}
+
+	return
+
 }
