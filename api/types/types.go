@@ -20,7 +20,7 @@ type Repository struct {
 	CreatedAt        time.Time      `bson:"createdAt" json:"createdAt"`
 	DeletedAt        time.Time      `bson:"deletedAt" json:"deletedAt"`
 	Languages        []Language     `bson:"languages" json:"languages"`
-	InternalDepURL   string         `bson:"internaldepURL" json:"internaldepURL"`
+	InternalDepURL   string         `bson:"internaldepURL,omitempty" json:"internaldepURL"`
 }
 
 // SecurityTest is the struct that stores all data from the security tests to be executed.
@@ -46,7 +46,7 @@ type Analysis struct {
 	Containers     []Container    `bson:"containers" json:"containers"`
 	StartedAt      time.Time      `bson:"startedAt" json:"startedAt"`
 	FinishedAt     time.Time      `bson:"finishedAt" json:"finishedAt"`
-	InternalDepURL string         `bson:"internaldepURL" json:"internaldepURL"`
+	InternalDepURL string         `bson:"internaldepURL,omitempty" json:"internaldepURL"`
 }
 
 // Container is the struct that stores all data from a container run.

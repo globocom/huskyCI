@@ -9,7 +9,7 @@ var MsgCode = map[int]string{
 	13: "Docker API is up and running.",
 	14: "Connection with MongoDB succeed.",
 	15: "Default securityTests found on MongoDB.",
-	16: "Request received to start the following branch and repository: ",
+	16: "Request received to start the following branch, repository and internal dependencies URL: ",
 	17: "Repository created into MongoDB: ",
 	18: "SecurityTest created into MongoDB: ",
 
@@ -75,6 +75,7 @@ var MsgCode = map[int]string{
 	2014: "Could not find an analysis using the following RID: ",
 	2015: "Could not create a new repository: ",
 	2016: "Could not create a new securityTest: ",
+	2017: "Could not update repository's internaldepURL: ",
 
 	// Docker API info
 	31: "Waiting pull image...",
