@@ -10,6 +10,7 @@ import (
 	"github.com/globocom/huskyCI/api/types"
 	"github.com/labstack/echo"
 	mgo "gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // GetAnalysis returns the status of a given analysis given a RID.
@@ -122,6 +123,20 @@ func ReceiveRequest(c echo.Context) error {
 			}
 			log.Error("ReceiveRequest", "ANALYSIS", 1009, err)
 		}
+		if repository.InternalDepURL != repositoryResult.InternalDepURL {
+			updateRepositoryQuery := bson.M{
+				"$set": bson.M{
+					"internaldepURL": repository.InternalDepURL,
+				},
+			}
+			err = db.UpdateOneDBRepository(repositoryQuery, updateRepositoryQuery)
+			if err != nil {
+				log.Error("ReceiveRequest", "ANALYSIS", 2017, err)
+				reply := map[string]interface{}{"success": false, "error": "internal error"}
+				return c.JSON(http.StatusInternalServerError, reply)
+			}
+			repositoryResult.InternalDepURL = repository.InternalDepURL
+		}
 	} else {
 		// repository not found! insert it into MongoDB with default securityTests
 		err = db.InsertDBRepository(repository)
@@ -140,7 +155,7 @@ func ReceiveRequest(c echo.Context) error {
 		}
 	}
 
-	log.Info("ReceiveRequest", "ANALYSIS", 16, repository.Branch, repository.URL)
+	log.Info("ReceiveRequest", "ANALYSIS", 16, repository.Branch, repository.URL, repository.InternalDepURL)
 	go analysis.StartAnalysis(RID, repositoryResult)
 	reply := map[string]interface{}{"success": true, "error": ""}
 	return c.JSON(http.StatusCreated, reply)
