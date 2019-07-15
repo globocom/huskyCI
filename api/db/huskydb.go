@@ -159,14 +159,15 @@ func InsertDBSecurityTest(securityTest types.SecurityTest) error {
 // InsertDBAnalysis inserts a new analysis into AnalysisCollection.
 func InsertDBAnalysis(analysis types.Analysis) error {
 	newAnalysis := bson.M{
-		"RID":          analysis.RID,
-		"URL":          analysis.URL,
-		"Branch":       analysis.Branch,
-		"securityTest": analysis.SecurityTests,
-		"status":       analysis.Status,
-		"result":       analysis.Result,
-		"containers":   analysis.Containers,
-		"startedAt":    analysis.StartedAt,
+		"RID":            analysis.RID,
+		"URL":            analysis.URL,
+		"Branch":         analysis.Branch,
+		"securityTest":   analysis.SecurityTests,
+		"status":         analysis.Status,
+		"result":         analysis.Result,
+		"containers":     analysis.Containers,
+		"startedAt":      analysis.StartedAt,
+		"internaldepURL": analysis.InternalDepURL,
 	}
 	err := mongoHuskyCI.Conn.Insert(newAnalysis, mongoHuskyCI.AnalysisCollection)
 	return err
