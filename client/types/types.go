@@ -75,6 +75,7 @@ type HuskyCIVulnerability struct {
 	Type           string `json:"type,omitempty"`
 	VunerableBelow string `json:"vulnerablebelow,omitempty"`
 	Version        string `json:"version,omitempty"`
+	Occurrences    int    `json:"occurrences,omitempty"`
 }
 
 // JSONOutput is a truct that represents huskyCI output in a JSON format.
