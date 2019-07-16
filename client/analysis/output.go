@@ -120,6 +120,8 @@ func prepareBanditOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo str
 // prepareRetirejsOutput will prepare Retirejs output.
 func prepareRetirejsOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo string) {
 
+	var tmpRetireJSResults types.JavaScriptResults
+
 	if mongoDBcontainerInfo == "No issues found." {
 		return
 	}
@@ -132,7 +134,7 @@ func prepareRetirejsOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo s
 		retirejsVuln.Confidence = "high"
 		retirejsVuln.Details = "It looks like your project doesn't have package.json or yarn.lock. huskyCI was not able to run RetireJS properly."
 
-		javaScriptResults.RetirejsResult = append(javaScriptResults.RetirejsResult, retirejsVuln)
+		tmpRetireJSResults.RetirejsResult = append(tmpRetireJSResults.RetirejsResult, retirejsVuln)
 
 		return
 	}
@@ -158,7 +160,7 @@ func prepareRetirejsOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo s
 				}
 				retirejsVuln.Details = retirejsVuln.Details + vulnerability.Identifiers.Summary
 
-				javaScriptResults.RetirejsResult = append(javaScriptResults.RetirejsResult, retirejsVuln)
+				tmpRetireJSResults.RetirejsResult = append(tmpRetireJSResults.RetirejsResult, retirejsVuln)
 
 				if retirejsVuln.Severity == "high" || retirejsVuln.Severity == "medium" {
 					types.FoundVuln = true
@@ -168,6 +170,9 @@ func prepareRetirejsOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo s
 			}
 		}
 	}
+
+	javaScriptResults.RetirejsResult = util.CountRetireJSOccurrences(tmpRetireJSResults.RetirejsResult)
+
 }
 
 // prepareBrakemanOutput will prepare Brakeman output.
@@ -363,6 +368,7 @@ func printSTDOUTOutput() {
 		fmt.Printf("[HUSKYCI][!] Language: %s\n", issue.Language)
 		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
 		fmt.Printf("[HUSKYCI][!] Severity: %s\n", issue.Severity)
+		fmt.Printf("[HUSKYCI][!] Occurrences: %d\n", issue.Occurrences)
 		fmt.Printf("[HUSKYCI][!] Code: %s\n", issue.Code)
 		fmt.Printf("[HUSKYCI][!] Version: %s\n", issue.Version)
 		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
@@ -440,13 +446,13 @@ func prepareAllSummary() {
 		switch issue.Severity {
 		case "low":
 			outputJSON.Summary.RetirejsSummary.FoundInfo = true
-			outputJSON.Summary.RetirejsSummary.LowVuln++
+			outputJSON.Summary.RetirejsSummary.LowVuln = outputJSON.Summary.RetirejsSummary.LowVuln + issue.Occurrences
 		case "medium":
 			outputJSON.Summary.RetirejsSummary.FoundVuln = true
-			outputJSON.Summary.RetirejsSummary.MediumVuln++
+			outputJSON.Summary.RetirejsSummary.MediumVuln = outputJSON.Summary.RetirejsSummary.MediumVuln + issue.Occurrences
 		case "high":
 			outputJSON.Summary.RetirejsSummary.FoundVuln = true
-			outputJSON.Summary.RetirejsSummary.HighVuln++
+			outputJSON.Summary.RetirejsSummary.HighVuln = outputJSON.Summary.RetirejsSummary.HighVuln + issue.Occurrences
 		}
 	}
 
