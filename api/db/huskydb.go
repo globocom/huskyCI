@@ -191,7 +191,7 @@ func UpdateOneDBSecurityTest(mapParams map[string]interface{}, updatedSecurityTe
 		securityTestQuery = append(securityTestQuery, bson.M{k: v})
 	}
 	securityTestFinalQuery := bson.M{"$and": securityTestQuery}
-	err := mongoHuskyCI.Conn.Update(securityTestFinalQuery, updatedSecurityTest, mongoHuskyCI.SecurityTestCollection)
+	_, err := mongoHuskyCI.Conn.Upsert(securityTestFinalQuery, updatedSecurityTest, mongoHuskyCI.SecurityTestCollection)
 	return err
 }
 
