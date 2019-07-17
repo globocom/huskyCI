@@ -104,6 +104,7 @@ pull-images:
 	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/brakeman"
 	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/retirejs"
 	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/safety"
+	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/npmaudit"
 
 ## Runs huskyci-client
 run-client: build-client
