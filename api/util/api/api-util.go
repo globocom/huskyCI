@@ -155,13 +155,13 @@ func checkSecurityTest(securityTestName string, configAPI *apiContext.APIConfig)
 	}
 
 	securityTestQuery := map[string]interface{}{"name": securityTestName}
-	_, err := db.FindOneDBSecurityTest(securityTestQuery)
-	if err == mgo.ErrNotFound {
-		// As securityTest is not set into MongoDB, huskyCI will insert it.
-		if err := db.InsertDBSecurityTest(securityTestConfig); err != nil {
-			return err
+	err := db.UpdateOneDBSecurityTest(securityTestQuery, securityTestConfig)
+	if err != nil {
+		if err == mgo.ErrNotFound {
+			if err := db.InsertDBSecurityTest(securityTestConfig); err != nil {
+				return err
+			}
 		}
-	} else if err != nil {
 		return err
 	}
 	return nil
