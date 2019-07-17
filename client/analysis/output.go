@@ -133,6 +133,7 @@ func prepareRetirejsOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo s
 		retirejsVuln.Details = "It looks like your project doesn't have package.json or yarn.lock. huskyCI was not able to run RetireJS properly."
 
 		javaScriptResults.RetirejsResult = append(javaScriptResults.RetirejsResult, retirejsVuln)
+		types.FoundInfo = true
 
 		return
 	}
@@ -355,7 +356,6 @@ func printSTDOUTOutput() {
 		fmt.Printf("[HUSKYCI][!] Line: %s\n", issue.Line)
 		fmt.Printf("[HUSKYCI][!] Code: %s\n", issue.Code)
 		fmt.Printf("[HUSKYCI][!] Type: %s\n", issue.Type)
-		fmt.Println()
 	}
 
 	for _, issue := range outputJSON.JavaScriptResults.RetirejsResult {
@@ -363,8 +363,10 @@ func printSTDOUTOutput() {
 		fmt.Printf("[HUSKYCI][!] Language: %s\n", issue.Language)
 		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
 		fmt.Printf("[HUSKYCI][!] Severity: %s\n", issue.Severity)
-		fmt.Printf("[HUSKYCI][!] Code: %s\n", issue.Code)
-		fmt.Printf("[HUSKYCI][!] Version: %s\n", issue.Version)
+		if !strings.Contains(issue.Details, "doesn't have package.json") {
+			fmt.Printf("[HUSKYCI][!] Code: %s\n", issue.Code)
+			fmt.Printf("[HUSKYCI][!] Version: %s\n", issue.Version)
+		}
 		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
 	}
 
@@ -438,6 +440,9 @@ func prepareAllSummary() {
 	// RetireJS summary
 	for _, issue := range outputJSON.JavaScriptResults.RetirejsResult {
 		switch issue.Severity {
+		case "info":
+			outputJSON.Summary.RetirejsSummary.FoundInfo = true
+			outputJSON.Summary.RetirejsSummary.LowVuln++
 		case "low":
 			outputJSON.Summary.RetirejsSummary.FoundInfo = true
 			outputJSON.Summary.RetirejsSummary.LowVuln++
