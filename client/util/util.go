@@ -107,22 +107,16 @@ func CountRetireJSOccurrences(retireJSresults []types.HuskyCIVulnerability) []ty
 	var result []types.HuskyCIVulnerability
 	for _, vuln1 := range retireJSresults {
 		exists := false
-		for _, res := range result {
+		for i, res := range result {
 			if res.Code == vuln1.Code {
 				exists = true
+				result[i].Occurrences++
 			}
 		}
 		if !exists {
 			result = append(result, vuln1)
+			result[len(result)-1].Occurrences++
 		}
 	}
-	for i, res := range result {
-		for _, vuln1 := range retireJSresults {
-			if vuln1.Code == res.Code {
-				result[i].Occurrences = result[i].Occurrences + 1
-			}
-		}
-	}
-
 	return result
 }
