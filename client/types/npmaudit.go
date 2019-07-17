@@ -4,11 +4,13 @@
 
 package types
 
+// NpmAuditOutput is the struct that stores all npm audit output
 type NpmAuditOutput struct {
 	Advisories map[string]Vulnerability `json:"advisories"`
 	Metadata   Metadata                 `json:"metadata"`
 }
 
+// Vulnerability is the granular output of a security info found
 type Vulnerability struct {
 	Findings           []Finding `json:"findings"`
 	ID                 int       `json:"id"`
@@ -18,14 +20,17 @@ type Vulnerability struct {
 	Overview           string    `json:"overview"`
 }
 
+// Finding holds the version of a given security issue found
 type Finding struct {
 	Version string `json:"version"`
 }
 
+// Metadata is the struct that holds vulnerabilities summary
 type Metadata struct {
 	Vulnerabilities VulnerabilitiesSummary `json:"vulnerabilities"`
 }
 
+// VulnerabilitiesSummary is the struct that has all types of possible vulnerabilities from npm audit
 type VulnerabilitiesSummary struct {
 	Info     int `json:"info"`
 	Low      int `json:"low"`
