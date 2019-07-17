@@ -13,6 +13,10 @@ The main goal of this project is to help development teams improve the quality o
 
 huskyCI can perform static security analysis in Python ([Bandit][Bandit] and [Safety][Safety]), Ruby ([Brakeman][Brakeman]), JavaScript ([RetireJS][RetireJS] and [Npm Audit][NpmAudit]) and Golang ([Gosec][Gosec]). You should check our [wiki](https://github.com/globocom/huskyCI/wiki/How-does-huskyCI-work%3F) to better understand how this tool could help securing your organization projects!
 
+<p allign="center">
+  <img src="huskyCI.gif" />
+</p> 
+
 ## Requirements
 
 #### Docker and Docker-Compose
