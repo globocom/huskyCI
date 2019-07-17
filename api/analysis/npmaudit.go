@@ -6,7 +6,6 @@ package analysis
 
 import (
 	"encoding/json"
-	"fmt"
 	"strings"
 
 	"github.com/globocom/huskyCI/api/db"
@@ -14,11 +13,13 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+// NpmAuditOutput is the struct that stores all npm audit output
 type NpmAuditOutput struct {
 	Advisories map[string]Vulnerability `json:"advisories"`
 	Metadata   Metadata                 `json:"metadata"`
 }
 
+// Vulnerability is the granular output of a security info found
 type Vulnerability struct {
 	Findings           []Finding `json:"findings"`
 	ID                 int       `json:"id"`
@@ -28,14 +29,17 @@ type Vulnerability struct {
 	Overview           string    `json:"overview"`
 }
 
+// Finding holds the version of a given security issue found
 type Finding struct {
 	Version string `json:"version"`
 }
 
+// Metadata is the struct that holds vulnerabilities summary
 type Metadata struct {
 	Vulnerabilities VulnerabilitiesSummary `json:"vulnerabilities"`
 }
 
+// VulnerabilitiesSummary is the struct that has all types of possible vulnerabilities from npm audit
 type VulnerabilitiesSummary struct {
 	Info     int `json:"info"`
 	Low      int `json:"low"`
@@ -44,6 +48,7 @@ type VulnerabilitiesSummary struct {
 	Critical int `json:"critical"`
 }
 
+// NpmAuditStartAnalysis analyses the output from Npm Audit and sets a cResult based on it.
 func NpmAuditStartAnalysis(CID string, cOutput string) {
 
 	var cResult string
@@ -51,11 +56,10 @@ func NpmAuditStartAnalysis(CID string, cOutput string) {
 
 	// step 0.1: error cloning repository!
 	if strings.Contains(cOutput, "ERROR_CLONING") {
-		errorOutput := fmt.Sprintf("Container error: %s", cOutput)
 		updateContainerAnalysisQuery := bson.M{
 			"$set": bson.M{
 				"containers.$.cResult": "error",
-				"containers.$.cInfo":   errorOutput,
+				"containers.$.cInfo":   "Error clonning repository.",
 			},
 		}
 		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
@@ -67,11 +71,10 @@ func NpmAuditStartAnalysis(CID string, cOutput string) {
 
 	// step 0.2: repository doesn't have package.json
 	if strings.Contains(cOutput, "ERROR_RUNNING_NPMAUDIT") {
-		errorOutput := fmt.Sprintf("Container error: %s", cOutput)
 		updateContainerAnalysisQuery := bson.M{
 			"$set": bson.M{
 				"containers.$.cResult": "error",
-				"containers.$.cInfo":   errorOutput,
+				"containers.$.cInfo":   "Internal error running NPM Audit.",
 			},
 		}
 		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
