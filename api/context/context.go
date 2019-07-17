@@ -67,6 +67,7 @@ type APIConfig struct {
 	BanditSecurityTest   *types.SecurityTest
 	BrakemanSecurityTest *types.SecurityTest
 	RetirejsSecurityTest *types.SecurityTest
+	NpmAuditSecurityTest *types.SecurityTest
 	SafetySecurityTest   *types.SecurityTest
 }
 
@@ -101,6 +102,7 @@ func SetOnceConfig() {
 			BanditSecurityTest:   getSecurityTestConfig("bandit"),
 			BrakemanSecurityTest: getSecurityTestConfig("brakeman"),
 			RetirejsSecurityTest: getSecurityTestConfig("retirejs"),
+			NpmAuditSecurityTest: getSecurityTestConfig("npmaudit"),
 			SafetySecurityTest:   getSecurityTestConfig("safety"),
 		}
 	})

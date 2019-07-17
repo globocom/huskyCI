@@ -101,6 +101,7 @@ type PythonResults struct {
 // JavaScriptResults represents all JavaScript security tests results.
 type JavaScriptResults struct {
 	RetirejsResult []HuskyCIVulnerability `json:"retirejsoutput,omitempty"`
+	NpmAuditResult []HuskyCIVulnerability `json:"npmauditoutput,omitempty"`
 }
 
 // RubyResults represents all Ruby security tests results.
@@ -117,6 +118,7 @@ type Summary struct {
 	BanditSummary   HuskyCISummary `json:"banditsummary,omitempty"`
 	SafetySummary   HuskyCISummary `json:"safetysummary,omitempty"`
 	RetirejsSummary HuskyCISummary `json:"retirejssummary,omitempty"`
+	NpmAuditSummary HuskyCISummary `json:"npmauditsummary,omitempty"`
 	BrakemanSummary HuskyCISummary `json:"brakemansummary,omitempty"`
 	TotalSummary    HuskyCISummary `json:"totalsummary,omitempty"`
 }
