@@ -190,9 +190,9 @@ npmaudit:
     git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneNpmAudit
     if [ $? -eq 0 ]; then
       cd code
-      if [ -f package.json ]; then
-        npm audit --only=prod --json > /tmp/results.json
-        cat /tmp/results.json
+      if [ -f package-lock.json ]; then
+        npm audit --only=prod --json > /tmp/results.json 2> /tmp/errorNpmaudit
+        jq -j -M -c . /tmp/results.json
       else
         echo 'ERROR_RUNNING_NPMAUDIT'
       fi
