@@ -304,6 +304,19 @@ func prepareNpmAuditOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo s
 		return
 	}
 
+	if mongoDBcontainerInfo == "Internal error running NPM Audit." {
+		npmauditVuln := types.HuskyCIVulnerability{}
+		npmauditVuln.Language = "JavaScript"
+		npmauditVuln.SecurityTool = "NpmAudit"
+		npmauditVuln.Severity = "info"
+		npmauditVuln.Details = "It looks like your project doesn't have package-lock.json. huskyCI was not able to run npm audit properly."
+		types.FoundInfo = true
+
+		javaScriptResults.NpmAuditResult = append(javaScriptResults.NpmAuditResult, npmauditVuln)
+
+		return
+	}
+
 	npmAuditOutput := types.NpmAuditOutput{}
 	err := json.Unmarshal([]byte(mongoDBcontainerOutput), &npmAuditOutput)
 	if err != nil {
@@ -315,7 +328,25 @@ func prepareNpmAuditOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo s
 		npmauditVuln := types.HuskyCIVulnerability{}
 		npmauditVuln.Language = "JavaScript"
 		npmauditVuln.SecurityTool = "NpmAudit"
-		npmauditVuln.Severity = issue.Severity
+
+		switch issue.Severity {
+		case "info":
+			npmauditVuln.Severity = "low"
+			types.FoundInfo = true
+		case "low":
+			npmauditVuln.Severity = "low"
+			types.FoundInfo = true
+		case "moderate":
+			npmauditVuln.Severity = "medium"
+			types.FoundVuln = true
+		case "high":
+			npmauditVuln.Severity = "high"
+			types.FoundVuln = true
+		case "critical":
+			npmauditVuln.Severity = "high"
+			types.FoundVuln = true
+		}
+
 		npmauditVuln.Details = issue.Overview
 		npmauditVuln.VunerableBelow = issue.VulnerableVersions
 		npmauditVuln.Code = issue.ModuleName
@@ -324,7 +355,6 @@ func prepareNpmAuditOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo s
 		}
 
 		javaScriptResults.NpmAuditResult = append(javaScriptResults.NpmAuditResult, npmauditVuln)
-		types.FoundVuln = true
 	}
 }
 
@@ -406,9 +436,12 @@ func printSTDOUTOutput() {
 		fmt.Printf("[HUSKYCI][!] Language: %s\n", issue.Language)
 		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
 		fmt.Printf("[HUSKYCI][!] Severity: %s\n", issue.Severity)
+		if !strings.Contains(issue.Details, "doesn't have package-lock.json.") {
+			fmt.Printf("[HUSKYCI][!] Code: %s\n", issue.Code)
+			fmt.Printf("[HUSKYCI][!] Version: %s\n", issue.Version)
+			fmt.Printf("[HUSKYCI][!] Vulnerable Below: %s\n", issue.VunerableBelow)
+		}
 		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
-		fmt.Printf("[HUSKYCI][!] Code: %s\n", issue.Code)
-		fmt.Println()
 	}
 
 	printAllSummary()
@@ -481,6 +514,9 @@ func prepareAllSummary() {
 	// RetireJS summary
 	for _, issue := range outputJSON.JavaScriptResults.RetirejsResult {
 		switch issue.Severity {
+		case "info":
+			outputJSON.Summary.RetirejsSummary.FoundInfo = true
+			outputJSON.Summary.RetirejsSummary.LowVuln++
 		case "low":
 			outputJSON.Summary.RetirejsSummary.FoundInfo = true
 			outputJSON.Summary.RetirejsSummary.LowVuln++
@@ -496,10 +532,13 @@ func prepareAllSummary() {
 	// NpmAudit summary
 	for _, issue := range outputJSON.JavaScriptResults.NpmAuditResult {
 		switch issue.Severity {
+		case "info":
+			outputJSON.Summary.NpmAuditSummary.FoundInfo = true
+			outputJSON.Summary.NpmAuditSummary.LowVuln++
 		case "low":
 			outputJSON.Summary.NpmAuditSummary.FoundInfo = true
 			outputJSON.Summary.NpmAuditSummary.LowVuln++
-		case "moderate":
+		case "medium":
 			outputJSON.Summary.NpmAuditSummary.FoundVuln = true
 			outputJSON.Summary.NpmAuditSummary.MediumVuln++
 		case "high":
@@ -509,9 +548,9 @@ func prepareAllSummary() {
 	}
 
 	// Total summary
-	if outputJSON.Summary.GosecSummary.FoundVuln || outputJSON.Summary.BanditSummary.FoundVuln || outputJSON.Summary.SafetySummary.FoundVuln || outputJSON.Summary.BrakemanSummary.FoundVuln || outputJSON.Summary.RetirejsSummary.FoundVuln {
+	if outputJSON.Summary.GosecSummary.FoundVuln || outputJSON.Summary.BanditSummary.FoundVuln || outputJSON.Summary.SafetySummary.FoundVuln || outputJSON.Summary.BrakemanSummary.FoundVuln || outputJSON.Summary.RetirejsSummary.FoundVuln || outputJSON.Summary.NpmAuditSummary.FoundVuln {
 		outputJSON.Summary.TotalSummary.FoundVuln = true
-	} else if outputJSON.Summary.GosecSummary.FoundInfo || outputJSON.Summary.BanditSummary.FoundInfo || outputJSON.Summary.SafetySummary.FoundInfo || outputJSON.Summary.BrakemanSummary.FoundInfo || outputJSON.Summary.RetirejsSummary.FoundInfo {
+	} else if outputJSON.Summary.GosecSummary.FoundInfo || outputJSON.Summary.BanditSummary.FoundInfo || outputJSON.Summary.SafetySummary.FoundInfo || outputJSON.Summary.BrakemanSummary.FoundInfo || outputJSON.Summary.RetirejsSummary.FoundInfo || outputJSON.Summary.NpmAuditSummary.FoundInfo {
 		outputJSON.Summary.TotalSummary.FoundInfo = true
 	}
 
@@ -570,9 +609,9 @@ func printAllSummary() {
 	if outputJSON.Summary.NpmAuditSummary.FoundVuln || outputJSON.Summary.NpmAuditSummary.FoundInfo {
 		fmt.Println()
 		fmt.Printf("[HUSKYCI][SUMMARY] JavaScript -> Npm Audit\n")
-		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", outputJSON.Summary.RetirejsSummary.HighVuln)
-		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", outputJSON.Summary.RetirejsSummary.MediumVuln)
-		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", outputJSON.Summary.RetirejsSummary.LowVuln)
+		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", outputJSON.Summary.NpmAuditSummary.HighVuln)
+		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", outputJSON.Summary.NpmAuditSummary.MediumVuln)
+		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", outputJSON.Summary.NpmAuditSummary.LowVuln)
 	}
 
 	if outputJSON.Summary.TotalSummary.FoundVuln || outputJSON.Summary.TotalSummary.FoundInfo {
@@ -581,6 +620,7 @@ func printAllSummary() {
 		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", outputJSON.Summary.TotalSummary.HighVuln)
 		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", outputJSON.Summary.TotalSummary.MediumVuln)
 		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", outputJSON.Summary.TotalSummary.LowVuln)
-		fmt.Println()
 	}
+
+	fmt.Println()
 }
