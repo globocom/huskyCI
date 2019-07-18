@@ -116,12 +116,12 @@ func getAPIPort() int {
 
 // GetAPIVersion returns current API version
 func GetAPIVersion() string {
-	return "0.5.0"
+	return "0.6.0"
 }
 
 // GetAPIReleaseDate returns current API release date
 func GetAPIReleaseDate() string {
-	return "2019-07-15"
+	return "2019-07-18"
 }
 
 func getAPIUseTLS() bool {
