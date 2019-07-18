@@ -12,6 +12,7 @@ var MsgCode = map[int]string{
 	16: "Request received to start the following branch, repository and internal dependencies URL: ",
 	17: "Repository created into MongoDB: ",
 	18: "SecurityTest created into MongoDB: ",
+	19: "SecurityTest upserted in MondoDB: ",
 
 	// HuskyCI API warnings
 	104: "An analysis is already in place for this URL: ",
@@ -45,6 +46,7 @@ var MsgCode = map[int]string{
 	1020: "Error searching for an analysis: ",
 	1021: "Received an invalid internal dependency URL: ",
 	1022: "Could not Unmarshall the following npmauditOutput: ",
+	1023: "Could not upsert securityTest into MongoDB: ",
 
 	// MongoDB infos
 	21: "Connecting to MongoDB.",
