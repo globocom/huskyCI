@@ -11,7 +11,6 @@ import (
 	docker "github.com/globocom/huskyCI/api/dockers"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
-	mgo "gopkg.in/mgo.v2"
 )
 
 // CheckHuskyRequirements checks for all requirements needed before starting huskyCI.
@@ -127,8 +126,11 @@ func checkEachSecurityTest(configAPI *apiContext.APIConfig) error {
 	securityTests := []string{"enry", "gosec", "brakeman", "bandit", "retirejs", "npmaudit", "safety"}
 	for _, securityTest := range securityTests {
 		if err := checkSecurityTest(securityTest, configAPI); err != nil {
+			errMsg := fmt.Sprintf("%s %s", securityTest, err)
+			log.Error("checkEachSecurityTest", "API-UTIL", 1023, errMsg)
 			return err
 		}
+		log.Info("checkEachSecurityTest", "API-UTIL", 19, securityTest)
 	}
 	return nil
 }
@@ -157,13 +159,8 @@ func checkSecurityTest(securityTestName string, configAPI *apiContext.APIConfig)
 	}
 
 	securityTestQuery := map[string]interface{}{"name": securityTestName}
-	err := db.UpdateOneDBSecurityTest(securityTestQuery, securityTestConfig)
+	_, err := db.UpsertOneDBSecurityTest(securityTestQuery, securityTestConfig)
 	if err != nil {
-		if err == mgo.ErrNotFound {
-			if err := db.InsertDBSecurityTest(securityTestConfig); err != nil {
-				return err
-			}
-		}
 		return err
 	}
 	return nil

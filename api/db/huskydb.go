@@ -12,6 +12,7 @@ import (
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
 	"github.com/globocom/huskyCI/api/util"
+	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -184,15 +185,15 @@ func UpdateOneDBRepository(mapParams, updateQuery map[string]interface{}) error 
 	return err
 }
 
-// UpdateOneDBSecurityTest checks if a given securityTest is present into SecurityTestCollection and update it.
-func UpdateOneDBSecurityTest(mapParams map[string]interface{}, updatedSecurityTest types.SecurityTest) error {
+// UpsertOneDBSecurityTest checks if a given securityTest is present into SecurityTestCollection and update it.
+func UpsertOneDBSecurityTest(mapParams map[string]interface{}, updatedSecurityTest types.SecurityTest) (*mgo.ChangeInfo, error) {
 	securityTestQuery := []bson.M{}
 	for k, v := range mapParams {
 		securityTestQuery = append(securityTestQuery, bson.M{k: v})
 	}
 	securityTestFinalQuery := bson.M{"$and": securityTestQuery}
-	_, err := mongoHuskyCI.Conn.Upsert(securityTestFinalQuery, updatedSecurityTest, mongoHuskyCI.SecurityTestCollection)
-	return err
+	changeInfo, err := mongoHuskyCI.Conn.Upsert(securityTestFinalQuery, updatedSecurityTest, mongoHuskyCI.SecurityTestCollection)
+	return changeInfo, err
 }
 
 // UpdateOneDBAnalysis checks if a given analysis is present into AnalysisCollection and update it.
