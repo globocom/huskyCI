@@ -130,12 +130,10 @@ func InsertDBRepository(repository types.Repository) error {
 	}
 
 	newRepository := types.Repository{
-		URL:            repository.URL,
-		Branch:         repository.Branch,
-		SecurityTests:  securityTestList,
-		CreatedAt:      repository.CreatedAt,
-		Languages:      repository.Languages,
-		InternalDepURL: repository.InternalDepURL,
+		URL:           repository.URL,
+		SecurityTests: securityTestList,
+		CreatedAt:     repository.CreatedAt,
+		Languages:     repository.Languages,
 	}
 
 	err = mongoHuskyCI.Conn.Insert(newRepository, mongoHuskyCI.RepositoryCollection)
@@ -159,15 +157,15 @@ func InsertDBSecurityTest(securityTest types.SecurityTest) error {
 // InsertDBAnalysis inserts a new analysis into AnalysisCollection.
 func InsertDBAnalysis(analysis types.Analysis) error {
 	newAnalysis := bson.M{
-		"RID":            analysis.RID,
-		"URL":            analysis.URL,
-		"Branch":         analysis.Branch,
-		"securityTest":   analysis.SecurityTests,
-		"status":         analysis.Status,
-		"result":         analysis.Result,
-		"containers":     analysis.Containers,
-		"startedAt":      analysis.StartedAt,
-		"internaldepURL": analysis.InternalDepURL,
+		"RID":              analysis.RID,
+		"repositoryURL":    analysis.URL,
+		"repositoryBranch": analysis.Branch,
+		"securityTests":    analysis.SecurityTests,
+		"status":           analysis.Status,
+		"result":           analysis.Result,
+		"containers":       analysis.Containers,
+		"startedAt":        analysis.StartedAt,
+		"internaldepURL":   analysis.InternalDepURL,
 	}
 	err := mongoHuskyCI.Conn.Insert(newAnalysis, mongoHuskyCI.AnalysisCollection)
 	return err

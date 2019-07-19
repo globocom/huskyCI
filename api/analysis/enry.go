@@ -92,7 +92,7 @@ func EnryStartAnalysis(CID string, cOutput string, RID string) {
 	allSecurityTests := append(genericSecurityTests, newLanguageSecurityTests...)
 
 	// step 3: updating repository with all securityTests found.
-	repositoryQuery := map[string]interface{}{"repositoryURL": analysis.URL, "repositoryBranch": analysis.Branch}
+	repositoryQuery := map[string]interface{}{"repositoryURL": analysis.URL}
 	updateRepositoryQuery := bson.M{
 		"$set": bson.M{
 			"securityTests": allSecurityTests,
