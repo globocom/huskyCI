@@ -2,6 +2,7 @@ package routes
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/globocom/huskyCI/api/analysis"
 	"github.com/globocom/huskyCI/api/db"
@@ -61,7 +62,8 @@ func ReceiveRequest(c echo.Context) error {
 	_, err = db.FindOneDBRepository(repositoryQuery)
 	if err != nil {
 		if err == mgo.ErrNotFound {
-			// step-02-a: repository not found! insert it into MongoDB with default securityTests
+			// step-02-a: repository not found! insert it into MongoDB
+			repository.CreatedAt = time.Now()
 			err = db.InsertDBRepository(repository)
 			if err != nil {
 				log.Error("ReceiveRequest", "ANALYSIS", 1010, err)
