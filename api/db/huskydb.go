@@ -134,7 +134,6 @@ func InsertDBRepository(repository types.Repository) error {
 		Branch:         repository.Branch,
 		SecurityTests:  securityTestList,
 		CreatedAt:      repository.CreatedAt,
-		DeletedAt:      repository.DeletedAt,
 		Languages:      repository.Languages,
 		InternalDepURL: repository.InternalDepURL,
 	}

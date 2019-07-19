@@ -18,7 +18,6 @@ type Repository struct {
 	SecurityTests    []SecurityTest `bson:"securityTests" json:"securityTests"`
 	SecurityTestName []string       `bson:"securityTestName,omitempty" json:"securityTestName"`
 	CreatedAt        time.Time      `bson:"createdAt" json:"createdAt"`
-	DeletedAt        time.Time      `bson:"deletedAt" json:"deletedAt"`
 	Languages        []Language     `bson:"languages" json:"languages"`
 	InternalDepURL   string         `bson:"internaldepURL,omitempty" json:"internaldepURL"`
 }
