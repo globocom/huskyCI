@@ -12,14 +12,11 @@ import (
 
 // Repository is the struct that stores all data from repository to be analyzed.
 type Repository struct {
-	ID               bson.ObjectId  `bson:"_id,omitempty"`
-	URL              string         `bson:"repositoryURL" json:"repositoryURL"`
-	Branch           string         `bson:"repositoryBranch,omitempty" json:"repositoryBranch"`
-	SecurityTests    []SecurityTest `bson:"securityTests" json:"securityTests"`
-	SecurityTestName []string       `bson:"securityTestName,omitempty" json:"securityTestName"`
-	CreatedAt        time.Time      `bson:"createdAt" json:"createdAt"`
-	Languages        []Language     `bson:"languages" json:"languages"`
-	InternalDepURL   string         `bson:"internaldepURL,omitempty" json:"internaldepURL"`
+	ID             bson.ObjectId `bson:"_id,omitempty"`
+	URL            string        `bson:"repositoryURL" json:"repositoryURL"`
+	Branch         string        `json:"repositoryBranch"`
+	CreatedAt      time.Time     `bson:"createdAt" json:"createdAt"`
+	InternalDepURL string        `json:"internaldepURL"`
 }
 
 // SecurityTest is the struct that stores all data from the security tests to be executed.

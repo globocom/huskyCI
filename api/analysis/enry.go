@@ -69,7 +69,7 @@ func EnryStartAnalysis(CID string, cOutput string, RID string) {
 		repositoryLanguages = append(repositoryLanguages, newLanguage)
 	}
 
-	// step 2: get all securityTests to be updated into RepositoryCollection and Analysiscollection.
+	// step 2: get all securityTests to be updated into Analysiscollection.
 
 	// step 2.1: querying MongoDB to gather up all securityTests that match (language=Generic and default=true).
 	genericSecurityTestQuery := map[string]interface{}{"language": "Generic", "default": true}
@@ -91,21 +91,7 @@ func EnryStartAnalysis(CID string, cOutput string, RID string) {
 
 	allSecurityTests := append(genericSecurityTests, newLanguageSecurityTests...)
 
-	// step 3: updating repository with all securityTests found.
-	repositoryQuery := map[string]interface{}{"repositoryURL": analysis.URL}
-	updateRepositoryQuery := bson.M{
-		"$set": bson.M{
-			"securityTests": allSecurityTests,
-			"languages":     repositoryLanguages,
-		},
-	}
-	err = db.UpdateOneDBRepository(repositoryQuery, updateRepositoryQuery)
-	if err != nil {
-		log.Error("EnryStartAnalysis", "ENRY", 2010, err)
-		return
-	}
-
-	// step 4: update analysis with the all securityTests found.
+	// step 3: update analysis with the all securityTests found.
 	analysis.SecurityTests = allSecurityTests
 	err = db.UpdateOneDBAnalysis(analysisQuery, analysis)
 	if err != nil {
@@ -123,7 +109,7 @@ func EnryStartAnalysis(CID string, cOutput string, RID string) {
 		log.Error("EnryStartAnalysis", "ENRY", 2007, err)
 	}
 
-	// step 5: start all new securityTests.
+	// step 4: start all new securityTests.
 	for _, securityTest := range newLanguageSecurityTests {
 		// avoiding a loop here with this if condition.
 		if securityTest.Name != "enry" {
