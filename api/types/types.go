@@ -14,7 +14,7 @@ import (
 type Repository struct {
 	ID               bson.ObjectId  `bson:"_id,omitempty"`
 	URL              string         `bson:"repositoryURL" json:"repositoryURL"`
-	Branch           string         `bson:"repositoryBranch" json:"repositoryBranch"`
+	Branch           string         `bson:"repositoryBranch,omitempty" json:"repositoryBranch"`
 	SecurityTests    []SecurityTest `bson:"securityTests" json:"securityTests"`
 	SecurityTestName []string       `bson:"securityTestName,omitempty" json:"securityTestName"`
 	CreatedAt        time.Time      `bson:"createdAt" json:"createdAt"`
