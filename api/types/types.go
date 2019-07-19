@@ -43,6 +43,7 @@ type Analysis struct {
 	StartedAt      time.Time      `bson:"startedAt" json:"startedAt"`
 	FinishedAt     time.Time      `bson:"finishedAt" json:"finishedAt"`
 	InternalDepURL string         `bson:"internaldepURL,omitempty" json:"internaldepURL"`
+	Codes          []Code         `bson:"codes" json:"codes"`
 }
 
 // Container is the struct that stores all data from a container run.
@@ -57,8 +58,8 @@ type Container struct {
 	FinishedAt   time.Time    `bson:"finishedAt" json:"finishedAt"`
 }
 
-// Language is the struct that stores all data from a language's repository.
-type Language struct {
-	Name  string   `bson:"name" json:"language_name"`
-	Files []string `bson:"files" json:"language_files"`
+// Code is the struct that stores all data from code found in a repository.
+type Code struct {
+	Language string   `bson:"language" json:"language"`
+	Files    []string `bson:"files" json:"files"`
 }
