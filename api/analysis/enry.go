@@ -50,8 +50,8 @@ func EnryStartAnalysis(CID string, cOutput string, RID string) {
 		log.Error("EnryStartAnalysis", "ENRY", 1003, cOutput, err)
 		return
 	}
-	repositoryLanguages := []types.Language{}
-	newLanguage := types.Language{}
+	repositoryLanguages := []types.Code{}
+	newLanguage := types.Code{}
 	for name, files := range mapLanguages {
 		fs := []string{}
 		for _, f := range files {
@@ -62,9 +62,9 @@ func EnryStartAnalysis(CID string, cOutput string, RID string) {
 				return
 			}
 		}
-		newLanguage = types.Language{
-			Name:  name,
-			Files: fs,
+		newLanguage = types.Code{
+			Language: name,
+			Files:    fs,
 		}
 		repositoryLanguages = append(repositoryLanguages, newLanguage)
 	}
@@ -81,8 +81,8 @@ func EnryStartAnalysis(CID string, cOutput string, RID string) {
 
 	// step 2.2: querying MongoDB to gather up all securityTests that match (language=languageFound and default=true).
 	newLanguageSecurityTests := []types.SecurityTest{}
-	for _, language := range repositoryLanguages {
-		languageSecurityTestQuery := map[string]interface{}{"language": language.Name, "default": true}
+	for _, code := range repositoryLanguages {
+		languageSecurityTestQuery := map[string]interface{}{"language": code.Language, "default": true}
 		languageSecurityTestResult, err := db.FindAllDBSecurityTest(languageSecurityTestQuery)
 		if err == nil {
 			newLanguageSecurityTests = append(newLanguageSecurityTests, languageSecurityTestResult...)
@@ -93,6 +93,7 @@ func EnryStartAnalysis(CID string, cOutput string, RID string) {
 
 	// step 3: update analysis with the all securityTests found.
 	analysis.SecurityTests = allSecurityTests
+	analysis.Codes = repositoryLanguages
 	err = db.UpdateOneDBAnalysis(analysisQuery, analysis)
 	if err != nil {
 		log.Error("EnryStartAnalysis", "ENRY", 2007, err)
