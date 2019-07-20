@@ -123,7 +123,11 @@ func EnryStartAnalysis(CID string, cOutput string, RID string) {
 		log.Error("EnryStartAnalysis", "ENRY", 2007, err)
 	}
 
-	// step 5: start all new securityTests.
+	for _, genericTest := range genericSecurityTests {
+		newLanguageSecurityTests = append(newLanguageSecurityTests, genericTest)
+	}
+
+	// step 5: start all generic and securityTests.
 	for _, securityTest := range newLanguageSecurityTests {
 		// avoiding a loop here with this if condition.
 		if securityTest.Name != "enry" {

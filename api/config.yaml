@@ -19,6 +19,33 @@ enry:
   default: true
   timeOutInSeconds: 60
 
+gitauthors:
+  name: gitauthors
+  image: huskyci/enry
+  cmd: |+
+    mkdir -p ~/.ssh &&
+    echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
+    chmod 600 ~/.ssh/huskyci_id_rsa &&
+    echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
+    echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
+    git clone %GIT_REPO% code --quiet 2> /tmp/errorGitCloneEnry
+    if [ $? -eq 0 ]; then
+      cd code
+      for i in $(git log origin/master..origin/%GIT_BRANCH% --pretty="%ae" | sort -u); do
+        jsonMiddle="\"$i\",$jsonMiddle"
+      done
+      length=${#jsonMiddle}
+      endindex=$(expr $length - 1)
+      authors="${jsonMiddle:0:$endindex}"
+      echo "{\"authors\":[$authors]}"
+    else
+      echo "ERROR_CLONING"
+      cat /tmp/errorGitCloneEnry
+    fi
+  language: Generic
+  default: true
+  timeOutInSeconds: 60
+
 gosec:
   name: gosec
   image: huskyci/gosec
@@ -118,7 +145,7 @@ retirejs:
         fi
         npm install >/dev/null 2>&1
         retire -n --outputformat json --outputpath /tmp/results.json --exitwith 0 2>/dev/null
-        cat /tmp/results.json 
+        cat /tmp/results.json
       elif [ -f src/package.json ] || [ -f src/package-lock.json ]; then
         cd src/
         if [ $useInternalDependencies == 1 ]; then
@@ -126,7 +153,7 @@ retirejs:
         fi
         npm install >/dev/null 2>&1
         retire -n --outputformat json --outputpath /tmp/results.json --exitwith 0 2>/dev/null
-        cat /tmp/results.json 
+        cat /tmp/results.json
       else
         echo 'ERROR_RUNNING_RETIREJS'
       fi
@@ -165,10 +192,10 @@ safety:
           cat output.json
         else
           echo "ERROR_RUNNING_SAFETY"
-          cat /tmp/errorRunning 
+          cat /tmp/errorRunning
         fi
       else
-        echo "ERROR_REQ_NOT_FOUND"  
+        echo "ERROR_REQ_NOT_FOUND"
       fi
     else
       echo "ERROR_CLONING"

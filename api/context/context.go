@@ -54,21 +54,22 @@ type GraylogConfig struct {
 
 // APIConfig represents API configuration.
 type APIConfig struct {
-	Port                 int
-	Version              string
-	ReleaseDate          string
-	UseTLS               bool
-	GitPrivateSSHKey     string
-	GraylogConfig        *GraylogConfig
-	MongoDBConfig        *MongoConfig
-	DockerHostsConfig    *DockerHostsConfig
-	EnrySecurityTest     *types.SecurityTest
-	GosecSecurityTest    *types.SecurityTest
-	BanditSecurityTest   *types.SecurityTest
-	BrakemanSecurityTest *types.SecurityTest
-	RetirejsSecurityTest *types.SecurityTest
-	NpmAuditSecurityTest *types.SecurityTest
-	SafetySecurityTest   *types.SecurityTest
+	Port                   int
+	Version                string
+	ReleaseDate            string
+	UseTLS                 bool
+	GitPrivateSSHKey       string
+	GraylogConfig          *GraylogConfig
+	MongoDBConfig          *MongoConfig
+	DockerHostsConfig      *DockerHostsConfig
+	EnrySecurityTest       *types.SecurityTest
+	GitAuthorsSecurityTest *types.SecurityTest
+	GosecSecurityTest      *types.SecurityTest
+	BanditSecurityTest     *types.SecurityTest
+	BrakemanSecurityTest   *types.SecurityTest
+	RetirejsSecurityTest   *types.SecurityTest
+	NpmAuditSecurityTest   *types.SecurityTest
+	SafetySecurityTest     *types.SecurityTest
 }
 
 // GetAPIConfig returns the instance of an APIConfig.
@@ -89,21 +90,22 @@ func GetAPIConfig() *APIConfig {
 func SetOnceConfig() {
 	onceConfig.Do(func() {
 		APIConfiguration = &APIConfig{
-			Port:                 getAPIPort(),
-			Version:              GetAPIVersion(),
-			ReleaseDate:          GetAPIReleaseDate(),
-			UseTLS:               getAPIUseTLS(),
-			GitPrivateSSHKey:     getGitPrivateSSHKey(),
-			GraylogConfig:        getGraylogConfig(),
-			MongoDBConfig:        getMongoConfig(),
-			DockerHostsConfig:    getDockerHostsConfig(),
-			EnrySecurityTest:     getSecurityTestConfig("enry"),
-			GosecSecurityTest:    getSecurityTestConfig("gosec"),
-			BanditSecurityTest:   getSecurityTestConfig("bandit"),
-			BrakemanSecurityTest: getSecurityTestConfig("brakeman"),
-			RetirejsSecurityTest: getSecurityTestConfig("retirejs"),
-			NpmAuditSecurityTest: getSecurityTestConfig("npmaudit"),
-			SafetySecurityTest:   getSecurityTestConfig("safety"),
+			Port:                   getAPIPort(),
+			Version:                GetAPIVersion(),
+			ReleaseDate:            GetAPIReleaseDate(),
+			UseTLS:                 getAPIUseTLS(),
+			GitPrivateSSHKey:       getGitPrivateSSHKey(),
+			GraylogConfig:          getGraylogConfig(),
+			MongoDBConfig:          getMongoConfig(),
+			DockerHostsConfig:      getDockerHostsConfig(),
+			EnrySecurityTest:       getSecurityTestConfig("enry"),
+			GitAuthorsSecurityTest: getSecurityTestConfig("gitauthors"),
+			GosecSecurityTest:      getSecurityTestConfig("gosec"),
+			BanditSecurityTest:     getSecurityTestConfig("bandit"),
+			BrakemanSecurityTest:   getSecurityTestConfig("brakeman"),
+			RetirejsSecurityTest:   getSecurityTestConfig("retirejs"),
+			NpmAuditSecurityTest:   getSecurityTestConfig("npmaudit"),
+			SafetySecurityTest:     getSecurityTestConfig("safety"),
 		}
 	})
 }
