@@ -7,20 +7,22 @@ package analysis
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/globocom/huskyCI/api/db"
 	"github.com/globocom/huskyCI/api/log"
+	"github.com/globocom/huskyCI/api/types"
 	"gopkg.in/mgo.v2/bson"
 )
 
-// BanditOutput is the structs that holds the json output form bandit analysis.
+// BanditOutput is the struct that holds all data from Bandit output.
 type BanditOutput struct {
 	Errors  json.RawMessage `json:"errors"`
 	Results []Result        `json:"results"`
 }
 
-// Result is the struct that holds detailed information of issues found in bandit analysis.
+// Result is the struct that holds detailed information of issues from Bandit output.
 type Result struct {
 	Code            string `json:"code"`
 	Filename        string `json:"filename"`
@@ -34,7 +36,7 @@ type Result struct {
 }
 
 // BanditStartAnalysis analyses the output from Bandit and sets a cResult based on it.
-func BanditStartAnalysis(CID string, cOutput string) {
+func BanditStartAnalysis(CID string, cOutput string, RID string) {
 
 	analysisQuery := map[string]interface{}{"containers.CID": CID}
 
@@ -112,4 +114,50 @@ func BanditStartAnalysis(CID string, cOutput string) {
 		log.Error("BanditStartAnalysis", "BANDIT", 2007, "Step 3", err)
 		return
 	}
+
+	// get updated analysis based on its RID
+	analysisQuery = map[string]interface{}{"RID": RID}
+	analysis, err := db.FindOneDBAnalysis(analysisQuery)
+	if err != nil {
+		log.Error("GosecStartAnalysis", "BANDIT", 2008, CID, err)
+		return
+	}
+
+	// finally, update analysis with huskyCI results
+	analysis.HuskyCIResults.PythonResults.HuskyCIBanditOutput = prepareHuskyCIBanditOutput(banditResult)
+	err = db.UpdateOneDBAnalysis(analysisQuery, analysis)
+	if err != nil {
+		log.Error("GosecStartAnalysis", "BANDIT", 2007, err)
+		return
+	}
+
+}
+
+// prepareHuskyCIBanditOutput will prepare Bandit output to be added into pythonResults struct
+func prepareHuskyCIBanditOutput(banditOutput BanditOutput) types.HuskyCIBanditOutput {
+
+	var huskyCIbanditResults types.HuskyCIBanditOutput
+
+	for _, issue := range banditOutput.Results {
+		banditVuln := types.HuskyCIVulnerability{}
+		banditVuln.Language = "Python"
+		banditVuln.SecurityTool = "Bandit"
+		banditVuln.Severity = issue.IssueSeverity
+		banditVuln.Confidence = issue.IssueConfidence
+		banditVuln.Details = issue.IssueText
+		banditVuln.File = issue.Filename
+		banditVuln.Line = strconv.Itoa(issue.LineNumber)
+		banditVuln.Code = issue.Code
+
+		switch banditVuln.Severity {
+		case "LOW":
+			huskyCIbanditResults.LowVulnsBandit = append(huskyCIbanditResults.LowVulnsBandit, banditVuln)
+		case "MEDIUM":
+			huskyCIbanditResults.MediumVulnsBandit = append(huskyCIbanditResults.MediumVulnsBandit, banditVuln)
+		case "HIGH":
+			huskyCIbanditResults.HighVulnsBandit = append(huskyCIbanditResults.HighVulnsBandit, banditVuln)
+		}
+	}
+
+	return huskyCIbanditResults
 }
