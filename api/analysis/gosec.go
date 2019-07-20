@@ -11,16 +11,17 @@ import (
 
 	"github.com/globocom/huskyCI/api/db"
 	"github.com/globocom/huskyCI/api/log"
+	"github.com/globocom/huskyCI/api/types"
 	"gopkg.in/mgo.v2/bson"
 )
 
-// GosecOutput is the struct that holds issues and stats found on a Gosec scan.
+// GosecOutput is the struct that holds all data from Gosec output.
 type GosecOutput struct {
-	GosecIssues []GosecIssue
-	GosecStats  GosecStats
+	GosecIssues []GosecIssue `json:"Issues"`
+	GosecStats  GosecStats   `json:"Stats"`
 }
 
-// GosecIssue is the struct that holds all detailed information of a vulnerability found.
+// GosecIssue is the struct that holds all issues from Gosec output.
 type GosecIssue struct {
 	Severity   string `json:"severity"`
 	Confidence string `json:"confidence"`
@@ -31,16 +32,16 @@ type GosecIssue struct {
 	Line       string `json:"line"`
 }
 
-// GosecStats is the struct that holds the stats found on a Gosec scan.
+// GosecStats is the struct that holds all stats from Gosec output.
 type GosecStats struct {
 	Files int `json:"files"`
 	Lines int `json:"lines"`
-	NoSec int `json:"nosec"`
+	Nosec int `json:"nosec"`
 	Found int `json:"found"`
 }
 
 // GosecStartAnalysis analyses the output from Gosec and sets a cResult based on it.
-func GosecStartAnalysis(CID string, cOutput string) {
+func GosecStartAnalysis(CID string, cOutput string, RID string) {
 
 	var cResult string
 	analysisQuery := map[string]interface{}{"containers.CID": CID}
@@ -109,4 +110,49 @@ func GosecStartAnalysis(CID string, cOutput string) {
 		log.Error("GosecStartAnalysis", "GOSEC", 2007, "Step 3 ", err)
 		return
 	}
+
+	// step 4: get updated analysis based on its RID
+	analysisQuery = map[string]interface{}{"RID": RID}
+	analysis, err := db.FindOneDBAnalysis(analysisQuery)
+	if err != nil {
+		log.Error("GosecStartAnalysis", "GOSEC", 2008, CID, err)
+		return
+	}
+
+	// step 5: finally, update analysis with huskyCI results
+	analysis.HuskyCIResults.GoResults.HuskyCIGosecOutput = prepareHuskyCIGosecResults(gosecOutput)
+	err = db.UpdateOneDBAnalysis(analysisQuery, analysis)
+	if err != nil {
+		log.Error("GosecStartAnalysis", "GOSEC", 2007, err)
+		return
+	}
+}
+
+// prepareHuskyCIGosecResults will prepare Gosec output to be added into goResults struct
+func prepareHuskyCIGosecResults(gosecOutput GosecOutput) types.HuskyCIGosecOutput {
+
+	var huskyCIgosecResults types.HuskyCIGosecOutput
+
+	for _, issue := range gosecOutput.GosecIssues {
+		gosecVuln := types.HuskyCIVulnerability{}
+		gosecVuln.Language = "Go"
+		gosecVuln.SecurityTool = "GoSec"
+		gosecVuln.Severity = issue.Severity
+		gosecVuln.Confidence = issue.Confidence
+		gosecVuln.Details = issue.Details
+		gosecVuln.File = issue.File
+		gosecVuln.Line = issue.Line
+		gosecVuln.Code = issue.Code
+
+		switch gosecVuln.Severity {
+		case "LOW":
+			huskyCIgosecResults.LowVulnsGosec = append(huskyCIgosecResults.LowVulnsGosec, gosecVuln)
+		case "MEDIUM":
+			huskyCIgosecResults.MediumVulnsGosec = append(huskyCIgosecResults.MediumVulnsGosec, gosecVuln)
+		case "HIGH":
+			huskyCIgosecResults.HighVulnsGosec = append(huskyCIgosecResults.HighVulnsGosec, gosecVuln)
+		}
+	}
+
+	return huskyCIgosecResults
 }
