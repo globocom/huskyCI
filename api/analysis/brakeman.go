@@ -7,10 +7,12 @@ package analysis
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/globocom/huskyCI/api/db"
 	"github.com/globocom/huskyCI/api/log"
+	"github.com/globocom/huskyCI/api/types"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -31,7 +33,7 @@ type WarningItem struct {
 }
 
 // BrakemanStartAnalysis analyses the output from Brakeman and sets a cResult based on it.
-func BrakemanStartAnalysis(CID string, cOutput string) {
+func BrakemanStartAnalysis(CID string, cOutput string, RID string) {
 
 	var cResult string
 	analysisQuery := map[string]interface{}{"containers.CID": CID}
@@ -115,4 +117,49 @@ func BrakemanStartAnalysis(CID string, cOutput string) {
 		log.Error("BrakemanStartAnalysis", "BRAKEMAN", 2007, "Step 3 ", err)
 		return
 	}
+
+	// step 4: get updated analysis based on its RID
+	analysisQuery = map[string]interface{}{"RID": RID}
+	analysis, err := db.FindOneDBAnalysis(analysisQuery)
+	if err != nil {
+		log.Error("BrakemanStartAnalysis", "BRAKEMAN", 2008, CID, err)
+		return
+	}
+
+	// step 5: finally, update analysis with huskyCI results
+	analysis.HuskyCIResults.RubyResults.HuskyCIBrakemanOutput = prepareHuskyCIBrakemanResults(brakemanOutput)
+	err = db.UpdateOneDBAnalysis(analysisQuery, analysis)
+	if err != nil {
+		log.Error("BrakemanStartAnalysis", "BRAKEMAN", 2007, err)
+		return
+	}
+}
+
+// prepareHuskyCIBrakemanResults will prepare Brakeman output to be added into RubyResults struct
+func prepareHuskyCIBrakemanResults(brakemanOutput BrakemanOutput) types.HuskyCIBrakemanOutput {
+
+	var huskyCIbrakemanResults types.HuskyCIBrakemanOutput
+
+	for _, warning := range brakemanOutput.Warnings {
+		brakemanVuln := types.HuskyCIVulnerability{}
+		brakemanVuln.Language = "Ruby"
+		brakemanVuln.SecurityTool = "Brakeman"
+		brakemanVuln.Confidence = warning.Confidence
+		brakemanVuln.Details = warning.Details + warning.Message
+		brakemanVuln.File = warning.File
+		brakemanVuln.Line = strconv.Itoa(warning.Line)
+		brakemanVuln.Code = warning.Code
+		brakemanVuln.Type = warning.Type
+
+		switch brakemanVuln.Confidence {
+		case "High":
+			huskyCIbrakemanResults.LowVulnsBrakeman = append(huskyCIbrakemanResults.LowVulnsBrakeman, brakemanVuln)
+		case "Medium":
+			huskyCIbrakemanResults.MediumVulnsBrakeman = append(huskyCIbrakemanResults.MediumVulnsBrakeman, brakemanVuln)
+		case "Low":
+			huskyCIbrakemanResults.HighVulnsBrakeman = append(huskyCIbrakemanResults.HighVulnsBrakeman, brakemanVuln)
+		}
+	}
+
+	return huskyCIbrakemanResults
 }

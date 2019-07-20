@@ -83,7 +83,7 @@ func DockerRun(RID string, analysis *types.Analysis, securityTest types.Security
 	case "bandit":
 		BanditStartAnalysis(d.CID, cOutput, analysis.RID)
 	case "brakeman":
-		BrakemanStartAnalysis(d.CID, cOutput)
+		BrakemanStartAnalysis(d.CID, cOutput, analysis.RID)
 	case "retirejs":
 		RetirejsStartAnalysis(d.CID, cOutput)
 	case "safety":

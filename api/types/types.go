@@ -92,10 +92,10 @@ type JavaScriptResults struct {
 
 // RubyResults represents all Ruby security tests results.
 type RubyResults struct {
-	HuskyCIBrakemanOutput []HuskyCIVulnerability `bson:"brakemanoutput,omitempty" json:"brakemanoutput,omitempty"`
+	HuskyCIBrakemanOutput HuskyCIBrakemanOutput `bson:"brakemanoutput,omitempty" json:"brakemanoutput,omitempty"`
 }
 
-// HuskyCIGosecOutput stores all Low, Medium and High Bandit vulnerabilities
+// HuskyCIGosecOutput stores all Low, Medium and High Gosec vulnerabilities
 type HuskyCIGosecOutput struct {
 	LowVulnsGosec    []HuskyCIVulnerability `bson:"lowvulnsgosec,omitempty" json:"lowvulnsbandit,omitempty"`
 	MediumVulnsGosec []HuskyCIVulnerability `bson:"mediumvulnsgosec,omitempty" json:"mediumvulnsbandit,omitempty"`
@@ -109,11 +109,18 @@ type HuskyCIBanditOutput struct {
 	HighVulnsBandit   []HuskyCIVulnerability `bson:"highvulnsbandit,omitempty" json:"highvulnsbandit,omitempty"`
 }
 
+// HuskyCIBrakemanOutput stores all Low, Medium and High Brakeman vulnerabilities
+type HuskyCIBrakemanOutput struct {
+	LowVulnsBrakeman    []HuskyCIVulnerability `bson:"lowvulnsbrakeman,omitempty" json:"lowvulnsbrakeman,omitempty"`
+	MediumVulnsBrakeman []HuskyCIVulnerability `bson:"mediumvulnsbrakeman,omitempty" json:"mediumvulnsbrakeman,omitempty"`
+	HighVulnsBrakeman   []HuskyCIVulnerability `bson:"highvulnsbrakeman,omitempty" json:"highvulnsbrakeman,omitempty"`
+}
+
 // HuskyCIVulnerability is the struct that stores vulnerability information.
 type HuskyCIVulnerability struct {
 	Language       string `bson:"language" json:"language,omitempty"`
 	SecurityTool   string `bson:"securitytool" json:"securitytool,omitempty"`
-	Severity       string `bson:"severity" json:"severity,omitempty"`
+	Severity       string `bson:"severity,omitempty" json:"severity,omitempty"`
 	Confidence     string `bson:"confidence,omitempty" json:"confidence,omitempty"`
 	File           string `bson:"file,omitempty" json:"file,omitempty"`
 	Line           string `bson:"line,omitempty" json:"line,omitempty"`
