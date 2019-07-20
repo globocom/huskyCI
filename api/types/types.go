@@ -75,12 +75,12 @@ type HuskyCIResults struct {
 
 // GoResults represents all Golang security tests results.
 type GoResults struct {
-	HuskyCIGosecOutput []HuskyCIVulnerability `bson:"gosecoutput,omitempty" json:"gosecoutput,omitempty"`
+	HuskyCIGosecOutput HuskyCIGosecOutput `bson:"gosecoutput,omitempty" json:"gosecoutput,omitempty"`
 }
 
 // PythonResults represents all Python security tests results.
 type PythonResults struct {
-	HuskyCIBanditOutput []HuskyCIVulnerability `bson:"banditoutput,omitempty" json:"banditoutput,omitempty"`
+	HuskyCIBanditOutput HuskyCIBanditOutput    `bson:"banditoutput,omitempty" json:"banditoutput,omitempty"`
 	HuskyCISafetyOutput []HuskyCIVulnerability `bson:"safetyoutput,omitempty" json:"safetyoutput,omitempty"`
 }
 
@@ -93,6 +93,20 @@ type JavaScriptResults struct {
 // RubyResults represents all Ruby security tests results.
 type RubyResults struct {
 	HuskyCIBrakemanOutput []HuskyCIVulnerability `bson:"brakemanoutput,omitempty" json:"brakemanoutput,omitempty"`
+}
+
+// HuskyCIGosecOutput stores all Low, Medium and High Bandit vulnerabilities
+type HuskyCIGosecOutput struct {
+	LowVulnsGosec    []HuskyCIVulnerability `bson:"lowvulnsgosec,omitempty" json:"lowvulnsbandit,omitempty"`
+	MediumVulnsGosec []HuskyCIVulnerability `bson:"mediumvulnsgosec,omitempty" json:"mediumvulnsbandit,omitempty"`
+	HighVulnsGosec   []HuskyCIVulnerability `bson:"highvulnsgosec,omitempty" json:"highvulnsbandit,omitempty"`
+}
+
+// HuskyCIBanditOutput stores all Low, Medium and High Bandit vulnerabilities
+type HuskyCIBanditOutput struct {
+	LowVulnsBandit    []HuskyCIVulnerability `bson:"lowvulnsbandit,omitempty" json:"lowvulnsbandit,omitempty"`
+	MediumVulnsBandit []HuskyCIVulnerability `bson:"mediumvulnsbandit,omitempty" json:"mediumvulnsbandit,omitempty"`
+	HighVulnsBandit   []HuskyCIVulnerability `bson:"highvulnsbandit,omitempty" json:"highvulnsbandit,omitempty"`
 }
 
 // HuskyCIVulnerability is the struct that stores vulnerability information.
