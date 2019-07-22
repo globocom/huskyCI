@@ -89,8 +89,8 @@ func RemoveDuplicates(s []string) []string {
 	return s[:i]
 }
 
-// CheckMaliciousInput checks if an user's input is "malicious" or not
-func CheckMaliciousInput(repository types.Repository, c echo.Context) (string, error) {
+// CheckValidInput checks if an user's input is "malicious" or not
+func CheckValidInput(repository types.Repository, c echo.Context) (string, error) {
 
 	sanitiziedURL, err := CheckMaliciousRepoURL(repository.URL, c)
 	if err != nil {
