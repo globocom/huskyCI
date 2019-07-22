@@ -87,7 +87,7 @@ func DockerRun(RID string, analysis *types.Analysis, securityTest types.Security
 	case "retirejs":
 		RetirejsStartAnalysis(d.CID, cOutput, analysis.RID)
 	case "safety":
-		SafetyStartAnalysis(d.CID, cOutput)
+		SafetyStartAnalysis(d.CID, cOutput, analysis.RID)
 	case "npmaudit":
 		NpmAuditStartAnalysis(d.CID, cOutput, analysis.RID)
 	default:
