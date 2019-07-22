@@ -65,6 +65,22 @@ type Code struct {
 	Files    []string `bson:"files" json:"files"`
 }
 
+// HuskyCIVulnerability is the struct that stores vulnerability information.
+type HuskyCIVulnerability struct {
+	Language       string `bson:"language" json:"language,omitempty"`
+	SecurityTool   string `bson:"securitytool" json:"securitytool,omitempty"`
+	Severity       string `bson:"severity,omitempty" json:"severity,omitempty"`
+	Confidence     string `bson:"confidence,omitempty" json:"confidence,omitempty"`
+	File           string `bson:"file,omitempty" json:"file,omitempty"`
+	Line           string `bson:"line,omitempty" json:"line,omitempty"`
+	Code           string `bson:"code,omitempty" json:"code,omitempty"`
+	Details        string `bson:"details" json:"details,omitempty"`
+	Type           string `bson:"type,omitempty" json:"type,omitempty"`
+	VunerableBelow string `bson:"vulnerablebelow,omitempty" json:"vulnerablebelow,omitempty"`
+	Version        string `bson:"version,omitempty" json:"version,omitempty"`
+	Occurrences    int    `bson:"occurrences,omitempty" json:"occurrences,omitempty"`
+}
+
 // HuskyCIResults is a struct that represents huskyCI scan results.
 type HuskyCIResults struct {
 	GoResults         GoResults         `bson:"goresults,omitempty" json:"goresults,omitempty"`
@@ -80,8 +96,8 @@ type GoResults struct {
 
 // PythonResults represents all Python security tests results.
 type PythonResults struct {
-	HuskyCIBanditOutput HuskyCIBanditOutput    `bson:"banditoutput,omitempty" json:"banditoutput,omitempty"`
-	HuskyCISafetyOutput []HuskyCIVulnerability `bson:"safetyoutput,omitempty" json:"safetyoutput,omitempty"`
+	HuskyCIBanditOutput HuskyCIBanditOutput `bson:"banditoutput,omitempty" json:"banditoutput,omitempty"`
+	HuskyCISafetyOutput HuskyCISafetyOutput `bson:"safetyoutput,omitempty" json:"safetyoutput,omitempty"`
 }
 
 // JavaScriptResults represents all JavaScript security tests results.
@@ -109,6 +125,13 @@ type HuskyCIBanditOutput struct {
 	HighVulnsBandit   []HuskyCIVulnerability `bson:"highvulnsbandit,omitempty" json:"highvulnsbandit,omitempty"`
 }
 
+// HuskyCISafetyOutput stores all Low, Medium and High Safety vulnerabilities
+type HuskyCISafetyOutput struct {
+	LowVulnsSafety    []HuskyCIVulnerability `bson:"lowvulnssafety,omitempty" json:"lowvulnssafety,omitempty"`
+	MediumVulnsSafety []HuskyCIVulnerability `bson:"mediumvulnssafety,omitempty" json:"mediumvulnssafety,omitempty"`
+	HighVulnsSafety   []HuskyCIVulnerability `bson:"highvulnssafety,omitempty" json:"highvulnssafety,omitempty"`
+}
+
 // HuskyCIBrakemanOutput stores all Low, Medium and High Brakeman vulnerabilities
 type HuskyCIBrakemanOutput struct {
 	LowVulnsBrakeman    []HuskyCIVulnerability `bson:"lowvulnsbrakeman,omitempty" json:"lowvulnsbrakeman,omitempty"`
@@ -128,20 +151,4 @@ type HuskyCIRetireJSOutput struct {
 	LowVulnsNpmRetireJS []HuskyCIVulnerability `bson:"lowvulnsretireJS,omitempty" json:"lowvulnsretireJS,omitempty"`
 	MediumVulnsRetireJS []HuskyCIVulnerability `bson:"mediumvulnsretireJS,omitempty" json:"mediumvulnsretireJS,omitempty"`
 	HighVulnsRetireJS   []HuskyCIVulnerability `bson:"highvulnsretireJS,omitempty" json:"highvulnsretireJS,omitempty"`
-}
-
-// HuskyCIVulnerability is the struct that stores vulnerability information.
-type HuskyCIVulnerability struct {
-	Language       string `bson:"language" json:"language,omitempty"`
-	SecurityTool   string `bson:"securitytool" json:"securitytool,omitempty"`
-	Severity       string `bson:"severity,omitempty" json:"severity,omitempty"`
-	Confidence     string `bson:"confidence,omitempty" json:"confidence,omitempty"`
-	File           string `bson:"file,omitempty" json:"file,omitempty"`
-	Line           string `bson:"line,omitempty" json:"line,omitempty"`
-	Code           string `bson:"code,omitempty" json:"code,omitempty"`
-	Details        string `bson:"details" json:"details,omitempty"`
-	Type           string `bson:"type,omitempty" json:"type,omitempty"`
-	VunerableBelow string `bson:"vulnerablebelow,omitempty" json:"vulnerablebelow,omitempty"`
-	Version        string `bson:"version,omitempty" json:"version,omitempty"`
-	Occurrences    int    `bson:"occurrences,omitempty" json:"occurrences,omitempty"`
 }
