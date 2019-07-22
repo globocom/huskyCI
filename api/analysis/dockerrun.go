@@ -89,7 +89,7 @@ func DockerRun(RID string, analysis *types.Analysis, securityTest types.Security
 	case "safety":
 		SafetyStartAnalysis(d.CID, cOutput)
 	case "npmaudit":
-		NpmAuditStartAnalysis(d.CID, cOutput)
+		NpmAuditStartAnalysis(d.CID, cOutput, analysis.RID)
 	default:
 		log.Error("DockerRun", "DOCKERRUN", 3018, err)
 	}
