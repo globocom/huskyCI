@@ -116,12 +116,12 @@ func CheckMaliciousRepoURL(repositoryURL string, c echo.Context) (string, error)
 	r := regexp.MustCompile(regexpGit)
 	valid, err := regexp.MatchString(regexpGit, repositoryURL)
 	if err != nil {
-		log.Error("ReceiveRequest", "ANALYSIS", 1008, "Repository URL regexp ", err)
+		log.Error("CheckMaliciousRepoURL", "ANALYSIS", 1008, "Repository URL regexp ", err)
 		reply := map[string]interface{}{"success": false, "error": "internal error"}
 		return "", c.JSON(http.StatusInternalServerError, reply)
 	}
 	if !valid {
-		log.Error("ReceiveRequest", "ANALYSIS", 1016, repositoryURL)
+		log.Error("CheckMaliciousRepoURL", "ANALYSIS", 1016, repositoryURL)
 		reply := map[string]interface{}{"success": false, "error": "invalid repository URL"}
 		return "", c.JSON(http.StatusBadRequest, reply)
 	}
@@ -133,12 +133,12 @@ func CheckMaliciousRepoBranch(repositoryBranch string, c echo.Context) error {
 	regexpBranch := `^[a-zA-Z0-9_\/.-]*$`
 	valid, err := regexp.MatchString(regexpBranch, repositoryBranch)
 	if err != nil {
-		log.Error("ReceiveRequest", "ANALYSIS", 1008, "Repository Branch regexp ", err)
+		log.Error("CheckMaliciousRepoBranch", "ANALYSIS", 1008, "Repository Branch regexp ", err)
 		reply := map[string]interface{}{"success": false, "error": "internal error"}
 		return c.JSON(http.StatusInternalServerError, reply)
 	}
 	if !valid {
-		log.Error("ReceiveRequest", "ANALYSIS", 1017, repositoryBranch)
+		log.Error("CheckMaliciousRepoBranch", "ANALYSIS", 1017, repositoryBranch)
 		reply := map[string]interface{}{"success": false, "error": "invalid repository branch"}
 		return c.JSON(http.StatusBadRequest, reply)
 	}
@@ -150,12 +150,12 @@ func CheckMaliciousRepoInternalDepURL(repositoryInternalDepURL string, c echo.Co
 	regexpInternalDepURL := `https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)`
 	valid, err := regexp.MatchString(regexpInternalDepURL, repositoryInternalDepURL)
 	if err != nil {
-		log.Error("ReceiveRequest", "ANALYSIS", 1008, "Repository Branch regexp ", err)
+		log.Error("CheckMaliciousRepoInternalDepURL", "ANALYSIS", 1008, "Repository Branch regexp ", err)
 		reply := map[string]interface{}{"success": false, "error": "internal error"}
 		return c.JSON(http.StatusInternalServerError, reply)
 	}
 	if !valid {
-		log.Error("ReceiveRequest", "ANALYSIS", 1021, repositoryInternalDepURL)
+		log.Error("CheckMaliciousRepoInternalDepURL", "ANALYSIS", 1021, repositoryInternalDepURL)
 		reply := map[string]interface{}{"success": false, "error": "invalid internal dependency URL"}
 		return c.JSON(http.StatusBadRequest, reply)
 	}
@@ -167,12 +167,12 @@ func CheckMaliciousRID(RID string, c echo.Context) error {
 	regexpRID := `^[a-zA-Z0-9]*$`
 	valid, err := regexp.MatchString(regexpRID, RID)
 	if err != nil {
-		log.Error("GetAnalysis", "ANALYSIS", 1008, "RID regexp ", err)
+		log.Error("CheckMaliciousRID", "ANALYSIS", 1008, "RID regexp ", err)
 		reply := map[string]interface{}{"success": false, "error": "internal error"}
 		return c.JSON(http.StatusInternalServerError, reply)
 	}
 	if !valid {
-		log.Warning("GetAnalysis", "ANALYSIS", 107, RID)
+		log.Warning("CheckMaliciousRID", "ANALYSIS", 107, RID)
 		reply := map[string]interface{}{"success": false, "error": "invalid RID"}
 		return c.JSON(http.StatusBadRequest, reply)
 	}
