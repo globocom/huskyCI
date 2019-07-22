@@ -105,6 +105,7 @@ pull-images:
 	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/retirejs"
 	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/safety"
 	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/npmaudit"
+	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/gitauthors"
 
 ## Runs huskyci-client
 run-client: build-client
@@ -124,7 +125,7 @@ run-client-linux-json: build-client-linux
 
 ## Runs ginkgo
 ginkgo:
-	ginkgo -r -keepGoing 
-	
+	ginkgo -r -keepGoing
+
 ## Perfoms all make tests
 test: get-test-deps lint ginkgo

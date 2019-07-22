@@ -21,7 +21,7 @@ enry:
 
 gitauthors:
   name: gitauthors
-  image: huskyci/enry
+  image: huskyci/gitauthors
   cmd: |+
     mkdir -p ~/.ssh &&
     echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&

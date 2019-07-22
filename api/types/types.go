@@ -39,6 +39,7 @@ type Analysis struct {
 	ID             bson.ObjectId  `bson:"_id,omitempty"`
 	RID            string         `bson:"RID" json:"RID"`
 	URL            string         `bson:"repositoryURL" json:"repositoryURL"`
+	CommitAuthors  []string       `bson:"commitAuthors" json:"commitAuthors"`
 	Branch         string         `bson:"repositoryBranch" json:"repositoryBranch"`
 	SecurityTests  []SecurityTest `bson:"securityTests" json:"securityTests"`
 	Status         string         `bson:"status" json:"status"`
