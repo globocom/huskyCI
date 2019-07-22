@@ -119,7 +119,7 @@ func BanditStartAnalysis(CID string, cOutput string, RID string) {
 	analysisQuery = map[string]interface{}{"RID": RID}
 	analysis, err := db.FindOneDBAnalysis(analysisQuery)
 	if err != nil {
-		log.Error("GosecStartAnalysis", "BANDIT", 2008, CID, err)
+		log.Error("BanditStartAnalysis", "BANDIT", 2008, CID, err)
 		return
 	}
 
@@ -127,7 +127,7 @@ func BanditStartAnalysis(CID string, cOutput string, RID string) {
 	analysis.HuskyCIResults.PythonResults.HuskyCIBanditOutput = prepareHuskyCIBanditOutput(banditResult)
 	err = db.UpdateOneDBAnalysis(analysisQuery, analysis)
 	if err != nil {
-		log.Error("GosecStartAnalysis", "BANDIT", 2007, err)
+		log.Error("BanditStartAnalysis", "BANDIT", 2007, err)
 		return
 	}
 
