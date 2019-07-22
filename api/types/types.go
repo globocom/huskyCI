@@ -86,8 +86,8 @@ type PythonResults struct {
 
 // JavaScriptResults represents all JavaScript security tests results.
 type JavaScriptResults struct {
-	HuskyCIRetirejsResult []HuskyCIVulnerability `bson:"retirejsoutput,omitempty" json:"retirejsoutput,omitempty"`
-	HuskyCINpmAuditOutput HuskyCINpmAuditOutput  `bson:"npmauditoutput,omitempty" json:"npmauditoutput,omitempty"`
+	HuskyCIRetireJSOutput HuskyCIRetireJSOutput `bson:"retirejsoutput,omitempty" json:"retirejsoutput,omitempty"`
+	HuskyCINpmAuditOutput HuskyCINpmAuditOutput `bson:"npmauditoutput,omitempty" json:"npmauditoutput,omitempty"`
 }
 
 // RubyResults represents all Ruby security tests results.
@@ -121,6 +121,13 @@ type HuskyCINpmAuditOutput struct {
 	LowVulnsNpmAudit    []HuskyCIVulnerability `bson:"lowvulnsnpmaudit,omitempty" json:"lowvulnsnpmaudit,omitempty"`
 	MediumVulnsNpmAudit []HuskyCIVulnerability `bson:"mediumvulnsnpmaudit,omitempty" json:"mediumvulnsnpmaudit,omitempty"`
 	HighVulnsNpmAudit   []HuskyCIVulnerability `bson:"highvulnsnpmaudit,omitempty" json:"highvulnsnpmaudit,omitempty"`
+}
+
+// HuskyCIRetireJSOutput stores all Low, Medium and High RetireJS vulnerabilities
+type HuskyCIRetireJSOutput struct {
+	LowVulnsNpmRetireJS []HuskyCIVulnerability `bson:"lowvulnsretireJS,omitempty" json:"lowvulnsretireJS,omitempty"`
+	MediumVulnsRetireJS []HuskyCIVulnerability `bson:"mediumvulnsretireJS,omitempty" json:"mediumvulnsretireJS,omitempty"`
+	HighVulnsRetireJS   []HuskyCIVulnerability `bson:"highvulnsretireJS,omitempty" json:"highvulnsretireJS,omitempty"`
 }
 
 // HuskyCIVulnerability is the struct that stores vulnerability information.

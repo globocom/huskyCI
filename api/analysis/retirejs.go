@@ -11,6 +11,8 @@ import (
 
 	"github.com/globocom/huskyCI/api/db"
 	"github.com/globocom/huskyCI/api/log"
+	"github.com/globocom/huskyCI/api/types"
+	"github.com/globocom/huskyCI/api/util"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -40,7 +42,7 @@ type RetireJSVulnerabilityIdentifiers struct {
 }
 
 //RetirejsStartAnalysis analyses the output from RetireJS and sets cResult basdes on it.
-func RetirejsStartAnalysis(CID string, cOutput string) {
+func RetirejsStartAnalysis(CID string, cOutput string, RID string) {
 
 	var cResult string
 	analysisQuery := map[string]interface{}{"containers.CID": CID}
@@ -61,18 +63,37 @@ func RetirejsStartAnalysis(CID string, cOutput string) {
 		return
 	}
 
-	if strings.Contains(cOutput, "ERROR_RUNNING_RETIREJS") {
-		errorOutput := fmt.Sprintf("Container error: %s", cOutput)
+	failedRunning := strings.Contains(cOutput, "ERROR_RUNNING_RETIREJS")
+	if failedRunning {
 		updateContainerAnalysisQuery := bson.M{
 			"$set": bson.M{
 				"containers.$.cResult": "error",
-				"containers.$.cInfo":   errorOutput,
+				"containers.$.cInfo":   "Internal error running NPM Audit.",
 			},
 		}
 		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 		if err != nil {
 			log.Error("RetirejsStartAnalysis", "RETIREJS", 2007, err)
+			return
 		}
+
+		// step 4: get updated analysis based on its RID
+		analysisQuery = map[string]interface{}{"RID": RID}
+		analysis, err := db.FindOneDBAnalysis(analysisQuery)
+		if err != nil {
+			log.Error("RetirejsStartAnalysis", "RETIREJS", 2008, CID, err)
+			return
+		}
+
+		// step 5: finally, update analysis with huskyCI results
+		retireJSOutput := []RetirejsOutput{}
+		analysis.HuskyCIResults.JavaScriptResults.HuskyCIRetireJSOutput = prepareHuskyCIRetirejsOutput(retireJSOutput, failedRunning)
+		err = db.UpdateOneDBAnalysis(analysisQuery, analysis)
+		if err != nil {
+			log.Error("RetirejsStartAnalysis", "RETIREJS", 2007, err)
+			return
+		}
+
 		return
 	}
 
@@ -128,6 +149,71 @@ func RetirejsStartAnalysis(CID string, cOutput string) {
 		log.Error("RetirejsStartAnalysis", "RETIREJS", 2007, err)
 	}
 
-	return
+	// step 4: get updated analysis based on its RID
+	analysisQuery = map[string]interface{}{"RID": RID}
+	analysis, err := db.FindOneDBAnalysis(analysisQuery)
+	if err != nil {
+		log.Error("RetirejsStartAnalysis", "RETIREJS", 2008, CID, err)
+		return
+	}
 
+	// step 5: finally, update analysis with huskyCI results
+	analysis.HuskyCIResults.JavaScriptResults.HuskyCIRetireJSOutput = prepareHuskyCIRetirejsOutput(retirejsOutput, failedRunning)
+	err = db.UpdateOneDBAnalysis(analysisQuery, analysis)
+	if err != nil {
+		log.Error("RetirejsStartAnalysis", "RETIREJS", 2007, err)
+		return
+	}
+
+}
+
+// prepareHuskyCIRetirejsOutput will prepare Retirejs output to be added into JavaScriptResults struct
+func prepareHuskyCIRetirejsOutput(retirejsOutput []RetirejsOutput, failedRunning bool) types.HuskyCIRetireJSOutput {
+
+	var huskyCIretireJSResults types.HuskyCIRetireJSOutput
+	var huskyCIretireJSResultsFinal types.HuskyCIRetireJSOutput
+
+	if failedRunning {
+		retirejsVuln := types.HuskyCIVulnerability{}
+		retirejsVuln.Language = "JavaScript"
+		retirejsVuln.SecurityTool = "RetireJS"
+		retirejsVuln.Severity = "low"
+		retirejsVuln.Details = "It looks like your project doesn't have package.json or yarn.lock. huskyCI was not able to run RetireJS properly."
+
+		huskyCIretireJSResults.LowVulnsNpmRetireJS = append(huskyCIretireJSResults.LowVulnsNpmRetireJS, retirejsVuln)
+
+		return huskyCIretireJSResults
+	}
+
+	for _, output := range retirejsOutput {
+		for _, result := range output.RetirejsResult {
+			for _, vulnerability := range result.Vulnerabilities {
+				retirejsVuln := types.HuskyCIVulnerability{}
+				retirejsVuln.Language = "JavaScript"
+				retirejsVuln.SecurityTool = "RetireJS"
+				retirejsVuln.Severity = vulnerability.Severity
+				retirejsVuln.Code = result.Component
+				retirejsVuln.Version = result.Version
+				for _, info := range vulnerability.Info {
+					retirejsVuln.Details = retirejsVuln.Details + info + "\n"
+				}
+				retirejsVuln.Details = retirejsVuln.Details + vulnerability.Identifiers.Summary
+
+				switch retirejsVuln.Severity {
+				case "low":
+					huskyCIretireJSResults.LowVulnsNpmRetireJS = append(huskyCIretireJSResults.LowVulnsNpmRetireJS, retirejsVuln)
+				case "medium":
+					huskyCIretireJSResults.MediumVulnsRetireJS = append(huskyCIretireJSResults.MediumVulnsRetireJS, retirejsVuln)
+				case "high":
+					huskyCIretireJSResults.HighVulnsRetireJS = append(huskyCIretireJSResults.HighVulnsRetireJS, retirejsVuln)
+				}
+			}
+		}
+	}
+
+	huskyCIretireJSResultsFinal.LowVulnsNpmRetireJS = util.CountRetireJSOccurrences(huskyCIretireJSResults.LowVulnsNpmRetireJS)
+	huskyCIretireJSResultsFinal.MediumVulnsRetireJS = util.CountRetireJSOccurrences(huskyCIretireJSResults.MediumVulnsRetireJS)
+	huskyCIretireJSResultsFinal.HighVulnsRetireJS = util.CountRetireJSOccurrences(huskyCIretireJSResults.HighVulnsRetireJS)
+
+	return huskyCIretireJSResultsFinal
 }
