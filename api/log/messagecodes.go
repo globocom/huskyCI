@@ -47,6 +47,7 @@ var MsgCode = map[int]string{
 	1021: "Received an invalid internal dependency URL: ",
 	1022: "Could not Unmarshall the following npmauditOutput: ",
 	1023: "Could not upsert securityTest into MongoDB: ",
+	1024: "Received an invalid token JSON: ",
 
 	// MongoDB infos
 	21: "Connecting to MongoDB.",

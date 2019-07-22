@@ -63,3 +63,10 @@ type Code struct {
 	Language string   `bson:"language" json:"language"`
 	Files    []string `bson:"files" json:"files"`
 }
+
+// HuskyCIToken stores all information regarding a huskyCI token.
+type HuskyCIToken struct {
+	ID           string   `json:"tokenID,omitempty"`
+	HashedToken  string   `bson:"hashedTokenID" json:"hashedTokenID,omitempty"`
+	Repositories []string `bson:"repositories,omitempty" json:"repositories"`
+}
