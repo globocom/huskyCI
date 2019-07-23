@@ -6,14 +6,11 @@ package analysis
 
 import (
 	"encoding/json"
-	"fmt"
 	"strings"
 
-	"github.com/globocom/huskyCI/api/db"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
 	"github.com/globocom/huskyCI/api/util"
-	"gopkg.in/mgo.v2/bson"
 )
 
 //RetirejsOutput is the struct that holds issues, messages and errors found on a Retire scan.
@@ -44,60 +41,31 @@ type RetireJSVulnerabilityIdentifiers struct {
 //RetirejsStartAnalysis analyses the output from RetireJS and sets cResult basdes on it.
 func RetirejsStartAnalysis(CID string, cOutput string, RID string) {
 
-	var cResult string
-	analysisQuery := map[string]interface{}{"containers.CID": CID}
-
-	// step 0.1: error cloning repository!
-	if strings.Contains(cOutput, "ERROR_CLONING") {
-		errorOutput := fmt.Sprintf("Container error: %s", cOutput)
-		updateContainerAnalysisQuery := bson.M{
-			"$set": bson.M{
-				"containers.$.cResult": "error",
-				"containers.$.cInfo":   errorOutput,
-			},
-		}
-		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
-		if err != nil {
-			log.Error("RetirejsStartAnalysis", "RETIREJS", 2007, err)
-		}
-		return
-	}
-
+	errorClonning := strings.Contains(cOutput, "ERROR_CLONING")
 	failedRunning := strings.Contains(cOutput, "ERROR_RUNNING_RETIREJS")
+
+	// step 1: check for any errors when clonning repo
+	if errorClonning {
+		if err := updateInfoAndResultBasedOnCID("Error clonning repository", "error", CID); err != nil {
+			return
+		}
+	}
+
+	// step 2: check for any errors when running securityTest
 	if failedRunning {
-		updateContainerAnalysisQuery := bson.M{
-			"$set": bson.M{
-				"containers.$.cResult": "error",
-				"containers.$.cInfo":   "Internal error running NPM Audit.",
-			},
-		}
-		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
-		if err != nil {
-			log.Error("RetirejsStartAnalysis", "RETIREJS", 2007, err)
+		if err := updateInfoAndResultBasedOnCID("Error clonning repository", "error", CID); err != nil {
 			return
 		}
 
-		// step 4: get updated analysis based on its RID
-		analysisQuery = map[string]interface{}{"RID": RID}
-		analysis, err := db.FindOneDBAnalysis(analysisQuery)
-		if err != nil {
-			log.Error("RetirejsStartAnalysis", "RETIREJS", 2008, CID, err)
-			return
-		}
-
-		// step 5: finally, update analysis with huskyCI results
 		retireJSOutput := []RetirejsOutput{}
-		analysis.HuskyCIResults.JavaScriptResults.HuskyCIRetireJSOutput = prepareHuskyCIRetirejsOutput(retireJSOutput, failedRunning)
-		err = db.UpdateOneDBAnalysis(analysisQuery, analysis)
-		if err != nil {
-			log.Error("RetirejsStartAnalysis", "RETIREJS", 2007, err)
+		if err := updateHuskyCIResultsBasedOnRID(RID, "retirejs", retireJSOutput); err != nil {
 			return
 		}
 
 		return
 	}
 
-	// step 1: Unmarshall cOutput into RetireOutput struct.
+	// step 3: get retireJS output to be checked
 	retirejsOutput := []RetirejsOutput{}
 	err := json.Unmarshal([]byte(cOutput), &retirejsOutput)
 	if err != nil {
@@ -105,75 +73,47 @@ func RetirejsStartAnalysis(CID string, cOutput string, RID string) {
 		return
 	}
 
-	// step 1.1: Sets the container output to "No issues found" if RetirejsIssues returns an empty slice
+	// step 4: sets the container output to "No issues found" if RetirejsIssues returns an empty slice
 	if len(retirejsOutput) == 0 {
-		updateContainerAnalysisQuery := bson.M{
-			"$set": bson.M{
-				"containers.$.cResult": "passed",
-				"containers.$.cInfo":   "No issues found.",
-			},
-		}
-		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
-		if err != nil {
-			log.Error("RetirejsStartAnalysis", "RETIREJS", 2007, err)
+		if err := updateInfoAndResultBasedOnCID("No issues found.", "passed", CID); err != nil {
+			return
 		}
 		return
 	}
 
-	// step 2: find Vulnerabilities that have severity "medium" or "high".
-	cResult = "passed"
+	// step 5: find Vulnerabilities that have severity "medium" or "high"
+	cResult := "passed"
+	issueMessage := "No issues found."
 	for _, output := range retirejsOutput {
 		for _, result := range output.RetirejsResult {
 			for _, vulnerability := range result.Vulnerabilities {
 				if vulnerability.Severity == "high" || vulnerability.Severity == "medium" {
 					cResult = "failed"
+					issueMessage = "Issues found."
 					break
 				}
 			}
 		}
 	}
-
-	// step 3: update analysis' cResult into AnalyisCollection.
-	issueMessage := "No issues found."
-	if cResult != "passed" {
-		issueMessage = "Issues found."
-	}
-	updateContainerAnalysisQuery := bson.M{
-		"$set": bson.M{
-			"containers.$.cResult": cResult,
-			"containers.$.cInfo":   issueMessage,
-		},
-	}
-	err = db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
-	if err != nil {
-		log.Error("RetirejsStartAnalysis", "RETIREJS", 2007, err)
-	}
-
-	// step 4: get updated analysis based on its RID
-	analysisQuery = map[string]interface{}{"RID": RID}
-	analysis, err := db.FindOneDBAnalysis(analysisQuery)
-	if err != nil {
-		log.Error("RetirejsStartAnalysis", "RETIREJS", 2008, CID, err)
+	if err := updateInfoAndResultBasedOnCID(issueMessage, cResult, CID); err != nil {
 		return
 	}
 
-	// step 5: finally, update analysis with huskyCI results
-	analysis.HuskyCIResults.JavaScriptResults.HuskyCIRetireJSOutput = prepareHuskyCIRetirejsOutput(retirejsOutput, failedRunning)
-	err = db.UpdateOneDBAnalysis(analysisQuery, analysis)
-	if err != nil {
-		log.Error("RetirejsStartAnalysis", "RETIREJS", 2007, err)
+	// step 6: finally, update analysis with huskyCI results
+	if err := updateHuskyCIResultsBasedOnRID(RID, "retirejs", retirejsOutput); err != nil {
 		return
 	}
 
 }
 
 // prepareHuskyCIRetirejsOutput will prepare Retirejs output to be added into JavaScriptResults struct
-func prepareHuskyCIRetirejsOutput(retirejsOutput []RetirejsOutput, failedRunning bool) types.HuskyCIRetireJSOutput {
+func prepareHuskyCIRetirejsOutput(retirejsOutput []RetirejsOutput) types.HuskyCIRetireJSOutput {
 
 	var huskyCIretireJSResults types.HuskyCIRetireJSOutput
 	var huskyCIretireJSResultsFinal types.HuskyCIRetireJSOutput
 
-	if failedRunning {
+	// failedRunning
+	if retirejsOutput == nil {
 		retirejsVuln := types.HuskyCIVulnerability{}
 		retirejsVuln.Language = "JavaScript"
 		retirejsVuln.SecurityTool = "RetireJS"

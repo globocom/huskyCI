@@ -193,6 +193,8 @@ func updateHuskyCIResultsBasedOnRID(RID, securityTest string, securityTestResult
 	switch securityTest {
 	case "bandit":
 		analysis.HuskyCIResults.PythonResults.HuskyCIBanditOutput = prepareHuskyCIBanditOutput(securityTestResult.(BanditOutput))
+	case "retirejs":
+		analysis.HuskyCIResults.JavaScriptResults.HuskyCIRetireJSOutput = prepareHuskyCIRetirejsOutput(securityTestResult.([]RetirejsOutput))
 	}
 
 	err = db.UpdateOneDBAnalysis(analysisQuery, analysis)
