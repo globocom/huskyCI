@@ -29,8 +29,8 @@ type WarningItem struct {
 	Confidence string `json:"confidence"`
 }
 
-// BrakemanStartAnalysis analyses the output from Brakeman and sets a cResult based on it.
-func BrakemanStartAnalysis(CID string, cOutput string, RID string) {
+// BrakemanCheckOutputFlow analyses the output from Brakeman and sets a cResult based on it.
+func BrakemanCheckOutputFlow(CID string, cOutput string, RID string) {
 
 	// step 1: check for any errors when clonning repo
 	errorClonning := strings.Contains(cOutput, "ERROR_CLONING")

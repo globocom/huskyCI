@@ -30,8 +30,8 @@ type SafetyIssue struct {
 	ID         string `json:"id"`
 }
 
-//SafetyStartAnalysis analyses the output from Safety and sets cResult based on it.
-func SafetyStartAnalysis(CID string, cOutput string, RID string) {
+//SafetyCheckOutputFlow analyses the output from Safety and sets cResult based on it.
+func SafetyCheckOutputFlow(CID string, cOutput string, RID string) {
 
 	reqNotFound := strings.Contains(cOutput, "ERROR_REQ_NOT_FOUND")
 	failedRunning := strings.Contains(cOutput, "ERROR_RUNNING_SAFETY")

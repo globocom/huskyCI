@@ -38,8 +38,8 @@ type RetireJSVulnerabilityIdentifiers struct {
 	Summary string
 }
 
-//RetirejsStartAnalysis analyses the output from RetireJS and sets cResult basdes on it.
-func RetirejsStartAnalysis(CID string, cOutput string, RID string) {
+//RetirejsCheckOutputFlow analyses the output from RetireJS and sets cResult basdes on it.
+func RetirejsCheckOutputFlow(CID string, cOutput string, RID string) {
 
 	errorClonning := strings.Contains(cOutput, "ERROR_CLONING")
 	failedRunning := strings.Contains(cOutput, "ERROR_RUNNING_RETIREJS")
