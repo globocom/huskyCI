@@ -87,9 +87,9 @@ func BanditCheckOutputFlow(CID string, cOutput string, RID string) {
 }
 
 // prepareHuskyCIBanditOutput will prepare Bandit output to be added into pythonResults struct
-func prepareHuskyCIBanditOutput(banditOutput BanditOutput) types.HuskyCIBanditOutput {
+func prepareHuskyCIBanditOutput(banditOutput BanditOutput) types.HuskyCISecurityTestOutput {
 
-	var huskyCIbanditResults types.HuskyCIBanditOutput
+	var huskyCIbanditResults types.HuskyCISecurityTestOutput
 
 	for _, issue := range banditOutput.Results {
 		banditVuln := types.HuskyCIVulnerability{}
@@ -104,11 +104,11 @@ func prepareHuskyCIBanditOutput(banditOutput BanditOutput) types.HuskyCIBanditOu
 
 		switch banditVuln.Severity {
 		case "LOW":
-			huskyCIbanditResults.LowVulnsBandit = append(huskyCIbanditResults.LowVulnsBandit, banditVuln)
+			huskyCIbanditResults.LowVulns = append(huskyCIbanditResults.LowVulns, banditVuln)
 		case "MEDIUM":
-			huskyCIbanditResults.MediumVulnsBandit = append(huskyCIbanditResults.MediumVulnsBandit, banditVuln)
+			huskyCIbanditResults.MediumVulns = append(huskyCIbanditResults.MediumVulns, banditVuln)
 		case "HIGH":
-			huskyCIbanditResults.HighVulnsBandit = append(huskyCIbanditResults.HighVulnsBandit, banditVuln)
+			huskyCIbanditResults.HighVulns = append(huskyCIbanditResults.HighVulns, banditVuln)
 		}
 	}
 

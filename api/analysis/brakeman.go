@@ -86,9 +86,9 @@ func BrakemanCheckOutputFlow(CID string, cOutput string, RID string) {
 }
 
 // prepareHuskyCIBrakemanResults will prepare Brakeman output to be added into RubyResults struct
-func prepareHuskyCIBrakemanResults(brakemanOutput BrakemanOutput) types.HuskyCIBrakemanOutput {
+func prepareHuskyCIBrakemanResults(brakemanOutput BrakemanOutput) types.HuskyCISecurityTestOutput {
 
-	var huskyCIbrakemanResults types.HuskyCIBrakemanOutput
+	var huskyCIbrakemanResults types.HuskyCISecurityTestOutput
 
 	for _, warning := range brakemanOutput.Warnings {
 		brakemanVuln := types.HuskyCIVulnerability{}
@@ -103,11 +103,11 @@ func prepareHuskyCIBrakemanResults(brakemanOutput BrakemanOutput) types.HuskyCIB
 
 		switch brakemanVuln.Confidence {
 		case "High":
-			huskyCIbrakemanResults.LowVulnsBrakeman = append(huskyCIbrakemanResults.LowVulnsBrakeman, brakemanVuln)
+			huskyCIbrakemanResults.LowVulns = append(huskyCIbrakemanResults.LowVulns, brakemanVuln)
 		case "Medium":
-			huskyCIbrakemanResults.MediumVulnsBrakeman = append(huskyCIbrakemanResults.MediumVulnsBrakeman, brakemanVuln)
+			huskyCIbrakemanResults.MediumVulns = append(huskyCIbrakemanResults.MediumVulns, brakemanVuln)
 		case "Low":
-			huskyCIbrakemanResults.HighVulnsBrakeman = append(huskyCIbrakemanResults.HighVulnsBrakeman, brakemanVuln)
+			huskyCIbrakemanResults.HighVulns = append(huskyCIbrakemanResults.HighVulns, brakemanVuln)
 		}
 	}
 

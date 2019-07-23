@@ -86,9 +86,9 @@ func GosecCheckOutputFlow(CID string, cOutput string, RID string) {
 }
 
 // prepareHuskyCIGosecResults will prepare Gosec output to be added into goResults struct
-func prepareHuskyCIGosecResults(gosecOutput GosecOutput) types.HuskyCIGosecOutput {
+func prepareHuskyCIGosecResults(gosecOutput GosecOutput) types.HuskyCISecurityTestOutput {
 
-	var huskyCIgosecResults types.HuskyCIGosecOutput
+	var huskyCIgosecResults types.HuskyCISecurityTestOutput
 
 	for _, issue := range gosecOutput.GosecIssues {
 		gosecVuln := types.HuskyCIVulnerability{}
@@ -103,11 +103,11 @@ func prepareHuskyCIGosecResults(gosecOutput GosecOutput) types.HuskyCIGosecOutpu
 
 		switch gosecVuln.Severity {
 		case "LOW":
-			huskyCIgosecResults.LowVulnsGosec = append(huskyCIgosecResults.LowVulnsGosec, gosecVuln)
+			huskyCIgosecResults.LowVulns = append(huskyCIgosecResults.LowVulns, gosecVuln)
 		case "MEDIUM":
-			huskyCIgosecResults.MediumVulnsGosec = append(huskyCIgosecResults.MediumVulnsGosec, gosecVuln)
+			huskyCIgosecResults.MediumVulns = append(huskyCIgosecResults.MediumVulns, gosecVuln)
 		case "HIGH":
-			huskyCIgosecResults.HighVulnsGosec = append(huskyCIgosecResults.HighVulnsGosec, gosecVuln)
+			huskyCIgosecResults.HighVulns = append(huskyCIgosecResults.HighVulns, gosecVuln)
 		}
 	}
 

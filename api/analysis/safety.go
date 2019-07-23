@@ -121,9 +121,9 @@ func SafetyCheckOutputFlow(CID string, cOutput string, RID string) {
 }
 
 // prepareHuskyCISafetyResults will prepare Safety output to be added into PythonResults struct
-func prepareHuskyCISafetyResults(safetyOutput SafetyOutput) types.HuskyCISafetyOutput {
+func prepareHuskyCISafetyResults(safetyOutput SafetyOutput) types.HuskyCISecurityTestOutput {
 
-	var huskyCIsafetyResults types.HuskyCISafetyOutput
+	var huskyCIsafetyResults types.HuskyCISecurityTestOutput
 	var onlyWarning bool
 
 	if safetyOutput.ReqNotFound {
@@ -133,7 +133,7 @@ func prepareHuskyCISafetyResults(safetyOutput SafetyOutput) types.HuskyCISafetyO
 		safetyVuln.Severity = "info"
 		safetyVuln.Details = "requirements.txt not found"
 
-		huskyCIsafetyResults.LowVulnsSafety = append(huskyCIsafetyResults.LowVulnsSafety, safetyVuln)
+		huskyCIsafetyResults.LowVulns = append(huskyCIsafetyResults.LowVulns, safetyVuln)
 
 		return huskyCIsafetyResults
 	}
@@ -151,7 +151,7 @@ func prepareHuskyCISafetyResults(safetyOutput SafetyOutput) types.HuskyCISafetyO
 			safetyVuln.Severity = "warning"
 			safetyVuln.Details = util.AdjustWarningMessage(warning)
 
-			huskyCIsafetyResults.LowVulnsSafety = append(huskyCIsafetyResults.LowVulnsSafety, safetyVuln)
+			huskyCIsafetyResults.LowVulns = append(huskyCIsafetyResults.LowVulns, safetyVuln)
 
 		}
 		if onlyWarning {
@@ -168,7 +168,7 @@ func prepareHuskyCISafetyResults(safetyOutput SafetyOutput) types.HuskyCISafetyO
 		safetyVuln.Code = issue.Dependency + " " + issue.Version
 		safetyVuln.VunerableBelow = issue.Below
 
-		huskyCIsafetyResults.HighVulnsSafety = append(huskyCIsafetyResults.HighVulnsSafety, safetyVuln)
+		huskyCIsafetyResults.HighVulns = append(huskyCIsafetyResults.HighVulns, safetyVuln)
 	}
 
 	return huskyCIsafetyResults

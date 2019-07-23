@@ -91,64 +91,29 @@ type HuskyCIResults struct {
 
 // GoResults represents all Golang security tests results.
 type GoResults struct {
-	HuskyCIGosecOutput HuskyCIGosecOutput `bson:"gosecoutput,omitempty" json:"gosecoutput,omitempty"`
+	HuskyCIGosecOutput HuskyCISecurityTestOutput `bson:"gosecoutput,omitempty" json:"gosecoutput,omitempty"`
 }
 
 // PythonResults represents all Python security tests results.
 type PythonResults struct {
-	HuskyCIBanditOutput HuskyCIBanditOutput `bson:"banditoutput,omitempty" json:"banditoutput,omitempty"`
-	HuskyCISafetyOutput HuskyCISafetyOutput `bson:"safetyoutput,omitempty" json:"safetyoutput,omitempty"`
+	HuskyCIBanditOutput HuskyCISecurityTestOutput `bson:"banditoutput,omitempty" json:"banditoutput,omitempty"`
+	HuskyCISafetyOutput HuskyCISecurityTestOutput `bson:"safetyoutput,omitempty" json:"safetyoutput,omitempty"`
 }
 
 // JavaScriptResults represents all JavaScript security tests results.
 type JavaScriptResults struct {
-	HuskyCIRetireJSOutput HuskyCIRetireJSOutput `bson:"retirejsoutput,omitempty" json:"retirejsoutput,omitempty"`
-	HuskyCINpmAuditOutput HuskyCINpmAuditOutput `bson:"npmauditoutput,omitempty" json:"npmauditoutput,omitempty"`
+	HuskyCIRetireJSOutput HuskyCISecurityTestOutput `bson:"retirejsoutput,omitempty" json:"retirejsoutput,omitempty"`
+	HuskyCINpmAuditOutput HuskyCISecurityTestOutput `bson:"npmauditoutput,omitempty" json:"npmauditoutput,omitempty"`
 }
 
 // RubyResults represents all Ruby security tests results.
 type RubyResults struct {
-	HuskyCIBrakemanOutput HuskyCIBrakemanOutput `bson:"brakemanoutput,omitempty" json:"brakemanoutput,omitempty"`
+	HuskyCIBrakemanOutput HuskyCISecurityTestOutput `bson:"brakemanoutput,omitempty" json:"brakemanoutput,omitempty"`
 }
 
-// HuskyCIGosecOutput stores all Low, Medium and High Gosec vulnerabilities
-type HuskyCIGosecOutput struct {
-	LowVulnsGosec    []HuskyCIVulnerability `bson:"lowvulnsgosec,omitempty" json:"lowvulnsbandit,omitempty"`
-	MediumVulnsGosec []HuskyCIVulnerability `bson:"mediumvulnsgosec,omitempty" json:"mediumvulnsbandit,omitempty"`
-	HighVulnsGosec   []HuskyCIVulnerability `bson:"highvulnsgosec,omitempty" json:"highvulnsbandit,omitempty"`
-}
-
-// HuskyCIBanditOutput stores all Low, Medium and High Bandit vulnerabilities
-type HuskyCIBanditOutput struct {
-	LowVulnsBandit    []HuskyCIVulnerability `bson:"lowvulnsbandit,omitempty" json:"lowvulnsbandit,omitempty"`
-	MediumVulnsBandit []HuskyCIVulnerability `bson:"mediumvulnsbandit,omitempty" json:"mediumvulnsbandit,omitempty"`
-	HighVulnsBandit   []HuskyCIVulnerability `bson:"highvulnsbandit,omitempty" json:"highvulnsbandit,omitempty"`
-}
-
-// HuskyCISafetyOutput stores all Low, Medium and High Safety vulnerabilities
-type HuskyCISafetyOutput struct {
-	LowVulnsSafety    []HuskyCIVulnerability `bson:"lowvulnssafety,omitempty" json:"lowvulnssafety,omitempty"`
-	MediumVulnsSafety []HuskyCIVulnerability `bson:"mediumvulnssafety,omitempty" json:"mediumvulnssafety,omitempty"`
-	HighVulnsSafety   []HuskyCIVulnerability `bson:"highvulnssafety,omitempty" json:"highvulnssafety,omitempty"`
-}
-
-// HuskyCIBrakemanOutput stores all Low, Medium and High Brakeman vulnerabilities
-type HuskyCIBrakemanOutput struct {
-	LowVulnsBrakeman    []HuskyCIVulnerability `bson:"lowvulnsbrakeman,omitempty" json:"lowvulnsbrakeman,omitempty"`
-	MediumVulnsBrakeman []HuskyCIVulnerability `bson:"mediumvulnsbrakeman,omitempty" json:"mediumvulnsbrakeman,omitempty"`
-	HighVulnsBrakeman   []HuskyCIVulnerability `bson:"highvulnsbrakeman,omitempty" json:"highvulnsbrakeman,omitempty"`
-}
-
-// HuskyCINpmAuditOutput stores all Low, Medium and High Npm Audit vulnerabilities
-type HuskyCINpmAuditOutput struct {
-	LowVulnsNpmAudit    []HuskyCIVulnerability `bson:"lowvulnsnpmaudit,omitempty" json:"lowvulnsnpmaudit,omitempty"`
-	MediumVulnsNpmAudit []HuskyCIVulnerability `bson:"mediumvulnsnpmaudit,omitempty" json:"mediumvulnsnpmaudit,omitempty"`
-	HighVulnsNpmAudit   []HuskyCIVulnerability `bson:"highvulnsnpmaudit,omitempty" json:"highvulnsnpmaudit,omitempty"`
-}
-
-// HuskyCIRetireJSOutput stores all Low, Medium and High RetireJS vulnerabilities
-type HuskyCIRetireJSOutput struct {
-	LowVulnsNpmRetireJS []HuskyCIVulnerability `bson:"lowvulnsretireJS,omitempty" json:"lowvulnsretireJS,omitempty"`
-	MediumVulnsRetireJS []HuskyCIVulnerability `bson:"mediumvulnsretireJS,omitempty" json:"mediumvulnsretireJS,omitempty"`
-	HighVulnsRetireJS   []HuskyCIVulnerability `bson:"highvulnsretireJS,omitempty" json:"highvulnsretireJS,omitempty"`
+// HuskyCISecurityTestOutput stores all Low, Medium and High vulnerabilities for a sec test
+type HuskyCISecurityTestOutput struct {
+	LowVulns    []HuskyCIVulnerability `bson:"lowvulns,omitempty" json:"lowvulns,omitempty"`
+	MediumVulns []HuskyCIVulnerability `bson:"mediumvulns,omitempty" json:"mediumvulns,omitempty"`
+	HighVulns   []HuskyCIVulnerability `bson:"highvulns,omitempty" json:"highvulns,omitempty"`
 }
