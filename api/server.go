@@ -24,7 +24,13 @@ func main() {
 	log.InitLog()
 	log.Info("main", "SERVER", 11)
 
-	if err := apiUtil.CheckHuskyRequirements(configAPI); err != nil {
+	checkHandler := &apiUtil.CheckUtils{}
+
+	huskyUtils := apiUtil.HuskyUtils{
+		CheckHandler: checkHandler,
+	}
+
+	if err := huskyUtils.CheckHuskyRequirements(configAPI); err != nil {
 		log.Error("main", "SERVER", 1001, err)
 		os.Exit(1)
 	}
