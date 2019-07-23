@@ -77,19 +77,19 @@ func DockerRun(RID string, analysis *types.Analysis, securityTest types.Security
 	// step 5: send output to the proper analysis result function.
 	switch securityTest.Name {
 	case "enry":
-		EnryStartAnalysis(d.CID, cOutput, analysis.RID)
+		EnryCheckOutputFlow(d.CID, cOutput, analysis.RID)
 	case "gosec":
-		GosecStartAnalysis(d.CID, cOutput, analysis.RID)
+		GosecCheckOutputFlow(d.CID, cOutput, analysis.RID)
 	case "bandit":
-		BanditStartAnalysis(d.CID, cOutput, analysis.RID)
+		BanditCheckOutputFlow(d.CID, cOutput, analysis.RID)
 	case "brakeman":
-		BrakemanStartAnalysis(d.CID, cOutput, analysis.RID)
+		BrakemanCheckOutputFlow(d.CID, cOutput, analysis.RID)
 	case "retirejs":
-		RetirejsStartAnalysis(d.CID, cOutput, analysis.RID)
+		RetirejsCheckOutputFlow(d.CID, cOutput, analysis.RID)
 	case "safety":
-		SafetyStartAnalysis(d.CID, cOutput, analysis.RID)
+		SafetyCheckOutputFlow(d.CID, cOutput, analysis.RID)
 	case "npmaudit":
-		NpmAuditStartAnalysis(d.CID, cOutput, analysis.RID)
+		NpmAuditCheckOutputFlow(d.CID, cOutput, analysis.RID)
 	default:
 		log.Error("DockerRun", "DOCKERRUN", 3018, err)
 	}

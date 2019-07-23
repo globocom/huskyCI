@@ -37,8 +37,8 @@ type GosecStats struct {
 	Found int `json:"found"`
 }
 
-// GosecStartAnalysis analyses the output from Gosec and sets a cResult based on it.
-func GosecStartAnalysis(CID string, cOutput string, RID string) {
+// GosecCheckOutputFlow analyses the output from Gosec and sets a cResult based on it.
+func GosecCheckOutputFlow(CID string, cOutput string, RID string) {
 
 	// step 1: check for any errors when clonning repo
 	errorClonning := strings.Contains(cOutput, "ERROR_CLONING")

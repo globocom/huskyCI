@@ -15,8 +15,8 @@ import (
 	"github.com/globocom/huskyCI/api/types"
 )
 
-// EnryStartAnalysis checks the languages of a repository, update them into mongoDB, and starts corresponding new securityTests.
-func EnryStartAnalysis(CID string, cOutput string, RID string) {
+// EnryCheckOutputFlow checks the languages of a repository, update them into mongoDB, and starts corresponding new securityTests.
+func EnryCheckOutputFlow(CID string, cOutput string, RID string) {
 
 	// step 1: check for any errors when clonning repo
 	errorClonning := strings.Contains(cOutput, "ERROR_CLONING")

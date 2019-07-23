@@ -32,8 +32,8 @@ type Result struct {
 	TestName        string `json:"test_name"`
 }
 
-// BanditStartAnalysis analyses the output from Bandit and sets a cResult based on it.
-func BanditStartAnalysis(CID string, cOutput string, RID string) {
+// BanditCheckOutputFlow analyses the output from Bandit and sets a cResult based on it.
+func BanditCheckOutputFlow(CID string, cOutput string, RID string) {
 
 	// step 1: check for any errors when clonning repo
 	errorClonning := strings.Contains(cOutput, "ERROR_CLONING")

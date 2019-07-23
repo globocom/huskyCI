@@ -48,8 +48,8 @@ type VulnerabilitiesSummary struct {
 	Critical int `json:"critical"`
 }
 
-// NpmAuditStartAnalysis analyses the output from Npm Audit and sets a cResult based on it.
-func NpmAuditStartAnalysis(CID string, cOutput string, RID string) {
+// NpmAuditCheckOutputFlow analyses the output from Npm Audit and sets a cResult based on it.
+func NpmAuditCheckOutputFlow(CID string, cOutput string, RID string) {
 
 	errorClonning := strings.Contains(cOutput, "ERROR_CLONING")
 	failedRunning := strings.Contains(cOutput, "ERROR_RUNNING_NPMAUDIT")
