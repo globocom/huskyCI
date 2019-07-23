@@ -8,16 +8,17 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/globocom/huskyCI/api/db"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
 	"github.com/globocom/huskyCI/api/util"
-	"gopkg.in/mgo.v2/bson"
 )
 
 //SafetyOutput is the struct that holds issues, messages and errors found on a Safety scan.
 type SafetyOutput struct {
-	SafetyIssues []SafetyIssue `json:"issues"`
+	SafetyIssues   []SafetyIssue `json:"issues"`
+	ReqNotFound    bool
+	WarningFound   bool
+	OutputWarnings []string
 }
 
 //SafetyIssue is a struct that holds the results that were scanned and the file they came from.
@@ -32,185 +33,100 @@ type SafetyIssue struct {
 //SafetyStartAnalysis analyses the output from Safety and sets cResult based on it.
 func SafetyStartAnalysis(CID string, cOutput string, RID string) {
 
-	var outputJSON string
-	var outputWarnings []string
-
-	analysisQuery := map[string]interface{}{"containers.CID": CID}
-
 	reqNotFound := strings.Contains(cOutput, "ERROR_REQ_NOT_FOUND")
 	failedRunning := strings.Contains(cOutput, "ERROR_RUNNING_SAFETY")
 	warningFound := strings.Contains(cOutput, "Warning: unpinned requirement ")
 	errorCloning := strings.Contains(cOutput, "ERROR_CLONING")
 
-	safetyOutput := SafetyOutput{}
-
-	if failedRunning {
-		updateContainerAnalysisQuery := bson.M{
-			"$set": bson.M{
-				"containers.$.cResult": "warning", // will not fail CI now
-				"containers.$.cInfo":   "Internal error running Safety.",
-			},
-		}
-		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
-		if err != nil {
-			log.Warning("SafetyStartAnalysis", "SAFETY", 2007, err)
-			return
-		}
-
-		if err := updateSafetyAnalysisWithResults(RID, CID, safetyOutput, failedRunning, reqNotFound, warningFound, outputWarnings); err != nil {
-			return
-		}
-
-		return
-	}
-
-	if reqNotFound {
-		updateContainerAnalysisQuery := bson.M{
-			"$set": bson.M{
-				"containers.$.cResult": "warning", // will not fail CI now
-				"containers.$.cInfo":   "Requirements not found.",
-			},
-		}
-		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
-		if err != nil {
-			log.Warning("SafetyStartAnalysis", "SAFETY", 2007, err)
-			return
-		}
-
-		if err := updateSafetyAnalysisWithResults(RID, CID, safetyOutput, failedRunning, reqNotFound, warningFound, outputWarnings); err != nil {
-			return
-		}
-
-		return
-	}
-
+	// step 1: check for any errors when clonning repo
 	if errorCloning {
-		updateContainerAnalysisQuery := bson.M{
-			"$set": bson.M{
-				"containers.$.cResult": "error",
-				"containers.$.cInfo":   "Error clonning repository.",
-			},
-		}
-		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
-		if err != nil {
-			log.Error("SafetyStartAnalysis", "SAFETY", 2007, err)
+		if err := updateInfoAndResultBasedOnCID("Error clonning repository", "error", CID); err != nil {
 			return
 		}
 		return
 	}
 
+	// step 2: check for any errors when running securityTest
+	if failedRunning {
+		if err := updateInfoAndResultBasedOnCID("Internal error running Safety.", "error", CID); err != nil {
+			return
+		}
+		return
+	}
+
+	// step 3: check if requirements.txt were found or not
+	if reqNotFound {
+		if err := updateInfoAndResultBasedOnCID("Requirements not found.", "warning", CID); err != nil {
+			return
+		}
+
+		safetyOutput := SafetyOutput{ReqNotFound: true}
+		if err := updateHuskyCIResultsBasedOnRID(RID, "safety", safetyOutput); err != nil {
+			return
+		}
+		return
+	}
+
+	// step 4: check if warning were found and handle its output
+	safetyOutput := SafetyOutput{}
 	if warningFound {
-		outputJSON = util.GetLastLine(cOutput)
-		outputWarnings = util.GetAllLinesButLast(cOutput)
+		outputJSON := util.GetLastLine(cOutput)
+		safetyOutput.OutputWarnings = util.GetAllLinesButLast(cOutput)
 		cOutput = outputJSON
 	}
-
 	cOutputSanitized := util.SanitizeSafetyJSON(cOutput)
 
+	// step 5: unmarshall safety output
 	err := json.Unmarshal([]byte(cOutputSanitized), &safetyOutput)
 	if err != nil {
 		log.Error("SafetyStartAnalysis", "SAFETY", 1018, cOutput, err)
 		return
 	}
 
+	// step 6: check if issues, warnings, or both were found
 	if len(safetyOutput.SafetyIssues) == 0 {
 
+		// no issues but warning found!
 		if warningFound {
-			updateContainerAnalysisQuery := bson.M{
-				"$set": bson.M{
-					"containers.$.cResult": "warning",
-					"containers.$.cInfo":   "Warning found",
-				},
-			}
-			err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
-			if err != nil {
-				log.Error("SafetyStartAnalysis", "SAFETY", 2007, err)
+			if err := updateInfoAndResultBasedOnCID("Warnings found.", "warning", CID); err != nil {
 				return
 			}
 
-			if err := updateSafetyAnalysisWithResults(RID, CID, safetyOutput, failedRunning, reqNotFound, warningFound, outputWarnings); err != nil {
+			safetyOutput := SafetyOutput{WarningFound: true}
+			if err := updateHuskyCIResultsBasedOnRID(RID, "safety", safetyOutput); err != nil {
 				return
 			}
 
 			return
 		}
 
-		updateContainerAnalysisQuery := bson.M{
-			"$set": bson.M{
-				"containers.$.cResult": "passed",
-				"containers.$.cInfo":   "No issues found.",
-			},
-		}
-		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
-		if err != nil {
-			log.Error("SafetyStartAnalysis", "SAFETY", 2007, err)
-		}
-
-		if err := updateSafetyAnalysisWithResults(RID, CID, safetyOutput, failedRunning, reqNotFound, warningFound, outputWarnings); err != nil {
+		// no issues and no warning
+		if err := updateInfoAndResultBasedOnCID("No issues found.", "passed", CID); err != nil {
 			return
 		}
 
 		return
 	}
 
-	// Issues found. client will have to handle with warnings and issues.
-	updateContainerAnalysisQuery := bson.M{
-		"$set": bson.M{
-			"containers.$.cResult": "failed",
-			"containers.$.cInfo":   "Issues found.",
-		},
-	}
-	err = db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
-	if err != nil {
-		log.Error("SafetyStartAnalysis", "SAFETY", 2007, err)
+	// Issues found.
+	if err := updateInfoAndResultBasedOnCID("Issues found.", "failed", CID); err != nil {
+		return
 	}
 
-	if err := updateSafetyAnalysisWithResults(RID, CID, safetyOutput, failedRunning, reqNotFound, warningFound, outputWarnings); err != nil {
+	// step 6: finally, update analysis with huskyCI results
+	if err := updateHuskyCIResultsBasedOnRID(RID, "safety", safetyOutput); err != nil {
 		return
 	}
 
 }
 
-func updateSafetyAnalysisWithResults(RID, CID string, safetyOutput SafetyOutput, failedRunning, reqNotFound, warningFound bool, outputWarnings []string) error {
-
-	// get updated analysis based on its RID
-	analysisQuery := map[string]interface{}{"RID": RID}
-	analysis, err := db.FindOneDBAnalysis(analysisQuery)
-	if err != nil {
-		log.Error("SafetyStartAnalysis", "SAFETY", 2008, CID, err)
-		return err
-	}
-
-	// update analysis with huskyCI results
-	analysis.HuskyCIResults.PythonResults.HuskyCISafetyOutput = prepareHuskyCISafetyOutput(safetyOutput, failedRunning, reqNotFound, warningFound, outputWarnings)
-	err = db.UpdateOneDBAnalysis(analysisQuery, analysis)
-	if err != nil {
-		log.Error("SafetyStartAnalysis", "SAFETY", 2007, err)
-		return err
-	}
-
-	return nil
-}
-
-// prepareHuskyCISafetyOutput will prepare Safety output to be added into PythonResults struct
-func prepareHuskyCISafetyOutput(safetyOutput SafetyOutput, failedRunning, reqNotFound, warningFound bool, outputWarnings []string) types.HuskyCISafetyOutput {
+// prepareHuskyCISafetyResults will prepare Safety output to be added into PythonResults struct
+func prepareHuskyCISafetyResults(safetyOutput SafetyOutput) types.HuskyCISafetyOutput {
 
 	var huskyCIsafetyResults types.HuskyCISafetyOutput
 	var onlyWarning bool
 
-	if failedRunning {
-		safetyVuln := types.HuskyCIVulnerability{}
-		safetyVuln.Language = "Python"
-		safetyVuln.SecurityTool = "Safety"
-		safetyVuln.Severity = "info"
-		safetyVuln.Details = "Internal error running Safety."
-
-		huskyCIsafetyResults.LowVulnsSafety = append(huskyCIsafetyResults.LowVulnsSafety, safetyVuln)
-
-		return huskyCIsafetyResults
-	}
-
-	if reqNotFound {
+	if safetyOutput.ReqNotFound {
 		safetyVuln := types.HuskyCIVulnerability{}
 		safetyVuln.Language = "Python"
 		safetyVuln.SecurityTool = "Safety"
@@ -222,13 +138,13 @@ func prepareHuskyCISafetyOutput(safetyOutput SafetyOutput, failedRunning, reqNot
 		return huskyCIsafetyResults
 	}
 
-	if warningFound {
+	if safetyOutput.WarningFound {
 
 		if len(safetyOutput.SafetyIssues) == 0 {
 			onlyWarning = true
 		}
 
-		for _, warning := range outputWarnings {
+		for _, warning := range safetyOutput.OutputWarnings {
 			safetyVuln := types.HuskyCIVulnerability{}
 			safetyVuln.Language = "Python"
 			safetyVuln.SecurityTool = "Safety"
