@@ -6,14 +6,11 @@ package analysis
 
 import (
 	"encoding/json"
-	"fmt"
 	"strconv"
 	"strings"
 
-	"github.com/globocom/huskyCI/api/db"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
-	"gopkg.in/mgo.v2/bson"
 )
 
 // BanditOutput is the struct that holds all data from Bandit output.
@@ -38,24 +35,15 @@ type Result struct {
 // BanditStartAnalysis analyses the output from Bandit and sets a cResult based on it.
 func BanditStartAnalysis(CID string, cOutput string, RID string) {
 
-	analysisQuery := map[string]interface{}{"containers.CID": CID}
-
-	// error cloning repository!
-	if strings.Contains(cOutput, "ERROR_CLONING") {
-		errorOutput := fmt.Sprintf("Container error: %s", cOutput)
-		updateContainerAnalysisQuery := bson.M{
-			"$set": bson.M{
-				"containers.$.cResult": "error",
-				"containers.$.cInfo":   errorOutput,
-			},
+	// check for any error when clonning repo
+	errorClonning := strings.Contains(cOutput, "ERROR_CLONING")
+	if errorClonning {
+		if err := updateInfoAndResultBasedOnCID("Error clonning repository", "error", CID); err != nil {
+			return
 		}
-		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
-		if err != nil {
-			log.Error("BanditStartAnalysis", "BANDIT", 2007, "Step 1", err)
-		}
-		return
 	}
 
+	// get Bandit output to be checked
 	var banditResult BanditOutput
 	if err := json.Unmarshal([]byte(cOutput), &banditResult); err != nil {
 		log.Error("BanditStartAnalysis", "BANDIT", 1006, cOutput, err)
@@ -64,73 +52,37 @@ func BanditStartAnalysis(CID string, cOutput string, RID string) {
 
 	// Sets the container output to "No issues found" if banditResult returns an empty slice
 	if len(banditResult.Results) == 0 {
-		updateContainerAnalysisQuery := bson.M{
-			"$set": bson.M{
-				"containers.$.cResult": "passed",
-				"containers.$.cInfo":   "No issues found.",
-			},
-		}
-		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
-		if err != nil {
-			log.Error("BanditStartAnalysis", "BANDIT", 2007, "Step 1,5", err)
+		if err := updateInfoAndResultBasedOnCID("No issues found.", "passed", CID); err != nil {
+			return
 		}
 		return
 	}
 
 	// verify if there was any error in the analysis.
 	if banditResult.Errors != nil {
-		updateContainerAnalysisQuery := bson.M{
-			"$set": bson.M{
-				"containers.$.cResult": "error",
-			},
-		}
-		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
-		if err != nil {
-			log.Error("BanditStartAnalysis", "BANDIT", 2007, "Step 2", err)
+		if err := updateInfoAndResultBasedOnCID("Internal error running Bandit.", "error", CID); err != nil {
+			return
 		}
 	}
 
 	// find Issues that have severity "MEDIUM" or "HIGH" and confidence "HIGH".
 	cResult := "passed"
+	issueMessage := "No issues found."
 	for _, issue := range banditResult.Results {
 		if (issue.IssueSeverity == "HIGH" || issue.IssueSeverity == "MEDIUM") && issue.IssueConfidence == "HIGH" {
 			cResult = "failed"
+			issueMessage = "Issues found."
 			break
 		}
 	}
-
-	// update the status of analysis.
-	issueMessage := "No issues found."
-	if cResult != "passed" {
-		issueMessage = "Issues found."
-	}
-	updateContainerAnalysisQuery := bson.M{
-		"$set": bson.M{
-			"containers.$.cResult": cResult,
-			"containers.$.cInfo":   issueMessage,
-		},
-	}
-	if err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery); err != nil {
-		log.Error("BanditStartAnalysis", "BANDIT", 2007, "Step 3", err)
-		return
-	}
-
-	// get updated analysis based on its RID
-	analysisQuery = map[string]interface{}{"RID": RID}
-	analysis, err := db.FindOneDBAnalysis(analysisQuery)
-	if err != nil {
-		log.Error("BanditStartAnalysis", "BANDIT", 2008, CID, err)
+	if err := updateInfoAndResultBasedOnCID(issueMessage, cResult, CID); err != nil {
 		return
 	}
 
 	// finally, update analysis with huskyCI results
-	analysis.HuskyCIResults.PythonResults.HuskyCIBanditOutput = prepareHuskyCIBanditOutput(banditResult)
-	err = db.UpdateOneDBAnalysis(analysisQuery, analysis)
-	if err != nil {
-		log.Error("BanditStartAnalysis", "BANDIT", 2007, err)
+	if err := updateHuskyCIResultsBasedOnRID(RID, "bandit", banditResult); err != nil {
 		return
 	}
-
 }
 
 // prepareHuskyCIBanditOutput will prepare Bandit output to be added into pythonResults struct

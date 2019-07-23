@@ -161,3 +161,45 @@ func monitorAnalysisCheckStatus(RID string) (bool, error) {
 	}
 	return analysisFinished, err
 }
+
+func updateInfoAndResultBasedOnCID(cInfo, cResult, CID string) error {
+
+	updateContainerAnalysisQuery := bson.M{
+		"$set": bson.M{
+			"containers.$.cResult": cResult,
+			"containers.$.cInfo":   cInfo,
+		},
+	}
+
+	analysisQuery := map[string]interface{}{"containers.CID": CID}
+	err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
+	if err != nil {
+		log.Error("updateCIDinfoAndResult", "ANALYSIS", 2007, err)
+		return err
+	}
+
+	return nil
+}
+
+func updateHuskyCIResultsBasedOnRID(RID, securityTest string, securityTestResult interface{}) error {
+
+	analysisQuery := map[string]interface{}{"RID": RID}
+	analysis, err := db.FindOneDBAnalysis(analysisQuery)
+	if err != nil {
+		log.Error("updateHuskyCIResultsBasedOnRID", "ANALYSIS", 2008, err)
+		return err
+	}
+
+	switch securityTest {
+	case "bandit":
+		analysis.HuskyCIResults.PythonResults.HuskyCIBanditOutput = prepareHuskyCIBanditOutput(securityTestResult.(BanditOutput))
+	}
+
+	err = db.UpdateOneDBAnalysis(analysisQuery, analysis)
+	if err != nil {
+		log.Error("updateHuskyCIResultsBasedOnRID", "ANALYSIS", 2007, err)
+		return err
+	}
+
+	return nil
+}
