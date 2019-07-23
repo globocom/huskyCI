@@ -59,6 +59,7 @@ func NpmAuditStartAnalysis(CID string, cOutput string, RID string) {
 		if err := updateInfoAndResultBasedOnCID("Error clonning repository", "error", CID); err != nil {
 			return
 		}
+		return
 	}
 
 	// step 2: check for any errors when running securityTest
@@ -67,8 +68,7 @@ func NpmAuditStartAnalysis(CID string, cOutput string, RID string) {
 			return
 		}
 
-		npmAuditOutput := NpmAuditOutput{}
-		npmAuditOutput.FailedRunning = failedRunning
+		npmAuditOutput := NpmAuditOutput{FailedRunning: failedRunning}
 		if err := updateHuskyCIResultsBasedOnRID(RID, "npmaudit", npmAuditOutput); err != nil {
 			return
 		}

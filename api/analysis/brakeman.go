@@ -38,6 +38,7 @@ func BrakemanStartAnalysis(CID string, cOutput string, RID string) {
 		if err := updateInfoAndResultBasedOnCID("Error clonning repository", "error", CID); err != nil {
 			return
 		}
+		return
 	}
 
 	// step 2: nil cOutput states that no Issues were found.

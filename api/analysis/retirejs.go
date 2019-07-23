@@ -49,11 +49,12 @@ func RetirejsStartAnalysis(CID string, cOutput string, RID string) {
 		if err := updateInfoAndResultBasedOnCID("Error clonning repository", "error", CID); err != nil {
 			return
 		}
+		return
 	}
 
 	// step 2: check for any errors when running securityTest
 	if failedRunning {
-		if err := updateInfoAndResultBasedOnCID("Error clonning repository", "error", CID); err != nil {
+		if err := updateInfoAndResultBasedOnCID("Internal error running RetireJS.", "error", CID); err != nil {
 			return
 		}
 
