@@ -35,7 +35,7 @@ type Result struct {
 // BanditStartAnalysis analyses the output from Bandit and sets a cResult based on it.
 func BanditStartAnalysis(CID string, cOutput string, RID string) {
 
-	// check for any error when clonning repo
+	// step 1: check for any errors when clonning repo
 	errorClonning := strings.Contains(cOutput, "ERROR_CLONING")
 	if errorClonning {
 		if err := updateInfoAndResultBasedOnCID("Error clonning repository", "error", CID); err != nil {
@@ -43,14 +43,14 @@ func BanditStartAnalysis(CID string, cOutput string, RID string) {
 		}
 	}
 
-	// get Bandit output to be checked
+	// step 2: get Bandit output to be checked
 	var banditResult BanditOutput
 	if err := json.Unmarshal([]byte(cOutput), &banditResult); err != nil {
 		log.Error("BanditStartAnalysis", "BANDIT", 1006, cOutput, err)
 		return
 	}
 
-	// Sets the container output to "No issues found" if banditResult returns an empty slice
+	// step 3: sets the container output to "No issues found" if banditResult returns an empty slice
 	if len(banditResult.Results) == 0 {
 		if err := updateInfoAndResultBasedOnCID("No issues found.", "passed", CID); err != nil {
 			return
@@ -58,14 +58,14 @@ func BanditStartAnalysis(CID string, cOutput string, RID string) {
 		return
 	}
 
-	// verify if there was any error in the analysis.
+	// step 4: verify if there was any error in the analysis.
 	if banditResult.Errors != nil {
 		if err := updateInfoAndResultBasedOnCID("Internal error running Bandit.", "error", CID); err != nil {
 			return
 		}
 	}
 
-	// find Issues that have severity "MEDIUM" or "HIGH" and confidence "HIGH".
+	// step 5: find Issues that have severity "MEDIUM" or "HIGH" and confidence "HIGH".
 	cResult := "passed"
 	issueMessage := "No issues found."
 	for _, issue := range banditResult.Results {
@@ -79,7 +79,7 @@ func BanditStartAnalysis(CID string, cOutput string, RID string) {
 		return
 	}
 
-	// finally, update analysis with huskyCI results
+	// step 6: finally, update analysis with huskyCI results
 	if err := updateHuskyCIResultsBasedOnRID(RID, "bandit", banditResult); err != nil {
 		return
 	}
