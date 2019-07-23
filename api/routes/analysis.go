@@ -53,7 +53,8 @@ func ReceiveRequest(c echo.Context) error {
 	// step-01: Check malicious inputs
 	sanitizedRepoURL, err := util.CheckMaliciousInput(repository, c)
 	if err != nil {
-		return err
+		reply := map[string]interface{}{"success": false, "error": "invalid repository JSON"}
+		return c.JSON(http.StatusBadRequest, reply)
 	}
 	repository.URL = sanitizedRepoURL
 
