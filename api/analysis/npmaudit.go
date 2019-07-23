@@ -106,9 +106,9 @@ func NpmAuditCheckOutputFlow(CID string, cOutput string, RID string) {
 }
 
 // prepareHuskyCINpmAuditResults will prepare NpmAudit output to be added into JavaScriptResults struct
-func prepareHuskyCINpmAuditResults(npmAuditOutput NpmAuditOutput) types.HuskyCINpmAuditOutput {
+func prepareHuskyCINpmAuditResults(npmAuditOutput NpmAuditOutput) types.HuskyCISecurityTestOutput {
 
-	var huskyCInpmAuditResults types.HuskyCINpmAuditOutput
+	var huskyCInpmAuditResults types.HuskyCISecurityTestOutput
 
 	if npmAuditOutput.FailedRunning {
 		npmauditVuln := types.HuskyCIVulnerability{}
@@ -117,7 +117,7 @@ func prepareHuskyCINpmAuditResults(npmAuditOutput NpmAuditOutput) types.HuskyCIN
 		npmauditVuln.Severity = "low"
 		npmauditVuln.Details = "It looks like your project doesn't have package-lock.json. huskyCI was not able to run npm audit properly."
 
-		huskyCInpmAuditResults.LowVulnsNpmAudit = append(huskyCInpmAuditResults.LowVulnsNpmAudit, npmauditVuln)
+		huskyCInpmAuditResults.LowVulns = append(huskyCInpmAuditResults.LowVulns, npmauditVuln)
 
 		return huskyCInpmAuditResults
 	}
@@ -136,19 +136,19 @@ func prepareHuskyCINpmAuditResults(npmAuditOutput NpmAuditOutput) types.HuskyCIN
 		switch issue.Severity {
 		case "info":
 			npmauditVuln.Severity = "low"
-			huskyCInpmAuditResults.LowVulnsNpmAudit = append(huskyCInpmAuditResults.LowVulnsNpmAudit, npmauditVuln)
+			huskyCInpmAuditResults.LowVulns = append(huskyCInpmAuditResults.LowVulns, npmauditVuln)
 		case "low":
 			npmauditVuln.Severity = "low"
-			huskyCInpmAuditResults.LowVulnsNpmAudit = append(huskyCInpmAuditResults.LowVulnsNpmAudit, npmauditVuln)
+			huskyCInpmAuditResults.LowVulns = append(huskyCInpmAuditResults.LowVulns, npmauditVuln)
 		case "moderate":
 			npmauditVuln.Severity = "medium"
-			huskyCInpmAuditResults.MediumVulnsNpmAudit = append(huskyCInpmAuditResults.MediumVulnsNpmAudit, npmauditVuln)
+			huskyCInpmAuditResults.MediumVulns = append(huskyCInpmAuditResults.MediumVulns, npmauditVuln)
 		case "high":
 			npmauditVuln.Severity = "high"
-			huskyCInpmAuditResults.HighVulnsNpmAudit = append(huskyCInpmAuditResults.HighVulnsNpmAudit, npmauditVuln)
+			huskyCInpmAuditResults.HighVulns = append(huskyCInpmAuditResults.HighVulns, npmauditVuln)
 		case "critical":
 			npmauditVuln.Severity = "high"
-			huskyCInpmAuditResults.HighVulnsNpmAudit = append(huskyCInpmAuditResults.HighVulnsNpmAudit, npmauditVuln)
+			huskyCInpmAuditResults.HighVulns = append(huskyCInpmAuditResults.HighVulns, npmauditVuln)
 		}
 
 	}

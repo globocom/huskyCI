@@ -108,10 +108,10 @@ func RetirejsCheckOutputFlow(CID string, cOutput string, RID string) {
 }
 
 // prepareHuskyCIRetirejsOutput will prepare Retirejs output to be added into JavaScriptResults struct
-func prepareHuskyCIRetirejsOutput(retirejsOutput []RetirejsOutput) types.HuskyCIRetireJSOutput {
+func prepareHuskyCIRetirejsOutput(retirejsOutput []RetirejsOutput) types.HuskyCISecurityTestOutput {
 
-	var huskyCIretireJSResults types.HuskyCIRetireJSOutput
-	var huskyCIretireJSResultsFinal types.HuskyCIRetireJSOutput
+	var huskyCIretireJSResults types.HuskyCISecurityTestOutput
+	var huskyCIretireJSResultsFinal types.HuskyCISecurityTestOutput
 
 	// failedRunning
 	if retirejsOutput == nil {
@@ -121,7 +121,7 @@ func prepareHuskyCIRetirejsOutput(retirejsOutput []RetirejsOutput) types.HuskyCI
 		retirejsVuln.Severity = "low"
 		retirejsVuln.Details = "It looks like your project doesn't have package.json or yarn.lock. huskyCI was not able to run RetireJS properly."
 
-		huskyCIretireJSResults.LowVulnsNpmRetireJS = append(huskyCIretireJSResults.LowVulnsNpmRetireJS, retirejsVuln)
+		huskyCIretireJSResults.LowVulns = append(huskyCIretireJSResults.LowVulns, retirejsVuln)
 
 		return huskyCIretireJSResults
 	}
@@ -142,19 +142,19 @@ func prepareHuskyCIRetirejsOutput(retirejsOutput []RetirejsOutput) types.HuskyCI
 
 				switch retirejsVuln.Severity {
 				case "low":
-					huskyCIretireJSResults.LowVulnsNpmRetireJS = append(huskyCIretireJSResults.LowVulnsNpmRetireJS, retirejsVuln)
+					huskyCIretireJSResults.LowVulns = append(huskyCIretireJSResults.LowVulns, retirejsVuln)
 				case "medium":
-					huskyCIretireJSResults.MediumVulnsRetireJS = append(huskyCIretireJSResults.MediumVulnsRetireJS, retirejsVuln)
+					huskyCIretireJSResults.MediumVulns = append(huskyCIretireJSResults.MediumVulns, retirejsVuln)
 				case "high":
-					huskyCIretireJSResults.HighVulnsRetireJS = append(huskyCIretireJSResults.HighVulnsRetireJS, retirejsVuln)
+					huskyCIretireJSResults.HighVulns = append(huskyCIretireJSResults.HighVulns, retirejsVuln)
 				}
 			}
 		}
 	}
 
-	huskyCIretireJSResultsFinal.LowVulnsNpmRetireJS = util.CountRetireJSOccurrences(huskyCIretireJSResults.LowVulnsNpmRetireJS)
-	huskyCIretireJSResultsFinal.MediumVulnsRetireJS = util.CountRetireJSOccurrences(huskyCIretireJSResults.MediumVulnsRetireJS)
-	huskyCIretireJSResultsFinal.HighVulnsRetireJS = util.CountRetireJSOccurrences(huskyCIretireJSResults.HighVulnsRetireJS)
+	huskyCIretireJSResultsFinal.LowVulns = util.CountRetireJSOccurrences(huskyCIretireJSResults.LowVulns)
+	huskyCIretireJSResultsFinal.MediumVulns = util.CountRetireJSOccurrences(huskyCIretireJSResults.MediumVulns)
+	huskyCIretireJSResultsFinal.HighVulns = util.CountRetireJSOccurrences(huskyCIretireJSResults.HighVulns)
 
 	return huskyCIretireJSResultsFinal
 }
