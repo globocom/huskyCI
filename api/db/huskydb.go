@@ -125,6 +125,16 @@ func InsertDBAnalysis(analysis types.Analysis) error {
 	return err
 }
 
+// InsertDBToken inserts a new token into TokenCollection.
+func InsertDBToken(token types.HuskyCIToken) error {
+	newToken := bson.M{
+		"hashedTokenID": token.HashedToken,
+		"repositories":  token.Repositories,
+	}
+	err := mongoHuskyCI.Conn.Insert(newToken, mongoHuskyCI.TokenCollection)
+	return err
+}
+
 // UpdateOneDBRepository checks if a given repository is present into RepositoryCollection and update it.
 func UpdateOneDBRepository(mapParams, updateQuery map[string]interface{}) error {
 	repositoryQuery := []bson.M{}
