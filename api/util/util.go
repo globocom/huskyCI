@@ -2,6 +2,7 @@ package util
 
 import (
 	"bufio"
+	"errors"
 	"net/http"
 	"os"
 	"regexp"
@@ -112,69 +113,77 @@ func CheckMaliciousInput(repository types.Repository, c echo.Context) (string, e
 
 // CheckMaliciousRepoURL verifies if a given URL is a git repository and returns the sanitizied string and its error
 func CheckMaliciousRepoURL(repositoryURL string, c echo.Context) (string, error) {
+
+	errorInternal := errors.New("internal error")
+	errorInvalidRepository := errors.New("invalid repository url")
 	regexpGit := `((git|ssh|http(s)?)|((git@|gitlab@)[\w\.]+))(:(//)?)([\w\.@\:/\-~]+)(\.git)(/)?`
+
 	r := regexp.MustCompile(regexpGit)
 	valid, err := regexp.MatchString(regexpGit, repositoryURL)
 	if err != nil {
-		log.Error("CheckMaliciousRepoURL", "ANALYSIS", 1008, "Repository URL regexp ", err)
-		reply := map[string]interface{}{"success": false, "error": "internal error"}
-		return "", c.JSON(http.StatusInternalServerError, reply)
+		log.Error("CheckMaliciousRepoURL", "UTIL", 1008, "Repository URL regexp ", err)
+		return "", errorInternal
 	}
 	if !valid {
-		log.Error("CheckMaliciousRepoURL", "ANALYSIS", 1016, repositoryURL)
-		reply := map[string]interface{}{"success": false, "error": "invalid repository URL"}
-		return "", c.JSON(http.StatusBadRequest, reply)
+		log.Error("CheckMaliciousRepoURL", "UTIL", 1016, repositoryURL)
+		return "", errorInvalidRepository
 	}
 	return r.FindString(repositoryURL), nil
 }
 
 // CheckMaliciousRepoBranch verifies if a given branch is "malicious" or not
 func CheckMaliciousRepoBranch(repositoryBranch string, c echo.Context) error {
+
+	errorInternal := errors.New("internal error")
+	errorInvalidBranch := errors.New("invalid branch")
 	regexpBranch := `^[a-zA-Z0-9_\/.-]*$`
+
 	valid, err := regexp.MatchString(regexpBranch, repositoryBranch)
 	if err != nil {
-		log.Error("CheckMaliciousRepoBranch", "ANALYSIS", 1008, "Repository Branch regexp ", err)
-		reply := map[string]interface{}{"success": false, "error": "internal error"}
-		return c.JSON(http.StatusInternalServerError, reply)
+		log.Error("CheckMaliciousRepoBranch", "UTIL", 1008, "Repository Branch regexp ", err)
+		return errorInternal
 	}
 	if !valid {
-		log.Error("CheckMaliciousRepoBranch", "ANALYSIS", 1017, repositoryBranch)
-		reply := map[string]interface{}{"success": false, "error": "invalid repository branch"}
-		return c.JSON(http.StatusBadRequest, reply)
+		log.Error("CheckMaliciousRepoBranch", "UTIL", 1017, repositoryBranch)
+		return errorInvalidBranch
 	}
 	return nil
 }
 
 // CheckMaliciousRepoInternalDepURL verifies if a given internal dependecy URL is "malicious" or not
 func CheckMaliciousRepoInternalDepURL(repositoryInternalDepURL string, c echo.Context) error {
+
+	errorInternal := errors.New("internal error")
+	errorInvalidDepURL := errors.New("invalid internal dependency url")
 	regexpInternalDepURL := `https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)`
+
 	valid, err := regexp.MatchString(regexpInternalDepURL, repositoryInternalDepURL)
 	if err != nil {
-		log.Error("CheckMaliciousRepoInternalDepURL", "ANALYSIS", 1008, "Repository Branch regexp ", err)
-		reply := map[string]interface{}{"success": false, "error": "internal error"}
-		return c.JSON(http.StatusInternalServerError, reply)
+		log.Error("CheckMaliciousRepoInternalDepURL", "UTIL", 1008, "Repository Branch regexp ", err)
+		return errorInternal
 	}
 	if !valid {
-		log.Error("CheckMaliciousRepoInternalDepURL", "ANALYSIS", 1021, repositoryInternalDepURL)
-		reply := map[string]interface{}{"success": false, "error": "invalid internal dependency URL"}
-		return c.JSON(http.StatusBadRequest, reply)
+		log.Error("CheckMaliciousRepoInternalDepURL", "UTIL", 1021, repositoryInternalDepURL)
+		return errorInvalidDepURL
 	}
 	return nil
 }
 
 // CheckMaliciousRID verifies if a given RID is "malicious" or not
 func CheckMaliciousRID(RID string, c echo.Context) error {
+
+	errorInternal := errors.New("internal error")
+	errorInvalidRID := errors.New("invalid rid")
 	regexpRID := `^[a-zA-Z0-9]*$`
+
 	valid, err := regexp.MatchString(regexpRID, RID)
 	if err != nil {
-		log.Error("CheckMaliciousRID", "ANALYSIS", 1008, "RID regexp ", err)
-		reply := map[string]interface{}{"success": false, "error": "internal error"}
-		return c.JSON(http.StatusInternalServerError, reply)
+		log.Error("CheckMaliciousRID", "UTIL", 1008, "RID regexp ", err)
+		return errorInternal
 	}
 	if !valid {
-		log.Warning("CheckMaliciousRID", "ANALYSIS", 107, RID)
-		reply := map[string]interface{}{"success": false, "error": "invalid RID"}
-		return c.JSON(http.StatusBadRequest, reply)
+		log.Warning("CheckMaliciousRID", "UTIL", 107, RID)
+		return c.JSON(http.StatusBadRequest, errorInvalidRID)
 	}
 	return nil
 }
