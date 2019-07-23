@@ -195,6 +195,8 @@ func updateHuskyCIResultsBasedOnRID(RID, securityTest string, securityTestResult
 		analysis.HuskyCIResults.PythonResults.HuskyCIBanditOutput = prepareHuskyCIBanditOutput(securityTestResult.(BanditOutput))
 	case "retirejs":
 		analysis.HuskyCIResults.JavaScriptResults.HuskyCIRetireJSOutput = prepareHuskyCIRetirejsOutput(securityTestResult.([]RetirejsOutput))
+	case "npmaudit":
+		analysis.HuskyCIResults.JavaScriptResults.HuskyCINpmAuditOutput = prepareHuskyCINpmAuditResults(securityTestResult.(NpmAuditOutput))
 	case "brakeman":
 		analysis.HuskyCIResults.RubyResults.HuskyCIBrakemanOutput = prepareHuskyCIBrakemanResults(securityTestResult.(BrakemanOutput))
 	case "gosec":
