@@ -197,6 +197,8 @@ func updateHuskyCIResultsBasedOnRID(RID, securityTest string, securityTestResult
 		analysis.HuskyCIResults.JavaScriptResults.HuskyCIRetireJSOutput = prepareHuskyCIRetirejsOutput(securityTestResult.([]RetirejsOutput))
 	case "brakeman":
 		analysis.HuskyCIResults.RubyResults.HuskyCIBrakemanOutput = prepareHuskyCIBrakemanResults(securityTestResult.(BrakemanOutput))
+	case "gosec":
+		analysis.HuskyCIResults.GoResults.HuskyCIGosecOutput = prepareHuskyCIGosecResults(securityTestResult.(GosecOutput))
 	}
 
 	err = db.UpdateOneDBAnalysis(analysisQuery, analysis)
