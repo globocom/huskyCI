@@ -41,6 +41,7 @@ func BanditStartAnalysis(CID string, cOutput string, RID string) {
 		if err := updateInfoAndResultBasedOnCID("Error clonning repository", "error", CID); err != nil {
 			return
 		}
+		return
 	}
 
 	// step 2: get Bandit output to be checked
