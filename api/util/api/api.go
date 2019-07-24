@@ -14,28 +14,28 @@ import (
 )
 
 // CheckHuskyRequirements checks for all requirements needed before starting huskyCI.
-func CheckHuskyRequirements(configAPI *apiContext.APIConfig) error {
+func (hU HuskyUtils) CheckHuskyRequirements(configAPI *apiContext.APIConfig) error {
 
 	// check if all environment variables are properly set.
-	if err := checkEnvVars(); err != nil {
+	if err := hU.CheckHandler.checkEnvVars(); err != nil {
 		return err
 	}
 	log.Info("CheckHuskyRequirements", "API-UTIL", 12)
 
 	// check if all docker hosts are up and running docker API.
-	if err := checkDockerHosts(configAPI); err != nil {
+	if err := hU.CheckHandler.checkDockerHosts(configAPI); err != nil {
 		return err
 	}
 	log.Info("CheckHuskyRequirements", "API-UTIL", 13)
 
 	// check if MongoDB is acessible and credentials received are working.
-	if err := checkMongoDB(); err != nil {
+	if err := hU.CheckHandler.checkMongoDB(); err != nil {
 		return err
 	}
 	log.Info("CheckHuskyRequirements", "API-UTIL", 14)
 
 	// check if default securityTests are set into MongoDB.
-	if err := checkEachSecurityTest(configAPI); err != nil {
+	if err := hU.CheckHandler.checkEachSecurityTest(configAPI); err != nil {
 		return err
 	}
 	log.Info("CheckHuskyRequirements", "API-UTIL", 15)
@@ -43,7 +43,7 @@ func CheckHuskyRequirements(configAPI *apiContext.APIConfig) error {
 	return nil
 }
 
-func checkEnvVars() error {
+func (cH *CheckUtils) checkEnvVars() error {
 
 	envVars := []string{
 		// Logging
@@ -105,7 +105,7 @@ func checkEnvVars() error {
 	return nil
 }
 
-func checkDockerHosts(configAPI *apiContext.APIConfig) error {
+func (cH *CheckUtils) checkDockerHosts(configAPI *apiContext.APIConfig) error {
 	// writes necessary keys for TLS to respective files
 	if err := createAPIKeys(); err != nil {
 		return err
@@ -114,7 +114,7 @@ func checkDockerHosts(configAPI *apiContext.APIConfig) error {
 	return docker.HealthCheckDockerAPI()
 }
 
-func checkMongoDB() error {
+func (cH *CheckUtils) checkMongoDB() error {
 	if err := mongoHuskyCI.Connect(); err != nil {
 		mongoError := fmt.Sprintf("Check MongoDB: %s", err)
 		return errors.New(mongoError)
@@ -122,7 +122,7 @@ func checkMongoDB() error {
 	return nil
 }
 
-func checkEachSecurityTest(configAPI *apiContext.APIConfig) error {
+func (cH *CheckUtils) checkEachSecurityTest(configAPI *apiContext.APIConfig) error {
 	securityTests := []string{"enry", "gitauthors", "gosec", "brakeman", "bandit", "retirejs", "npmaudit", "safety"}
 	for _, securityTest := range securityTests {
 		if err := checkSecurityTest(securityTest, configAPI); err != nil {

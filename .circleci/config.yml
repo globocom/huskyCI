@@ -11,3 +11,4 @@ jobs:
       - checkout
       - run: make test
       - run: make check-sec
+      - run: mkdir -p /tmp/artifacts && mv coverage.html /tmp/artifacts

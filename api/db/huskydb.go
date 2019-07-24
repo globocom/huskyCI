@@ -5,13 +5,8 @@
 package db
 
 import (
-	"errors"
-	"time"
-
 	mongoHuskyCI "github.com/globocom/huskyCI/api/db/mongo"
-	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
-	"github.com/globocom/huskyCI/api/util"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -89,57 +84,13 @@ func FindAllDBAnalysis(mapParams map[string]interface{}) ([]types.Analysis, erro
 	return analysisResponse, err
 }
 
-// InsertDBRepository inserts a new repository with default securityTests into RepositoryCollection.
+// InsertDBRepository inserts a new repository into RepositoryCollection.
 func InsertDBRepository(repository types.Repository) error {
-	repository.CreatedAt = time.Now()
-	securityTestList := []types.SecurityTest{}
-	err := errors.New("")
-	maxQueryAllowed := 8
-
-	if len(repository.SecurityTestName) == 0 {
-		// checking default and Generic securityTests in SecurityTestCollection
-		securityTestQuery := map[string]interface{}{"default": true, "language": "Generic"}
-		securityTestList, err = FindAllDBSecurityTest(securityTestQuery)
-		if err != nil {
-			log.Error("InsertDBRepository", "HUSKYDB", 2005, err)
-		}
-	} else {
-		// checking if a given securityTestName matches a securityTest
-		repository.SecurityTestName = util.RemoveDuplicates(repository.SecurityTestName)
-		if len(repository.SecurityTestName) > maxQueryAllowed {
-			for _, securityTestName := range repository.SecurityTestName[:maxQueryAllowed] {
-				securityTestQuery := map[string]interface{}{"name": securityTestName}
-				securityTestResult, err := FindOneDBSecurityTest(securityTestQuery)
-				if err != nil {
-					log.Error("InsertDBRepository", "HUSKYDB", 2006, err)
-				} else {
-					securityTestList = append(securityTestList, securityTestResult)
-				}
-			}
-		} else {
-			for _, securityTestName := range repository.SecurityTestName {
-				securityTestQuery := map[string]interface{}{"name": securityTestName}
-				securityTestResult, err := FindOneDBSecurityTest(securityTestQuery)
-				if err != nil {
-					log.Error("InsertDBRepository", "HUSKYDB", 2006, err)
-				} else {
-					securityTestList = append(securityTestList, securityTestResult)
-				}
-			}
-		}
+	newRepository := bson.M{
+		"repositoryURL": repository.URL,
+		"createdAt":     repository.CreatedAt,
 	}
-
-	newRepository := types.Repository{
-		URL:            repository.URL,
-		Branch:         repository.Branch,
-		SecurityTests:  securityTestList,
-		CreatedAt:      repository.CreatedAt,
-		DeletedAt:      repository.DeletedAt,
-		Languages:      repository.Languages,
-		InternalDepURL: repository.InternalDepURL,
-	}
-
-	err = mongoHuskyCI.Conn.Insert(newRepository, mongoHuskyCI.RepositoryCollection)
+	err := mongoHuskyCI.Conn.Insert(newRepository, mongoHuskyCI.RepositoryCollection)
 	return err
 }
 
@@ -160,15 +111,15 @@ func InsertDBSecurityTest(securityTest types.SecurityTest) error {
 // InsertDBAnalysis inserts a new analysis into AnalysisCollection.
 func InsertDBAnalysis(analysis types.Analysis) error {
 	newAnalysis := bson.M{
-		"RID":            analysis.RID,
-		"URL":            analysis.URL,
-		"Branch":         analysis.Branch,
-		"securityTest":   analysis.SecurityTests,
-		"status":         analysis.Status,
-		"result":         analysis.Result,
-		"containers":     analysis.Containers,
-		"startedAt":      analysis.StartedAt,
-		"internaldepURL": analysis.InternalDepURL,
+		"RID":              analysis.RID,
+		"repositoryURL":    analysis.URL,
+		"repositoryBranch": analysis.Branch,
+		"securityTests":    analysis.SecurityTests,
+		"status":           analysis.Status,
+		"result":           analysis.Result,
+		"containers":       analysis.Containers,
+		"startedAt":        analysis.StartedAt,
+		"internaldepURL":   analysis.InternalDepURL,
 	}
 	err := mongoHuskyCI.Conn.Insert(newAnalysis, mongoHuskyCI.AnalysisCollection)
 	return err
