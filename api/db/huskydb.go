@@ -48,6 +48,18 @@ func FindOneDBAnalysis(mapParams map[string]interface{}) (types.Analysis, error)
 	return analysisResponse, err
 }
 
+// FindOneDBToken checks if a given token is present into TokenCollection.
+func FindOneDBToken(mapParams map[string]interface{}) (types.HuskyCIToken, error) {
+	tokenResponse := types.HuskyCIToken{}
+	tokenQuery := []bson.M{}
+	for k, v := range mapParams {
+		tokenQuery = append(tokenQuery, bson.M{k: v})
+	}
+	tokenFinalQuery := bson.M{"$and": tokenQuery}
+	err := mongoHuskyCI.Conn.SearchOne(tokenFinalQuery, nil, mongoHuskyCI.TokenCollection, &tokenResponse)
+	return tokenResponse, err
+}
+
 // FindAllDBRepository returns all Repository of a given query present into RepositoryCollection.
 func FindAllDBRepository(mapParams map[string]interface{}) ([]types.Repository, error) {
 	repositoryQuery := []bson.M{}
