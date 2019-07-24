@@ -7,6 +7,7 @@ import (
 	"github.com/globocom/huskyCI/api/analysis"
 	"github.com/globocom/huskyCI/api/db"
 	"github.com/globocom/huskyCI/api/log"
+	"github.com/globocom/huskyCI/api/token"
 	"github.com/globocom/huskyCI/api/types"
 	"github.com/globocom/huskyCI/api/util"
 	"github.com/labstack/echo"
@@ -44,7 +45,7 @@ func GetAnalysis(c echo.Context) error {
 func ReceiveRequest(c echo.Context) error {
 
 	RID := c.Response().Header().Get(echo.HeaderXRequestID)
-	// attemptHuskyCIToken := c.Request().Header.Get("huskyCIToken")
+	attemptHuskyCIToken := c.Request().Header.Get("huskyCIToken")
 
 	// step-00: is this a valid JSON?
 	repository := types.Repository{}
@@ -65,6 +66,16 @@ func ReceiveRequest(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, reply)
 	}
 	repository.URL = sanitizedRepoURL
+
+	// step 3: check if token used is authorized
+	isAuthorized, err := token.IsAuthorizedToScan(attemptHuskyCIToken, repository)
+	if !isAuthorized || err != nil {
+		reply := map[string]interface{}{"success": false, "error": err.Error()}
+		if err == types.ErrorUnauthorized || err == types.ErrorTokenNotFound {
+			return c.JSON(http.StatusUnauthorized, reply)
+		}
+		return c.JSON(http.StatusInternalServerError, reply)
+	}
 
 	// step-02: is this repository already in MongoDB?
 	repositoryQuery := map[string]interface{}{"repositoryURL": repository.URL}

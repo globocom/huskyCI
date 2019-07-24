@@ -13,4 +13,8 @@ var (
 	ErrorInvalidBranch = errors.New("invalid branch")
 	// ErrorInvalidDependencyURL holds the invalid Dependency URL string
 	ErrorInvalidDependencyURL = errors.New("invalid dep url")
+	// ErrorUnauthorized holds the not authorized string
+	ErrorUnauthorized = errors.New("not authorized")
+	// ErrorTokenNotFound holds the token not found string
+	ErrorTokenNotFound = errors.New("token not found")
 )

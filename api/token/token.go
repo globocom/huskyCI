@@ -3,9 +3,11 @@ package token
 import (
 	"fmt"
 
+	"github.com/globocom/huskyCI/api/db"
 	"github.com/globocom/huskyCI/api/types"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
+	"gopkg.in/mgo.v2"
 )
 
 // GenerateHuskyCIToken creates a new huskyCI token and returns it
@@ -42,4 +44,31 @@ func generateID() string {
 	u1 := uuid.New()
 	userID := fmt.Sprintf("%s", u1)
 	return userID
+}
+
+// getTokenByRepository returns a HuskyCIToken struct based on a huskyCIToken
+func getTokenByRepository(repository string) (types.HuskyCIToken, error) {
+
+	tokenQuery := map[string]interface{}{"repositories": repository}
+	token, err := db.FindOneDBToken(tokenQuery)
+	if err != nil {
+		if err == mgo.ErrNotFound {
+			return token, types.ErrorTokenNotFound
+		}
+		return token, types.ErrorInternal
+	}
+
+	return token, nil
+}
+
+// IsAuthorizedToScan checks if a given token is authorized to scan a given repository
+func IsAuthorizedToScan(huskyCIToken string, repository types.Repository) (bool, error) {
+
+	token, err := getTokenByRepository(repository.URL)
+	if err != nil {
+		return false, err
+	}
+
+	isAuthorized := checkTokenHash(huskyCIToken, token.HashedToken)
+	return isAuthorized, nil
 }
