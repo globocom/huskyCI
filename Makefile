@@ -9,6 +9,7 @@ GODEP ?= $(GOBIN)/dep
 GOLINT ?= $(GOBIN)/golint
 GOSEC ?= $(GOBIN)/gosec
 GINKGO ?= $(GOBIN)/ginkgo
+GOVERALLS ?= $(GOBIN)/goveralls
 
 HUSKYCIBIN ?= huskyci
 HUSKYCICLIENTBIN ?= huskyci-client
@@ -72,6 +73,7 @@ get-test-deps:
 	$(GO) get -u golang.org/x/lint/golint
 	$(GO) get -u github.com/onsi/ginkgo/ginkgo
 	$(GO) get -u github.com/onsi/gomega/...
+	$(GO) get -u github.com/mattn/goveralls
 
 ## Prints help message
 help:
@@ -131,6 +133,7 @@ ginkgo:
 coverage:
 	$(GO) test ./... -coverprofile=c.out
 	$(GO) tool cover -html=c.out -o coverage.html
+	$(GOVERALLS) -coverprofile=c.out -service=circle-ci -repotoken=\$COVERALLS_TOKEN
 	
 ## Perfoms all make tests
 test: get-test-deps lint ginkgo coverage

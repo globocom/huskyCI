@@ -3,7 +3,7 @@
 <img src="https://raw.githubusercontent.com/wiki/globocom/huskyCI/images/huskyCI-logo.png" align="center" height="" />
 <!-- logo font: Anton -->
 
-[![CircleCI](https://circleci.com/gh/globocom/huskyCI/tree/master.svg?style=svg&circle-token=415bfb6b5aa0dfce8d2129878a66326da9533150)](https://circleci.com/gh/globocom/huskyCI/tree/master) [![Join the chat at https://gitter.im/globocom/huskyCI](https://badges.gitter.im/globocom/huskyCI.svg)](https://gitter.im/globocom/huskyCI?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Coverage Status](https://coveralls.io/repos/github/globocom/huskyCI/badge.svg?branch=master)](https://coveralls.io/github/globocom/huskyCI?branch=master) [![CircleCI](https://circleci.com/gh/globocom/huskyCI/tree/master.svg?style=svg&circle-token=415bfb6b5aa0dfce8d2129878a66326da9533150)](https://circleci.com/gh/globocom/huskyCI/tree/master) [![Join the chat at https://gitter.im/globocom/huskyCI](https://badges.gitter.im/globocom/huskyCI.svg)](https://gitter.im/globocom/huskyCI?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 huskyCI is an open source tool that performs security tests inside CI pipelines of multiple projects and centralizes all results into a database for further analysis and metrics.
 
