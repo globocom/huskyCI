@@ -20,13 +20,13 @@ type CheckHuskyData struct {
 
 var checkHuskyTests = []CheckHuskyData{
 	// Scenario #1: checkEnvVars returns an error
-	{&apiContext.APIConfig{}, errors.New("Falha ao verificar variáveis de ambiente"), nil, nil, nil, errors.New("Falha ao verificar variáveis de ambiente")},
+	{&apiContext.APIConfig{}, errors.New("Failed verifying environment variables"), nil, nil, nil, errors.New("Failed verifying environment variables")},
 	// Scenario #2: checkDockerHosts returns an error
-	{&apiContext.APIConfig{}, nil, errors.New("Falha ao verificar docker host"), nil, nil, errors.New("Falha ao verificar docker host")},
+	{&apiContext.APIConfig{}, nil, errors.New("Failed verifying docker API"), nil, nil, errors.New("Failed verifying docker API")},
 	// Scenario #3: checkMongoDB returns an error
-	{&apiContext.APIConfig{}, nil, nil, errors.New("Erro ao verificar banco do mongo"), nil, errors.New("Erro ao verificar banco do mongo")},
+	{&apiContext.APIConfig{}, nil, nil, errors.New("Error verifying mongoDB"), nil, errors.New("Error verifying mongoDB")},
 	// Scenario #4: checkEachSecurityTest returns an error
-	{&apiContext.APIConfig{}, nil, nil, nil, errors.New("Erro ao verificar testes de segurança"), errors.New("Erro ao verificar testes de segurança")},
+	{&apiContext.APIConfig{}, nil, nil, nil, errors.New("Error verifying security tests"), errors.New("Error verifying security tests")},
 	// Scenario #5: Checks are successful!
 	{&apiContext.APIConfig{}, nil, nil, nil, nil, nil},
 }
