@@ -72,6 +72,7 @@ get-test-deps:
 	$(GO) get -u golang.org/x/lint/golint
 	$(GO) get -u github.com/onsi/ginkgo/ginkgo
 	$(GO) get -u github.com/onsi/gomega/...
+	$(GO) get -u github.com/mattn/goveralls
 
 ## Prints help message
 help:
