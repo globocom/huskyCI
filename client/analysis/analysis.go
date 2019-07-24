@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"time"
 
 	"github.com/globocom/huskyCI/client/config"
@@ -36,7 +37,16 @@ func StartAnalysis() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	resp, err := httpClient.Post(huskyStartAnalysisURL, "application/json", bytes.NewBuffer(marshalPayload))
+
+	req, err := http.NewRequest("POST", huskyStartAnalysisURL, bytes.NewBuffer(marshalPayload))
+	if err != nil {
+		return "", err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("huskyCIToken", config.HuskyCIToken)
+
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return "", err
 	}

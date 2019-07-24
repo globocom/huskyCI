@@ -25,12 +25,16 @@ var InternalDepURL string
 // HuskyUseTLS stores if huskyCI is to use an HTTPS connection.
 var HuskyUseTLS bool
 
+// HuskyCIToken stores the huskyCI Token needed to start a scan.
+var HuskyCIToken string
+
 // SetConfigs sets all configuration needed to start the client.
 func SetConfigs() {
 	RepositoryURL = os.Getenv(`HUSKYCI_CLIENT_REPO_URL`)
 	RepositoryBranch = os.Getenv(`HUSKYCI_CLIENT_REPO_BRANCH`)
 	HuskyAPI = os.Getenv(`HUSKYCI_CLIENT_API_ADDR`)
 	InternalDepURL = os.Getenv(`HUSKYCI_CLIENT_NPM_DEP_URL`)
+	HuskyCIToken = os.Getenv(`HUSKYCI_CLIENT_TOKEN`)
 	HuskyUseTLS = getUseTLS()
 }
 
