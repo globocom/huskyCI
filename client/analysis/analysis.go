@@ -52,7 +52,13 @@ func StartAnalysis() (string, error) {
 	}
 
 	if resp.StatusCode != 201 {
-		errorMsg := fmt.Sprintf("Error sending request to start analysis! StatusCode received: %d", resp.StatusCode)
+
+		if resp.StatusCode == 401 {
+			errorMsg := fmt.Sprintf("This token is not authorized to check this repository!")
+			return "", errors.New(errorMsg)
+		}
+
+		errorMsg := fmt.Sprintf("huskyCI API returned the following status code: %d", resp.StatusCode)
 		return "", errors.New(errorMsg)
 	}
 

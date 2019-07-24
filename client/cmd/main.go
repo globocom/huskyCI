@@ -39,7 +39,9 @@ func main() {
 	}
 	RID, err := analysis.StartAnalysis()
 	if err != nil {
-		fmt.Println("[HUSKYCI][ERROR] Sending request to huskyCI:", err)
+		fmt.Println("[HUSKYCI][ERROR] Sending request to huskyCI :(")
+		fmt.Print("[HUSKYCI][ERROR] ")
+		fmt.Println(err)
 		os.Exit(1)
 	}
 	if !types.IsJSONoutput {
