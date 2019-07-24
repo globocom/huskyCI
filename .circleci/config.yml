@@ -9,5 +9,12 @@ jobs:
 
     steps:
       - checkout
+      - run:
+        name: "Create a temp directory for artifacts"
+        command: |
+          mkdir -p /tmp/artifacts
       - run: make test
       - run: make check-sec
+      - run: mv coverage.html /tmp/artifacts
+      - store_artifacts:
+        path: /tmp/artifacts
