@@ -2,15 +2,12 @@ package util
 
 import (
 	"bufio"
-	"errors"
-	"net/http"
 	"os"
 	"regexp"
 	"strings"
 
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
-	"github.com/labstack/echo"
 )
 
 const (
@@ -91,19 +88,19 @@ func RemoveDuplicates(s []string) []string {
 }
 
 // CheckMaliciousInput checks if an user's input is "malicious" or not
-func CheckMaliciousInput(repository types.Repository, c echo.Context) (string, error) {
+func CheckMaliciousInput(repository types.Repository) (string, error) {
 
-	sanitiziedURL, err := CheckMaliciousRepoURL(repository.URL, c)
+	sanitiziedURL, err := CheckMaliciousRepoURL(repository.URL)
 	if err != nil {
 		return "", err
 	}
 
-	if err := CheckMaliciousRepoBranch(repository.Branch, c); err != nil {
+	if err := CheckMaliciousRepoBranch(repository.Branch); err != nil {
 		return "", err
 	}
 
 	if repository.InternalDepURL != "" {
-		if err := CheckMaliciousRepoInternalDepURL(repository.InternalDepURL, c); err != nil {
+		if err := CheckMaliciousRepoInternalDepURL(repository.InternalDepURL); err != nil {
 			return "", err
 		}
 	}
@@ -112,78 +109,70 @@ func CheckMaliciousInput(repository types.Repository, c echo.Context) (string, e
 }
 
 // CheckMaliciousRepoURL verifies if a given URL is a git repository and returns the sanitizied string and its error
-func CheckMaliciousRepoURL(repositoryURL string, c echo.Context) (string, error) {
+func CheckMaliciousRepoURL(repositoryURL string) (string, error) {
 
-	errorInternal := errors.New("internal error")
-	errorInvalidRepository := errors.New("invalid repository url")
 	regexpGit := `((git|ssh|http(s)?)|((git@|gitlab@)[\w\.]+))(:(//)?)([\w\.@\:/\-~]+)(\.git)(/)?`
-
 	r := regexp.MustCompile(regexpGit)
 	valid, err := regexp.MatchString(regexpGit, repositoryURL)
 	if err != nil {
 		log.Error("CheckMaliciousRepoURL", "UTIL", 1008, "Repository URL regexp ", err)
-		return "", errorInternal
+		return "", types.ErrorInternal
 	}
 	if !valid {
 		log.Error("CheckMaliciousRepoURL", "UTIL", 1016, repositoryURL)
-		return "", errorInvalidRepository
+		return "", types.ErrorInvalidRepository
 	}
+
 	return r.FindString(repositoryURL), nil
 }
 
 // CheckMaliciousRepoBranch verifies if a given branch is "malicious" or not
-func CheckMaliciousRepoBranch(repositoryBranch string, c echo.Context) error {
+func CheckMaliciousRepoBranch(repositoryBranch string) error {
 
-	errorInternal := errors.New("internal error")
-	errorInvalidBranch := errors.New("invalid branch")
 	regexpBranch := `^[a-zA-Z0-9_\/.-]*$`
-
 	valid, err := regexp.MatchString(regexpBranch, repositoryBranch)
 	if err != nil {
 		log.Error("CheckMaliciousRepoBranch", "UTIL", 1008, "Repository Branch regexp ", err)
-		return errorInternal
+		return types.ErrorInternal
 	}
 	if !valid {
 		log.Error("CheckMaliciousRepoBranch", "UTIL", 1017, repositoryBranch)
-		return errorInvalidBranch
+		return types.ErrorInvalidBranch
 	}
+
 	return nil
 }
 
 // CheckMaliciousRepoInternalDepURL verifies if a given internal dependecy URL is "malicious" or not
-func CheckMaliciousRepoInternalDepURL(repositoryInternalDepURL string, c echo.Context) error {
+func CheckMaliciousRepoInternalDepURL(repositoryInternalDepURL string) error {
 
-	errorInternal := errors.New("internal error")
-	errorInvalidDepURL := errors.New("invalid internal dependency url")
 	regexpInternalDepURL := `https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)`
-
 	valid, err := regexp.MatchString(regexpInternalDepURL, repositoryInternalDepURL)
 	if err != nil {
 		log.Error("CheckMaliciousRepoInternalDepURL", "UTIL", 1008, "Repository Branch regexp ", err)
-		return errorInternal
+		return types.ErrorInternal
 	}
 	if !valid {
 		log.Error("CheckMaliciousRepoInternalDepURL", "UTIL", 1021, repositoryInternalDepURL)
-		return errorInvalidDepURL
+		return types.ErrorInvalidDependencyURL
 	}
+
 	return nil
 }
 
 // CheckMaliciousRID verifies if a given RID is "malicious" or not
-func CheckMaliciousRID(RID string, c echo.Context) error {
+func CheckMaliciousRID(RID string) error {
 
-	errorInternal := errors.New("internal error")
-	errorInvalidRID := errors.New("invalid rid")
 	regexpRID := `^[a-zA-Z0-9]*$`
-
 	valid, err := regexp.MatchString(regexpRID, RID)
 	if err != nil {
 		log.Error("CheckMaliciousRID", "UTIL", 1008, "RID regexp ", err)
-		return errorInternal
+		return types.ErrorInternal
 	}
 	if !valid {
 		log.Warning("CheckMaliciousRID", "UTIL", 107, RID)
-		return c.JSON(http.StatusBadRequest, errorInvalidRID)
+		return types.ErrorInvalidRID
 	}
+
 	return nil
 }

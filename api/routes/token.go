@@ -23,16 +23,20 @@ func CreateNewToken(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, reply)
 	}
 
-	// step 2: valid Repositories?
+	// step 2.1: check if repository is empty
 	if attemptNewToken.Repositories == nil {
 		reply := map[string]interface{}{"success": false, "error": "invalid input"}
 		return c.JSON(http.StatusBadRequest, reply)
 	}
 
+	// step 2.2: check if each repository is valid
 	for _, repository := range attemptNewToken.Repositories {
-		if _, err := util.CheckMaliciousRepoURL(repository, c); err != nil {
-			reply := map[string]interface{}{"success": false, "error": "invalid input"}
-			return c.JSON(http.StatusBadRequest, reply)
+		if _, err := util.CheckMaliciousRepoURL(repository); err != nil {
+			reply := map[string]interface{}{"success": false, "error": err.Error()}
+			if err == types.ErrorInvalidRepository {
+				return c.JSON(http.StatusBadRequest, reply)
+			}
+			return c.JSON(http.StatusInternalServerError, reply)
 		}
 	}
 

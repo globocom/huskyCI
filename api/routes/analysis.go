@@ -17,8 +17,12 @@ import (
 func GetAnalysis(c echo.Context) error {
 
 	RID := c.Param("id")
-	if err := util.CheckMaliciousRID(RID, c); err != nil {
-		return err
+	if err := util.CheckMaliciousRID(RID); err != nil {
+		reply := map[string]interface{}{"success": false, "error": err.Error()}
+		if err == types.ErrorInvalidRID {
+			return c.JSON(http.StatusBadRequest, reply)
+		}
+		return c.JSON(http.StatusInternalServerError, reply)
 	}
 
 	analysisQuery := map[string]interface{}{"RID": RID}
@@ -40,6 +44,7 @@ func GetAnalysis(c echo.Context) error {
 func ReceiveRequest(c echo.Context) error {
 
 	RID := c.Response().Header().Get(echo.HeaderXRequestID)
+	// attemptHuskyCIToken := c.Request().Header.Get("huskyCIToken")
 
 	// step-00: is this a valid JSON?
 	repository := types.Repository{}
@@ -51,10 +56,13 @@ func ReceiveRequest(c echo.Context) error {
 	}
 
 	// step-01: Check malicious inputs
-	sanitizedRepoURL, err := util.CheckMaliciousInput(repository, c)
+	sanitizedRepoURL, err := util.CheckMaliciousInput(repository)
 	if err != nil {
-		reply := map[string]interface{}{"success": false, "error": "invalid repository JSON"}
-		return c.JSON(http.StatusBadRequest, reply)
+		reply := map[string]interface{}{"success": false, "error": err.Error()}
+		if err == types.ErrorInvalidRepository || err == types.ErrorInvalidBranch || err == types.ErrorInvalidDependencyURL {
+			return c.JSON(http.StatusBadRequest, reply)
+		}
+		return c.JSON(http.StatusInternalServerError, reply)
 	}
 	repository.URL = sanitizedRepoURL
 
