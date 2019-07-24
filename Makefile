@@ -9,7 +9,6 @@ GODEP ?= $(GOBIN)/dep
 GOLINT ?= $(GOBIN)/golint
 GOSEC ?= $(GOBIN)/gosec
 GINKGO ?= $(GOBIN)/ginkgo
-GOVERALLS ?= $(GOBIN)/goveralls
 
 HUSKYCIBIN ?= huskyci
 HUSKYCICLIENTBIN ?= huskyci-client
@@ -133,7 +132,6 @@ ginkgo:
 coverage:
 	$(GO) test ./... -coverprofile=c.out
 	$(GO) tool cover -html=c.out -o coverage.html
-	$(GOVERALLS) -coverprofile=c.out -service=circle-ci -repotoken=\$COVERALLS_TOKEN
 	
 ## Perfoms all make tests
 test: get-test-deps lint ginkgo coverage

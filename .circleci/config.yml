@@ -18,5 +18,6 @@ jobs:
             make test
             make check-sec
             mv coverage.html /tmp/artifacts
+            $GOPATH/bin/goveralls -coverprofile=c.out -service=circle-ci -repotoken=$COVERALLS_TOKEN
       - store_artifacts:
           path: /tmp/artifacts
