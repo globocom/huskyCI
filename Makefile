@@ -8,6 +8,7 @@ GOBIN ?= $(GOPATH)/bin
 GODEP ?= $(GOBIN)/dep
 GOLINT ?= $(GOBIN)/golint
 GOSEC ?= $(GOBIN)/gosec
+GINKGO ?= $(GOBIN)/ginkgo
 
 HUSKYCIBIN ?= huskyci
 HUSKYCICLIENTBIN ?= huskyci-client
@@ -124,7 +125,12 @@ run-client-linux-json: build-client-linux
 
 ## Runs ginkgo
 ginkgo:
-	ginkgo -r -keepGoing 
+	$(GINKGO) -r -keepGoing
+
+## Run tests with code coverage
+coverage:
+	$(GO) test ./... -coverprofile=c.out
+	$(GO) tool cover -html=c.out -o coverage.html
 	
 ## Perfoms all make tests
-test: get-test-deps lint ginkgo
+test: get-test-deps lint ginkgo coverage
