@@ -9,6 +9,7 @@ type CheckInterface interface {
 	checkDockerHosts(configAPI *apiContext.APIConfig) error
 	checkMongoDB() error
 	checkEachSecurityTest(configAPI *apiContext.APIConfig) error
+	checkDefaultUser(configAPI *apiContext.APIConfig) error
 }
 
 type CheckUtils struct{}
@@ -22,6 +23,7 @@ type FakeCheck struct {
 	DockerHostsError      error
 	MongoDBError          error
 	EachSecurityTestError error
+	DefaultUserError      error
 }
 
 func (fC *FakeCheck) checkEnvVars() error {
@@ -38,4 +40,8 @@ func (fC *FakeCheck) checkMongoDB() error {
 
 func (fC *FakeCheck) checkEachSecurityTest(configAPI *apiContext.APIConfig) error {
 	return fC.EachSecurityTestError
+}
+
+func (fC *FakeCheck) checkDefaultUser(configAPI *apiContext.APIConfig) error {
+	return fC.DefaultUserError
 }
