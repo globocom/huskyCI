@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/globocom/huskyCI/api/auth"
 	apiContext "github.com/globocom/huskyCI/api/context"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/routes"
@@ -41,6 +42,21 @@ func main() {
 	echoInstance.Use(middleware.Logger())
 	echoInstance.Use(middleware.Recover())
 	echoInstance.Use(middleware.RequestID())
+
+	// set new object for /api/1.0 route
+	g := echoInstance.Group("/api/1.0")
+
+	basicClient := auth.MongoBasic{}
+
+	basicHandler := auth.BasicAuthentication{
+		BasicClient: &basicClient,
+	}
+
+	// use basic auth middleware
+	g.Use(middleware.BasicAuth(basicHandler.ValidateUser))
+
+	// /token route with basic auth
+	g.POST("/token", routes.HandleToken)
 
 	// generic routes
 	echoInstance.GET("/healthcheck", routes.HealthCheck)
