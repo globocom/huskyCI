@@ -21,8 +21,8 @@ func Create() types.User {
 	return newUser
 }
 
-// InserDefaultUser insert default user into MongoDB
-func InserDefaultUser() error {
+// InsertDefaultUser insert default user into MongoDB
+func InsertDefaultUser() error {
 	newUser := types.User{}
 
 	hashedPassword, err := security.BcryptPassword(DefaultAPIPassword)
