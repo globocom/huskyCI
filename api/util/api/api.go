@@ -147,16 +147,17 @@ func (cH *CheckUtils) checkEachSecurityTest(configAPI *apiContext.APIConfig) err
 
 func (cH *CheckUtils) checkDefaultUser(configAPI *apiContext.APIConfig) error {
 
-	defaultUserQuery := map[string]interface{}{"name": user.DefaultAPIUser}
+	defaultUserQuery := map[string]interface{}{"username": user.DefaultAPIUser}
 	_, err := db.FindOneDBUser(defaultUserQuery)
 	if err != nil {
 		if err == mgo.ErrNotFound {
 			// user not found, add default user
-			if err := user.InserDefaultUser(); err != nil {
+			if err := user.InsertDefaultUser(); err != nil {
 				return err
 			}
+		} else {
+			return err
 		}
-		return err
 	}
 	return nil
 }
