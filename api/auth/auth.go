@@ -14,3 +14,7 @@ func (bA BasicAuthentication) ValidateUser(username, password string, c echo.Con
 	}
 	return true, nil
 }
+
+func (mB *MongoBasic) IsValidUser(username, password string) (bool, error) {
+	return true, nil
+}
