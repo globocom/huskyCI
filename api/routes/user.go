@@ -51,13 +51,14 @@ func UpdateUser(c echo.Context) error {
 	}
 
 	// step 4: password is correct?
-	if ok := security.CheckPasswordHash(attemptUser.Password, user.HashedPassword); !ok {
+	ok, err := security.CheckArgon2Hash(attemptUser.Password, user.HashedPassword)
+	if !ok || err != nil {
 		reply := map[string]interface{}{"success": false, "error": "unauthorized"}
 		return c.JSON(http.StatusUnauthorized, reply)
 	}
 
 	// step 5.1: prepare new user struct to be updated
-	newHashedPassword, err := security.BcryptPassword(attemptUser.NewPassword)
+	newHashedPassword, err := security.Argon2Password(attemptUser.NewPassword, security.Argon2Parameters)
 	if err != nil {
 		reply := map[string]interface{}{"success": false, "error": "internal error"}
 		return c.JSON(http.StatusInternalServerError, reply)

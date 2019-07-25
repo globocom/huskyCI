@@ -25,7 +25,7 @@ func Create() types.User {
 func InsertDefaultUser() error {
 	newUser := types.User{}
 
-	hashedPassword, err := security.BcryptPassword(DefaultAPIPassword)
+	hashedPassword, err := security.Argon2Password(DefaultAPIPassword, security.Argon2Parameters)
 	if err != nil {
 		return err
 	}
