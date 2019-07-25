@@ -11,6 +11,8 @@ import (
 	docker "github.com/globocom/huskyCI/api/dockers"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
+	"github.com/globocom/huskyCI/api/user"
+	mgo "gopkg.in/mgo.v2"
 )
 
 // CheckHuskyRequirements checks for all requirements needed before starting huskyCI.
@@ -40,6 +42,12 @@ func (hU HuskyUtils) CheckHuskyRequirements(configAPI *apiContext.APIConfig) err
 	}
 	log.Info("CheckHuskyRequirements", "API-UTIL", 15)
 
+	// check if default user is set into MongoDB.
+	if err := hU.CheckHandler.checkDefaultUser(configAPI); err != nil {
+		return err
+	}
+	log.Info("CheckHuskyRequirements", "API-UTIL", 20)
+
 	return nil
 }
 
@@ -67,6 +75,8 @@ func (cH *CheckUtils) checkEnvVars() error {
 		"HUSKYCI_DOCKERAPI_CERT_PATH",
 		"HUSKYCI_DOCKERAPI_CERT_FILE",
 		"HUSKYCI_DOCKERAPI_CERT_KEY",
+		"HUSKYCI_API_DEFAULT_USERNAME",
+		"HUSKYCI_API_DEFAULT_PASSWORD",
 		// "HUSKYCI_DOCKERAPI_CERT_FILE_VALUE", (optional)
 		// "HUSKYCI_DOCKERAPI_CERT_KEY_VALUE", (optional)
 		// "HUSKYCI_DOCKERAPI_API_TLS_CERT_VALUE", (optional)
@@ -131,6 +141,23 @@ func (cH *CheckUtils) checkEachSecurityTest(configAPI *apiContext.APIConfig) err
 			return err
 		}
 		log.Info("checkEachSecurityTest", "API-UTIL", 19, securityTest)
+	}
+	return nil
+}
+
+func (cH *CheckUtils) checkDefaultUser(configAPI *apiContext.APIConfig) error {
+
+	defaultUserQuery := map[string]interface{}{"username": user.DefaultAPIUser}
+	_, err := db.FindOneDBUser(defaultUserQuery)
+	if err != nil {
+		if err == mgo.ErrNotFound {
+			// user not found, add default user
+			if err := user.InsertDefaultUser(); err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
 	}
 	return nil
 }
