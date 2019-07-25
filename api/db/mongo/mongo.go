@@ -21,6 +21,7 @@ var (
 	RepositoryCollection   = "repository"
 	SecurityTestCollection = "securityTest"
 	AnalysisCollection     = "analysis"
+	UserCollection         = "user"
 )
 
 // DB is the struct that represents mongo session.

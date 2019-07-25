@@ -48,6 +48,18 @@ func FindOneDBAnalysis(mapParams map[string]interface{}) (types.Analysis, error)
 	return analysisResponse, err
 }
 
+// FindOneDBUser checks if a given user is present into UserCollection.
+func FindOneDBUser(mapParams map[string]interface{}) (types.User, error) {
+	userResponse := types.User{}
+	userQuery := []bson.M{}
+	for k, v := range mapParams {
+		userQuery = append(userQuery, bson.M{k: v})
+	}
+	userFinalQuery := bson.M{"$and": userQuery}
+	err := mongoHuskyCI.Conn.SearchOne(userFinalQuery, nil, mongoHuskyCI.UserCollection, &userResponse)
+	return userResponse, err
+}
+
 // FindAllDBRepository returns all Repository of a given query present into RepositoryCollection.
 func FindAllDBRepository(mapParams map[string]interface{}) ([]types.Repository, error) {
 	repositoryQuery := []bson.M{}
@@ -122,6 +134,16 @@ func InsertDBAnalysis(analysis types.Analysis) error {
 		"internaldepURL":   analysis.InternalDepURL,
 	}
 	err := mongoHuskyCI.Conn.Insert(newAnalysis, mongoHuskyCI.AnalysisCollection)
+	return err
+}
+
+// InsertDBUser inserts a new user into UserCollection.
+func InsertDBUser(user types.User) error {
+	newUser := bson.M{
+		"username":       user.Name,
+		"hashedPassword": user.HashedPassword,
+	}
+	err := mongoHuskyCI.Conn.Insert(newUser, mongoHuskyCI.UserCollection)
 	return err
 }
 
