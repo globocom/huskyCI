@@ -64,6 +64,12 @@ func main() {
 	// echoInstance.PUT("/repository/:repoID)
 	// echoInstance.DELETE("/repository/:repoID)
 
+	// user routes
+	// echoInstance.GET("/user", routes.GetUser)
+	// echoInstance.POST("/user", routes.CreateNewUser)
+	echoInstance.PUT("/user", routes.UpdateUser)
+	// echoInstance.DELETE("/user)
+
 	huskyAPIport := fmt.Sprintf(":%d", configAPI.Port)
 
 	if !configAPI.UseTLS {
