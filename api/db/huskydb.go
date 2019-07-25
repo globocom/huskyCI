@@ -180,6 +180,17 @@ func UpdateOneDBAnalysis(mapParams map[string]interface{}, updatedAnalysis types
 	return err
 }
 
+// UpdateOneDBUser checks if a given user is present into UserCollection and update it.
+func UpdateOneDBUser(mapParams map[string]interface{}, updatedUser types.User) error {
+	userQuery := []bson.M{}
+	for k, v := range mapParams {
+		userQuery = append(userQuery, bson.M{k: v})
+	}
+	userFinalQuery := bson.M{"$and": userQuery}
+	err := mongoHuskyCI.Conn.Update(userFinalQuery, updatedUser, mongoHuskyCI.UserCollection)
+	return err
+}
+
 // UpdateOneDBAnalysisContainer checks if a given analysis is present into AnalysisCollection and update the container associated in it.
 func UpdateOneDBAnalysisContainer(mapParams, updateQuery map[string]interface{}) error {
 	analysisQuery := []bson.M{}
