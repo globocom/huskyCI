@@ -63,3 +63,12 @@ type Code struct {
 	Language string   `bson:"language" json:"language"`
 	Files    []string `bson:"files" json:"files"`
 }
+
+// User is the struct that holds all data from a huskyCI API user
+type User struct {
+	Name               string `bson:"username" json:"username"`
+	Password           string `bson:"password,omitempty" json:"password"`
+	NewPassword        string `bson:"newPassword,omitempty" json:"newPassword"`
+	ConfirmNewPassword string `bson:"confirmNewPassword,omitempty" json:"confirmNewPassword"`
+	HashedPassword     string `bson:"hashedPassword"`
+}
