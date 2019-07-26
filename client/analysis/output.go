@@ -130,11 +130,11 @@ func prepareRetirejsOutput(mongoDBcontainerOutput string, mongoDBcontainerInfo s
 		return
 	}
 
-	if strings.Contains(mongoDBcontainerInfo, "ERROR_RUNNING_RETIREJS") {
+	if strings.Contains(mongoDBcontainerOutput, "ERROR_RUNNING_RETIREJS") {
 		retirejsVuln := types.HuskyCIVulnerability{}
 		retirejsVuln.Language = "JavaScript"
 		retirejsVuln.SecurityTool = "RetireJS"
-		retirejsVuln.Severity = "info"
+		retirejsVuln.Severity = "low"
 		retirejsVuln.Confidence = "high"
 		retirejsVuln.Details = "It looks like your project doesn't have package.json or yarn.lock. huskyCI was not able to run RetireJS properly."
 		tmpRetireJSResults.RetirejsResult = append(tmpRetireJSResults.RetirejsResult, retirejsVuln)

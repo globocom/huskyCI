@@ -14,8 +14,8 @@ type GitAuthorsOutput struct {
 	Authors []string `json:"authors"`
 }
 
-// GitAuthorsStartAnalysis analyses the output from Gitauthors and sets a cResult based on it.
-func GitAuthorsStartAnalysis(CID string, cOutput string, RID string) {
+// GitAuthorsCheckOutputFlow analyses the output from Gitauthors and sets a cResult based on it.
+func GitAuthorsCheckOutputFlow(CID string, cOutput string, RID string) {
 
 	analysisQuery := map[string]interface{}{"containers.CID": CID}
 
