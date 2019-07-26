@@ -6,12 +6,11 @@ package analysis
 
 import (
 	"encoding/json"
-	"fmt"
+	"strconv"
 	"strings"
 
-	"github.com/globocom/huskyCI/api/db"
 	"github.com/globocom/huskyCI/api/log"
-	"gopkg.in/mgo.v2/bson"
+	"github.com/globocom/huskyCI/api/types"
 )
 
 // BrakemanOutput is the struct that holds issues and stats found on a Brakeman scan.
@@ -30,44 +29,27 @@ type WarningItem struct {
 	Confidence string `json:"confidence"`
 }
 
-// BrakemanStartAnalysis analyses the output from Brakeman and sets a cResult based on it.
-func BrakemanStartAnalysis(CID string, cOutput string) {
+// BrakemanCheckOutputFlow analyses the output from Brakeman and sets a cResult based on it.
+func BrakemanCheckOutputFlow(CID string, cOutput string, RID string) {
 
-	var cResult string
-	analysisQuery := map[string]interface{}{"containers.CID": CID}
+	// step 1: check for any errors when clonning repo
+	errorClonning := strings.Contains(cOutput, "ERROR_CLONING")
+	if errorClonning {
+		if err := updateInfoAndResultBasedOnCID("Error clonning repository", "error", CID); err != nil {
+			return
+		}
+		return
+	}
 
-	// step 0.1: nil cOutput states that no Issues were found.
+	// step 2: nil cOutput states that no Issues were found.
 	if cOutput == "" {
-		updateContainerAnalysisQuery := bson.M{
-			"$set": bson.M{
-				"containers.$.cResult": "passed",
-				"containers.$.cInfo":   "No issues found.",
-			},
-		}
-		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
-		if err != nil {
-			log.Error("BrakemanStartAnalysis", "BRAKEMAN", 2007, "Step 0.1 ", err)
+		if err := updateInfoAndResultBasedOnCID("No issues found.", "passed", CID); err != nil {
+			return
 		}
 		return
 	}
 
-	// step 0.2: error cloning repository!
-	if strings.Contains(cOutput, "ERROR_CLONING") {
-		errorOutput := fmt.Sprintf("Container error: %s", cOutput)
-		updateContainerAnalysisQuery := bson.M{
-			"$set": bson.M{
-				"containers.$.cResult": "error",
-				"containers.$.cInfo":   errorOutput,
-			},
-		}
-		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
-		if err != nil {
-			log.Error("BrakemanStartAnalysis", "BRAKEMAN", 2007, "Step 0.2 ", err)
-		}
-		return
-	}
-
-	// step 1: Unmarshall cOutput into BrakemanOutput struct.
+	// step 3: Unmarshall cOutput into BrakemanOutput struct.
 	brakemanOutput := BrakemanOutput{}
 	err := json.Unmarshal([]byte(cOutput), &brakemanOutput)
 	if err != nil {
@@ -75,44 +57,59 @@ func BrakemanStartAnalysis(CID string, cOutput string) {
 		return
 	}
 
-	// step 1.1: An empty errors slice means no vulnerabilities were found
+	// step 4: An empty errors slice also means that no vulnerabilities were found
 	if len(brakemanOutput.Warnings) == 0 {
-		updateContainerAnalysisQuery := bson.M{
-			"$set": bson.M{
-				"containers.$.cResult": "passed",
-				"containers.$.cInfo":   "No issues found.",
-			},
-		}
-		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
-		if err != nil {
-			log.Error("BrakemanStartAnalysis", "BRAKEMAN", 2007, "Step 1.1 ", err)
+		if err := updateInfoAndResultBasedOnCID("No issues found.", "passed", CID); err != nil {
+			return
 		}
 		return
 	}
 
-	// step 2: find Issues that have confidence "High" or "Medium".
-	cResult = "passed"
+	// step 5: find Issues that have confidence "High" or "Medium".
+	cResult := "passed"
+	issueMessage := "No issues found."
 	for _, warning := range brakemanOutput.Warnings {
 		if warning.Confidence == "High" || warning.Confidence == "Medium" {
 			cResult = "failed"
+			issueMessage = "Issues found."
 			break
 		}
 	}
-
-	// step 3: update analysis' cResult into AnalyisCollection.
-	issueMessage := "No issues found."
-	if cResult != "passed" {
-		issueMessage = "Issues found."
-	}
-	updateContainerAnalysisQuery := bson.M{
-		"$set": bson.M{
-			"containers.$.cResult": cResult,
-			"containers.$.cInfo":   issueMessage,
-		},
-	}
-	err = db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
-	if err != nil {
-		log.Error("BrakemanStartAnalysis", "BRAKEMAN", 2007, "Step 3 ", err)
+	if err := updateInfoAndResultBasedOnCID(issueMessage, cResult, CID); err != nil {
 		return
 	}
+
+	// step 6: finally, update analysis with huskyCI results
+	if err := updateHuskyCIResultsBasedOnRID(RID, "brakeman", brakemanOutput); err != nil {
+		return
+	}
+}
+
+// prepareHuskyCIBrakemanResults will prepare Brakeman output to be added into RubyResults struct
+func prepareHuskyCIBrakemanResults(brakemanOutput BrakemanOutput) types.HuskyCISecurityTestOutput {
+
+	var huskyCIbrakemanResults types.HuskyCISecurityTestOutput
+
+	for _, warning := range brakemanOutput.Warnings {
+		brakemanVuln := types.HuskyCIVulnerability{}
+		brakemanVuln.Language = "Ruby"
+		brakemanVuln.SecurityTool = "Brakeman"
+		brakemanVuln.Confidence = warning.Confidence
+		brakemanVuln.Details = warning.Details + warning.Message
+		brakemanVuln.File = warning.File
+		brakemanVuln.Line = strconv.Itoa(warning.Line)
+		brakemanVuln.Code = warning.Code
+		brakemanVuln.Type = warning.Type
+
+		switch brakemanVuln.Confidence {
+		case "High":
+			huskyCIbrakemanResults.LowVulns = append(huskyCIbrakemanResults.LowVulns, brakemanVuln)
+		case "Medium":
+			huskyCIbrakemanResults.MediumVulns = append(huskyCIbrakemanResults.MediumVulns, brakemanVuln)
+		case "Low":
+			huskyCIbrakemanResults.HighVulns = append(huskyCIbrakemanResults.HighVulns, brakemanVuln)
+		}
+	}
+
+	return huskyCIbrakemanResults
 }
