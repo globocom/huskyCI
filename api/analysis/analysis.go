@@ -174,7 +174,7 @@ func updateInfoAndResultBasedOnCID(cInfo, cResult, CID string) error {
 	analysisQuery := map[string]interface{}{"containers.CID": CID}
 	err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
 	if err != nil {
-		log.Error("updateCIDinfoAndResult", "ANALYSIS", 2007, err)
+		log.Error("updateInfoAndResultBasedOnCID", "ANALYSIS", 2007, err)
 		return err
 	}
 
