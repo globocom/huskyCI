@@ -10,7 +10,6 @@ import (
 
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
-	"github.com/globocom/huskyCI/api/util"
 )
 
 //RetirejsOutput is the struct that holds issues, messages and errors found on a Retire scan.
@@ -152,9 +151,29 @@ func prepareHuskyCIRetirejsOutput(retirejsOutput []RetirejsOutput) types.HuskyCI
 		}
 	}
 
-	huskyCIretireJSResultsFinal.LowVulns = util.CountRetireJSOccurrences(huskyCIretireJSResults.LowVulns)
-	huskyCIretireJSResultsFinal.MediumVulns = util.CountRetireJSOccurrences(huskyCIretireJSResults.MediumVulns)
-	huskyCIretireJSResultsFinal.HighVulns = util.CountRetireJSOccurrences(huskyCIretireJSResults.HighVulns)
+	huskyCIretireJSResultsFinal.LowVulns = countRetireJSOccurrences(huskyCIretireJSResults.LowVulns)
+	huskyCIretireJSResultsFinal.MediumVulns = countRetireJSOccurrences(huskyCIretireJSResults.MediumVulns)
+	huskyCIretireJSResultsFinal.HighVulns = countRetireJSOccurrences(huskyCIretireJSResults.HighVulns)
 
 	return huskyCIretireJSResultsFinal
+}
+
+// countRetireJSOccurrences remove duplicates and increment occurrences in each RetireJS vuln found
+func countRetireJSOccurrences(retireJSresults []types.HuskyCIVulnerability) []types.HuskyCIVulnerability {
+
+	var result []types.HuskyCIVulnerability
+	for _, vuln1 := range retireJSresults {
+		exists := false
+		for i, res := range result {
+			if res.Code == vuln1.Code {
+				exists = true
+				result[i].Occurrences++
+			}
+		}
+		if !exists {
+			result = append(result, vuln1)
+			result[len(result)-1].Occurrences++
+		}
+	}
+	return result
 }
