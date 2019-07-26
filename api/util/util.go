@@ -179,26 +179,6 @@ func CheckMaliciousRID(RID string, c echo.Context) error {
 	return nil
 }
 
-// CountRetireJSOccurrences remove duplicates and increment occurrences in each RetireJS vuln found
-func CountRetireJSOccurrences(retireJSresults []types.HuskyCIVulnerability) []types.HuskyCIVulnerability {
-
-	var result []types.HuskyCIVulnerability
-	for _, vuln1 := range retireJSresults {
-		exists := false
-		for i, res := range result {
-			if res.Code == vuln1.Code {
-				exists = true
-				result[i].Occurrences++
-			}
-		}
-		if !exists {
-			result = append(result, vuln1)
-			result[len(result)-1].Occurrences++
-		}
-	}
-	return result
-}
-
 // AdjustWarningMessage returns the Safety Warning string that will be printed.
 func AdjustWarningMessage(warningRaw string) string {
 	warning := strings.Split(warningRaw, ":")
