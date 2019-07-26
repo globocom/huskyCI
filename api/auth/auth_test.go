@@ -85,5 +85,4 @@ var _ = Describe("IsValidUser", func() {
 			Expect(err).To(BeNil())
 		})
 	})
-
 })
