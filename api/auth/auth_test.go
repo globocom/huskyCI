@@ -2,50 +2,85 @@ package auth_test
 
 import (
 	"errors"
-	"github.com/globocom/huskyCI/api/auth"
+	. "github.com/globocom/huskyCI/api/auth"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("ValidateUser", func() {
-	Context("When IsValidUser returns an error", func() {
-		It("Should return the same error with false bool", func() {
-			fakeClient := auth.FakeClient{
-				ExpectedIsValidBool:  false,
-				ExpectedIsValidError: errors.New("Failed to get user's info"),
+type FakeClient struct {
+	expectedPass           string
+	expectedGetPassError   error
+	expectedHashedPass     string
+	expectedGetHashedError error
+}
+
+func (fC *FakeClient) GetPassFromDB(username string) (string, error) {
+	return fC.expectedPass, fC.expectedGetPassError
+}
+
+func (fC *FakeClient) GetHashedPass(password string) (string, error) {
+	return fC.expectedHashedPass, fC.expectedGetHashedError
+}
+
+var _ = Describe("IsValidUser", func() {
+	Context("When GetPassFromDB returns an error", func() {
+		It("Should return a false boolean and the same error", func() {
+			fakeHandler := FakeClient{
+				expectedPass:         "",
+				expectedGetPassError: errors.New("Error trying to get password from DB"),
 			}
-			userAuth := auth.BasicAuthentication{
-				BasicClient: &fakeClient,
+			mongoClient := MongoBasic{
+				ClientHandler: &fakeHandler,
 			}
-			isValid, err := userAuth.ValidateUser("husky", "dumbpass", nil)
+			isValid, err := mongoClient.IsValidUser("husky", "somepass")
 			Expect(isValid).To(BeFalse())
-			Expect(err).To(Equal(errors.New("Failed to get user's info")))
+			Expect(err).To(Equal(errors.New("Error trying to get password from DB")))
 		})
 	})
-	Context("When IsValidUser return an invalid authentication", func() {
-		It("Should return a false boolean with a nil error", func() {
-			fakeClient := auth.FakeClient{
-				ExpectedIsValidBool:  false,
-				ExpectedIsValidError: nil,
+	Context("When GetHashedPass returns an error", func() {
+		It("Should return a false boolean and the same error", func() {
+			fakeHandler := FakeClient{
+				expectedPass:           "hashedpass",
+				expectedGetPassError:   nil,
+				expectedGetHashedError: errors.New("Error trying to generate hash from password"),
+				expectedHashedPass:     "",
 			}
-			userAuth := auth.BasicAuthentication{
-				BasicClient: &fakeClient,
+			mongoClient := MongoBasic{
+				ClientHandler: &fakeHandler,
 			}
-			isValid, err := userAuth.ValidateUser("husky", "dumbpass", nil)
+			isValid, err := mongoClient.IsValidUser("husky", "somepass")
+			Expect(isValid).To(BeFalse())
+			Expect(err).To(Equal(errors.New("Error trying to generate hash from password")))
+		})
+	})
+	Context("When passDB and hashedPass are different", func() {
+		It("Should return a false boolean with nil error", func() {
+			fakeHandler := FakeClient{
+				expectedPass:           "hashedpass",
+				expectedGetPassError:   nil,
+				expectedGetHashedError: nil,
+				expectedHashedPass:     "differenthash",
+			}
+			mongoClient := MongoBasic{
+				ClientHandler: &fakeHandler,
+			}
+			isValid, err := mongoClient.IsValidUser("husky", "somepass")
 			Expect(isValid).To(BeFalse())
 			Expect(err).To(BeNil())
 		})
 	})
-	Context("When IsValidUser return a valid authentication", func() {
-		It("Should return a true boolean with a nil error", func() {
-			fakeClient := auth.FakeClient{
-				ExpectedIsValidBool:  true,
-				ExpectedIsValidError: nil,
+	Context("When passDB and hashedPass are equal", func() {
+		It("Should return a true boolean with nil error", func() {
+			fakeHandler := FakeClient{
+				expectedPass:           "hashedpass",
+				expectedGetPassError:   nil,
+				expectedGetHashedError: nil,
+				expectedHashedPass:     "hashedpass",
 			}
-			userAuth := auth.BasicAuthentication{
-				BasicClient: &fakeClient,
+			mongoClient := MongoBasic{
+				ClientHandler: &fakeHandler,
 			}
-			isValid, err := userAuth.ValidateUser("husky", "dumbpass", nil)
+			isValid, err := mongoClient.IsValidUser("husky", "somepass")
 			Expect(isValid).To(BeTrue())
 			Expect(err).To(BeNil())
 		})

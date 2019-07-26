@@ -46,14 +46,8 @@ func main() {
 	// set new object for /api/1.0 route
 	g := echoInstance.Group("/api/1.0")
 
-	basicClient := auth.MongoBasic{}
-
-	basicHandler := auth.BasicAuthentication{
-		BasicClient: &basicClient,
-	}
-
 	// use basic auth middleware
-	g.Use(middleware.BasicAuth(basicHandler.ValidateUser))
+	g.Use(middleware.BasicAuth(auth.ValidateUser))
 
 	// /token route with basic auth
 	g.POST("/token", routes.HandleToken)
