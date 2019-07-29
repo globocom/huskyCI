@@ -53,7 +53,7 @@ func EnryCheckOutputFlow(CID string, cOutput string, RID string) {
 	allSecurityTests := append(genericSecurityTests, newLanguageSecurityTests...)
 
 	// step 4: update analysis with the all securityTests to be run in this repository
-	analysisQuery := map[string]interface{}{"containers.CID": CID}
+	analysisQuery := map[string]interface{}{"RID": RID}
 	analysis, err := db.FindOneDBAnalysis(analysisQuery)
 	if err != nil {
 		log.Error("EnryStartAnalysis", "ENRY", 2008, CID, err)
@@ -72,7 +72,7 @@ func EnryCheckOutputFlow(CID string, cOutput string, RID string) {
 	}
 
 	// step 6: start all new securityTests.
-	for _, securityTest := range newLanguageSecurityTests {
+	for _, securityTest := range allSecurityTests {
 		// avoiding a loop here with this if condition.
 		if securityTest.Name != "enry" {
 			go DockerRun(RID, &analysis, securityTest)
