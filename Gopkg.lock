@@ -311,13 +311,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:bc69ee8182ba9c396123850ff12a6df7337b9ee606711e4d12305994dab96322"
+  digest = "1:2f225d17c412a28ad7baf7501bcbaaf1ca96e4337ea14eee650cd5e529a7b684"
   name = "golang.org/x/crypto"
   packages = [
     "acme",
     "acme/autocert",
     "argon2",
     "blake2b",
+    "pbkdf2",
     "sha3",
   ]
   pruneopts = "UT"
@@ -441,6 +442,7 @@
     "github.com/onsi/gomega",
     "github.com/spf13/viper",
     "golang.org/x/crypto/argon2",
+    "golang.org/x/crypto/pbkdf2",
     "golang.org/x/crypto/sha3",
     "golang.org/x/net/context",
     "gopkg.in/mgo.v2",
