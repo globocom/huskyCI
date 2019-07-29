@@ -212,7 +212,9 @@ func dockerRunReadOutput(d *docker.Docker, analysis *types.Analysis) (string, er
 		log.Error("dockerRunReadOutput", "DOCKERRUN", 2007, err)
 		return "", err
 	}
-	return cOutput, err
+	// fineshed successfully
+	log.Info("dockerRunReadOutput", "DOCKERRUN", 34, d.CID)
+	return cOutput, nil
 }
 
 // dockerRunRegisterError updates the corresponding analysis into MongoDB with an error status.
