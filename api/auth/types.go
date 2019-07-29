@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"github.com/globocom/huskyCI/api/types"
 	"hash"
 )
 
@@ -10,7 +11,9 @@ type UserCredsHandler interface {
 }
 
 type Pbkdf2Generator interface {
-	GenHashValue(value, salt []byte, iter, keyLen int, h hash.Hash) []byte
+	GetCredsFromDB(username string) (types.User, error)
+	DecodeSaltValue(salt string) ([]byte, error)
+	GenHashValue(value, salt []byte, iter, keyLen int, h hash.Hash) string
 }
 
 type MongoBasic struct {

@@ -7,7 +7,9 @@ import (
 // ValidateUser is called by the echo's middleware for
 // basic auth validation
 func ValidateUser(username, password string, c echo.Context) (bool, error) {
-	clientMongo := ClientPbkdf2{}
+	clientMongo := ClientPbkdf2{
+		HashGen: &Pbkdf2Caller{},
+	}
 	basicClient := MongoBasic{
 		ClientHandler: &clientMongo,
 	}
