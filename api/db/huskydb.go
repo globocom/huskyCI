@@ -140,8 +140,12 @@ func InsertDBAnalysis(analysis types.Analysis) error {
 // InsertDBUser inserts a new user into UserCollection.
 func InsertDBUser(user types.User) error {
 	newUser := bson.M{
-		"username":       user.Name,
-		"hashedPassword": user.HashedPassword,
+		"username":     user.Username,
+		"password":     user.Password,
+		"salt":         user.Salt,
+		"iterations":   user.Iterations,
+		"keylen":       user.KeyLen,
+		"hashfunction": user.HashFunction,
 	}
 	err := mongoHuskyCI.Conn.Insert(newUser, mongoHuskyCI.UserCollection)
 	return err
