@@ -3,13 +3,15 @@ package routes
 import (
 	"net/http"
 
-	"gopkg.in/mgo.v2"
-
+	"encoding/base64"
+	"github.com/globocom/huskyCI/api/auth"
 	"github.com/globocom/huskyCI/api/db"
 	"github.com/globocom/huskyCI/api/log"
-	"github.com/globocom/huskyCI/api/security"
 	"github.com/globocom/huskyCI/api/types"
 	"github.com/labstack/echo"
+	"golang.org/x/crypto/pbkdf2"
+	"gopkg.in/mgo.v2"
+	"hash"
 )
 
 // UpdateUser edits an user
@@ -27,7 +29,7 @@ func UpdateUser(c echo.Context) error {
 	// step 1.2: check mongoDB injection
 
 	// step 2.1: password/user is empty?
-	if attemptUser.Password == "" || attemptUser.Name == "" || attemptUser.NewPassword == "" {
+	if attemptUser.Password == "" || attemptUser.Username == "" || attemptUser.NewPassword == "" {
 		reply := map[string]interface{}{"success": false, "error": "passwords/username can not be empty"}
 		return c.JSON(http.StatusBadRequest, reply)
 	}
@@ -39,7 +41,7 @@ func UpdateUser(c echo.Context) error {
 	}
 
 	// step 3: user exists?
-	userQuery := map[string]interface{}{"username": attemptUser.Name}
+	userQuery := map[string]interface{}{"username": attemptUser.Username}
 	user, err := db.FindOneDBUser(userQuery)
 	if err != nil {
 		if err == mgo.ErrNotFound {
@@ -51,22 +53,32 @@ func UpdateUser(c echo.Context) error {
 	}
 
 	// step 4: password is correct?
-	ok, err := security.CheckArgon2Hash(attemptUser.Password, user.HashedPassword)
-	if !ok || err != nil {
+	hashFunction, isValid := auth.GetValidHashFunction(user.HashFunction)
+	if !isValid {
+		reply := map[string]interface{}{"success": false, "error": "invalid hash function"}
+		return c.JSON(http.StatusInternalServerError, reply)
+	}
+	salt, err := base64.StdEncoding.DecodeString(user.Salt)
+	if err != nil {
+		reply := map[string]interface{}{"success": false, "error": "failed to update user data"}
+		return c.JSON(http.StatusInternalServerError, reply)
+	}
+	hashedPass := pbkdf2.Key([]byte(attemptUser.Password), salt, user.Iterations, user.KeyLen, func() hash.Hash {
+		return hashFunction
+	})
+	if base64.StdEncoding.EncodeToString(hashedPass) != user.Password {
 		reply := map[string]interface{}{"success": false, "error": "unauthorized"}
 		return c.JSON(http.StatusUnauthorized, reply)
 	}
 
 	// step 5.1: prepare new user struct to be updated
-	newHashedPassword, err := security.Argon2Password(attemptUser.NewPassword, security.Argon2Parameters)
-	if err != nil {
-		reply := map[string]interface{}{"success": false, "error": "internal error"}
-		return c.JSON(http.StatusInternalServerError, reply)
-	}
+	newHashedPass := pbkdf2.Key([]byte(attemptUser.NewPassword), salt, user.Iterations, user.KeyLen, func() hash.Hash {
+		return hashFunction
+	})
 
 	updatedUser := types.User{
-		Name:           attemptUser.Name,
-		HashedPassword: newHashedPassword,
+		Username: attemptUser.Username,
+		Password: base64.StdEncoding.EncodeToString(newHashedPass),
 	}
 
 	// step 5.2: update user

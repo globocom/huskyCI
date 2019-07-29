@@ -46,6 +46,18 @@ type Analysis struct {
 	Codes          []Code         `bson:"codes" json:"codes"`
 }
 
+// Pbkdf2User is the struct that stores all data from an user with basic authentication
+// with Pbkdf2 hash algorithm for password storage.
+// type Pbkdf2User struct {
+// 	ID           bson.ObjectId `bson:"_id,omitempty"`
+// 	Username     string        `bson:"username" json:"username"`
+// 	Password     string        `bson:"password" json:"password"`
+// 	Salt         string        `bson:"salt" json:"salt"`
+// 	Iterations   int           `bson:"iterations" json:"iterations"`
+// 	KeyLen       int           `bson:"keylen" json:"keylen"`
+// 	HashFunction string        `bson:"hashfunction" json:"hashfunction"`
+// }
+
 // Container is the struct that stores all data from a container run.
 type Container struct {
 	CID          string       `bson:"CID" json:"CID"`
@@ -66,9 +78,13 @@ type Code struct {
 
 // User is the struct that holds all data from a huskyCI API user
 type User struct {
-	Name               string `bson:"username" json:"username"`
-	Password           string `bson:"password,omitempty" json:"password"`
-	NewPassword        string `bson:"newPassword,omitempty" json:"newPassword"`
-	ConfirmNewPassword string `bson:"confirmNewPassword,omitempty" json:"confirmNewPassword"`
-	HashedPassword     string `bson:"hashedPassword"`
+	ID                 bson.ObjectId `bson:"_id,omitempty"`
+	Username           string        `bson:"username" json:"username"`
+	Password           string        `bson:"password" json:"password"`
+	Salt               string        `bson:"salt" json:"salt"`
+	Iterations         int           `bson:"iterations" json:"iterations"`
+	KeyLen             int           `bson:"keylen" json:"keylen"`
+	HashFunction       string        `bson:"hashfunction" json:"hashfunction"`
+	NewPassword        string        `bson:"newPassword,omitempty" json:"newPassword"`
+	ConfirmNewPassword string        `bson:"confirmNewPassword,omitempty" json:"confirmNewPassword"`
 }
