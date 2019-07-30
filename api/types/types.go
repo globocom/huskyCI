@@ -81,10 +81,10 @@ type User struct {
 	ID                 bson.ObjectId `bson:"_id,omitempty"`
 	Username           string        `bson:"username" json:"username"`
 	Password           string        `bson:"password" json:"password"`
-	Salt               string        `bson:"salt" json:"salt"`
-	Iterations         int           `bson:"iterations" json:"iterations"`
-	KeyLen             int           `bson:"keylen" json:"keylen"`
-	HashFunction       string        `bson:"hashfunction" json:"hashfunction"`
+	Salt               string        `bson:"salt,omitempty" json:"salt"`
+	Iterations         int           `bson:"iterations,omitempty" json:"iterations"`
+	KeyLen             int           `bson:"keylen,omitempty" json:"keylen"`
+	HashFunction       string        `bson:"hashfunction,omitempty" json:"hashfunction"`
 	NewPassword        string        `bson:"newPassword,omitempty" json:"newPassword"`
 	ConfirmNewPassword string        `bson:"confirmNewPassword,omitempty" json:"confirmNewPassword"`
 }
