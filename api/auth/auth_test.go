@@ -27,14 +27,14 @@ var _ = Describe("IsValidUser", func() {
 		It("Should return a false boolean and the same error", func() {
 			fakeHandler := FakeClient{
 				expectedPass:         "",
-				expectedGetPassError: errors.New("Error trying to get password from DB"),
+				expectedGetPassError: errors.New("Error trying to get password from DB: User not found"),
 			}
 			mongoClient := MongoBasic{
 				ClientHandler: &fakeHandler,
 			}
 			isValid, err := mongoClient.IsValidUser("husky", "somepass")
 			Expect(isValid).To(BeFalse())
-			Expect(err).To(Equal(errors.New("Error trying to get password from DB")))
+			Expect(err).To(BeNil())
 		})
 	})
 	Context("When GetHashedPass returns an error", func() {

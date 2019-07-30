@@ -22,7 +22,7 @@ func ValidateUser(username, password string, c echo.Context) (bool, error) {
 func (mB MongoBasic) IsValidUser(username, password string) (bool, error) {
 	passDB, err := mB.ClientHandler.GetPassFromDB(username)
 	if err != nil {
-		return false, err
+		return false, nil
 	}
 	hashedPass, err := mB.ClientHandler.GetHashedPass(password)
 	if err != nil {
