@@ -77,8 +77,12 @@ func UpdateUser(c echo.Context) error {
 	})
 
 	updatedUser := types.User{
-		Username: attemptUser.Username,
-		Password: base64.StdEncoding.EncodeToString(newHashedPass),
+		Username:     attemptUser.Username,
+		Password:     base64.StdEncoding.EncodeToString(newHashedPass),
+		Salt:         user.Salt,
+		Iterations:   user.Iterations,
+		KeyLen:       user.KeyLen,
+		HashFunction: user.HashFunction,
 	}
 
 	// step 5.2: update user
