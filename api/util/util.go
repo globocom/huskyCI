@@ -92,9 +92,16 @@ func RemoveDuplicates(s []string) []string {
 // CheckValidInput checks if an user's input is "malicious" or not
 func CheckValidInput(repository types.Repository, c echo.Context) (string, error) {
 
-	sanitiziedURL, err := CheckMaliciousRepoURL(repository.URL, c)
+	sanitiziedURL, err := CheckMaliciousRepoURL(repository.URL)
 	if err != nil {
-		return "", err
+		if sanitiziedURL == "" {
+			log.Error("ReceiveRequest", "ANALYSIS", 1016, repository.URL)
+			reply := map[string]interface{}{"success": false, "error": "invalid repository URL"}
+			return "", c.JSON(http.StatusBadRequest, reply)
+		}
+		log.Error("ReceiveRequest", "ANALYSIS", 1008, "Repository URL regexp ", err)
+		reply := map[string]interface{}{"success": false, "error": "internal error"}
+		return "", c.JSON(http.StatusInternalServerError, reply)
 	}
 
 	if err := CheckMaliciousRepoBranch(repository.Branch, c); err != nil {
@@ -111,19 +118,15 @@ func CheckValidInput(repository types.Repository, c echo.Context) (string, error
 }
 
 // CheckMaliciousRepoURL verifies if a given URL is a git repository and returns the sanitizied string and its error
-func CheckMaliciousRepoURL(repositoryURL string, c echo.Context) (string, error) {
+func CheckMaliciousRepoURL(repositoryURL string) (string, error) {
 	regexpGit := `((git|ssh|http(s)?)|((git@|gitlab@)[\w\.]+))(:(//)?)([\w\.@\:/\-~]+)(\.git)(/)?`
 	r := regexp.MustCompile(regexpGit)
 	valid, err := regexp.MatchString(regexpGit, repositoryURL)
 	if err != nil {
-		log.Error("ReceiveRequest", "ANALYSIS", 1008, "Repository URL regexp ", err)
-		reply := map[string]interface{}{"success": false, "error": "internal error"}
-		return "", c.JSON(http.StatusInternalServerError, reply)
+		return "matchStringError", err
 	}
 	if !valid {
-		log.Error("ReceiveRequest", "ANALYSIS", 1016, repositoryURL)
-		reply := map[string]interface{}{"success": false, "error": "invalid repository URL"}
-		return "", c.JSON(http.StatusBadRequest, reply)
+		return "", err
 	}
 	return r.FindString(repositoryURL), nil
 }

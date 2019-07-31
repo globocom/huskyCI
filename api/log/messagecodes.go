@@ -49,6 +49,8 @@ var MsgCode = map[int]string{
 	1022: "Could not Unmarshall the following npmauditOutput: ",
 	1023: "Could not upsert securityTest into MongoDB: ",
 	1024: "Received an invalid user JSON: ",
+	1025: "Received an invalid Token JSON: ",
+	1026: "Error during access token generation",
 
 	// MongoDB infos
 	21: "Connecting to MongoDB.",

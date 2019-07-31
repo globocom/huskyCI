@@ -77,7 +77,7 @@ type User struct {
 	NewPassword        string        `bson:"newPassword,omitempty" json:"newPassword"`
 	ConfirmNewPassword string        `bson:"confirmNewPassword,omitempty" json:"confirmNewPassword"`
 }
-	
+
 // HuskyCIVulnerability is the struct that stores vulnerability information.
 type HuskyCIVulnerability struct {
 	Language       string `bson:"language" json:"language,omitempty"`
@@ -129,5 +129,19 @@ type HuskyCISecurityTestOutput struct {
 	LowVulns    []HuskyCIVulnerability `bson:"lowvulns,omitempty" json:"lowvulns,omitempty"`
 	MediumVulns []HuskyCIVulnerability `bson:"mediumvulns,omitempty" json:"mediumvulns,omitempty"`
 	HighVulns   []HuskyCIVulnerability `bson:"highvulns,omitempty" json:"highvulns,omitempty"`
+}
 
+// TokenRequest defines the JSON struct for an access token request
+type TokenRequest struct {
+	RepositoryURL string `json:"repositoryURL"`
+}
+
+// AccessToken defines the struct generated when a new token
+// is requested for specific repository
+type AccessToken struct {
+	ID         bson.ObjectId `bson:"_id,omitempty"`
+	HuskyToken string        `bson:"huskytoken" json:"huskytoken"`
+	URL        string        `bson:"repositoryURL"`
+	IsValid    bool          `bson:"isValid"`
+	CreatedAt  time.Time     `bson:"createdAt"`
 }
