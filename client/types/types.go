@@ -36,7 +36,25 @@ type Analysis struct {
 	Status         string         `bson:"status" json:"status"`
 	Result         string         `bson:"result" json:"result"`
 	Containers     []Container    `bson:"containers" json:"containers"`
-	InternalDepURL string         `bson:"internaldepURL" json:"internaldepURL"`
+	StartedAt      time.Time      `bson:"startedAt" json:"startedAt"`
+	FinishedAt     time.Time      `bson:"finishedAt" json:"finishedAt"`
+	InternalDepURL string         `bson:"internaldepURL,omitempty" json:"internaldepURL"`
+	Codes          []Code         `bson:"codes" json:"codes"`
+	HuskyCIResults HuskyCIResults `bson:"huskyciresults,omitempty" json:"huskyciresults"`
+}
+
+// Code is the struct that stores all data from code found in a repository.
+type Code struct {
+	Language string   `bson:"language" json:"language"`
+	Files    []string `bson:"files" json:"files"`
+}
+
+// HuskyCIResults is a struct that represents huskyCI scan results.
+type HuskyCIResults struct {
+	GoResults         GoResults         `bson:"goresults,omitempty" json:"goresults,omitempty"`
+	PythonResults     PythonResults     `bson:"pythonresults,omitempty" json:"pythonresults,omitempty"`
+	JavaScriptResults JavaScriptResults `bson:"javascriptresults,omitempty" json:"javascriptresults,omitempty"`
+	RubyResults       RubyResults       `bson:"rubyresults,omitempty" json:"rubyresults,omitempty"`
 }
 
 // Container is the struct that stores all data from a container run.
@@ -89,24 +107,31 @@ type JSONOutput struct {
 
 // GoResults represents all Golang security tests results.
 type GoResults struct {
-	GosecOutput []HuskyCIVulnerability `json:"gosecoutput,omitempty"`
+	HuskyCIGosecOutput HuskyCISecurityTestOutput `bson:"gosecoutput,omitempty" json:"gosecoutput,omitempty"`
 }
 
 // PythonResults represents all Python security tests results.
 type PythonResults struct {
-	BanditOutput []HuskyCIVulnerability `json:"banditoutput,omitempty"`
-	SafetyOutput []HuskyCIVulnerability `json:"safetyoutput,omitempty"`
+	HuskyCIBanditOutput HuskyCISecurityTestOutput `bson:"banditoutput,omitempty" json:"banditoutput,omitempty"`
+	HuskyCISafetyOutput HuskyCISecurityTestOutput `bson:"safetyoutput,omitempty" json:"safetyoutput,omitempty"`
 }
 
 // JavaScriptResults represents all JavaScript security tests results.
 type JavaScriptResults struct {
-	RetirejsResult []HuskyCIVulnerability `json:"retirejsoutput,omitempty"`
-	NpmAuditResult []HuskyCIVulnerability `json:"npmauditoutput,omitempty"`
+	HuskyCIRetireJSOutput HuskyCISecurityTestOutput `bson:"retirejsoutput,omitempty" json:"retirejsoutput,omitempty"`
+	HuskyCINpmAuditOutput HuskyCISecurityTestOutput `bson:"npmauditoutput,omitempty" json:"npmauditoutput,omitempty"`
 }
 
 // RubyResults represents all Ruby security tests results.
 type RubyResults struct {
-	BrakemanOutput []HuskyCIVulnerability `json:"brakemanoutput,omitempty"`
+	HuskyCIBrakemanOutput HuskyCISecurityTestOutput `bson:"brakemanoutput,omitempty" json:"brakemanoutput,omitempty"`
+}
+
+// HuskyCISecurityTestOutput stores all Low, Medium and High vulnerabilities for a sec test
+type HuskyCISecurityTestOutput struct {
+	LowVulns    []HuskyCIVulnerability `bson:"lowvulns,omitempty" json:"lowvulns,omitempty"`
+	MediumVulns []HuskyCIVulnerability `bson:"mediumvulns,omitempty" json:"mediumvulns,omitempty"`
+	HighVulns   []HuskyCIVulnerability `bson:"highvulns,omitempty" json:"highvulns,omitempty"`
 }
 
 // Summary holds a summary of the information on all security tests.
