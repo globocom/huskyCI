@@ -76,7 +76,8 @@ type User struct {
 	HashFunction       string        `bson:"hashfunction,omitempty" json:"hashfunction"`
 	NewPassword        string        `bson:"newPassword,omitempty" json:"newPassword"`
 	ConfirmNewPassword string        `bson:"confirmNewPassword,omitempty" json:"confirmNewPassword"`
-
+}
+	
 // HuskyCIVulnerability is the struct that stores vulnerability information.
 type HuskyCIVulnerability struct {
 	Language       string `bson:"language" json:"language,omitempty"`
