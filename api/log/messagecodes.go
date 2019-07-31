@@ -13,6 +13,7 @@ var MsgCode = map[int]string{
 	17: "Repository created into MongoDB: ",
 	18: "SecurityTest created into MongoDB: ",
 	19: "SecurityTest upserted in MondoDB: ",
+	20: "Default User found in MongoDB.",
 
 	// HuskyCI API warnings
 	104: "An analysis is already in place for this URL: ",
@@ -47,6 +48,7 @@ var MsgCode = map[int]string{
 	1021: "Received an invalid internal dependency URL: ",
 	1022: "Could not Unmarshall the following npmauditOutput: ",
 	1023: "Could not upsert securityTest into MongoDB: ",
+	1024: "Received an invalid user JSON: ",
 
 	// MongoDB infos
 	21: "Connecting to MongoDB.",

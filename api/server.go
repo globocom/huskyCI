@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/globocom/huskyCI/api/auth"
 	apiContext "github.com/globocom/huskyCI/api/context"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/routes"
@@ -42,6 +43,15 @@ func main() {
 	echoInstance.Use(middleware.Recover())
 	echoInstance.Use(middleware.RequestID())
 
+	// set new object for /api/1.0 route
+	g := echoInstance.Group("/api/1.0")
+
+	// use basic auth middleware
+	g.Use(middleware.BasicAuth(auth.ValidateUser))
+
+	// /token route with basic auth
+	g.POST("/token", routes.HandleToken)
+
 	// generic routes
 	echoInstance.GET("/healthcheck", routes.HealthCheck)
 	echoInstance.GET("/version", routes.GetAPIVersion)
@@ -63,6 +73,12 @@ func main() {
 	echoInstance.POST("/repository", routes.CreateNewRepository)
 	// echoInstance.PUT("/repository/:repoID)
 	// echoInstance.DELETE("/repository/:repoID)
+
+	// user routes
+	// echoInstance.GET("/user", routes.GetUser)
+	// echoInstance.POST("/user", routes.CreateNewUser)
+	echoInstance.PUT("/user", routes.UpdateUser)
+	// echoInstance.DELETE("/user)
 
 	huskyAPIport := fmt.Sprintf(":%d", configAPI.Port)
 
