@@ -6,21 +6,20 @@ package analysis
 
 import (
 	"encoding/json"
-	"fmt"
+	"strconv"
 	"strings"
 
-	"github.com/globocom/huskyCI/api/db"
 	"github.com/globocom/huskyCI/api/log"
-	"gopkg.in/mgo.v2/bson"
+	"github.com/globocom/huskyCI/api/types"
 )
 
-// BanditOutput is the structs that holds the json output form bandit analysis.
+// BanditOutput is the struct that holds all data from Bandit output.
 type BanditOutput struct {
 	Errors  json.RawMessage `json:"errors"`
 	Results []Result        `json:"results"`
 }
 
-// Result is the struct that holds detailed information of issues found in bandit analysis.
+// Result is the struct that holds detailed information of issues from Bandit output.
 type Result struct {
 	Code            string `json:"code"`
 	Filename        string `json:"filename"`
@@ -33,83 +32,85 @@ type Result struct {
 	TestName        string `json:"test_name"`
 }
 
-// BanditStartAnalysis analyses the output from Bandit and sets a cResult based on it.
-func BanditStartAnalysis(CID string, cOutput string) {
+// BanditCheckOutputFlow analyses the output from Bandit and sets a cResult based on it.
+func BanditCheckOutputFlow(CID string, cOutput string, RID string) {
 
-	analysisQuery := map[string]interface{}{"containers.CID": CID}
-
-	// error cloning repository!
-	if strings.Contains(cOutput, "ERROR_CLONING") {
-		errorOutput := fmt.Sprintf("Container error: %s", cOutput)
-		updateContainerAnalysisQuery := bson.M{
-			"$set": bson.M{
-				"containers.$.cResult": "error",
-				"containers.$.cInfo":   errorOutput,
-			},
-		}
-		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
-		if err != nil {
-			log.Error("BanditStartAnalysis", "BANDIT", 2007, "Step 1", err)
+	// step 1: check for any errors when clonning repo
+	errorClonning := strings.Contains(cOutput, "ERROR_CLONING")
+	if errorClonning {
+		if err := updateInfoAndResultBasedOnCID("Error clonning repository", "error", CID); err != nil {
+			return
 		}
 		return
 	}
 
+	// step 2: get Bandit output to be checked
 	var banditResult BanditOutput
 	if err := json.Unmarshal([]byte(cOutput), &banditResult); err != nil {
 		log.Error("BanditStartAnalysis", "BANDIT", 1006, cOutput, err)
 		return
 	}
 
-	// Sets the container output to "No issues found" if banditResult returns an empty slice
+	// step 3: sets the container output to "No issues found" if banditResult returns an empty slice
 	if len(banditResult.Results) == 0 {
-		updateContainerAnalysisQuery := bson.M{
-			"$set": bson.M{
-				"containers.$.cResult": "passed",
-				"containers.$.cInfo":   "No issues found.",
-			},
-		}
-		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
-		if err != nil {
-			log.Error("BanditStartAnalysis", "BANDIT", 2007, "Step 1,5", err)
+		if err := updateInfoAndResultBasedOnCID("No issues found.", "passed", CID); err != nil {
+			return
 		}
 		return
 	}
 
-	// verify if there was any error in the analysis.
+	// step 4: verify if there was any error in the analysis.
 	if banditResult.Errors != nil {
-		updateContainerAnalysisQuery := bson.M{
-			"$set": bson.M{
-				"containers.$.cResult": "error",
-			},
-		}
-		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
-		if err != nil {
-			log.Error("BanditStartAnalysis", "BANDIT", 2007, "Step 2", err)
+		if err := updateInfoAndResultBasedOnCID("Internal error running Bandit.", "error", CID); err != nil {
+			return
 		}
 	}
 
-	// find Issues that have severity "MEDIUM" or "HIGH" and confidence "HIGH".
+	// step 5: find Issues that have severity "MEDIUM" or "HIGH" and confidence "HIGH".
 	cResult := "passed"
+	issueMessage := "No issues found."
 	for _, issue := range banditResult.Results {
 		if (issue.IssueSeverity == "HIGH" || issue.IssueSeverity == "MEDIUM") && issue.IssueConfidence == "HIGH" {
 			cResult = "failed"
+			issueMessage = "Issues found."
 			break
 		}
 	}
-
-	// update the status of analysis.
-	issueMessage := "No issues found."
-	if cResult != "passed" {
-		issueMessage = "Issues found."
-	}
-	updateContainerAnalysisQuery := bson.M{
-		"$set": bson.M{
-			"containers.$.cResult": cResult,
-			"containers.$.cInfo":   issueMessage,
-		},
-	}
-	if err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery); err != nil {
-		log.Error("BanditStartAnalysis", "BANDIT", 2007, "Step 3", err)
+	if err := updateInfoAndResultBasedOnCID(issueMessage, cResult, CID); err != nil {
 		return
 	}
+
+	// step 6: finally, update analysis with huskyCI results
+	if err := updateHuskyCIResultsBasedOnRID(RID, "bandit", banditResult); err != nil {
+		return
+	}
+}
+
+// prepareHuskyCIBanditOutput will prepare Bandit output to be added into pythonResults struct
+func prepareHuskyCIBanditOutput(banditOutput BanditOutput) types.HuskyCISecurityTestOutput {
+
+	var huskyCIbanditResults types.HuskyCISecurityTestOutput
+
+	for _, issue := range banditOutput.Results {
+		banditVuln := types.HuskyCIVulnerability{}
+		banditVuln.Language = "Python"
+		banditVuln.SecurityTool = "Bandit"
+		banditVuln.Severity = issue.IssueSeverity
+		banditVuln.Confidence = issue.IssueConfidence
+		banditVuln.Details = issue.IssueText
+		banditVuln.File = issue.Filename
+		banditVuln.Line = strconv.Itoa(issue.LineNumber)
+		banditVuln.Code = issue.Code
+
+		switch banditVuln.Severity {
+		case "LOW":
+			huskyCIbanditResults.LowVulns = append(huskyCIbanditResults.LowVulns, banditVuln)
+		case "MEDIUM":
+			huskyCIbanditResults.MediumVulns = append(huskyCIbanditResults.MediumVulns, banditVuln)
+		case "HIGH":
+			huskyCIbanditResults.HighVulns = append(huskyCIbanditResults.HighVulns, banditVuln)
+		}
+	}
+
+	return huskyCIbanditResults
 }

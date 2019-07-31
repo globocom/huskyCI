@@ -8,15 +8,15 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/globocom/huskyCI/api/db"
 	"github.com/globocom/huskyCI/api/log"
-	"gopkg.in/mgo.v2/bson"
+	"github.com/globocom/huskyCI/api/types"
 )
 
 // NpmAuditOutput is the struct that stores all npm audit output
 type NpmAuditOutput struct {
-	Advisories map[string]Vulnerability `json:"advisories"`
-	Metadata   Metadata                 `json:"metadata"`
+	Advisories    map[string]Vulnerability `json:"advisories"`
+	Metadata      Metadata                 `json:"metadata"`
+	FailedRunning bool
 }
 
 // Vulnerability is the granular output of a security info found
@@ -48,43 +48,35 @@ type VulnerabilitiesSummary struct {
 	Critical int `json:"critical"`
 }
 
-// NpmAuditStartAnalysis analyses the output from Npm Audit and sets a cResult based on it.
-func NpmAuditStartAnalysis(CID string, cOutput string) {
+// NpmAuditCheckOutputFlow analyses the output from Npm Audit and sets a cResult based on it.
+func NpmAuditCheckOutputFlow(CID string, cOutput string, RID string) {
 
-	var cResult string
-	analysisQuery := map[string]interface{}{"containers.CID": CID}
+	errorClonning := strings.Contains(cOutput, "ERROR_CLONING")
+	failedRunning := strings.Contains(cOutput, "ERROR_RUNNING_NPMAUDIT")
 
-	// step 0.1: error cloning repository!
-	if strings.Contains(cOutput, "ERROR_CLONING") {
-		updateContainerAnalysisQuery := bson.M{
-			"$set": bson.M{
-				"containers.$.cResult": "error",
-				"containers.$.cInfo":   "Error clonning repository.",
-			},
-		}
-		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
-		if err != nil {
-			log.Error("NpmAuditStartAnalysis", "NPMAUDIT", 2007, "Step 0.1 ", err)
+	// step 1: check for any errors when clonning repo
+	if errorClonning {
+		if err := updateInfoAndResultBasedOnCID("Error clonning repository", "error", CID); err != nil {
+			return
 		}
 		return
 	}
 
-	// step 0.2: repository doesn't have package.json
-	if strings.Contains(cOutput, "ERROR_RUNNING_NPMAUDIT") {
-		updateContainerAnalysisQuery := bson.M{
-			"$set": bson.M{
-				"containers.$.cResult": "error",
-				"containers.$.cInfo":   "Internal error running NPM Audit.",
-			},
+	// step 2: check for any errors when running securityTest
+	if failedRunning {
+		if err := updateInfoAndResultBasedOnCID("Internal error running NPM Audit.", "error", CID); err != nil {
+			return
 		}
-		err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
-		if err != nil {
-			log.Error("NpmAuditStartAnalysis", "NPMAUDIT", 2007, "Step 0.2 ", err)
+
+		npmAuditOutput := NpmAuditOutput{FailedRunning: failedRunning}
+		if err := updateHuskyCIResultsBasedOnRID(RID, "npmaudit", npmAuditOutput); err != nil {
+			return
 		}
+
 		return
 	}
 
-	// step 1: Unmarshall cOutput into NpmAuditOutput struct.
+	// step 3: Unmarshall cOutput into NpmAuditOutput struct.
 	npmAuditOutput := NpmAuditOutput{}
 	err := json.Unmarshal([]byte(cOutput), &npmAuditOutput)
 	if err != nil {
@@ -92,29 +84,74 @@ func NpmAuditStartAnalysis(CID string, cOutput string) {
 		return
 	}
 
-	// step 2: find Issues that have severity "moderate" or "high.
-	cResult = "passed"
+	// step 4: find Issues that have severity "moderate" or "high.
+	cResult := "passed"
+	issueMessage := "No issues found."
 	for _, vulnerability := range npmAuditOutput.Advisories {
 		if vulnerability.Severity == "high" || vulnerability.Severity == "moderate" {
 			cResult = "failed"
+			issueMessage = "Issues found."
 			break
 		}
 	}
-
-	// step 3: update analysis' cResult into AnalyisCollection.
-	issueMessage := "No issues found."
-	if cResult == "failed" {
-		issueMessage = "Issues found."
-	}
-	updateContainerAnalysisQuery := bson.M{
-		"$set": bson.M{
-			"containers.$.cResult": cResult,
-			"containers.$.cInfo":   issueMessage,
-		},
-	}
-	err = db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
-	if err != nil {
-		log.Error("NpmAuditStartAnalysis", "NPMAUDIT", 2007, "Step 3 ", err)
+	if err := updateInfoAndResultBasedOnCID(issueMessage, cResult, CID); err != nil {
 		return
 	}
+
+	// step 6: finally, update analysis with huskyCI results
+	if err := updateHuskyCIResultsBasedOnRID(RID, "npmaudit", npmAuditOutput); err != nil {
+		return
+	}
+
+}
+
+// prepareHuskyCINpmAuditResults will prepare NpmAudit output to be added into JavaScriptResults struct
+func prepareHuskyCINpmAuditResults(npmAuditOutput NpmAuditOutput) types.HuskyCISecurityTestOutput {
+
+	var huskyCInpmAuditResults types.HuskyCISecurityTestOutput
+
+	if npmAuditOutput.FailedRunning {
+		npmauditVuln := types.HuskyCIVulnerability{}
+		npmauditVuln.Language = "JavaScript"
+		npmauditVuln.SecurityTool = "NpmAudit"
+		npmauditVuln.Severity = "low"
+		npmauditVuln.Details = "It looks like your project doesn't have package-lock.json. huskyCI was not able to run npm audit properly."
+
+		huskyCInpmAuditResults.LowVulns = append(huskyCInpmAuditResults.LowVulns, npmauditVuln)
+
+		return huskyCInpmAuditResults
+	}
+
+	for _, issue := range npmAuditOutput.Advisories {
+		npmauditVuln := types.HuskyCIVulnerability{}
+		npmauditVuln.Language = "JavaScript"
+		npmauditVuln.SecurityTool = "NpmAudit"
+		npmauditVuln.Details = issue.Overview
+		npmauditVuln.VunerableBelow = issue.VulnerableVersions
+		npmauditVuln.Code = issue.ModuleName
+		for _, findings := range issue.Findings {
+			npmauditVuln.Version = findings.Version
+		}
+
+		switch issue.Severity {
+		case "info":
+			npmauditVuln.Severity = "low"
+			huskyCInpmAuditResults.LowVulns = append(huskyCInpmAuditResults.LowVulns, npmauditVuln)
+		case "low":
+			npmauditVuln.Severity = "low"
+			huskyCInpmAuditResults.LowVulns = append(huskyCInpmAuditResults.LowVulns, npmauditVuln)
+		case "moderate":
+			npmauditVuln.Severity = "medium"
+			huskyCInpmAuditResults.MediumVulns = append(huskyCInpmAuditResults.MediumVulns, npmauditVuln)
+		case "high":
+			npmauditVuln.Severity = "high"
+			huskyCInpmAuditResults.HighVulns = append(huskyCInpmAuditResults.HighVulns, npmauditVuln)
+		case "critical":
+			npmauditVuln.Severity = "high"
+			huskyCInpmAuditResults.HighVulns = append(huskyCInpmAuditResults.HighVulns, npmauditVuln)
+		}
+
+	}
+
+	return huskyCInpmAuditResults
 }

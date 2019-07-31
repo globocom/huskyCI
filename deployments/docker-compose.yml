@@ -5,8 +5,9 @@ services:
         privileged: true
         image: docker:stable-dind
         container_name: huskyCI_Docker_API
+        command: "dockerd --host=unix:///var/run/docker.sock --host=tcp://0.0.0.0:2376"
         ports:
-          - "2375:2375"
+          - "2376:2376"
         volumes:
             - docker_vol:/var/lib/docker
             - ../deployments/daemon.json:/etc/docker/daemon.json:ro
@@ -34,7 +35,7 @@ services:
             HUSKYCI_DOCKERAPI_CERT_PATH: /go/src/github.com/globocom/huskyCI/
             HUSKYCI_DOCKERAPI_TLS_VERIFY: 1
             # optional envs
-            HUSKYCI_DOCKERAPI_PORT: 2375
+            HUSKYCI_DOCKERAPI_PORT: 2376
             HUSKYCI_LOGGING_GRAYLOG_APP_NAME: huskyCI   
         build:
             context: ../

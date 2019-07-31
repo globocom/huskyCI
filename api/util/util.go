@@ -89,8 +89,8 @@ func RemoveDuplicates(s []string) []string {
 	return s[:i]
 }
 
-// CheckMaliciousInput checks if an user's input is "malicious" or not
-func CheckMaliciousInput(repository types.Repository, c echo.Context) (string, error) {
+// CheckValidInput checks if an user's input is "malicious" or not
+func CheckValidInput(repository types.Repository, c echo.Context) (string, error) {
 
 	sanitiziedURL, err := CheckMaliciousRepoURL(repository.URL, c)
 	if err != nil {
@@ -177,4 +177,17 @@ func CheckMaliciousRID(RID string, c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, reply)
 	}
 	return nil
+}
+
+// AdjustWarningMessage returns the Safety Warning string that will be printed.
+func AdjustWarningMessage(warningRaw string) string {
+	warning := strings.Split(warningRaw, ":")
+	if len(warning) > 1 {
+		warning[1] = strings.Replace(warning[1], "safety_huskyci_analysis_requirements_raw.txt", "'requirements.txt'", -1)
+		warning[1] = strings.Replace(warning[1], " unpinned", "Unpinned", -1)
+
+		return (warning[1] + " huskyCI can check it if you pin it in a format such as this: \"mypacket==3.2.9\" :D")
+	}
+
+	return warningRaw
 }

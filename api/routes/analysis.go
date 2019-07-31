@@ -51,7 +51,7 @@ func ReceiveRequest(c echo.Context) error {
 	}
 
 	// step-01: Check malicious inputs
-	sanitizedRepoURL, err := util.CheckMaliciousInput(repository, c)
+	sanitizedRepoURL, err := util.CheckValidInput(repository, c)
 	if err != nil {
 		return err
 	}
