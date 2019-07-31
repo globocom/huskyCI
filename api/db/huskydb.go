@@ -60,6 +60,18 @@ func FindOneDBUser(mapParams map[string]interface{}) (types.User, error) {
 	return userResponse, err
 }
 
+// FindOneAccessToken checks if a given accessToken exists in AccessTokenCollection.
+func FindOneAccessToken(mapParams map[string]interface{}) (types.AccessToken, error) {
+	aTokenResponse := types.AccessToken{}
+	aTokenQuery := []bson.M{}
+	for k, v := range mapParams {
+		aTokenQuery = append(aTokenQuery, bson.M{k: v})
+	}
+	aTokenFinalQuery := bson.M{"$and": aTokenQuery}
+	err := mongoHuskyCI.Conn.SearchOne(aTokenFinalQuery, nil, mongoHuskyCI.AccessTokenCollection, &aTokenResponse)
+	return aTokenResponse, err
+}
+
 // FindAllDBRepository returns all Repository of a given query present into RepositoryCollection.
 func FindAllDBRepository(mapParams map[string]interface{}) ([]types.Repository, error) {
 	repositoryQuery := []bson.M{}
@@ -148,6 +160,18 @@ func InsertDBUser(user types.User) error {
 		"hashfunction": user.HashFunction,
 	}
 	err := mongoHuskyCI.Conn.Insert(newUser, mongoHuskyCI.UserCollection)
+	return err
+}
+
+// InsertAccessToken inserts a new accesso into AccessTokenCollection.
+func InsertAccessToken(accessToken types.AccessToken) error {
+	newAccessToken := bson.M{
+		"huskytoken":    accessToken.HuskyToken,
+		"repositoryURL": accessToken.URL,
+		"isValid":       accessToken.IsValid,
+		"createdAt":     accessToken.CreatedAt,
+	}
+	err := mongoHuskyCI.Conn.Insert(newAccessToken, mongoHuskyCI.AccessTokenCollection)
 	return err
 }
 
