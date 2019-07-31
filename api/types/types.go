@@ -65,6 +65,19 @@ type Code struct {
 	Files    []string `bson:"files" json:"files"`
 }
 
+// User is the struct that holds all data from a huskyCI API user
+type User struct {
+	ID                 bson.ObjectId `bson:"_id,omitempty"`
+	Username           string        `bson:"username" json:"username"`
+	Password           string        `bson:"password" json:"password"`
+	Salt               string        `bson:"salt,omitempty" json:"salt"`
+	Iterations         int           `bson:"iterations,omitempty" json:"iterations"`
+	KeyLen             int           `bson:"keylen,omitempty" json:"keylen"`
+	HashFunction       string        `bson:"hashfunction,omitempty" json:"hashfunction"`
+	NewPassword        string        `bson:"newPassword,omitempty" json:"newPassword"`
+	ConfirmNewPassword string        `bson:"confirmNewPassword,omitempty" json:"confirmNewPassword"`
+}
+	
 // HuskyCIVulnerability is the struct that stores vulnerability information.
 type HuskyCIVulnerability struct {
 	Language       string `bson:"language" json:"language,omitempty"`
@@ -116,4 +129,5 @@ type HuskyCISecurityTestOutput struct {
 	LowVulns    []HuskyCIVulnerability `bson:"lowvulns,omitempty" json:"lowvulns,omitempty"`
 	MediumVulns []HuskyCIVulnerability `bson:"mediumvulns,omitempty" json:"mediumvulns,omitempty"`
 	HighVulns   []HuskyCIVulnerability `bson:"highvulns,omitempty" json:"highvulns,omitempty"`
+
 }

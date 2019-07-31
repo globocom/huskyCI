@@ -24,6 +24,11 @@ services:
             HUSKYCI_DATABASE_MONGO_DBNAME: huskyCIDB
             HUSKYCI_DATABASE_MONGO_DBUSERNAME: huskyCIUser
             HUSKYCI_DATABASE_MONGO_DBPASSWORD: huskyCIPassword
+            HUSKYCI_API_DEFAULT_USERNAME: huskyCIUser
+            HUSKYCI_API_DEFAULT_PASSWORD: huskyCIPassword
+            HUSKYCI_API_DEFAULT_ITERATIONS: 100000
+            HUSKYCI_API_DEFAULT_KEY_LENGTH: 512
+            HUSKYCI_API_DEFAULT_HASH_FUNCTION: SHA512
             HUSKYCI_DOCKERAPI_ADDR: dockerapi
             HUSKYCI_DOCKERAPI_CERT_FILE: /go/src/github.com/globocom/huskyCI/cert.pem
             HUSKYCI_DOCKERAPI_CERT_KEY: /go/src/github.com/globocom/huskyCI/key.pem

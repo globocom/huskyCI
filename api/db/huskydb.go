@@ -48,6 +48,18 @@ func FindOneDBAnalysis(mapParams map[string]interface{}) (types.Analysis, error)
 	return analysisResponse, err
 }
 
+// FindOneDBUser checks if a given user is present into UserCollection.
+func FindOneDBUser(mapParams map[string]interface{}) (types.User, error) {
+	userResponse := types.User{}
+	userQuery := []bson.M{}
+	for k, v := range mapParams {
+		userQuery = append(userQuery, bson.M{k: v})
+	}
+	userFinalQuery := bson.M{"$and": userQuery}
+	err := mongoHuskyCI.Conn.SearchOne(userFinalQuery, nil, mongoHuskyCI.UserCollection, &userResponse)
+	return userResponse, err
+}
+
 // FindAllDBRepository returns all Repository of a given query present into RepositoryCollection.
 func FindAllDBRepository(mapParams map[string]interface{}) ([]types.Repository, error) {
 	repositoryQuery := []bson.M{}
@@ -125,6 +137,20 @@ func InsertDBAnalysis(analysis types.Analysis) error {
 	return err
 }
 
+// InsertDBUser inserts a new user into UserCollection.
+func InsertDBUser(user types.User) error {
+	newUser := bson.M{
+		"username":     user.Username,
+		"password":     user.Password,
+		"salt":         user.Salt,
+		"iterations":   user.Iterations,
+		"keylen":       user.KeyLen,
+		"hashfunction": user.HashFunction,
+	}
+	err := mongoHuskyCI.Conn.Insert(newUser, mongoHuskyCI.UserCollection)
+	return err
+}
+
 // UpdateOneDBRepository checks if a given repository is present into RepositoryCollection and update it.
 func UpdateOneDBRepository(mapParams, updateQuery map[string]interface{}) error {
 	repositoryQuery := []bson.M{}
@@ -155,6 +181,17 @@ func UpdateOneDBAnalysis(mapParams map[string]interface{}, updatedAnalysis types
 	}
 	analysisFinalQuery := bson.M{"$and": analysisQuery}
 	err := mongoHuskyCI.Conn.Update(analysisFinalQuery, updatedAnalysis, mongoHuskyCI.AnalysisCollection)
+	return err
+}
+
+// UpdateOneDBUser checks if a given user is present into UserCollection and update it.
+func UpdateOneDBUser(mapParams map[string]interface{}, updatedUser types.User) error {
+	userQuery := []bson.M{}
+	for k, v := range mapParams {
+		userQuery = append(userQuery, bson.M{k: v})
+	}
+	userFinalQuery := bson.M{"$and": userQuery}
+	err := mongoHuskyCI.Conn.Update(userFinalQuery, updatedUser, mongoHuskyCI.UserCollection)
 	return err
 }
 
