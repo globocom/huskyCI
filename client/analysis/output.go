@@ -22,8 +22,6 @@ var rubyResults types.RubyResults
 func prepareSecurityTestResult(analysis types.Analysis) {
 	outputJSON.GoResults = analysis.HuskyCIResults.GoResults
 	outputJSON.JavaScriptResults = analysis.HuskyCIResults.JavaScriptResults
-	outputJSON.JavaScriptResults = analysis.HuskyCIResults.JavaScriptResults
-	outputJSON.PythonResults = analysis.HuskyCIResults.PythonResults
 	outputJSON.PythonResults = analysis.HuskyCIResults.PythonResults
 	outputJSON.RubyResults = analysis.HuskyCIResults.RubyResults
 }
@@ -148,8 +146,10 @@ func prepareAllSummary() {
 	// Total summary
 	if outputJSON.Summary.GosecSummary.FoundVuln || outputJSON.Summary.BanditSummary.FoundVuln || outputJSON.Summary.SafetySummary.FoundVuln || outputJSON.Summary.BrakemanSummary.FoundVuln || outputJSON.Summary.RetirejsSummary.FoundVuln || outputJSON.Summary.NpmAuditSummary.FoundVuln {
 		outputJSON.Summary.TotalSummary.FoundVuln = true
+		types.FoundVuln = true
 	} else if outputJSON.Summary.GosecSummary.FoundInfo || outputJSON.Summary.BanditSummary.FoundInfo || outputJSON.Summary.SafetySummary.FoundInfo || outputJSON.Summary.BrakemanSummary.FoundInfo || outputJSON.Summary.RetirejsSummary.FoundInfo || outputJSON.Summary.NpmAuditSummary.FoundInfo {
 		outputJSON.Summary.TotalSummary.FoundInfo = true
+		types.FoundInfo = true
 	}
 
 	totalLow = outputJSON.Summary.RetirejsSummary.LowVuln + outputJSON.Summary.BrakemanSummary.LowVuln + outputJSON.Summary.SafetySummary.LowVuln + outputJSON.Summary.BanditSummary.LowVuln + outputJSON.Summary.GosecSummary.LowVuln + outputJSON.Summary.NpmAuditSummary.LowVuln
