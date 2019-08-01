@@ -53,21 +53,18 @@ func main() {
 		os.Exit(1)
 	}
 
-	// step 3: prepares huskyCI results into structs
-	analysis.PrepareResults(huskyAnalysis)
-
-	// step 4: print output based on os.Args(1) parameter received
+	// step 3: print output based on os.Args(1) parameter received
 	formatOutput := ""
 	if len(os.Args) > 1 {
 		formatOutput = "JSON"
 	}
-	err = analysis.PrintResults(formatOutput)
+	err = analysis.PrintResults(formatOutput, huskyAnalysis)
 	if err != nil {
 		fmt.Println("[HUSKYCI][ERROR] Printing output:", err)
 		os.Exit(1)
 	}
 
-	// step 5: block developer CI if vulnerabilities were found
+	// step 4: block developer CI if vulnerabilities were found
 	if types.FoundVuln == false && types.FoundInfo == false {
 		if !types.IsJSONoutput {
 			fmt.Printf("[HUSKYCI][*] Nice! No issues were found :)\n")
