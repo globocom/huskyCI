@@ -13,18 +13,6 @@ import (
 )
 
 var outputJSON types.JSONOutput
-var goResults types.GoResults
-var pythonResults types.PythonResults
-var javaScriptResults types.JavaScriptResults
-var rubyResults types.RubyResults
-
-// prepareSecurityTestResult preares the output of a given securityTest.
-func prepareSecurityTestResult(analysis types.Analysis) {
-	outputJSON.GoResults = analysis.HuskyCIResults.GoResults
-	outputJSON.JavaScriptResults = analysis.HuskyCIResults.JavaScriptResults
-	outputJSON.PythonResults = analysis.HuskyCIResults.PythonResults
-	outputJSON.RubyResults = analysis.HuskyCIResults.RubyResults
-}
 
 // printJSONOutput prints the analysis output in a JSON format
 func printJSONOutput() error {
@@ -74,8 +62,13 @@ func printSTDOUTOutput() {
 }
 
 // prepareAllSummary prepares how many low, medium and high vulnerabilites were found.
-func prepareAllSummary() {
+func prepareAllSummary(analysis types.Analysis) {
 	var totalLow, totalMedium, totalHigh int
+
+	outputJSON.GoResults = analysis.HuskyCIResults.GoResults
+	outputJSON.JavaScriptResults = analysis.HuskyCIResults.JavaScriptResults
+	outputJSON.PythonResults = analysis.HuskyCIResults.PythonResults
+	outputJSON.RubyResults = analysis.HuskyCIResults.RubyResults
 
 	// GoSec summary
 	outputJSON.Summary.GosecSummary.LowVuln = len(outputJSON.GoResults.HuskyCIGosecOutput.LowVulns)
