@@ -116,26 +116,6 @@ func MonitorAnalysis(RID string) (types.Analysis, error) {
 // PrepareResults analyzes the result received from HuskyCI API.
 func PrepareResults(analysisResult types.Analysis) {
 	prepareSecurityTestResult(analysisResult)
-
-	// for _, gosecOutput := range analysisResult.HuskyCIResults.GoResults.GosecOutput {
-	// 	PrepareSecurityTestOutput(gosecOutput)
-	// }
-	// for _, npmAuditOutput := range analysisResult.HuskyCIResults.JavaScriptResults.NpmAuditResult {
-	// 	PrepareSecurityTestOutput(npmAuditOutput)
-	// }
-	// for _, retireJSOutput := range analysisResult.HuskyCIResults.JavaScriptResults.RetirejsResult {
-	// 	PrepareSecurityTestOutput(retireJSOutput)
-	// }
-	// for _, banditOutput := range analysisResult.HuskyCIResults.PythonResults.BanditOutput {
-	// 	PrepareSecurityTestOutput(banditOutput)
-	// }
-	// for _, safetyOutput := range analysisResult.HuskyCIResults.PythonResults.SafetyOutput {
-	// 	PrepareSecurityTestOutput(safetyOutput)
-	// }
-	// for _, brakemanOutput := range analysisResult.HuskyCIResults.RubyResults.BrakemanOutput {
-	// 	PrepareSecurityTestOutput(brakemanOutput)
-	// }
-
 }
 
 // PrintResults prints huskyCI output either in JSON or the standard output.
