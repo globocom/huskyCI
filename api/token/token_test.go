@@ -20,6 +20,7 @@ type FakeExternal struct {
 	expectedStoreAccessError error
 	expectedAccessToken      types.AccessToken
 	expectedFindAccessError  error
+	expectedFindRepoError    error
 }
 
 func (fE *FakeExternal) ValidateURL(url string) (string, error) {
@@ -42,8 +43,12 @@ func (fE *FakeExternal) FindAccessToken(token, repositoryURL string) (types.Acce
 	return fE.expectedAccessToken, fE.expectedFindAccessError
 }
 
+func (fE *FakeExternal) FindRepoURL(repositoryURL string) error {
+	return fE.expectedFindRepoError
+}
+
 var _ = Describe("Token", func() {
-	Describe("When URL validation returns an error", func() {
+	Context("When URL validation returns an error", func() {
 		It("Should return the same error and an empty struct", func() {
 			fakeExt := FakeExternal{
 				expectedURL:           "",
@@ -59,7 +64,7 @@ var _ = Describe("Token", func() {
 			Expect(err).To(Equal(errors.New("URL is not valid")))
 		})
 	})
-	Describe("When GenerateToken returns an error", func() {
+	Context("When GenerateToken returns an error", func() {
 		It("Should return the same error and an empty struct", func() {
 			fakeExt := FakeExternal{
 				expectedURL:           "",
@@ -77,7 +82,7 @@ var _ = Describe("Token", func() {
 			Expect(err).To(Equal(errors.New("Failed to generate token")))
 		})
 	})
-	Describe("When StoreAccessToken return an error", func() {
+	Context("When StoreAccessToken return an error", func() {
 		It("Should return the same error and an empty struct", func() {
 			fakeExt := FakeExternal{
 				expectedURL:              "https://www.github.com/myProject",
@@ -97,7 +102,7 @@ var _ = Describe("Token", func() {
 			Expect(err).To(Equal(errors.New("Failed to store access token in DB")))
 		})
 	})
-	Describe("When a valid repo URL and a new token are generated", func() {
+	Context("When a valid repo URL and a new token are generated", func() {
 		It("Should return the expected accessToken struct and a nil error", func() {
 			fakeExt := FakeExternal{
 				expectedURL:              "https://www.github.com/myProject",
@@ -122,7 +127,19 @@ var _ = Describe("Token", func() {
 			Expect(err).To(BeNil())
 		})
 	})
-	Describe("When FindAccessToken returns an error", func() {
+	Context("When ValidateURL returns an error", func() {
+		It("Should return the same error", func() {
+			fakeExt := FakeExternal{
+				expectedURL:           "",
+				expectedValidateError: errors.New("Error during URL validation"),
+			}
+			tokenVal := TokenHandler{
+				External: &fakeExt,
+			}
+			Expect(tokenVal.ValidateToken("MyToken", "myProject")).To(Equal(fakeExt.expectedValidateError))
+		})
+	})
+	Context("When FindAccessToken returns an error", func() {
 		It("Should return the same error as expected", func() {
 			fakeExt := FakeExternal{
 				expectedAccessToken:     types.AccessToken{},
@@ -134,7 +151,7 @@ var _ = Describe("Token", func() {
 			Expect(tokenVal.ValidateToken("MyToken", "myProject")).To(Equal(fakeExt.expectedFindAccessError))
 		})
 	})
-	Describe("When FindAccessToken returns a invalid access token", func() {
+	Context("When FindAccessToken returns a invalid access token", func() {
 		It("Should return the expected error", func() {
 			fakeExt := FakeExternal{
 				expectedAccessToken: types.AccessToken{
@@ -148,7 +165,7 @@ var _ = Describe("Token", func() {
 			Expect(tokenVal.ValidateToken("MyToken", "myProject")).To(Equal(errors.New("Access token is invalid")))
 		})
 	})
-	Describe("When FindAccessToken returns a valid access token", func() {
+	Context("When FindAccessToken returns a valid access token", func() {
 		It("Should return a nil error", func() {
 			fakeExt := FakeExternal{
 				expectedAccessToken: types.AccessToken{
@@ -162,6 +179,44 @@ var _ = Describe("Token", func() {
 				External: &fakeExt,
 			}
 			Expect(tokenVal.ValidateToken("MyToken", "myProject")).To(BeNil())
+		})
+	})
+	Describe("VerifyRepo", func() {
+		Context("When ValidateURL returns an error", func() {
+			It("Should return the same error", func() {
+				fakeExt := FakeExternal{
+					expectedURL:           "",
+					expectedValidateError: errors.New("Repository does not have a valid format"),
+				}
+				verRepo := TokenHandler{
+					External: &fakeExt,
+				}
+				Expect(verRepo.VerifyRepo("MyRepo")).To(Equal(fakeExt.expectedValidateError))
+			})
+		})
+		Context("When FindRepoURL returns something", func() {
+			It("Should return the same error if it has returned an error", func() {
+				fakeExt := FakeExternal{
+					expectedURL:           "https://www.github.com/myProject",
+					expectedValidateError: nil,
+					expectedFindRepoError: errors.New("Repository URL not found"),
+				}
+				verRepo := TokenHandler{
+					External: &fakeExt,
+				}
+				Expect(verRepo.VerifyRepo("MyRepo")).To(Equal(fakeExt.expectedFindRepoError))
+			})
+			It("Should return nil if the a repository URL was found", func() {
+				fakeExt := FakeExternal{
+					expectedURL:           "https://www.github.com/myProject",
+					expectedValidateError: nil,
+					expectedFindRepoError: nil,
+				}
+				verRepo := TokenHandler{
+					External: &fakeExt,
+				}
+				Expect(verRepo.VerifyRepo("MyRepo")).To(BeNil())
+			})
 		})
 	})
 })
