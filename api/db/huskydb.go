@@ -61,8 +61,8 @@ func FindOneDBUser(mapParams map[string]interface{}) (types.User, error) {
 }
 
 // FindOneAccessToken checks if a given accessToken exists in AccessTokenCollection.
-func FindOneAccessToken(mapParams map[string]interface{}) (types.AccessToken, error) {
-	aTokenResponse := types.AccessToken{}
+func FindOneAccessToken(mapParams map[string]interface{}) (types.DBToken, error) {
+	aTokenResponse := types.DBToken{}
 	aTokenQuery := []bson.M{}
 	for k, v := range mapParams {
 		aTokenQuery = append(aTokenQuery, bson.M{k: v})
@@ -163,13 +163,15 @@ func InsertDBUser(user types.User) error {
 	return err
 }
 
-// InsertAccessToken inserts a new accesso into AccessTokenCollection.
-func InsertAccessToken(accessToken types.AccessToken) error {
+// InsertAccessToken inserts a new access into AccessTokenCollection.
+func InsertAccessToken(accessToken types.DBToken) error {
 	newAccessToken := bson.M{
 		"huskytoken":    accessToken.HuskyToken,
 		"repositoryURL": accessToken.URL,
 		"isValid":       accessToken.IsValid,
 		"createdAt":     accessToken.CreatedAt,
+		"salt":          accessToken.Salt,
+		"uuid":          accessToken.UUid,
 	}
 	err := mongoHuskyCI.Conn.Insert(newAccessToken, mongoHuskyCI.AccessTokenCollection)
 	return err
@@ -227,5 +229,16 @@ func UpdateOneDBAnalysisContainer(mapParams, updateQuery map[string]interface{})
 	}
 	analysisFinalQuery := bson.M{"$and": analysisQuery}
 	err := mongoHuskyCI.Conn.Update(analysisFinalQuery, updateQuery, mongoHuskyCI.AnalysisCollection)
+	return err
+}
+
+// UpdateOneDBAccessToken checks if a given access token is present into AccessTokenCollection and update it.
+func UpdateOneDBAccessToken(mapParams map[string]interface{}, updatedAccessToken types.DBToken) error {
+	aTokenQuery := []bson.M{}
+	for k, v := range mapParams {
+		aTokenQuery = append(aTokenQuery, bson.M{k: v})
+	}
+	aTokenFinalQuery := bson.M{"$and": aTokenQuery}
+	err := mongoHuskyCI.Conn.Update(aTokenFinalQuery, updatedAccessToken, mongoHuskyCI.AccessTokenCollection)
 	return err
 }

@@ -139,9 +139,17 @@ type TokenRequest struct {
 // AccessToken defines the struct generated when a new token
 // is requested for specific repository
 type AccessToken struct {
+	HuskyToken string `bson:"huskytoken" json:"huskytoken"`
+}
+
+// DBToken defines the struct that stores husky access token
+// for a repository URL
+type DBToken struct {
 	ID         bson.ObjectId `bson:"_id,omitempty"`
-	HuskyToken string        `bson:"huskytoken" json:"huskytoken"`
+	HuskyToken string        `bson:"huskytoken"`
 	URL        string        `bson:"repositoryURL"`
 	IsValid    bool          `bson:"isValid"`
 	CreatedAt  time.Time     `bson:"createdAt"`
+	Salt       string        `bson:"salt"`
+	UUid       string        `bson:"uuid"`
 }
