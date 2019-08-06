@@ -14,6 +14,7 @@ var MsgCode = map[int]string{
 	18: "SecurityTest created into MongoDB: ",
 	19: "SecurityTest upserted in MondoDB: ",
 	20: "Default User found in MongoDB.",
+	24: "URL received",
 
 	// HuskyCI API warnings
 	104: "An analysis is already in place for this URL: ",
@@ -51,6 +52,7 @@ var MsgCode = map[int]string{
 	1024: "Received an invalid user JSON: ",
 	1025: "Received an invalid Token JSON: ",
 	1026: "Error during access token generation",
+	1027: "Request doesn't have permission",
 
 	// MongoDB infos
 	21: "Connecting to MongoDB.",
