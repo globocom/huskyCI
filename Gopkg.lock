@@ -90,6 +90,14 @@
   revision = "36e52796d86ac06d067bec9d2185fd8ecb994201"
 
 [[projects]]
+  digest = "1:582b704bebaa06b48c29b0cec224a6058a09c86883aaddabde889cd1a5f73e1b"
+  name = "github.com/google/uuid"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "0cd6bf5da1e1c83f8b45653022c74f71af0538a4"
+  version = "v1.1.1"
+
+[[projects]]
   digest = "1:c0d19ab64b32ce9fe5cf4ddceba78d5bc9807f0016db6b1183599da3dcc24d10"
   name = "github.com/hashicorp/hcl"
   packages = [
@@ -436,6 +444,7 @@
     "github.com/docker/docker/api/types/filters",
     "github.com/docker/docker/client",
     "github.com/globocom/glbgelf",
+    "github.com/google/uuid",
     "github.com/labstack/echo",
     "github.com/labstack/echo/middleware",
     "github.com/onsi/ginkgo",
