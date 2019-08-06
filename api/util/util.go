@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"strings"
 
+	"errors"
+	"fmt"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
 	"github.com/labstack/echo"
@@ -126,7 +128,8 @@ func CheckMaliciousRepoURL(repositoryURL string) (string, error) {
 		return "matchStringError", err
 	}
 	if !valid {
-		return "", err
+		errorMsg := fmt.Sprintf("Invalid URL format: %s", repositoryURL)
+		return "", errors.New(errorMsg)
 	}
 	return r.FindString(repositoryURL), nil
 }
