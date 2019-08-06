@@ -30,6 +30,22 @@ func (fG *FakeGen) GetCredsFromDB(username string) (types.User, error) {
 	return fG.expectedPbkdf2, fG.expectedGetCredsError
 }
 
+func (fG *FakeGen) GenerateSalt() (string, error) {
+	return "", nil
+}
+
+func (fG *FakeGen) GetHashName() string {
+	return ""
+}
+
+func (fG *FakeGen) GetIterations() (int, error) {
+	return 0, nil
+}
+
+func (fG *FakeGen) GetKeyLength() (int, error) {
+	return 0, nil
+}
+
 var _ = Describe("Authmongo", func() {
 	Context("When hash algorithm chosen is not valid", func() {
 		It("Should return the expected error and a nil string", func() {
