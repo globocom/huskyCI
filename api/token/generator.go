@@ -39,7 +39,7 @@ func (tC *TokenCaller) FindAccessToken(id string) (types.DBToken, error) {
 }
 
 func (tC *TokenCaller) FindRepoURL(repositoryURL string) error {
-	repoQuery := map[string]interface{}{"repositoryURL": repositoryURL}
+	repoQuery := map[string]interface{}{"repositoryURL": repositoryURL, "isValid": true}
 	_, err := db.FindOneAccessToken(repoQuery)
 	return err
 }
