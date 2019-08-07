@@ -6,6 +6,9 @@ import (
 	"time"
 )
 
+// ExternalCalls defines a group of functions
+// used for external calls and validate some
+// necessary information about TokenHandler.
 type ExternalCalls interface {
 	ValidateURL(url string) (string, error)
 	GenerateToken() (string, error)
@@ -19,19 +22,27 @@ type ExternalCalls interface {
 	DecodeToStringBase64(encodedVal string) (string, error)
 }
 
+// TokenHandler is a struct used to handle with
+// token generation, validation and deactivation.
+// It implements TokenInterface interface.
 type TokenHandler struct {
 	External ExternalCalls
 	HashGen  auth.Pbkdf2Generator
 }
 
+// TokenCaller implements ExternalCalls interface.
 type TokenCaller struct{}
 
+// TokenInterface is used to define functions that
+// handle with access token management.
 type TokenInterface interface {
 	GenerateAccessToken(repo types.TokenRequest) (string, error)
 	ValidateToken(token, repositoryURL string) error
 	VerifyRepo(repositoryURL string) error
 }
 
+// TokenValidator is used to validate an access token
+// using the defined functions TokenInterface
 type TokenValidator struct {
 	TokenVerifier TokenInterface
 }
