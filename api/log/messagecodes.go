@@ -53,6 +53,7 @@ var MsgCode = map[int]string{
 	1025: "Received an invalid Token JSON: ",
 	1026: "Error during access token generation",
 	1027: "Request doesn't have permission",
+	1028: "Error during access token deactivation",
 
 	// MongoDB infos
 	21: "Connecting to MongoDB.",
