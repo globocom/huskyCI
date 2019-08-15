@@ -89,10 +89,10 @@ help:
 	printf "\n"
 
 ## Installs a development environment using docker-compose
-install: generate-passwords create-certs compose
+install: create-certs compose generate-passwords
 
 ## Installs a development environment using docker-compose and pulls security tests' images
-install-pull-images: generate-passwords create-certs compose pull-images
+install-pull-images: create-certs compose generate-passwords pull-images
 
 ## Runs lint
 lint:
