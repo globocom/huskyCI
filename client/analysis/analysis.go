@@ -113,17 +113,10 @@ func MonitorAnalysis(RID string) (types.Analysis, error) {
 	}
 }
 
-// PrepareResults analyzes the result received from HuskyCI API.
-func PrepareResults(analysisResult types.Analysis) {
-	for _, container := range analysisResult.Containers {
-		prepareSecurityTestResult(container)
-	}
-}
-
 // PrintResults prints huskyCI output either in JSON or the standard output.
-func PrintResults(formatOutput string) error {
+func PrintResults(formatOutput string, analysis types.Analysis) error {
 
-	prepareAllSummary()
+	prepareAllSummary(analysis)
 
 	if types.IsJSONoutput {
 		err := printJSONOutput()
