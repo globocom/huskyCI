@@ -135,7 +135,7 @@ retirejs:
       cat /tmp/errorGitCloneRetirejs
     fi
   language: JavaScript
-  default: true
+  default: false
   timeOutInSeconds: 360
 
 safety:
