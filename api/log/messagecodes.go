@@ -14,6 +14,7 @@ var MsgCode = map[int]string{
 	18: "SecurityTest created into MongoDB: ",
 	19: "SecurityTest upserted in MondoDB: ",
 	20: "Default User found in MongoDB.",
+	24: "URL received to generate a new token: ",
 
 	// HuskyCI API warnings
 	104: "An analysis is already in place for this URL: ",
@@ -49,6 +50,10 @@ var MsgCode = map[int]string{
 	1022: "Could not Unmarshall the following npmauditOutput: ",
 	1023: "Could not upsert securityTest into MongoDB: ",
 	1024: "Received an invalid user JSON: ",
+	1025: "Received an invalid Token JSON: ",
+	1026: "Error during access token generation",
+	1027: "Request doesn't have permission",
+	1028: "Error during access token deactivation",
 
 	// MongoDB infos
 	21: "Connecting to MongoDB.",
