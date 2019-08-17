@@ -1,11 +1,16 @@
+// Copyright 2019 Globo.com authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package token
 
 import (
 	"errors"
 	"fmt"
+	"strings"
+
 	"github.com/globocom/huskyCI/api/auth"
 	"github.com/globocom/huskyCI/api/types"
-	"strings"
 )
 
 // GenerateAccessToken will generate a valid access token
