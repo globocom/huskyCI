@@ -22,6 +22,9 @@ var RepositoryBranch string
 // InternalDepURL stores the URL needed by NPM to properly install internal dependencies.
 var InternalDepURL string
 
+// HuskyToken is the token used to scan a repository.
+var HuskyToken string
+
 // HuskyUseTLS stores if huskyCI is to use an HTTPS connection.
 var HuskyUseTLS bool
 
@@ -30,6 +33,7 @@ func SetConfigs() {
 	RepositoryURL = os.Getenv(`HUSKYCI_CLIENT_REPO_URL`)
 	RepositoryBranch = os.Getenv(`HUSKYCI_CLIENT_REPO_BRANCH`)
 	HuskyAPI = os.Getenv(`HUSKYCI_CLIENT_API_ADDR`)
+	HuskyToken = os.Getenv(`HUSKYCI_CLIENT_TOKEN`)
 	InternalDepURL = os.Getenv(`HUSKYCI_CLIENT_NPM_DEP_URL`)
 	HuskyUseTLS = getUseTLS()
 }
@@ -41,8 +45,9 @@ func CheckEnvVars() error {
 		"HUSKYCI_CLIENT_API_ADDR",
 		"HUSKYCI_CLIENT_REPO_URL",
 		"HUSKYCI_CLIENT_REPO_BRANCH",
-		// "HUSKYCI_CLIENT_API_USE_HTTPS" (optional)
-		// "HUSKYCI_CLIENT_NPM_DEP_URL" (optional)
+		// "HUSKYCI_CLIENT_TOKEN", (optional for now)
+		// "HUSKYCI_CLIENT_API_USE_HTTPS", (optional)
+		// "HUSKYCI_CLIENT_NPM_DEP_URL", (optional)
 	}
 
 	var envIsSet bool
