@@ -51,14 +51,15 @@ func main() {
 
 	// /token route with basic auth
 	g.POST("/token", routes.HandleToken)
+	g.POST("/token/deactivate", routes.HandleDeactivation)
 
 	// generic routes
 	echoInstance.GET("/healthcheck", routes.HealthCheck)
 	echoInstance.GET("/version", routes.GetAPIVersion)
 
 	// analysis routes
-	echoInstance.GET("/analysis/:id", routes.GetAnalysis)
 	echoInstance.POST("/analysis", routes.ReceiveRequest)
+	echoInstance.GET("/analysis/:id", routes.GetAnalysis)
 	// echoInstance.PUT("/analysis/:id", routes.UpdateAnalysis)
 	// echoInstance.DELETE("/analysis/:id", routes.DeleteAnalysis)
 

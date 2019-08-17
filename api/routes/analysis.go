@@ -5,24 +5,47 @@ import (
 	"time"
 
 	"github.com/globocom/huskyCI/api/analysis"
+	"github.com/globocom/huskyCI/api/auth"
 	"github.com/globocom/huskyCI/api/db"
 	"github.com/globocom/huskyCI/api/log"
+	"github.com/globocom/huskyCI/api/token"
 	"github.com/globocom/huskyCI/api/types"
 	"github.com/globocom/huskyCI/api/util"
 	"github.com/labstack/echo"
 	mgo "gopkg.in/mgo.v2"
 )
 
+var (
+	tokenValidator token.TokenValidator
+)
+
+func init() {
+	tokenCaller := token.TokenCaller{}
+	hashGen := auth.Pbkdf2Caller{}
+	tokenHandler := token.TokenHandler{
+		External: &tokenCaller,
+		HashGen:  &hashGen,
+	}
+	tokenValidator = token.TokenValidator{
+		TokenVerifier: &tokenHandler,
+	}
+}
+
 // GetAnalysis returns the status of a given analysis given a RID.
 func GetAnalysis(c echo.Context) error {
 
 	RID := c.Param("id")
+	attemptToken := c.Request().Header.Get("Husky-Token")
 	if err := util.CheckMaliciousRID(RID, c); err != nil {
 		return err
 	}
-
 	analysisQuery := map[string]interface{}{"RID": RID}
 	analysisResult, err := db.FindOneDBAnalysis(analysisQuery)
+	if !tokenValidator.HasAuthorization(attemptToken, analysisResult.URL) {
+		log.Error("GetAnalysis", "ANALYSIS", 1027, RID)
+		reply := map[string]interface{}{"success": false, "error": "permission denied"}
+		return c.JSON(http.StatusUnauthorized, reply)
+	}
 	if err != nil {
 		if err == mgo.ErrNotFound {
 			log.Warning("GetAnalysis", "ANALYSIS", 106, RID)
@@ -40,6 +63,7 @@ func GetAnalysis(c echo.Context) error {
 func ReceiveRequest(c echo.Context) error {
 
 	RID := c.Response().Header().Get(echo.HeaderXRequestID)
+	attemptToken := c.Request().Header.Get("Husky-Token")
 
 	// step-00: is this a valid JSON?
 	repository := types.Repository{}
@@ -49,7 +73,11 @@ func ReceiveRequest(c echo.Context) error {
 		reply := map[string]interface{}{"success": false, "error": "invalid repository JSON"}
 		return c.JSON(http.StatusBadRequest, reply)
 	}
-
+	if !tokenValidator.HasAuthorization(attemptToken, repository.URL) {
+		log.Error("ReceivedRequest", "ANALYSIS", 1027, RID)
+		reply := map[string]interface{}{"success": false, "error": "permission denied"}
+		return c.JSON(http.StatusUnauthorized, reply)
+	}
 	// step-01: Check malicious inputs
 	sanitizedRepoURL, err := util.CheckValidInput(repository, c)
 	if err != nil {

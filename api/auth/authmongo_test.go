@@ -30,6 +30,22 @@ func (fG *FakeGen) GetCredsFromDB(username string) (types.User, error) {
 	return fG.expectedPbkdf2, fG.expectedGetCredsError
 }
 
+func (fG *FakeGen) GenerateSalt() (string, error) {
+	return "", nil
+}
+
+func (fG *FakeGen) GetHashName() string {
+	return ""
+}
+
+func (fG *FakeGen) GetIterations() (int, error) {
+	return 0, nil
+}
+
+func (fG *FakeGen) GetKeyLength() (int, error) {
+	return 0, nil
+}
+
 var _ = Describe("Authmongo", func() {
 	Context("When hash algorithm chosen is not valid", func() {
 		It("Should return the expected error and a nil string", func() {
@@ -100,7 +116,7 @@ var _ = Describe("Authmongo", func() {
 			Expect(hashVal).To(Equal("MyHashedString"))
 			Expect(err).To(BeNil())
 		})
-		It("Should return a nil error and the expected string", func() {
+		It("Should return a nil error and the expected string for sha3_256", func() {
 			fakeGen := FakeGen{
 				expectedHash:            "MyHashedString",
 				expectedDecodeSaltError: nil,
@@ -117,7 +133,7 @@ var _ = Describe("Authmongo", func() {
 			Expect(hashVal).To(Equal("MyHashedString"))
 			Expect(err).To(BeNil())
 		})
-		It("Should return a nil error and the expected string", func() {
+		It("Should return a nil error and the expected string for sha3_384", func() {
 			fakeGen := FakeGen{
 				expectedHash:            "MyHashedString",
 				expectedDecodeSaltError: nil,
@@ -134,7 +150,7 @@ var _ = Describe("Authmongo", func() {
 			Expect(hashVal).To(Equal("MyHashedString"))
 			Expect(err).To(BeNil())
 		})
-		It("Should return a nil error and the expected string", func() {
+		It("Should return a nil error and the expected string for sha3_512", func() {
 			fakeGen := FakeGen{
 				expectedHash:            "MyHashedString",
 				expectedDecodeSaltError: nil,
@@ -234,6 +250,25 @@ var _ = Describe("Authmongo", func() {
 			Expect(pbkdf2Client.Iterations).To(Equal(500))
 			Expect(pbkdf2Client.KeyLen).To(Equal(1024))
 			Expect(err).To(BeNil())
+		})
+	})
+	Context("When DecodeSaltValue returns an error", func() {
+		It("Should return the same error and a an empty string", func() {
+			fakeGen := FakeGen{
+				expectedDecodeSaltError: errors.New("Could not decode salt value"),
+				expectedHash:            "MyHashedString",
+				expectedDecodedSalt:     make([]byte, 0),
+			}
+			pbkdf2Client := ClientPbkdf2{
+				HashGen:      &fakeGen,
+				Salt:         "ValidSalt",
+				Iterations:   1,
+				KeyLen:       512,
+				HashFunction: "Sha384",
+			}
+			pass, err := pbkdf2Client.GetHashedPass("mypass")
+			Expect(pass).To(Equal(""))
+			Expect(err).To(Equal(fakeGen.expectedDecodeSaltError))
 		})
 	})
 	Context("When GetPassFromDB is called with and returns all PBKDF2", func() {
