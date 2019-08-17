@@ -1,3 +1,7 @@
+# Copyright 2019 Globo.com authors. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 #!/bin/bash
 #
 # This script will generate environment passwords to build huskyCI environment.
@@ -5,7 +9,7 @@
 
 # huskyCI client default environment variables
 HUSKYCI_CLIENT_REPO_URL="https://github.com/globocom/huskyCI.git"
-HUSKYCI_CLIENT_REPO_BRANCH="master"
+HUSKYCI_CLIENT_REPO_BRANCH="vulns-Golang"
 HUSKYCI_CLIENT_API_ADDR="http://localhost:8888"
 HUSKYCI_CLIENT_API_USE_HTTPS="false"
 

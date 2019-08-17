@@ -48,6 +48,30 @@ func FindOneDBAnalysis(mapParams map[string]interface{}) (types.Analysis, error)
 	return analysisResponse, err
 }
 
+// FindOneDBUser checks if a given user is present into UserCollection.
+func FindOneDBUser(mapParams map[string]interface{}) (types.User, error) {
+	userResponse := types.User{}
+	userQuery := []bson.M{}
+	for k, v := range mapParams {
+		userQuery = append(userQuery, bson.M{k: v})
+	}
+	userFinalQuery := bson.M{"$and": userQuery}
+	err := mongoHuskyCI.Conn.SearchOne(userFinalQuery, nil, mongoHuskyCI.UserCollection, &userResponse)
+	return userResponse, err
+}
+
+// FindOneDBAccessToken checks if a given accessToken exists in AccessTokenCollection.
+func FindOneDBAccessToken(mapParams map[string]interface{}) (types.DBToken, error) {
+	aTokenResponse := types.DBToken{}
+	aTokenQuery := []bson.M{}
+	for k, v := range mapParams {
+		aTokenQuery = append(aTokenQuery, bson.M{k: v})
+	}
+	aTokenFinalQuery := bson.M{"$and": aTokenQuery}
+	err := mongoHuskyCI.Conn.SearchOne(aTokenFinalQuery, nil, mongoHuskyCI.AccessTokenCollection, &aTokenResponse)
+	return aTokenResponse, err
+}
+
 // FindAllDBRepository returns all Repository of a given query present into RepositoryCollection.
 func FindAllDBRepository(mapParams map[string]interface{}) ([]types.Repository, error) {
 	repositoryQuery := []bson.M{}
@@ -125,6 +149,34 @@ func InsertDBAnalysis(analysis types.Analysis) error {
 	return err
 }
 
+// InsertDBUser inserts a new user into UserCollection.
+func InsertDBUser(user types.User) error {
+	newUser := bson.M{
+		"username":     user.Username,
+		"password":     user.Password,
+		"salt":         user.Salt,
+		"iterations":   user.Iterations,
+		"keylen":       user.KeyLen,
+		"hashfunction": user.HashFunction,
+	}
+	err := mongoHuskyCI.Conn.Insert(newUser, mongoHuskyCI.UserCollection)
+	return err
+}
+
+// InsertDBAccessToken inserts a new access into AccessTokenCollection.
+func InsertDBAccessToken(accessToken types.DBToken) error {
+	newAccessToken := bson.M{
+		"huskytoken":    accessToken.HuskyToken,
+		"repositoryURL": accessToken.URL,
+		"isValid":       accessToken.IsValid,
+		"createdAt":     accessToken.CreatedAt,
+		"salt":          accessToken.Salt,
+		"uuid":          accessToken.UUid,
+	}
+	err := mongoHuskyCI.Conn.Insert(newAccessToken, mongoHuskyCI.AccessTokenCollection)
+	return err
+}
+
 // UpdateOneDBRepository checks if a given repository is present into RepositoryCollection and update it.
 func UpdateOneDBRepository(mapParams, updateQuery map[string]interface{}) error {
 	repositoryQuery := []bson.M{}
@@ -158,6 +210,17 @@ func UpdateOneDBAnalysis(mapParams map[string]interface{}, updatedAnalysis types
 	return err
 }
 
+// UpdateOneDBUser checks if a given user is present into UserCollection and update it.
+func UpdateOneDBUser(mapParams map[string]interface{}, updatedUser types.User) error {
+	userQuery := []bson.M{}
+	for k, v := range mapParams {
+		userQuery = append(userQuery, bson.M{k: v})
+	}
+	userFinalQuery := bson.M{"$and": userQuery}
+	err := mongoHuskyCI.Conn.Update(userFinalQuery, updatedUser, mongoHuskyCI.UserCollection)
+	return err
+}
+
 // UpdateOneDBAnalysisContainer checks if a given analysis is present into AnalysisCollection and update the container associated in it.
 func UpdateOneDBAnalysisContainer(mapParams, updateQuery map[string]interface{}) error {
 	analysisQuery := []bson.M{}
@@ -166,5 +229,16 @@ func UpdateOneDBAnalysisContainer(mapParams, updateQuery map[string]interface{})
 	}
 	analysisFinalQuery := bson.M{"$and": analysisQuery}
 	err := mongoHuskyCI.Conn.Update(analysisFinalQuery, updateQuery, mongoHuskyCI.AnalysisCollection)
+	return err
+}
+
+// UpdateOneDBAccessToken checks if a given access token is present into AccessTokenCollection and update it.
+func UpdateOneDBAccessToken(mapParams map[string]interface{}, updatedAccessToken types.DBToken) error {
+	aTokenQuery := []bson.M{}
+	for k, v := range mapParams {
+		aTokenQuery = append(aTokenQuery, bson.M{k: v})
+	}
+	aTokenFinalQuery := bson.M{"$and": aTokenQuery}
+	err := mongoHuskyCI.Conn.Update(aTokenFinalQuery, updatedAccessToken, mongoHuskyCI.AccessTokenCollection)
 	return err
 }

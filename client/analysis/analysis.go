@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"time"
 
 	"github.com/globocom/huskyCI/client/config"
@@ -21,34 +22,49 @@ import (
 func StartAnalysis() (string, error) {
 
 	// preparing POST to HuskyCI
+	huskyStartAnalysisURL := config.HuskyAPI + "/analysis"
+
 	requestPayload := types.JSONPayload{
 		RepositoryURL:    config.RepositoryURL,
 		RepositoryBranch: config.RepositoryBranch,
 		InternalDepURL:   config.InternalDepURL,
 	}
+
 	marshalPayload, err := json.Marshal(requestPayload)
 	if err != nil {
 		return "", err
 	}
-	huskyStartAnalysisURL := config.HuskyAPI + "/analysis"
 
 	httpClient, err := util.NewClient(config.HuskyUseTLS)
 	if err != nil {
 		return "", err
 	}
-	resp, err := httpClient.Post(huskyStartAnalysisURL, "application/json", bytes.NewBuffer(marshalPayload))
+
+	req, err := http.NewRequest("POST", huskyStartAnalysisURL, bytes.NewBuffer(marshalPayload))
 	if err != nil {
 		return "", err
 	}
 
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Husky-Token", config.HuskyToken)
+
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return "", err
+	}
+
+	defer resp.Body.Close()
+
 	if resp.StatusCode != 201 {
+		if resp.StatusCode == 401 {
+			errorMsg := fmt.Sprintf("Unauthorized Husky-Token %s", config.HuskyToken)
+			return "", errors.New(errorMsg)
+		}
 		errorMsg := fmt.Sprintf("Error sending request to start analysis! StatusCode received: %d", resp.StatusCode)
 		return "", errors.New(errorMsg)
 	}
 
-	defer resp.Body.Close()
 	RID := resp.Header.Get("X-Request-Id")
-
 	if RID == "" {
 		errorMsg := fmt.Sprintf("Error sending request to start analysis. RID is empty!")
 		return "", errors.New(errorMsg)
@@ -66,13 +82,26 @@ func StartAnalysis() (string, error) {
 func GetAnalysis(RID string) (types.Analysis, error) {
 
 	analysis := types.Analysis{}
+	getAnalysisURL := config.HuskyAPI + "/analysis/" + RID
 
 	httpClient, err := util.NewClient(config.HuskyUseTLS)
 	if err != nil {
 		return analysis, err
 	}
 
-	resp, err := httpClient.Get(config.HuskyAPI + "/analysis/" + RID)
+	req, err := http.NewRequest("GET", getAnalysisURL, nil)
+	if err != nil {
+		return analysis, err
+	}
+
+	req.Header.Add("Husky-Token", config.HuskyToken)
+
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return analysis, err
+	}
+
+	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -113,17 +142,10 @@ func MonitorAnalysis(RID string) (types.Analysis, error) {
 	}
 }
 
-// PrepareResults analyzes the result received from HuskyCI API.
-func PrepareResults(analysisResult types.Analysis) {
-	for _, container := range analysisResult.Containers {
-		prepareSecurityTestResult(container)
-	}
-}
-
 // PrintResults prints huskyCI output either in JSON or the standard output.
-func PrintResults(formatOutput string) error {
+func PrintResults(formatOutput string, analysis types.Analysis) error {
 
-	prepareAllSummary()
+	prepareAllSummary(analysis)
 
 	if types.IsJSONoutput {
 		err := printJSONOutput()

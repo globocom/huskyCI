@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/globocom/huskyCI/api/auth"
 	apiContext "github.com/globocom/huskyCI/api/context"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/routes"
@@ -42,27 +43,43 @@ func main() {
 	echoInstance.Use(middleware.Recover())
 	echoInstance.Use(middleware.RequestID())
 
+	// set new object for /api/1.0 route
+	g := echoInstance.Group("/api/1.0")
+
+	// use basic auth middleware
+	g.Use(middleware.BasicAuth(auth.ValidateUser))
+
+	// /token route with basic auth
+	g.POST("/token", routes.HandleToken)
+	g.POST("/token/deactivate", routes.HandleDeactivation)
+
 	// generic routes
 	echoInstance.GET("/healthcheck", routes.HealthCheck)
 	echoInstance.GET("/version", routes.GetAPIVersion)
 
 	// analysis routes
-	echoInstance.GET("/analysis/:id", routes.GetAnalysis)
 	echoInstance.POST("/analysis", routes.ReceiveRequest)
+	echoInstance.GET("/analysis/:id", routes.GetAnalysis)
 	// echoInstance.PUT("/analysis/:id", routes.UpdateAnalysis)
 	// echoInstance.DELETE("/analysis/:id", routes.DeleteAnalysis)
 
 	// securityTest routes
 	// echoInstance.GET("securityTest/:securityTestName", routes.GetSecurityTest)
-	echoInstance.POST("/securitytest", routes.CreateNewSecurityTest)
+	// echoInstance.POST("/securitytest", routes.CreateNewSecurityTest)
 	// echoInstance.PUT("/securityTest/:securityTestName", routes.UpdateSecurityTest)
 	// echoInstance.DELETE("/securityTest/:securityTestName", routes.DeleteSecurityTest)
 
 	// repository routes
 	// echoInstance.GET("/repository/:repoID", routes.GetRepository)
-	echoInstance.POST("/repository", routes.CreateNewRepository)
+	// echoInstance.POST("/repository", routes.CreateNewRepository)
 	// echoInstance.PUT("/repository/:repoID)
 	// echoInstance.DELETE("/repository/:repoID)
+
+	// user routes
+	// echoInstance.GET("/user", routes.GetUser)
+	// echoInstance.POST("/user", routes.CreateNewUser)
+	echoInstance.PUT("/user", routes.UpdateUser)
+	// echoInstance.DELETE("/user)
 
 	huskyAPIport := fmt.Sprintf(":%d", configAPI.Port)
 
