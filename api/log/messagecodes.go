@@ -14,7 +14,7 @@ var MsgCode = map[int]string{
 	18: "SecurityTest created into MongoDB: ",
 	19: "SecurityTest upserted in MondoDB: ",
 	20: "Default User found in MongoDB.",
-	24: "URL received",
+	24: "URL received to generate a new token: ",
 
 	// HuskyCI API warnings
 	104: "An analysis is already in place for this URL: ",
