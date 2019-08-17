@@ -1,3 +1,7 @@
+// Copyright 2019 Globo.com authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package user
 
 import (
@@ -6,13 +10,14 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
+	"hash"
+	"io"
+	"strconv"
+
 	"github.com/globocom/huskyCI/api/auth"
 	"github.com/globocom/huskyCI/api/db"
 	"github.com/globocom/huskyCI/api/types"
 	"golang.org/x/crypto/pbkdf2"
-	"hash"
-	"io"
-	"strconv"
 )
 
 var (
