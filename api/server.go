@@ -65,13 +65,13 @@ func main() {
 
 	// securityTest routes
 	// echoInstance.GET("securityTest/:securityTestName", routes.GetSecurityTest)
-	echoInstance.POST("/securitytest", routes.CreateNewSecurityTest)
+	// echoInstance.POST("/securitytest", routes.CreateNewSecurityTest)
 	// echoInstance.PUT("/securityTest/:securityTestName", routes.UpdateSecurityTest)
 	// echoInstance.DELETE("/securityTest/:securityTestName", routes.DeleteSecurityTest)
 
 	// repository routes
 	// echoInstance.GET("/repository/:repoID", routes.GetRepository)
-	echoInstance.POST("/repository", routes.CreateNewRepository)
+	// echoInstance.POST("/repository", routes.CreateNewRepository)
 	// echoInstance.PUT("/repository/:repoID)
 	// echoInstance.DELETE("/repository/:repoID)
 
