@@ -1,12 +1,17 @@
+// Copyright 2019 Globo.com authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package auth
 
 import (
 	"crypto/sha256"
 	"crypto/sha512"
 	"errors"
-	"golang.org/x/crypto/sha3"
 	"hash"
 	"strings"
+
+	"golang.org/x/crypto/sha3"
 )
 
 // GetPassFromDB will search for a valid user entry in DB through the
