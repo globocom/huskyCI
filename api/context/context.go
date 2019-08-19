@@ -6,14 +6,11 @@ package context
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/globocom/huskyCI/api/types"
-	"github.com/spf13/viper"
 )
 
 // APIConfiguration holds all API configuration.
@@ -71,48 +68,6 @@ type APIConfig struct {
 	SafetySecurityTest   *types.SecurityTest
 }
 
-type ExternalCalls struct{}
-
-func (eC *ExternalCalls) SetConfigFile(configName, configPath string) error {
-	viper.SetConfigFile(configName)
-	viper.AddConfigPath(configPath)
-	return viper.ReadInConfig()
-}
-
-func (eC *ExternalCalls) GetEnvironmentVariable(envName string) string {
-	return os.Getenv(envName)
-}
-
-func (eC *ExternalCalls) ConvertStrToInt(str string) (int, error) {
-	return strconv.Atoi(str)
-}
-
-func (eC *ExternalCalls) GetTimeDurationInSeconds(duration int) time.Duration {
-	return time.Duration(duration) * time.Second
-}
-
-func (eC *ExternalCalls) GetStringFromConfigFile(value string) string {
-	return viper.GetString(value)
-}
-
-func (eC *ExternalCalls) GetBoolFromConfigFile(value string) bool {
-	return viper.GetBool(value)
-}
-
-func (eC *ExternalCalls) GetIntFromConfigFile(value string) int {
-	return viper.GetInt(value)
-}
-
-type CallerInterface interface {
-	SetConfigFile(configName, configPath string) error
-	GetStringFromConfigFile(value string) string
-	GetBoolFromConfigFile(value string) bool
-	GetIntFromConfigFile(value string) int
-	GetEnvironmentVariable(envName string) string
-	ConvertStrToInt(str string) (int, error)
-	GetTimeDurationInSeconds(duration int) time.Duration
-}
-
 type DefaultConfig struct {
 	Caller CallerInterface
 }
@@ -125,8 +80,8 @@ func (dF DefaultConfig) GetAPIConfig() (*APIConfig, error) {
 		fmt.Println("Error reading Viper config: ", err)
 		return nil, err
 	}
-	SetOnceConfig()
-	return APIConfiguration
+	dF.SetOnceConfig()
+	return APIConfiguration, nil
 }
 
 // SetOnceConfig sets APIConfiguration once
@@ -134,8 +89,8 @@ func (dF DefaultConfig) SetOnceConfig() {
 	onceConfig.Do(func() {
 		APIConfiguration = &APIConfig{
 			Port:                 dF.GetAPIPort(),
-			Version:              dF.GetAPIVersion(),
-			ReleaseDate:          dF.GetAPIReleaseDate(),
+			Version:              dF.getAPIVersion(),
+			ReleaseDate:          dF.getAPIReleaseDate(),
 			UseTLS:               dF.GetAPIUseTLS(),
 			GitPrivateSSHKey:     dF.getGitPrivateSSHKey(),
 			GraylogConfig:        dF.getGraylogConfig(),
@@ -152,6 +107,10 @@ func (dF DefaultConfig) SetOnceConfig() {
 	})
 }
 
+// GetAPIPort will return the port number
+// where HuskyCI will be listening to.
+// If HUSKYCI_API_PORT is not set, it will
+// return the default 8888 port.
 func (dF DefaultConfig) GetAPIPort() int {
 	apiPort, err := dF.Caller.ConvertStrToInt(dF.Caller.GetEnvironmentVariable("HUSKYCI_API_PORT"))
 	if err != nil {
@@ -160,19 +119,22 @@ func (dF DefaultConfig) GetAPIPort() int {
 	return apiPort
 }
 
-// GetAPIVersion returns current API version
-func (dF DefaultConfig) GetAPIVersion() string {
+// getAPIVersion returns current API version
+func (dF DefaultConfig) getAPIVersion() string {
 	return "0.6.0"
 }
 
-// GetAPIReleaseDate returns current API release date
-func (dF DefaultConfig) GetAPIReleaseDate() string {
+// getAPIReleaseDate returns current API release date
+func (dF DefaultConfig) getAPIReleaseDate() string {
 	return "2019-07-18"
 }
 
+// GetAPIUseTLS returns a boolean. If true, Husky API
+// will be initialized with TLS. Otherwise, it won't.
+// This depends on HUSKYCI_API_ENABLE_HTTPS variable.
 func (dF DefaultConfig) GetAPIUseTLS() bool {
 	option := dF.Caller.GetEnvironmentVariable("HUSKYCI_API_ENABLE_HTTPS")
-	if option == "true" || option == "1" || option == "TRUE" {
+	if strings.EqualFold(option, "true") || option == "1" {
 		return true
 	}
 	return false
@@ -188,13 +150,18 @@ func (dF DefaultConfig) getGraylogConfig() *GraylogConfig {
 		Protocol:       dF.Caller.GetEnvironmentVariable("HUSKYCI_LOGGING_GRAYLOG_PROTO"),
 		AppName:        dF.Caller.GetEnvironmentVariable("HUSKYCI_LOGGING_GRAYLOG_APP_NAME"),
 		Tag:            dF.Caller.GetEnvironmentVariable("HUSKYCI_LOGGING_GRAYLOG_TAG"),
-		DevelopmentEnv: GetGraylogIsDev(),
+		DevelopmentEnv: dF.GetGraylogIsDev(),
 	}
 }
 
+// GetGraylogIsDev returns a true boolean if
+// it is running in a development environment.
+// This tells GlbGelf to generate logs only to
+// stdout. Otherwise, it will return false. It
+// depends on HUSKYCI_LOGGING_GRAYLOG_DEV env.
 func (dF DefaultConfig) GetGraylogIsDev() bool {
 	option := dF.Caller.GetEnvironmentVariable("HUSKYCI_LOGGING_GRAYLOG_DEV")
-	if option == "false" || option == "0" || option == "FALSE" {
+	if strings.EqualFold(option, "false") || option == "0" {
 		return false
 	}
 	return true
@@ -202,7 +169,7 @@ func (dF DefaultConfig) GetGraylogIsDev() bool {
 
 func (dF DefaultConfig) getMongoConfig() *MongoConfig {
 	mongoHost := dF.Caller.GetEnvironmentVariable("HUSKYCI_DATABASE_MONGO_ADDR")
-	mongoPort := GetMongoPort()
+	mongoPort := dF.GetMongoPort()
 	mongoAddress := fmt.Sprintf("%s:%d", mongoHost, mongoPort)
 	return &MongoConfig{
 		Address:      mongoAddress,
@@ -210,11 +177,14 @@ func (dF DefaultConfig) getMongoConfig() *MongoConfig {
 		Username:     dF.Caller.GetEnvironmentVariable("HUSKYCI_DATABASE_MONGO_DBUSERNAME"),
 		Password:     dF.Caller.GetEnvironmentVariable("HUSKYCI_DATABASE_MONGO_DBPASSWORD"),
 		Port:         mongoPort,
-		Timeout:      GetMongoTimeout(),
-		PoolLimit:    GetMongoPoolLimit(),
+		Timeout:      dF.GetMongoTimeout(),
+		PoolLimit:    dF.GetMongoPoolLimit(),
 	}
 }
 
+//GetMongoPort returns the port where MongoDB
+// will be listening to. It depends on an env
+// called HUSKYCI_DATABASE_MONGO_PORT.
 func (dF DefaultConfig) GetMongoPort() int {
 	mongoPort, err := dF.Caller.ConvertStrToInt(dF.Caller.GetEnvironmentVariable("HUSKYCI_DATABASE_MONGO_PORT"))
 	if err != nil {
@@ -223,6 +193,9 @@ func (dF DefaultConfig) GetMongoPort() int {
 	return mongoPort
 }
 
+// GetMongoTimeout returns a time.Duration for
+// duration of a connection with MongoDB. This
+// depends on HUSKYCI_DATABASE_MONGO_TIMEOUT.
 func (dF DefaultConfig) GetMongoTimeout() time.Duration {
 	mongoTimeout, err := dF.Caller.ConvertStrToInt(dF.Caller.GetEnvironmentVariable("HUSKYCI_DATABASE_MONGO_TIMEOUT"))
 	if err != nil {
@@ -231,16 +204,20 @@ func (dF DefaultConfig) GetMongoTimeout() time.Duration {
 	return dF.Caller.GetTimeDurationInSeconds(mongoTimeout)
 }
 
+// GetMongoPoolLimit returns an integer with
+// the limit of pool of connections opened with
+// MongoDB. This depends on an enviroment var
+// called HUSKYCI_DATABASE_MONGO_POOL_LIMIT.
 func (dF DefaultConfig) GetMongoPoolLimit() int {
 	mongoPoolLimit, err := dF.Caller.ConvertStrToInt(dF.Caller.GetEnvironmentVariable("HUSKYCI_DATABASE_MONGO_POOL_LIMIT"))
-	if err != nil && mongoPoolLimit <= 0 {
+	if err != nil || mongoPoolLimit <= 0 {
 		return 1000
 	}
 	return mongoPoolLimit
 }
 
 func (dF DefaultConfig) getDockerHostsConfig() *DockerHostsConfig {
-	dockerAPIPort := GetDockerAPIPort()
+	dockerAPIPort := dF.GetDockerAPIPort()
 	dockerHostsAddressesEnv := dF.Caller.GetEnvironmentVariable("HUSKYCI_DOCKERAPI_ADDR")
 	dockerHostsAddresses := strings.Split(dockerHostsAddressesEnv, " ")
 	dockerHostsCertificate := dF.Caller.GetEnvironmentVariable("HUSKYCI_DOCKERAPI_CERT_FILE")
@@ -253,11 +230,14 @@ func (dF DefaultConfig) getDockerHostsConfig() *DockerHostsConfig {
 		PathCertificate:      dockerHostsPathCertificates,
 		Key:                  dockerHostsKey,
 		Host:                 fmt.Sprintf("%s:%d", dockerHostsAddresses[0], dockerAPIPort),
-		TLSVerify:            GetDockerAPITLSVerify(),
-		MaxContainersAllowed: GetMaxContainersAllowed(),
+		TLSVerify:            dF.GetDockerAPITLSVerify(),
+		MaxContainersAllowed: dF.GetMaxContainersAllowed(),
 	}
 }
 
+// GetDockerAPIPort will return the port number
+// where Docker API will be listening to. This
+// depends on HUSKYCI_DOCKERAPI_PORT.
 func (dF DefaultConfig) GetDockerAPIPort() int {
 	dockerAPIport, err := dF.Caller.ConvertStrToInt(dF.Caller.GetEnvironmentVariable("HUSKYCI_DOCKERAPI_PORT"))
 	if err != nil {
@@ -266,9 +246,14 @@ func (dF DefaultConfig) GetDockerAPIPort() int {
 	return dockerAPIport
 }
 
+// GetDockerAPITLSVerify returns an int that is
+// interpreted as a boolean. If HUSKYCI_DOCKERAPI_TLS_VERIFY
+// is false, it will return 0 and TLS won't be configured
+// in the Docker API. Otherwise, it will return 1 and Docker
+// API will use TLS protocol.
 func (dF DefaultConfig) GetDockerAPITLSVerify() int {
 	option := dF.Caller.GetEnvironmentVariable("HUSKYCI_DOCKERAPI_TLS_VERIFY")
-	if option == "false" || option == "0" || option == "FALSE" {
+	if strings.EqualFold(option, "false") || option == "0" {
 		return 0
 	}
 	return 1
@@ -285,6 +270,10 @@ func (dF DefaultConfig) getSecurityTestConfig(securityTestName string) *types.Se
 	}
 }
 
+// GetMaxContainersAllowed returns an interger the maximum number
+// interpreted as the maximum number of containers initialized
+// in parallel. It depends on the environment variable called
+// HUSKYCI_DOCKERAPI_MAX_CONTAINERS_BEFORE_CLEANING.
 func (dF DefaultConfig) GetMaxContainersAllowed() int {
 	maxContainersAllowed, err := dF.Caller.ConvertStrToInt(dF.Caller.GetEnvironmentVariable("HUSKYCI_DOCKERAPI_MAX_CONTAINERS_BEFORE_CLEANING"))
 	if err != nil {
