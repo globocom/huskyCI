@@ -98,8 +98,8 @@ func (dF DefaultConfig) SetOnceConfig() {
 	onceConfig.Do(func() {
 		APIConfiguration = &APIConfig{
 			Port:                 dF.GetAPIPort(),
-			Version:              dF.getAPIVersion(),
-			ReleaseDate:          dF.getAPIReleaseDate(),
+			Version:              dF.GetAPIVersion(),
+			ReleaseDate:          dF.GetAPIReleaseDate(),
 			UseTLS:               dF.GetAPIUseTLS(),
 			GitPrivateSSHKey:     dF.getGitPrivateSSHKey(),
 			GraylogConfig:        dF.getGraylogConfig(),
@@ -128,13 +128,13 @@ func (dF DefaultConfig) GetAPIPort() int {
 	return apiPort
 }
 
-// getAPIVersion returns current API version
-func (dF DefaultConfig) getAPIVersion() string {
+// GetAPIVersion returns current API version
+func (dF DefaultConfig) GetAPIVersion() string {
 	return "0.6.0"
 }
 
-// getAPIReleaseDate returns current API release date
-func (dF DefaultConfig) getAPIReleaseDate() string {
+// GetAPIReleaseDate returns current API release date
+func (dF DefaultConfig) GetAPIReleaseDate() string {
 	return "2019-07-18"
 }
 
