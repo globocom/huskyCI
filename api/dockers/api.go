@@ -36,11 +36,15 @@ type CreateContainerPayload struct {
 
 // NewDocker returns a new docker.
 func NewDocker() (*Docker, error) {
-	configAPI := context.GetAPIConfig()
+	configAPI, err := context.DefaultConf.GetAPIConfig()
+	if err != nil {
+		log.Error("NewDocker", "DOCKERAPI", 3026, err)
+		return nil, err
+	}
 	dockerHost := fmt.Sprintf("https://%s", configAPI.DockerHostsConfig.Host)
 
 	// env vars needed by docker/docker library to create a NewEnvClient:
-	err := os.Setenv("DOCKER_HOST", dockerHost)
+	err = os.Setenv("DOCKER_HOST", dockerHost)
 	if err != nil {
 		log.Error("NewDocker", "DOCKERAPI", 3001, err)
 		return nil, err
