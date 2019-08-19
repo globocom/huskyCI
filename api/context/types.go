@@ -10,7 +10,7 @@ import (
 type ExternalCalls struct{}
 
 func (eC *ExternalCalls) SetConfigFile(configName, configPath string) error {
-	viper.SetConfigFile(configName)
+	viper.SetConfigName(configName)
 	viper.AddConfigPath(configPath)
 	return viper.ReadInConfig()
 }

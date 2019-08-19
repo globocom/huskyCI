@@ -263,7 +263,11 @@ func dockerPullImage(d *docker.Docker, image string) error {
 }
 
 func updateAndCheckContainerList(d *docker.Docker) error {
-	configAPI := context.GetAPIConfig()
+	configAPI, err := context.DefaultConf.GetAPIConfig()
+	if err != nil {
+		log.Error("updateAndCheckContainerList", "DOCKERRUN", 3026, err)
+		return err
+	}
 	maxContainersAllowed := configAPI.DockerHostsConfig.MaxContainersAllowed
 	listedContainers++
 	if listedContainers >= maxContainersAllowed {

@@ -14,8 +14,17 @@ import (
 )
 
 // APIConfiguration holds all API configuration.
-var APIConfiguration *APIConfig
-var onceConfig sync.Once
+var (
+	APIConfiguration *APIConfig
+	onceConfig       sync.Once
+	DefaultConf      *DefaultConfig
+)
+
+func init() {
+	DefaultConf = &DefaultConfig{
+		Caller: &ExternalCalls{},
+	}
+}
 
 // MongoConfig represents MongoDB configuration.
 type MongoConfig struct {
