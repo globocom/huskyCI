@@ -5,11 +5,8 @@
 package analysis
 
 import (
-	"encoding/json"
 	"strconv"
-	"strings"
 
-	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
 )
 
@@ -32,57 +29,57 @@ type WarningItem struct {
 // BrakemanCheckOutputFlow analyses the output from Brakeman and sets a cResult based on it.
 func BrakemanCheckOutputFlow(CID string, cOutput string, RID string) {
 
-	// step 1: check for any errors when clonning repo
-	errorClonning := strings.Contains(cOutput, "ERROR_CLONING")
-	if errorClonning {
-		if err := updateInfoAndResultBasedOnCID("Error clonning repository", "error", CID); err != nil {
-			return
-		}
-		return
-	}
+	// // step 1: check for any errors when clonning repo
+	// errorClonning := strings.Contains(cOutput, "ERROR_CLONING")
+	// if errorClonning {
+	// 	if err := updateInfoAndResultBasedOnCID("Error clonning repository", "error", CID); err != nil {
+	// 		return
+	// 	}
+	// 	return
+	// }
 
-	// step 2: nil cOutput states that no Issues were found.
-	if cOutput == "" {
-		if err := updateInfoAndResultBasedOnCID("No issues found.", "passed", CID); err != nil {
-			return
-		}
-		return
-	}
+	// // step 2: nil cOutput states that no Issues were found.
+	// if cOutput == "" {
+	// 	if err := updateInfoAndResultBasedOnCID("No issues found.", "passed", CID); err != nil {
+	// 		return
+	// 	}
+	// 	return
+	// }
 
-	// step 3: Unmarshall cOutput into BrakemanOutput struct.
-	brakemanOutput := BrakemanOutput{}
-	err := json.Unmarshal([]byte(cOutput), &brakemanOutput)
-	if err != nil {
-		log.Error("BrakemanStartAnalysis", "BRAKEMAN", 1005, cOutput, err)
-		return
-	}
+	// // step 3: Unmarshall cOutput into BrakemanOutput struct.
+	// brakemanOutput := BrakemanOutput{}
+	// err := json.Unmarshal([]byte(cOutput), &brakemanOutput)
+	// if err != nil {
+	// 	log.Error("BrakemanStartAnalysis", "BRAKEMAN", 1005, cOutput, err)
+	// 	return
+	// }
 
-	// step 4: An empty errors slice also means that no vulnerabilities were found
-	if len(brakemanOutput.Warnings) == 0 {
-		if err := updateInfoAndResultBasedOnCID("No issues found.", "passed", CID); err != nil {
-			return
-		}
-		return
-	}
+	// // step 4: An empty errors slice also means that no vulnerabilities were found
+	// if len(brakemanOutput.Warnings) == 0 {
+	// 	if err := updateInfoAndResultBasedOnCID("No issues found.", "passed", CID); err != nil {
+	// 		return
+	// 	}
+	// 	return
+	// }
 
-	// step 5: find Issues that have confidence "High" or "Medium".
-	cResult := "passed"
-	issueMessage := "No issues found."
-	for _, warning := range brakemanOutput.Warnings {
-		if warning.Confidence == "High" || warning.Confidence == "Medium" {
-			cResult = "failed"
-			issueMessage = "Issues found."
-			break
-		}
-	}
-	if err := updateInfoAndResultBasedOnCID(issueMessage, cResult, CID); err != nil {
-		return
-	}
+	// // step 5: find Issues that have confidence "High" or "Medium".
+	// cResult := "passed"
+	// issueMessage := "No issues found."
+	// for _, warning := range brakemanOutput.Warnings {
+	// 	if warning.Confidence == "High" || warning.Confidence == "Medium" {
+	// 		cResult = "failed"
+	// 		issueMessage = "Issues found."
+	// 		break
+	// 	}
+	// }
+	// if err := updateInfoAndResultBasedOnCID(issueMessage, cResult, CID); err != nil {
+	// 	return
+	// }
 
-	// step 6: finally, update analysis with huskyCI results
-	if err := updateHuskyCIResultsBasedOnRID(RID, "brakeman", brakemanOutput); err != nil {
-		return
-	}
+	// // step 6: finally, update analysis with huskyCI results
+	// if err := updateHuskyCIResultsBasedOnRID(RID, "brakeman", brakemanOutput); err != nil {
+	// 	return
+	// }
 }
 
 // prepareHuskyCIBrakemanResults will prepare Brakeman output to be added into RubyResults struct

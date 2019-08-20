@@ -5,10 +5,6 @@
 package analysis
 
 import (
-	"encoding/json"
-	"strings"
-
-	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
 )
 
@@ -51,57 +47,57 @@ type VulnerabilitiesSummary struct {
 // NpmAuditCheckOutputFlow analyses the output from Npm Audit and sets a cResult based on it.
 func NpmAuditCheckOutputFlow(CID string, cOutput string, RID string) {
 
-	errorClonning := strings.Contains(cOutput, "ERROR_CLONING")
-	failedRunning := strings.Contains(cOutput, "ERROR_RUNNING_NPMAUDIT")
+	// errorClonning := strings.Contains(cOutput, "ERROR_CLONING")
+	// failedRunning := strings.Contains(cOutput, "ERROR_RUNNING_NPMAUDIT")
 
-	// step 1: check for any errors when clonning repo
-	if errorClonning {
-		if err := updateInfoAndResultBasedOnCID("Error clonning repository", "error", CID); err != nil {
-			return
-		}
-		return
-	}
+	// // step 1: check for any errors when clonning repo
+	// if errorClonning {
+	// 	if err := updateInfoAndResultBasedOnCID("Error clonning repository", "error", CID); err != nil {
+	// 		return
+	// 	}
+	// 	return
+	// }
 
-	// step 2: check for any errors when running securityTest
-	if failedRunning {
-		if err := updateInfoAndResultBasedOnCID("Internal error running NPM Audit.", "error", CID); err != nil {
-			return
-		}
+	// // step 2: check for any errors when running securityTest
+	// if failedRunning {
+	// 	if err := updateInfoAndResultBasedOnCID("Internal error running NPM Audit.", "error", CID); err != nil {
+	// 		return
+	// 	}
 
-		npmAuditOutput := NpmAuditOutput{FailedRunning: failedRunning}
-		if err := updateHuskyCIResultsBasedOnRID(RID, "npmaudit", npmAuditOutput); err != nil {
-			return
-		}
+	// 	npmAuditOutput := NpmAuditOutput{FailedRunning: failedRunning}
+	// 	if err := updateHuskyCIResultsBasedOnRID(RID, "npmaudit", npmAuditOutput); err != nil {
+	// 		return
+	// 	}
 
-		return
-	}
+	// 	return
+	// }
 
-	// step 3: Unmarshall cOutput into NpmAuditOutput struct.
-	npmAuditOutput := NpmAuditOutput{}
-	err := json.Unmarshal([]byte(cOutput), &npmAuditOutput)
-	if err != nil {
-		log.Error("NpmAuditStartAnalysis", "NPMAUDIT", 1022, cOutput, err)
-		return
-	}
+	// // step 3: Unmarshall cOutput into NpmAuditOutput struct.
+	// npmAuditOutput := NpmAuditOutput{}
+	// err := json.Unmarshal([]byte(cOutput), &npmAuditOutput)
+	// if err != nil {
+	// 	log.Error("NpmAuditStartAnalysis", "NPMAUDIT", 1022, cOutput, err)
+	// 	return
+	// }
 
-	// step 4: find Issues that have severity "moderate" or "high.
-	cResult := "passed"
-	issueMessage := "No issues found."
-	for _, vulnerability := range npmAuditOutput.Advisories {
-		if vulnerability.Severity == "high" || vulnerability.Severity == "moderate" {
-			cResult = "failed"
-			issueMessage = "Issues found."
-			break
-		}
-	}
-	if err := updateInfoAndResultBasedOnCID(issueMessage, cResult, CID); err != nil {
-		return
-	}
+	// // step 4: find Issues that have severity "moderate" or "high.
+	// cResult := "passed"
+	// issueMessage := "No issues found."
+	// for _, vulnerability := range npmAuditOutput.Advisories {
+	// 	if vulnerability.Severity == "high" || vulnerability.Severity == "moderate" {
+	// 		cResult = "failed"
+	// 		issueMessage = "Issues found."
+	// 		break
+	// 	}
+	// }
+	// if err := updateInfoAndResultBasedOnCID(issueMessage, cResult, CID); err != nil {
+	// 	return
+	// }
 
-	// step 6: finally, update analysis with huskyCI results
-	if err := updateHuskyCIResultsBasedOnRID(RID, "npmaudit", npmAuditOutput); err != nil {
-		return
-	}
+	// // step 6: finally, update analysis with huskyCI results
+	// if err := updateHuskyCIResultsBasedOnRID(RID, "npmaudit", npmAuditOutput); err != nil {
+	// 	return
+	// }
 
 }
 

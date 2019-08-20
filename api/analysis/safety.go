@@ -5,10 +5,6 @@
 package analysis
 
 import (
-	"encoding/json"
-	"strings"
-
-	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
 	"github.com/globocom/huskyCI/api/util"
 )
@@ -33,90 +29,90 @@ type SafetyIssue struct {
 //SafetyCheckOutputFlow analyses the output from Safety and sets cResult based on it.
 func SafetyCheckOutputFlow(CID string, cOutput string, RID string) {
 
-	reqNotFound := strings.Contains(cOutput, "ERROR_REQ_NOT_FOUND")
-	failedRunning := strings.Contains(cOutput, "ERROR_RUNNING_SAFETY")
-	warningFound := strings.Contains(cOutput, "Warning: unpinned requirement ")
-	errorCloning := strings.Contains(cOutput, "ERROR_CLONING")
+	// reqNotFound := strings.Contains(cOutput, "ERROR_REQ_NOT_FOUND")
+	// failedRunning := strings.Contains(cOutput, "ERROR_RUNNING_SAFETY")
+	// warningFound := strings.Contains(cOutput, "Warning: unpinned requirement ")
+	// errorCloning := strings.Contains(cOutput, "ERROR_CLONING")
 
-	// step 1: check for any errors when clonning repo
-	if errorCloning {
-		if err := updateInfoAndResultBasedOnCID("Error clonning repository", "error", CID); err != nil {
-			return
-		}
-		return
-	}
+	// // step 1: check for any errors when clonning repo
+	// if errorCloning {
+	// 	if err := updateInfoAndResultBasedOnCID("Error clonning repository", "error", CID); err != nil {
+	// 		return
+	// 	}
+	// 	return
+	// }
 
-	// step 2: check for any errors when running securityTest
-	if failedRunning {
-		if err := updateInfoAndResultBasedOnCID("Internal error running Safety.", "error", CID); err != nil {
-			return
-		}
-		return
-	}
+	// // step 2: check for any errors when running securityTest
+	// if failedRunning {
+	// 	if err := updateInfoAndResultBasedOnCID("Internal error running Safety.", "error", CID); err != nil {
+	// 		return
+	// 	}
+	// 	return
+	// }
 
-	// step 3: check if requirements.txt were found or not
-	if reqNotFound {
-		if err := updateInfoAndResultBasedOnCID("Requirements not found.", "warning", CID); err != nil {
-			return
-		}
+	// // step 3: check if requirements.txt were found or not
+	// if reqNotFound {
+	// 	if err := updateInfoAndResultBasedOnCID("Requirements not found.", "warning", CID); err != nil {
+	// 		return
+	// 	}
 
-		safetyOutput := SafetyOutput{ReqNotFound: true}
-		if err := updateHuskyCIResultsBasedOnRID(RID, "safety", safetyOutput); err != nil {
-			return
-		}
-		return
-	}
+	// 	safetyOutput := SafetyOutput{ReqNotFound: true}
+	// 	if err := updateHuskyCIResultsBasedOnRID(RID, "safety", safetyOutput); err != nil {
+	// 		return
+	// 	}
+	// 	return
+	// }
 
-	// step 4: check if warning were found and handle its output
-	safetyOutput := SafetyOutput{}
-	if warningFound {
-		outputJSON := util.GetLastLine(cOutput)
-		safetyOutput.OutputWarnings = util.GetAllLinesButLast(cOutput)
-		cOutput = outputJSON
-	}
-	cOutputSanitized := util.SanitizeSafetyJSON(cOutput)
+	// // step 4: check if warning were found and handle its output
+	// safetyOutput := SafetyOutput{}
+	// if warningFound {
+	// 	outputJSON := util.GetLastLine(cOutput)
+	// 	safetyOutput.OutputWarnings = util.GetAllLinesButLast(cOutput)
+	// 	cOutput = outputJSON
+	// }
+	// cOutputSanitized := util.SanitizeSafetyJSON(cOutput)
 
-	// step 5: unmarshall safety output
-	err := json.Unmarshal([]byte(cOutputSanitized), &safetyOutput)
-	if err != nil {
-		log.Error("SafetyStartAnalysis", "SAFETY", 1018, cOutput, err)
-		return
-	}
+	// // step 5: unmarshall safety output
+	// err := json.Unmarshal([]byte(cOutputSanitized), &safetyOutput)
+	// if err != nil {
+	// 	log.Error("SafetyStartAnalysis", "SAFETY", 1018, cOutput, err)
+	// 	return
+	// }
 
-	// step 6: check if issues, warnings, or both were found
-	if len(safetyOutput.SafetyIssues) == 0 {
+	// // step 6: check if issues, warnings, or both were found
+	// if len(safetyOutput.SafetyIssues) == 0 {
 
-		// no issues but warning found!
-		if warningFound {
-			if err := updateInfoAndResultBasedOnCID("Warnings found.", "warning", CID); err != nil {
-				return
-			}
+	// 	// no issues but warning found!
+	// 	if warningFound {
+	// 		if err := updateInfoAndResultBasedOnCID("Warnings found.", "warning", CID); err != nil {
+	// 			return
+	// 		}
 
-			safetyOutput := SafetyOutput{WarningFound: true}
-			if err := updateHuskyCIResultsBasedOnRID(RID, "safety", safetyOutput); err != nil {
-				return
-			}
+	// 		safetyOutput := SafetyOutput{WarningFound: true}
+	// 		if err := updateHuskyCIResultsBasedOnRID(RID, "safety", safetyOutput); err != nil {
+	// 			return
+	// 		}
 
-			return
-		}
+	// 		return
+	// 	}
 
-		// no issues and no warning
-		if err := updateInfoAndResultBasedOnCID("No issues found.", "passed", CID); err != nil {
-			return
-		}
+	// 	// no issues and no warning
+	// 	if err := updateInfoAndResultBasedOnCID("No issues found.", "passed", CID); err != nil {
+	// 		return
+	// 	}
 
-		return
-	}
+	// 	return
+	// }
 
-	// Issues found.
-	if err := updateInfoAndResultBasedOnCID("Issues found.", "failed", CID); err != nil {
-		return
-	}
+	// // Issues found.
+	// if err := updateInfoAndResultBasedOnCID("Issues found.", "failed", CID); err != nil {
+	// 	return
+	// }
 
-	// step 6: finally, update analysis with huskyCI results
-	if err := updateHuskyCIResultsBasedOnRID(RID, "safety", safetyOutput); err != nil {
-		return
-	}
+	// // step 6: finally, update analysis with huskyCI results
+	// if err := updateHuskyCIResultsBasedOnRID(RID, "safety", safetyOutput); err != nil {
+	// 	return
+	// }
 
 }
 
