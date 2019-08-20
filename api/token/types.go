@@ -22,32 +22,32 @@ type ExternalCalls interface {
 	FindAccessToken(id string) (types.DBToken, error)
 	UpdateAccessToken(id string, accesstoken types.DBToken) error
 	FindRepoURL(repositoryURL string) error
-	GenerateUuid() string
+	GenerateUUID() string
 	EncodeBase64(m string) string
 	DecodeToStringBase64(encodedVal string) (string, error)
 }
 
-// TokenHandler is a struct used to handle with
+// THandler is a struct used to handle with
 // token generation, validation and deactivation.
 // It implements TokenInterface interface.
-type TokenHandler struct {
+type THandler struct {
 	External ExternalCalls
 	HashGen  auth.Pbkdf2Generator
 }
 
-// TokenCaller implements ExternalCalls interface.
-type TokenCaller struct{}
+// TCaller implements ExternalCalls interface.
+type TCaller struct{}
 
-// TokenInterface is used to define functions that
+// TInterface is used to define functions that
 // handle with access token management.
-type TokenInterface interface {
+type TInterface interface {
 	GenerateAccessToken(repo types.TokenRequest) (string, error)
 	ValidateToken(token, repositoryURL string) error
 	VerifyRepo(repositoryURL string) error
 }
 
-// TokenValidator is used to validate an access token
+// TValidator is used to validate an access token
 // using the defined functions TokenInterface
-type TokenValidator struct {
-	TokenVerifier TokenInterface
+type TValidator struct {
+	TokenVerifier TInterface
 }

@@ -130,7 +130,7 @@ func (d Docker) RemoveContainer() error {
 	return err
 }
 
-// ListContainers returns a Docker type list with CIDs of stopped containers
+// ListStoppedContainers returns a Docker type list with CIDs of stopped containers
 func (d Docker) ListStoppedContainers() ([]Docker, error) {
 
 	ctx := goContext.Background()

@@ -77,6 +77,7 @@ type APIConfig struct {
 	SafetySecurityTest   *types.SecurityTest
 }
 
+// DefaultConfig is the struct that stores the caller for testing.
 type DefaultConfig struct {
 	Caller CallerInterface
 }

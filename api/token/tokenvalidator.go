@@ -9,7 +9,7 @@ package token
 // it will validate the received access token. A true
 // bool is returned if it has authorization. If not,
 // it will return false.
-func (tV TokenValidator) HasAuthorization(accessToken, repositoryURL string) bool {
+func (tV TValidator) HasAuthorization(accessToken, repositoryURL string) bool {
 	// Temporary: Verify if exists an access token
 	// for that repo
 	if err := tV.TokenVerifier.VerifyRepo(repositoryURL); err != nil {
