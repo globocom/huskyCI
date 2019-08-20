@@ -15,7 +15,7 @@ enry:
       echo "ERROR_CLONING"
       cat /tmp/errorGitCloneEnry
     fi
-  language: Generic
+  type: Generic
   default: true
   timeOutInSeconds: 60
 
@@ -39,6 +39,7 @@ gosec:
       echo "ERROR_CLONING"
       cat /tmp/errorGitCloneGosec
     fi
+  type: Language
   language: Go
   default: true
   timeOutInSeconds: 360
@@ -61,6 +62,7 @@ bandit:
        echo "ERROR_CLONING"
        cat /tmp/errorGitCloneBandit
      fi
+  type: Language
   language: Python
   default: true
   timeOutInSeconds: 360
@@ -83,6 +85,7 @@ brakeman:
       echo "ERROR_CLONING"
       cat /tmp/errorGitCloneBrakeman
     fi
+  type: Language
   language: Ruby
   default: true
   timeOutInSeconds: 360
@@ -134,6 +137,7 @@ retirejs:
       echo 'ERROR_CLONING'
       cat /tmp/errorGitCloneRetirejs
     fi
+  type: Language
   language: JavaScript
   default: false
   timeOutInSeconds: 360
@@ -174,6 +178,7 @@ safety:
       echo "ERROR_CLONING"
       cat /tmp/errorGitCloneSafety
     fi
+  type: Language
   language: Python
   default: true
   timeOutInSeconds: 360
@@ -200,6 +205,7 @@ npmaudit:
       echo "ERROR_CLONING"
       cat /tmp/errorGitCloneSafety
     fi
+  type: Language
   language: JavaScript
   default: true
   timeOutInSeconds: 360

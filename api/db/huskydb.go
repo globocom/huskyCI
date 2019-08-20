@@ -138,12 +138,10 @@ func InsertDBAnalysis(analysis types.Analysis) error {
 		"RID":              analysis.RID,
 		"repositoryURL":    analysis.URL,
 		"repositoryBranch": analysis.Branch,
-		"securityTests":    analysis.SecurityTests,
 		"status":           analysis.Status,
 		"result":           analysis.Result,
 		"containers":       analysis.Containers,
 		"startedAt":        analysis.StartedAt,
-		"internaldepURL":   analysis.InternalDepURL,
 	}
 	err := mongoHuskyCI.Conn.Insert(newAnalysis, mongoHuskyCI.AnalysisCollection)
 	return err
@@ -171,7 +169,7 @@ func InsertDBAccessToken(accessToken types.DBToken) error {
 		"isValid":       accessToken.IsValid,
 		"createdAt":     accessToken.CreatedAt,
 		"salt":          accessToken.Salt,
-		"uuid":          accessToken.UUid,
+		"uuid":          accessToken.UUID,
 	}
 	err := mongoHuskyCI.Conn.Insert(newAccessToken, mongoHuskyCI.AccessTokenCollection)
 	return err
