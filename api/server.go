@@ -20,7 +20,12 @@ import (
 
 func main() {
 
-	configAPI := apiContext.GetAPIConfig()
+	configAPI, err := apiContext.DefaultConf.GetAPIConfig()
+
+	if err != nil {
+		fmt.Println("Error in configuration file: ", err)
+		os.Exit(1)
+	}
 
 	log.InitLog()
 	log.Info("main", "SERVER", 11)

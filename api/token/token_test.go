@@ -123,7 +123,7 @@ var _ = Describe("Token", func() {
 				expectedURL:           "",
 				expectedValidateError: errors.New("URL is not valid"),
 			}
-			tokenGen := TokenHandler{
+			tokenGen := THandler{
 				External: &fakeExt,
 			}
 			accessToken, err := tokenGen.GenerateAccessToken(types.TokenRequest{
@@ -139,7 +139,7 @@ var _ = Describe("Token", func() {
 				expectedURL:           "",
 				expectedValidateError: nil,
 			}
-			tokenGen := TokenHandler{
+			tokenGen := THandler{
 				External: &fakeExt,
 			}
 			accessToken, err := tokenGen.GenerateAccessToken(types.TokenRequest{
@@ -157,7 +157,7 @@ var _ = Describe("Token", func() {
 				expectedToken:         "",
 				expectedGenerateError: errors.New("Failed to generate token"),
 			}
-			tokenGen := TokenHandler{
+			tokenGen := THandler{
 				External: &fakeExt,
 			}
 			accessToken, err := tokenGen.GenerateAccessToken(types.TokenRequest{
@@ -179,7 +179,7 @@ var _ = Describe("Token", func() {
 				expectedSalt:              "",
 				expectedGenerateSaltError: errors.New("Could not generate a valid salt"),
 			}
-			tokenGen := TokenHandler{
+			tokenGen := THandler{
 				External: &fakeExt,
 				HashGen:  &fakeHash,
 			}
@@ -204,7 +204,7 @@ var _ = Describe("Token", func() {
 				expectedDecodedSalt:       make([]byte, 0),
 				expectedDecodeSaltError:   errors.New("Failed to decode salt value"),
 			}
-			tokenGen := TokenHandler{
+			tokenGen := THandler{
 				External: &fakeExt,
 				HashGen:  &fakeHash,
 			}
@@ -232,7 +232,7 @@ var _ = Describe("Token", func() {
 				expectedKeyLength:         0,
 				expectedGetKeyError:       errors.New("Error during key length conversion"),
 			}
-			tokenGen := TokenHandler{
+			tokenGen := THandler{
 				External: &fakeExt,
 				HashGen:  &fakeHash,
 			}
@@ -262,7 +262,7 @@ var _ = Describe("Token", func() {
 				expectedIterations:         0,
 				expectedGetIterationsError: errors.New("Failed to convert iterations"),
 			}
-			tokenGen := TokenHandler{
+			tokenGen := THandler{
 				External: &fakeExt,
 				HashGen:  &fakeHash,
 			}
@@ -292,7 +292,7 @@ var _ = Describe("Token", func() {
 				expectedIterations:         1024,
 				expectedGetIterationsError: nil,
 			}
-			tokenGen := TokenHandler{
+			tokenGen := THandler{
 				External: &fakeExt,
 				HashGen:  &fakeHash,
 			}
@@ -326,7 +326,7 @@ var _ = Describe("Token", func() {
 				expectedGetIterationsError: nil,
 				expectedHashValue:          "MyTokenHashValue",
 			}
-			tokenGen := TokenHandler{
+			tokenGen := THandler{
 				External: &fakeExt,
 				HashGen:  &fakeHash,
 			}
@@ -360,7 +360,7 @@ var _ = Describe("Token", func() {
 				expectedGetIterationsError: nil,
 				expectedHashValue:          "MyTokenHashValue",
 			}
-			tokenGen := TokenHandler{
+			tokenGen := THandler{
 				External: &fakeExt,
 				HashGen:  &fakeHash,
 			}
@@ -378,7 +378,7 @@ var _ = Describe("Token", func() {
 					expectedDecodedString: "",
 					expectedDecodeToError: errors.New("Failed to decode to base64"),
 				}
-				tokenVal := TokenHandler{
+				tokenVal := THandler{
 					External: &fakeExt,
 				}
 				UUid, Random, err := tokenVal.GetSplitted("MyTokenBase64")
@@ -393,7 +393,7 @@ var _ = Describe("Token", func() {
 					expectedDecodedString: "InvalidTokenFormat",
 					expectedDecodeToError: nil,
 				}
-				tokenVal := TokenHandler{
+				tokenVal := THandler{
 					External: &fakeExt,
 				}
 				UUid, Random, err := tokenVal.GetSplitted("MyTokenBase64")
@@ -408,7 +408,7 @@ var _ = Describe("Token", func() {
 					expectedDecodedString: "MyUUID:MyRandomData",
 					expectedDecodeToError: nil,
 				}
-				tokenVal := TokenHandler{
+				tokenVal := THandler{
 					External: &fakeExt,
 				}
 				UUid, Random, err := tokenVal.GetSplitted("MyTokenBase64")
@@ -425,7 +425,7 @@ var _ = Describe("Token", func() {
 					expectedDecodedSalt:     make([]byte, 0),
 					expectedDecodeSaltError: errors.New("Could not return the decoded value"),
 				}
-				tokenVal := TokenHandler{
+				tokenVal := THandler{
 					HashGen: &hashGen,
 				}
 				Expect(tokenVal.ValidateRandomData("ReceivedRandom", "StoredRandom", "StoredSalt")).To(Equal(hashGen.expectedDecodeSaltError))
@@ -438,7 +438,7 @@ var _ = Describe("Token", func() {
 					expectedDecodeSaltError: nil,
 					expectedHashName:        "InvalidSha",
 				}
-				tokenVal := TokenHandler{
+				tokenVal := THandler{
 					HashGen: &hashGen,
 				}
 				Expect(tokenVal.ValidateRandomData("ReceivedRandom", "StoredRandom", "StoredSalt")).To(Equal(errors.New("Invalid hash function")))
@@ -453,7 +453,7 @@ var _ = Describe("Token", func() {
 					expectedKeyLength:       0,
 					expectedGetKeyError:     errors.New("Invalid key format"),
 				}
-				tokenVal := TokenHandler{
+				tokenVal := THandler{
 					HashGen: &hashGen,
 				}
 				Expect(tokenVal.ValidateRandomData("ReceivedRandom", "StoredRandom", "StoredSalt")).To(Equal(hashGen.expectedGetKeyError))
@@ -470,7 +470,7 @@ var _ = Describe("Token", func() {
 					expectedIterations:         0,
 					expectedGetIterationsError: errors.New("Invalid iterations value format"),
 				}
-				tokenVal := TokenHandler{
+				tokenVal := THandler{
 					HashGen: &hashGen,
 				}
 				Expect(tokenVal.ValidateRandomData("ReceivedRandom", "StoredRandom", "StoredSalt")).To(Equal(hashGen.expectedGetIterationsError))
@@ -488,7 +488,7 @@ var _ = Describe("Token", func() {
 					expectedGetIterationsError: nil,
 					expectedHashValue:          "DifferentFromTheStored",
 				}
-				tokenVal := TokenHandler{
+				tokenVal := THandler{
 					HashGen: &hashGen,
 				}
 				Expect(tokenVal.ValidateRandomData("ReceivedRandom", "StoredRandom", "StoredSalt")).To(Equal(errors.New("Hash value from random data is different")))
@@ -506,7 +506,7 @@ var _ = Describe("Token", func() {
 					expectedGetIterationsError: nil,
 					expectedHashValue:          "StoredRandomHash",
 				}
-				tokenVal := TokenHandler{
+				tokenVal := THandler{
 					HashGen: &hashGen,
 				}
 				Expect(tokenVal.ValidateRandomData("ReceivedRandom", "StoredRandomHash", "StoredSalt")).To(BeNil())
@@ -520,7 +520,7 @@ var _ = Describe("Token", func() {
 					expectedURL:           "",
 					expectedValidateError: errors.New("Invalid URL format"),
 				}
-				tokenVal := TokenHandler{
+				tokenVal := THandler{
 					External: &fakeExt,
 				}
 				Expect(tokenVal.ValidateToken("RcvToken", "RcvRepo")).To(Equal(fakeExt.expectedValidateError))
@@ -532,7 +532,7 @@ var _ = Describe("Token", func() {
 					expectedURL:           "ValidURLRepo",
 					expectedValidateError: nil,
 				}
-				tokenVal := TokenHandler{
+				tokenVal := THandler{
 					External: &fakeExt,
 				}
 				Expect(tokenVal.ValidateToken("InvalidRcvToken", "RcvRepo")).To(Equal(errors.New("Invalid access token format")))
@@ -548,7 +548,7 @@ var _ = Describe("Token", func() {
 					expectedDecodedString:   "UUID:RandomVal",
 					expectedDecodeToError:   nil,
 				}
-				tokenVal := TokenHandler{
+				tokenVal := THandler{
 					External: &fakeExt,
 				}
 				Expect(tokenVal.ValidateToken("EncodedRcvToken", "RcvRepo")).To(Equal(fakeExt.expectedFindAccessError))
@@ -567,7 +567,7 @@ var _ = Describe("Token", func() {
 					expectedDecodedString: "UUID:RandomVal",
 					expectedDecodeToError: nil,
 				}
-				tokenVal := TokenHandler{
+				tokenVal := THandler{
 					External: &fakeExt,
 				}
 				Expect(tokenVal.ValidateToken("EncodedRcvToken", "RcvRepo")).To(Equal(errors.New("Access token is invalid")))
@@ -587,7 +587,7 @@ var _ = Describe("Token", func() {
 					expectedDecodedString: "UUID:RandomVal",
 					expectedDecodeToError: nil,
 				}
-				tokenVal := TokenHandler{
+				tokenVal := THandler{
 					External: &fakeExt,
 				}
 				Expect(tokenVal.ValidateToken("EncodedRcvToken", "RcvRepo")).To(Equal(errors.New("Access token doesn't have permission to run analysis in the provided repository")))
@@ -617,7 +617,7 @@ var _ = Describe("Token", func() {
 					expectedDecodedString: "UUID:RandomVal",
 					expectedDecodeToError: nil,
 				}
-				tokenVal := TokenHandler{
+				tokenVal := THandler{
 					External: &fakeExt,
 					HashGen:  &fakeHash,
 				}
@@ -648,7 +648,7 @@ var _ = Describe("Token", func() {
 					expectedDecodedString: "UUID:RandomVal",
 					expectedDecodeToError: nil,
 				}
-				tokenVal := TokenHandler{
+				tokenVal := THandler{
 					External: &fakeExt,
 					HashGen:  &fakeHash,
 				}
@@ -663,7 +663,7 @@ var _ = Describe("Token", func() {
 					expectedURL:           "",
 					expectedValidateError: errors.New("Repository does not have a valid format"),
 				}
-				verRepo := TokenHandler{
+				verRepo := THandler{
 					External: &fakeExt,
 				}
 				Expect(verRepo.VerifyRepo("MyRepo")).To(Equal(fakeExt.expectedValidateError))
@@ -676,7 +676,7 @@ var _ = Describe("Token", func() {
 					expectedValidateError: nil,
 					expectedFindRepoError: errors.New("Repository URL not found"),
 				}
-				verRepo := TokenHandler{
+				verRepo := THandler{
 					External: &fakeExt,
 				}
 				Expect(verRepo.VerifyRepo("MyRepo")).To(Equal(fakeExt.expectedFindRepoError))
@@ -687,7 +687,7 @@ var _ = Describe("Token", func() {
 					expectedValidateError: nil,
 					expectedFindRepoError: nil,
 				}
-				verRepo := TokenHandler{
+				verRepo := THandler{
 					External: &fakeExt,
 				}
 				Expect(verRepo.VerifyRepo("MyRepo")).To(BeNil())
@@ -701,7 +701,7 @@ var _ = Describe("Token", func() {
 					expectedDecodedString: "InvalidTokenFormat",
 					expectedDecodeToError: nil,
 				}
-				invalToken := TokenHandler{
+				invalToken := THandler{
 					External: &fakeExt,
 				}
 				Expect(invalToken.InvalidateToken("RcvToken")).To(Equal(errors.New("Invalid access token format")))
@@ -715,7 +715,7 @@ var _ = Describe("Token", func() {
 					expectedFindAccessError: errors.New("Could not find access token in DB"),
 					expectedAccessToken:     types.DBToken{},
 				}
-				invalToken := TokenHandler{
+				invalToken := THandler{
 					External: &fakeExt,
 				}
 				Expect(invalToken.InvalidateToken("RcvToken")).To(Equal(fakeExt.expectedFindAccessError))
@@ -736,7 +736,7 @@ var _ = Describe("Token", func() {
 					},
 					expectedUpdateAccessError: nil,
 				}
-				invalToken := TokenHandler{
+				invalToken := THandler{
 					External: &fakeExt,
 				}
 				err := invalToken.InvalidateToken("RcvToken")
