@@ -59,11 +59,11 @@ func (tH *TokenHandler) GenerateAccessToken(repo types.TokenRequest) (string, er
 	accessToken.IsValid = true
 	accessToken.CreatedAt = tH.External.GetTimeNow()
 	accessToken.Salt = salt
-	accessToken.UUid = tH.External.GenerateUuid()
+	accessToken.UUID = tH.External.GenerateUUID()
 	if err := tH.External.StoreAccessToken(accessToken); err != nil {
 		return "", err
 	}
-	return tH.External.EncodeBase64(fmt.Sprintf("%s:%s", accessToken.UUid, token)), nil
+	return tH.External.EncodeBase64(fmt.Sprintf("%s:%s", accessToken.UUID, token)), nil
 }
 
 // GetSplitted will return UUID and random part
