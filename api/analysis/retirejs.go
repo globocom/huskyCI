@@ -5,10 +5,6 @@
 package analysis
 
 import (
-	"encoding/json"
-	"strings"
-
-	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
 )
 
@@ -40,69 +36,69 @@ type RetireJSVulnerabilityIdentifiers struct {
 //RetirejsCheckOutputFlow analyses the output from RetireJS and sets cResult basdes on it.
 func RetirejsCheckOutputFlow(CID string, cOutput string, RID string) {
 
-	errorClonning := strings.Contains(cOutput, "ERROR_CLONING")
-	failedRunning := strings.Contains(cOutput, "ERROR_RUNNING_RETIREJS")
+	// errorClonning := strings.Contains(cOutput, "ERROR_CLONING")
+	// failedRunning := strings.Contains(cOutput, "ERROR_RUNNING_RETIREJS")
 
-	// step 1: check for any errors when clonning repo
-	if errorClonning {
-		if err := updateInfoAndResultBasedOnCID("Error clonning repository", "error", CID); err != nil {
-			return
-		}
-		return
-	}
+	// // step 1: check for any errors when clonning repo
+	// if errorClonning {
+	// 	if err := updateInfoAndResultBasedOnCID("Error clonning repository", "error", CID); err != nil {
+	// 		return
+	// 	}
+	// 	return
+	// }
 
-	// step 2: check for any errors when running securityTest
-	if failedRunning {
-		if err := updateInfoAndResultBasedOnCID("Internal error running RetireJS.", "error", CID); err != nil {
-			return
-		}
+	// // step 2: check for any errors when running securityTest
+	// if failedRunning {
+	// 	if err := updateInfoAndResultBasedOnCID("Internal error running RetireJS.", "error", CID); err != nil {
+	// 		return
+	// 	}
 
-		retireJSOutput := []RetirejsOutput{}
-		if err := updateHuskyCIResultsBasedOnRID(RID, "retirejs", retireJSOutput); err != nil {
-			return
-		}
+	// 	retireJSOutput := []RetirejsOutput{}
+	// 	if err := updateHuskyCIResultsBasedOnRID(RID, "retirejs", retireJSOutput); err != nil {
+	// 		return
+	// 	}
 
-		return
-	}
+	// 	return
+	// }
 
-	// step 3: get retireJS output to be checked
-	retirejsOutput := []RetirejsOutput{}
-	err := json.Unmarshal([]byte(cOutput), &retirejsOutput)
-	if err != nil {
-		log.Error("RetirejsStartAnalysis", "RETIREJS", 1014, cOutput, err)
-		return
-	}
+	// // step 3: get retireJS output to be checked
+	// retirejsOutput := []RetirejsOutput{}
+	// err := json.Unmarshal([]byte(cOutput), &retirejsOutput)
+	// if err != nil {
+	// 	log.Error("RetirejsStartAnalysis", "RETIREJS", 1014, cOutput, err)
+	// 	return
+	// }
 
-	// step 4: sets the container output to "No issues found" if RetirejsIssues returns an empty slice
-	if len(retirejsOutput) == 0 {
-		if err := updateInfoAndResultBasedOnCID("No issues found.", "passed", CID); err != nil {
-			return
-		}
-		return
-	}
+	// // step 4: sets the container output to "No issues found" if RetirejsIssues returns an empty slice
+	// if len(retirejsOutput) == 0 {
+	// 	if err := updateInfoAndResultBasedOnCID("No issues found.", "passed", CID); err != nil {
+	// 		return
+	// 	}
+	// 	return
+	// }
 
-	// step 5: find Vulnerabilities that have severity "medium" or "high"
-	cResult := "passed"
-	issueMessage := "No issues found."
-	for _, output := range retirejsOutput {
-		for _, result := range output.RetirejsResult {
-			for _, vulnerability := range result.Vulnerabilities {
-				if vulnerability.Severity == "high" || vulnerability.Severity == "medium" {
-					cResult = "failed"
-					issueMessage = "Issues found."
-					break
-				}
-			}
-		}
-	}
-	if err := updateInfoAndResultBasedOnCID(issueMessage, cResult, CID); err != nil {
-		return
-	}
+	// // step 5: find Vulnerabilities that have severity "medium" or "high"
+	// cResult := "passed"
+	// issueMessage := "No issues found."
+	// for _, output := range retirejsOutput {
+	// 	for _, result := range output.RetirejsResult {
+	// 		for _, vulnerability := range result.Vulnerabilities {
+	// 			if vulnerability.Severity == "high" || vulnerability.Severity == "medium" {
+	// 				cResult = "failed"
+	// 				issueMessage = "Issues found."
+	// 				break
+	// 			}
+	// 		}
+	// 	}
+	// }
+	// if err := updateInfoAndResultBasedOnCID(issueMessage, cResult, CID); err != nil {
+	// 	return
+	// }
 
-	// step 6: finally, update analysis with huskyCI results
-	if err := updateHuskyCIResultsBasedOnRID(RID, "retirejs", retirejsOutput); err != nil {
-		return
-	}
+	// // step 6: finally, update analysis with huskyCI results
+	// if err := updateHuskyCIResultsBasedOnRID(RID, "retirejs", retirejsOutput); err != nil {
+	// 	return
+	// }
 
 }
 
