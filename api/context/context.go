@@ -234,6 +234,7 @@ func getSecurityTestConfig(securityTestName string) *types.SecurityTest {
 	return &types.SecurityTest{
 		Name:             viper.GetString(fmt.Sprintf("%s.name", securityTestName)),
 		Image:            viper.GetString(fmt.Sprintf("%s.image", securityTestName)),
+		Type:             viper.GetString(fmt.Sprintf("%s.type", securityTestName)),
 		Cmd:              viper.GetString(fmt.Sprintf("%s.cmd", securityTestName)),
 		Language:         viper.GetString(fmt.Sprintf("%s.language", securityTestName)),
 		Default:          viper.GetBool(fmt.Sprintf("%s.default", securityTestName)),

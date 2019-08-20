@@ -25,6 +25,7 @@ type SecurityTest struct {
 	Name             string        `bson:"name" json:"name"`
 	Image            string        `bson:"image" json:"image"`
 	Cmd              string        `bson:"cmd" json:"cmd"`
+	Type             string        `bson:"type" json:"type"`
 	Language         string        `bson:"language" json:"language"`
 	Default          bool          `bson:"default" json:"default"`
 	TimeOutInSeconds int           `bson:"timeOutSeconds" json:"timeOutSeconds"`
@@ -36,7 +37,6 @@ type Analysis struct {
 	RID            string         `bson:"RID" json:"RID"`
 	URL            string         `bson:"repositoryURL" json:"repositoryURL"`
 	Branch         string         `bson:"repositoryBranch" json:"repositoryBranch"`
-	SecurityTests  []SecurityTest `bson:"securityTests" json:"securityTests"`
 	Status         string         `bson:"status" json:"status"`
 	Result         string         `bson:"result" json:"result"`
 	Containers     []Container    `bson:"containers" json:"containers"`
@@ -151,5 +151,5 @@ type DBToken struct {
 	IsValid    bool          `bson:"isValid"`
 	CreatedAt  time.Time     `bson:"createdAt"`
 	Salt       string        `bson:"salt"`
-	UUid       string        `bson:"uuid"`
+	UUID       string        `bson:"uuid"`
 }
