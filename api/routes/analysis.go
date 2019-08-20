@@ -20,17 +20,17 @@ import (
 )
 
 var (
-	tokenValidator token.TokenValidator
+	tokenValidator token.TValidator
 )
 
 func init() {
-	tokenCaller := token.TokenCaller{}
+	tokenCaller := token.TCaller{}
 	hashGen := auth.Pbkdf2Caller{}
-	tokenHandler := token.TokenHandler{
+	tokenHandler := token.THandler{
 		External: &tokenCaller,
 		HashGen:  &hashGen,
 	}
-	tokenValidator = token.TokenValidator{
+	tokenValidator = token.TValidator{
 		TokenVerifier: &tokenHandler,
 	}
 }

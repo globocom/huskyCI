@@ -171,7 +171,7 @@ func InsertDBAccessToken(accessToken types.DBToken) error {
 		"isValid":       accessToken.IsValid,
 		"createdAt":     accessToken.CreatedAt,
 		"salt":          accessToken.Salt,
-		"uuid":          accessToken.UUid,
+		"uuid":          accessToken.UUID,
 	}
 	err := mongoHuskyCI.Conn.Insert(newAccessToken, mongoHuskyCI.AccessTokenCollection)
 	return err
