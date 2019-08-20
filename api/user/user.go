@@ -24,9 +24,12 @@ var (
 	// DefaultAPIUser is the default API user from huskyCI
 	DefaultAPIUser = os.Getenv("HUSKYCI_API_DEFAULT_USERNAME")
 	// DefaultAPIPassword is the default API password from huskyCI
-	DefaultAPIPassword  = os.Getenv("HUSKYCI_API_DEFAULT_PASSWORD")
-	DefaultIterations   = os.Getenv("HUSKYCI_API_DEFAULT_ITERATIONS")
-	DefaultKeyLength    = os.Getenv("HUSKYCI_API_DEFAULT_KEY_LENGTH")
+	DefaultAPIPassword = os.Getenv("HUSKYCI_API_DEFAULT_PASSWORD")
+	// DefaultIterations is the default number of iterations used for auth
+	DefaultIterations = os.Getenv("HUSKYCI_API_DEFAULT_ITERATIONS")
+	// DefaultKeyLength is the default key length used for auth
+	DefaultKeyLength = os.Getenv("HUSKYCI_API_DEFAULT_KEY_LENGTH")
+	// DefaultHashFunction is the default hash function name of iterations used for auth
 	DefaultHashFunction = os.Getenv("HUSKYCI_API_DEFAULT_HASH_FUNCTION")
 )
 

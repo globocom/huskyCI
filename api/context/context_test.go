@@ -1,0 +1,415 @@
+package context_test
+
+import (
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+
+	"errors"
+	. "github.com/globocom/huskyCI/api/context"
+	"github.com/globocom/huskyCI/api/types"
+	"time"
+)
+
+type FakeCaller struct {
+	expectedIntegerValue         int
+	expectedConvertStrToIntError error
+	expectedEnvVar               string
+	expectedSetConfigFileError   error
+	expectedStringFromConfig     string
+	expectedBoolFromConfig       bool
+	expectedIntFromConfig        int
+}
+
+func (fC *FakeCaller) ConvertStrToInt(str string) (int, error) {
+	return fC.expectedIntegerValue, fC.expectedConvertStrToIntError
+}
+
+func (fC *FakeCaller) GetEnvironmentVariable(envName string) string {
+	return fC.expectedEnvVar
+}
+
+func (fC *FakeCaller) SetConfigFile(configName, configPath string) error {
+	return fC.expectedSetConfigFileError
+}
+
+func (fC *FakeCaller) GetStringFromConfigFile(value string) string {
+	return fC.expectedStringFromConfig
+}
+
+func (fC *FakeCaller) GetBoolFromConfigFile(value string) bool {
+	return fC.expectedBoolFromConfig
+}
+
+func (fC *FakeCaller) GetIntFromConfigFile(value string) int {
+	return fC.expectedIntFromConfig
+}
+
+func (fC *FakeCaller) GetTimeDurationInSeconds(duration int) time.Duration {
+	return time.Duration(duration) * time.Second
+}
+
+var _ = Describe("Context", func() {
+	Describe("GetAPIPort", func() {
+		Context("When ConvertStrToInt returns an error", func() {
+			It("Should return the expected 8888 port", func() {
+				fakeCaller := FakeCaller{
+					expectedIntegerValue:         0,
+					expectedConvertStrToIntError: errors.New("Failed converting string to integer"),
+				}
+				config := DefaultConfig{
+					Caller: &fakeCaller,
+				}
+				Expect(config.GetAPIPort()).To(Equal(8888))
+			})
+		})
+		Context("When ConvertStrToInt returns a valid port", func() {
+			It("Should return the expected port", func() {
+				fakeCaller := FakeCaller{
+					expectedIntegerValue:         1234,
+					expectedConvertStrToIntError: nil,
+				}
+				config := DefaultConfig{
+					Caller: &fakeCaller,
+				}
+				Expect(config.GetAPIPort()).To(Equal(fakeCaller.expectedIntegerValue))
+			})
+		})
+	})
+	Describe("GetAPIUseTLS", func() {
+		Context("When GetEnvironmentVariable returns a valid option", func() {
+			It("Should return a true boolean", func() {
+				fakeCaller := FakeCaller{
+					expectedEnvVar: "True",
+				}
+				config := DefaultConfig{
+					Caller: &fakeCaller,
+				}
+				Expect(config.GetAPIUseTLS()).To(BeTrue())
+			})
+		})
+		Context("When GetEnvironmentVariable returns a not valid option", func() {
+			It("Should return a true boolean", func() {
+				fakeCaller := FakeCaller{
+					expectedEnvVar: "Invalid",
+				}
+				config := DefaultConfig{
+					Caller: &fakeCaller,
+				}
+				Expect(config.GetAPIUseTLS()).To(BeFalse())
+			})
+		})
+	})
+	Describe("GetGrayLogIsDev", func() {
+		Context("When GetEnvironmentVariable returns valid option", func() {
+			It("Should return a false boolean", func() {
+				fakeCaller := FakeCaller{
+					expectedEnvVar: "False",
+				}
+				config := DefaultConfig{
+					Caller: &fakeCaller,
+				}
+				Expect(config.GetGraylogIsDev()).To(BeFalse())
+			})
+		})
+		Context("When GetEnvironmentVariable returns invalid option", func() {
+			It("Should return a false boolean", func() {
+				fakeCaller := FakeCaller{
+					expectedEnvVar: "",
+				}
+				config := DefaultConfig{
+					Caller: &fakeCaller,
+				}
+				Expect(config.GetGraylogIsDev()).To(BeTrue())
+			})
+		})
+	})
+	Describe("GetMongoPort", func() {
+		Context("When ConvertStrToInt returns an error", func() {
+			It("Should return 27017 port", func() {
+				fakeCaller := FakeCaller{
+					expectedIntegerValue:         0,
+					expectedConvertStrToIntError: errors.New("Failed converting string to integer"),
+				}
+				config := DefaultConfig{
+					Caller: &fakeCaller,
+				}
+				Expect(config.GetMongoPort()).To(Equal(27017))
+			})
+		})
+		Context("When ConvertStrToInt returns an error", func() {
+			It("Should return 27017 port", func() {
+				fakeCaller := FakeCaller{
+					expectedIntegerValue:         2222,
+					expectedConvertStrToIntError: nil,
+				}
+				config := DefaultConfig{
+					Caller: &fakeCaller,
+				}
+				Expect(config.GetMongoPort()).To(Equal(fakeCaller.expectedIntegerValue))
+			})
+		})
+	})
+	Describe("GetMongoTimeout", func() {
+		Context("When ConvertStrToInt returns an error", func() {
+			It("Should return 60s of duration", func() {
+				fakeCaller := FakeCaller{
+					expectedIntegerValue:         0,
+					expectedConvertStrToIntError: errors.New("Failed converting string to integer"),
+				}
+				config := DefaultConfig{
+					Caller: &fakeCaller,
+				}
+				Expect(config.GetMongoTimeout()).To(Equal(time.Duration(60) * time.Second))
+			})
+		})
+		Context("When ConvertStrToInt returns a valid timeout", func() {
+			It("Should return the expected duration", func() {
+				fakeCaller := FakeCaller{
+					expectedIntegerValue:         200,
+					expectedConvertStrToIntError: nil,
+				}
+				config := DefaultConfig{
+					Caller: &fakeCaller,
+				}
+				Expect(config.GetMongoTimeout()).To(Equal(time.Duration(fakeCaller.expectedIntegerValue) * time.Second))
+			})
+		})
+	})
+	Describe("GetMongoPoolLimit", func() {
+		Context("When ConvertStr returns an error", func() {
+			It("Should return a pool of connections with a size 1000", func() {
+				fakeCaller := FakeCaller{
+					expectedIntegerValue:         124,
+					expectedConvertStrToIntError: errors.New("Error during the convertion from string to integer"),
+				}
+				config := DefaultConfig{
+					Caller: &fakeCaller,
+				}
+				Expect(config.GetMongoPoolLimit()).To(Equal(1000))
+			})
+		})
+		Context("When ConvertStr returns an negative value", func() {
+			It("Should return a pool of connections with a size 1000", func() {
+				fakeCaller := FakeCaller{
+					expectedIntegerValue:         -24,
+					expectedConvertStrToIntError: nil,
+				}
+				config := DefaultConfig{
+					Caller: &fakeCaller,
+				}
+				Expect(config.GetMongoPoolLimit()).To(Equal(1000))
+			})
+		})
+		Context("When ConvertStr returns a valid value", func() {
+			It("Should return a pool of connections with the expected size", func() {
+				fakeCaller := FakeCaller{
+					expectedIntegerValue:         50,
+					expectedConvertStrToIntError: nil,
+				}
+				config := DefaultConfig{
+					Caller: &fakeCaller,
+				}
+				Expect(config.GetMongoPoolLimit()).To(Equal(fakeCaller.expectedIntegerValue))
+			})
+		})
+	})
+	Describe("GetDockerAPIPort", func() {
+		Context("When ConvertStrToInt returns an error", func() {
+			It("Should return 2376 port", func() {
+				fakeCaller := FakeCaller{
+					expectedIntegerValue:         0,
+					expectedConvertStrToIntError: errors.New("Error during the convertion from string to integer"),
+				}
+				config := DefaultConfig{
+					Caller: &fakeCaller,
+				}
+				Expect(config.GetDockerAPIPort()).To(Equal(2376))
+			})
+		})
+		Context("When ConvertStrToInt returns an error", func() {
+			It("Should return 2376 port", func() {
+				fakeCaller := FakeCaller{
+					expectedIntegerValue:         25000,
+					expectedConvertStrToIntError: nil,
+				}
+				config := DefaultConfig{
+					Caller: &fakeCaller,
+				}
+				Expect(config.GetDockerAPIPort()).To(Equal(fakeCaller.expectedIntegerValue))
+			})
+		})
+	})
+	Describe("GetDockerAPITLSVerify", func() {
+		Context("When GetEnvironmentVariable returns a valid value", func() {
+			It("Should return 0", func() {
+				fakeCaller := FakeCaller{
+					expectedEnvVar: "False",
+				}
+				config := DefaultConfig{
+					Caller: &fakeCaller,
+				}
+				Expect(config.GetDockerAPITLSVerify()).To(Equal(0))
+			})
+		})
+		Context("When GetEnvironmentVariable returns an invalid value", func() {
+			It("Should return 1", func() {
+				fakeCaller := FakeCaller{
+					expectedEnvVar: "Invalid",
+				}
+				config := DefaultConfig{
+					Caller: &fakeCaller,
+				}
+				Expect(config.GetDockerAPITLSVerify()).To(Equal(1))
+			})
+		})
+	})
+	Describe("GetMaxContainersAllowed", func() {
+		Context("When ConvertStrToInt returns an error", func() {
+			It("Should return a maximum number of containers equals to 50", func() {
+				fakeCaller := FakeCaller{
+					expectedIntegerValue:         0,
+					expectedConvertStrToIntError: errors.New("Error during the convertion from string to integer"),
+				}
+				config := DefaultConfig{
+					Caller: &fakeCaller,
+				}
+				Expect(config.GetMaxContainersAllowed()).To(Equal(50))
+			})
+		})
+		Context("When ConvertStrToInt returns a value", func() {
+			It("Should return a maximum number of containers as expected", func() {
+				fakeCaller := FakeCaller{
+					expectedIntegerValue:         25000,
+					expectedConvertStrToIntError: nil,
+				}
+				config := DefaultConfig{
+					Caller: &fakeCaller,
+				}
+				Expect(config.GetMaxContainersAllowed()).To(Equal(fakeCaller.expectedIntegerValue))
+			})
+		})
+	})
+	Describe("GetAPIConfig", func() {
+		Context("When SetConfigFile returns an error", func() {
+			It("Should return the expected error", func() {
+				fakeCaller := FakeCaller{
+					expectedSetConfigFileError: errors.New("Could not load configuration file"),
+				}
+				config := DefaultConfig{
+					Caller: &fakeCaller,
+				}
+				apiConfig, err := config.GetAPIConfig()
+				Expect(apiConfig).To(BeNil())
+				Expect(err).To(Equal(fakeCaller.expectedSetConfigFileError))
+			})
+		})
+		Context("When SetConfigFile returns an error", func() {
+			It("Should return the expected error", func() {
+				fakeCaller := FakeCaller{
+					expectedIntegerValue:         1234,
+					expectedEnvVar:               "1",
+					expectedConvertStrToIntError: nil,
+					expectedSetConfigFileError:   nil,
+					expectedStringFromConfig:     "teste",
+					expectedBoolFromConfig:       true,
+					expectedIntFromConfig:        1234,
+				}
+				config := DefaultConfig{
+					Caller: &fakeCaller,
+				}
+				apiConfig, err := config.GetAPIConfig()
+				expectedConfig := &APIConfig{
+					Port:             fakeCaller.expectedIntegerValue,
+					Version:          "0.6.0",
+					ReleaseDate:      "2019-07-18",
+					UseTLS:           true,
+					GitPrivateSSHKey: fakeCaller.expectedEnvVar,
+					GraylogConfig: &GraylogConfig{
+						Address:        fakeCaller.expectedEnvVar,
+						Protocol:       fakeCaller.expectedEnvVar,
+						AppName:        fakeCaller.expectedEnvVar,
+						Tag:            fakeCaller.expectedEnvVar,
+						DevelopmentEnv: true,
+					},
+					MongoDBConfig: &MongoConfig{
+						Address:      "1:1234",
+						DatabaseName: fakeCaller.expectedEnvVar,
+						Username:     fakeCaller.expectedEnvVar,
+						Password:     fakeCaller.expectedEnvVar,
+						Port:         fakeCaller.expectedIntegerValue,
+						Timeout:      time.Duration(fakeCaller.expectedIntegerValue) * time.Second,
+						PoolLimit:    fakeCaller.expectedIntegerValue,
+					},
+					DockerHostsConfig: &DockerHostsConfig{
+						Address:              "1",
+						DockerAPIPort:        fakeCaller.expectedIntegerValue,
+						Certificate:          fakeCaller.expectedEnvVar,
+						PathCertificate:      fakeCaller.expectedEnvVar,
+						Key:                  fakeCaller.expectedEnvVar,
+						Host:                 "1:1234",
+						TLSVerify:            1,
+						MaxContainersAllowed: fakeCaller.expectedIntegerValue,
+					},
+					EnrySecurityTest: &types.SecurityTest{
+						Name:             fakeCaller.expectedStringFromConfig,
+						Image:            fakeCaller.expectedStringFromConfig,
+						Cmd:              fakeCaller.expectedStringFromConfig,
+						Language:         fakeCaller.expectedStringFromConfig,
+						Default:          fakeCaller.expectedBoolFromConfig,
+						TimeOutInSeconds: fakeCaller.expectedIntFromConfig,
+					},
+					GosecSecurityTest: &types.SecurityTest{
+						Name:             fakeCaller.expectedStringFromConfig,
+						Image:            fakeCaller.expectedStringFromConfig,
+						Cmd:              fakeCaller.expectedStringFromConfig,
+						Language:         fakeCaller.expectedStringFromConfig,
+						Default:          fakeCaller.expectedBoolFromConfig,
+						TimeOutInSeconds: fakeCaller.expectedIntFromConfig,
+					},
+					BanditSecurityTest: &types.SecurityTest{
+						Name:             fakeCaller.expectedStringFromConfig,
+						Image:            fakeCaller.expectedStringFromConfig,
+						Cmd:              fakeCaller.expectedStringFromConfig,
+						Language:         fakeCaller.expectedStringFromConfig,
+						Default:          fakeCaller.expectedBoolFromConfig,
+						TimeOutInSeconds: fakeCaller.expectedIntFromConfig,
+					},
+					BrakemanSecurityTest: &types.SecurityTest{
+						Name:             fakeCaller.expectedStringFromConfig,
+						Image:            fakeCaller.expectedStringFromConfig,
+						Cmd:              fakeCaller.expectedStringFromConfig,
+						Language:         fakeCaller.expectedStringFromConfig,
+						Default:          fakeCaller.expectedBoolFromConfig,
+						TimeOutInSeconds: fakeCaller.expectedIntFromConfig,
+					},
+					RetirejsSecurityTest: &types.SecurityTest{
+						Name:             fakeCaller.expectedStringFromConfig,
+						Image:            fakeCaller.expectedStringFromConfig,
+						Cmd:              fakeCaller.expectedStringFromConfig,
+						Language:         fakeCaller.expectedStringFromConfig,
+						Default:          fakeCaller.expectedBoolFromConfig,
+						TimeOutInSeconds: fakeCaller.expectedIntFromConfig,
+					},
+					NpmAuditSecurityTest: &types.SecurityTest{
+						Name:             fakeCaller.expectedStringFromConfig,
+						Image:            fakeCaller.expectedStringFromConfig,
+						Cmd:              fakeCaller.expectedStringFromConfig,
+						Language:         fakeCaller.expectedStringFromConfig,
+						Default:          fakeCaller.expectedBoolFromConfig,
+						TimeOutInSeconds: fakeCaller.expectedIntFromConfig,
+					},
+					SafetySecurityTest: &types.SecurityTest{
+						Name:             fakeCaller.expectedStringFromConfig,
+						Image:            fakeCaller.expectedStringFromConfig,
+						Cmd:              fakeCaller.expectedStringFromConfig,
+						Language:         fakeCaller.expectedStringFromConfig,
+						Default:          fakeCaller.expectedBoolFromConfig,
+						TimeOutInSeconds: fakeCaller.expectedIntFromConfig,
+					},
+				}
+				Expect(apiConfig).To(Equal(expectedConfig))
+				Expect(err).To(BeNil())
+			})
+		})
+	})
+})

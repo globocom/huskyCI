@@ -151,5 +151,5 @@ type DBToken struct {
 	IsValid    bool          `bson:"isValid"`
 	CreatedAt  time.Time     `bson:"createdAt"`
 	Salt       string        `bson:"salt"`
-	UUid       string        `bson:"uuid"`
+	UUID       string        `bson:"uuid"`
 }

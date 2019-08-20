@@ -15,11 +15,11 @@ import (
 var _ = Describe("getRequestResult", func() {
 
 	expected := map[string]string{
-		"version": apiContext.GetAPIVersion(),
-		"date":    apiContext.GetAPIReleaseDate(),
+		"version": apiContext.DefaultConf.GetAPIVersion(),
+		"date":    apiContext.DefaultConf.GetAPIReleaseDate(),
 	}
 
-	apiContext.SetOnceConfig()
+	apiContext.DefaultConf.SetOnceConfig()
 	config := apiContext.APIConfiguration
 
 	Context("When version and date are requested", func() {

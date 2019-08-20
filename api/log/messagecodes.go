@@ -123,6 +123,7 @@ var MsgCode = map[int]string{
 	3023: "Could not remove a container via d.client: ",
 	3024: "Could not call die containers: ",
 	3025: "Could not update listed containers: ",
+	3026: "Could not initialize default configurations: ",
 
 	// Util package errors
 	4001: "Could not read certificate file: ",

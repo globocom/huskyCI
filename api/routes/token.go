@@ -15,13 +15,13 @@ import (
 )
 
 var (
-	tokenHandler token.TokenHandler
+	tokenHandler token.THandler
 )
 
 func init() {
-	tokenCaller := token.TokenCaller{}
+	tokenCaller := token.TCaller{}
 	hashGen := auth.Pbkdf2Caller{}
-	tokenHandler = token.TokenHandler{
+	tokenHandler = token.THandler{
 		External: &tokenCaller,
 		HashGen:  &hashGen,
 	}
