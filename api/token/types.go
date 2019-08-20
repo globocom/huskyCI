@@ -19,7 +19,7 @@ type ExternalCalls interface {
 	FindAccessToken(id string) (types.DBToken, error)
 	UpdateAccessToken(id string, accesstoken types.DBToken) error
 	FindRepoURL(repositoryURL string) error
-	GenerateUuid() string
+	GenerateUUID() string
 	EncodeBase64(m string) string
 	DecodeToStringBase64(encodedVal string) (string, error)
 }

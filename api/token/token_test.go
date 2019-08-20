@@ -71,7 +71,7 @@ func (fE *FakeExternal) FindRepoURL(repositoryURL string) error {
 	return fE.expectedFindRepoError
 }
 
-func (fE *FakeExternal) GenerateUuid() string {
+func (fE *FakeExternal) GenerateUUID() string {
 	return fE.expectedUuid
 }
 
@@ -730,7 +730,7 @@ var _ = Describe("Token", func() {
 					expectedAccessToken: types.DBToken{
 						IsValid:    true,
 						HuskyToken: "StoredEncodedRandomData",
-						UUid:       "MyUUID",
+						UUID:       "MyUUID",
 						URL:        "MyURL",
 						Salt:       "MySalt",
 					},
@@ -742,7 +742,7 @@ var _ = Describe("Token", func() {
 				err := invalToken.InvalidateToken("RcvToken")
 				Expect(err).To(BeNil())
 				Expect(fakeExt.returnedAccessToken.HuskyToken).To(Equal(fakeExt.expectedAccessToken.HuskyToken))
-				Expect(fakeExt.returnedAccessToken.UUid).To(Equal(fakeExt.expectedAccessToken.UUid))
+				Expect(fakeExt.returnedAccessToken.UUID).To(Equal(fakeExt.expectedAccessToken.UUID))
 				Expect(fakeExt.returnedAccessToken.URL).To(Equal(fakeExt.expectedAccessToken.URL))
 				Expect(fakeExt.returnedAccessToken.Salt).To(Equal(fakeExt.expectedAccessToken.Salt))
 				Expect(fakeExt.returnedAccessToken.IsValid).To(BeFalse())
