@@ -1,13 +1,18 @@
+// Copyright 2019 Globo.com authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package token
 
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"time"
+
 	"github.com/globocom/huskyCI/api/db"
 	"github.com/globocom/huskyCI/api/types"
 	"github.com/globocom/huskyCI/api/util"
 	"github.com/google/uuid"
-	"time"
 )
 
 func (tC *TokenCaller) ValidateURL(url string) (string, error) {
@@ -30,12 +35,12 @@ func (tC *TokenCaller) GetTimeNow() time.Time {
 }
 
 func (tC *TokenCaller) StoreAccessToken(accessToken types.DBToken) error {
-	return db.InsertAccessToken(accessToken)
+	return db.InsertDBAccessToken(accessToken)
 }
 
 func (tC *TokenCaller) FindAccessToken(id string) (types.DBToken, error) {
 	aTokenQuery := map[string]interface{}{"uuid": id}
-	return db.FindOneAccessToken(aTokenQuery)
+	return db.FindOneDBAccessToken(aTokenQuery)
 }
 
 func (tC *TokenCaller) FindRepoURL(repositoryURL string) error {

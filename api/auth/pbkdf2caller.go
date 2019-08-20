@@ -1,15 +1,20 @@
+// Copyright 2019 Globo.com authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package auth
 
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"github.com/globocom/huskyCI/api/db"
-	"github.com/globocom/huskyCI/api/types"
-	"golang.org/x/crypto/pbkdf2"
 	"hash"
 	"io"
 	"os"
 	"strconv"
+
+	"github.com/globocom/huskyCI/api/db"
+	"github.com/globocom/huskyCI/api/types"
+	"golang.org/x/crypto/pbkdf2"
 )
 
 func (pC *Pbkdf2Caller) GetCredsFromDB(username string) (types.User, error) {

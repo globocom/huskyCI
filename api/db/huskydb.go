@@ -60,8 +60,8 @@ func FindOneDBUser(mapParams map[string]interface{}) (types.User, error) {
 	return userResponse, err
 }
 
-// FindOneAccessToken checks if a given accessToken exists in AccessTokenCollection.
-func FindOneAccessToken(mapParams map[string]interface{}) (types.DBToken, error) {
+// FindOneDBAccessToken checks if a given accessToken exists in AccessTokenCollection.
+func FindOneDBAccessToken(mapParams map[string]interface{}) (types.DBToken, error) {
 	aTokenResponse := types.DBToken{}
 	aTokenQuery := []bson.M{}
 	for k, v := range mapParams {
@@ -163,8 +163,8 @@ func InsertDBUser(user types.User) error {
 	return err
 }
 
-// InsertAccessToken inserts a new access into AccessTokenCollection.
-func InsertAccessToken(accessToken types.DBToken) error {
+// InsertDBAccessToken inserts a new access into AccessTokenCollection.
+func InsertDBAccessToken(accessToken types.DBToken) error {
 	newAccessToken := bson.M{
 		"huskytoken":    accessToken.HuskyToken,
 		"repositoryURL": accessToken.URL,
