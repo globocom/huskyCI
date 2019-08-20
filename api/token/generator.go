@@ -15,7 +15,8 @@ import (
 	"github.com/google/uuid"
 )
 
-func (tC *TokenCaller) ValidateURL(url string) (string, error) {
+// ValidateURL validates if an URL is malicious or not.
+func (tC *TCaller) ValidateURL(url string) (string, error) {
 	return util.CheckMaliciousRepoURL(url)
 }
 
@@ -25,44 +26,53 @@ func generateRandomBytes() ([]byte, error) {
 	return b, err
 }
 
-func (tC *TokenCaller) GenerateToken() (string, error) {
+// GenerateToken generates a new token to be used in auth.
+func (tC *TCaller) GenerateToken() (string, error) {
 	b, err := generateRandomBytes()
 	return base64.URLEncoding.EncodeToString(b), err
 }
 
-func (tC *TokenCaller) GetTimeNow() time.Time {
+// GetTimeNow returns the time now.
+func (tC *TCaller) GetTimeNow() time.Time {
 	return time.Now()
 }
 
-func (tC *TokenCaller) StoreAccessToken(accessToken types.DBToken) error {
+// StoreAccessToken stores a new access token into MongoDB.
+func (tC *TCaller) StoreAccessToken(accessToken types.DBToken) error {
 	return db.InsertDBAccessToken(accessToken)
 }
 
-func (tC *TokenCaller) FindAccessToken(id string) (types.DBToken, error) {
-	aTokenQuery := map[string]interface{}{"uuid": id}
+// FindAccessToken gets an AccessToken based on an given ID.
+func (tC *TCaller) FindAccessToken(ID string) (types.DBToken, error) {
+	aTokenQuery := map[string]interface{}{"uuid": ID}
 	return db.FindOneDBAccessToken(aTokenQuery)
 }
 
-func (tC *TokenCaller) FindRepoURL(repositoryURL string) error {
+// FindRepoURL checks if a Access TOken is present based on a given URL.
+func (tC *TCaller) FindRepoURL(repositoryURL string) error {
 	repoQuery := map[string]interface{}{"repositoryURL": repositoryURL, "isValid": true}
-	_, err := db.FindOneAccessToken(repoQuery)
+	_, err := db.FindOneDBAccessToken(repoQuery)
 	return err
 }
 
-func (tC *TokenCaller) GenerateUuid() string {
+// GenerateUUID returns a new UUID.
+func (tC *TCaller) GenerateUUID() string {
 	return uuid.New().String()
 }
 
-func (tC *TokenCaller) EncodeBase64(m string) string {
+// EncodeBase64 retunrs a string in base64.
+func (tC *TCaller) EncodeBase64(m string) string {
 	return base64.URLEncoding.EncodeToString([]byte(m))
 }
 
-func (tC *TokenCaller) DecodeToStringBase64(encodedVal string) (string, error) {
+// DecodeToStringBase64 decodes a base64 string.
+func (tC *TCaller) DecodeToStringBase64(encodedVal string) (string, error) {
 	decodedVal, err := base64.URLEncoding.DecodeString(encodedVal)
 	return string(decodedVal), err
 }
 
-func (tC *TokenCaller) UpdateAccessToken(id string, accesstoken types.DBToken) error {
-	aTokenQuery := map[string]interface{}{"uuid": id}
+// UpdateAccessToken updates an access Token in MongoDB based on its UUID.
+func (tC *TCaller) UpdateAccessToken(ID string, accesstoken types.DBToken) error {
+	aTokenQuery := map[string]interface{}{"uuid": ID}
 	return db.UpdateOneDBAccessToken(aTokenQuery, accesstoken)
 }

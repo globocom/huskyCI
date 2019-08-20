@@ -5,6 +5,8 @@ Godeps/_workspace
 .GOPATH
 #vendor
 coverage.txt
+c.out
+coverage.html
 *.pem
 .env
 .vagrant

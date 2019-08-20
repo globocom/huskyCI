@@ -38,7 +38,7 @@ var _ = Describe("Tokenvalidator", func() {
 				fakeVerifier := FakeVerifier{
 					expectedVerifyError: errors.New("Could not find the repository URL"),
 				}
-				validator := TokenValidator{
+				validator := TValidator{
 					TokenVerifier: &fakeVerifier,
 				}
 				Expect(validator.HasAuthorization("MyToken", "MyRepo")).To(BeTrue())
@@ -50,7 +50,7 @@ var _ = Describe("Tokenvalidator", func() {
 					expectedVerifyError:   nil,
 					expectedValidateError: errors.New("Token is not valid"),
 				}
-				validator := TokenValidator{
+				validator := TValidator{
 					TokenVerifier: &FakeVerifier,
 				}
 				Expect(validator.HasAuthorization("MyToken", "MyRepo")).To(BeFalse())
@@ -62,7 +62,7 @@ var _ = Describe("Tokenvalidator", func() {
 					expectedVerifyError:   nil,
 					expectedValidateError: nil,
 				}
-				validator := TokenValidator{
+				validator := TValidator{
 					TokenVerifier: &FakeVerifier,
 				}
 				Expect(validator.HasAuthorization("MyToken", "MyRepo")).To(BeTrue())

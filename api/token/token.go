@@ -20,7 +20,7 @@ import (
 // random data. The hash of the random data is stored
 // using PBKDF2 algorithm. It is returned the base64 of
 // the two parts separated by two points.
-func (tH *TokenHandler) GenerateAccessToken(repo types.TokenRequest) (string, error) {
+func (tH *THandler) GenerateAccessToken(repo types.TokenRequest) (string, error) {
 	accessToken := types.DBToken{}
 	validatedURL, err := tH.External.ValidateURL(repo.RepositoryURL)
 	if err != nil {
@@ -59,18 +59,18 @@ func (tH *TokenHandler) GenerateAccessToken(repo types.TokenRequest) (string, er
 	accessToken.IsValid = true
 	accessToken.CreatedAt = tH.External.GetTimeNow()
 	accessToken.Salt = salt
-	accessToken.UUid = tH.External.GenerateUuid()
+	accessToken.UUID = tH.External.GenerateUUID()
 	if err := tH.External.StoreAccessToken(accessToken); err != nil {
 		return "", err
 	}
-	return tH.External.EncodeBase64(fmt.Sprintf("%s:%s", accessToken.UUid, token)), nil
+	return tH.External.EncodeBase64(fmt.Sprintf("%s:%s", accessToken.UUID, token)), nil
 }
 
 // GetSplitted will return UUID and random part
 // of the received access token. It will decode
 // the base64 first. The first argument returned
 // is the UUID and the second is the random data.
-func (tH *TokenHandler) GetSplitted(rcvToken string) (string, string, error) {
+func (tH *THandler) GetSplitted(rcvToken string) (string, string, error) {
 	decodedToken, err := tH.External.DecodeToStringBase64(rcvToken)
 	if err != nil {
 		return "", "", err
@@ -86,7 +86,7 @@ func (tH *TokenHandler) GetSplitted(rcvToken string) (string, string, error) {
 // received data and compare with hashdata passed in
 // the argument. The hash calculated uses the salt
 // passed in the argument.
-func (tH *TokenHandler) ValidateRandomData(rdata, hashdata, salt string) error {
+func (tH *THandler) ValidateRandomData(rdata, hashdata, salt string) error {
 	bSalt, err := tH.HashGen.DecodeSaltValue(salt)
 	if err != nil {
 		return err
@@ -117,7 +117,7 @@ func (tH *TokenHandler) ValidateRandomData(rdata, hashdata, salt string) error {
 // is a valid token. It will verify the access token
 // has permission to start an analysis for the received
 // repository URL.
-func (tH *TokenHandler) ValidateToken(token, repositoryURL string) error {
+func (tH *THandler) ValidateToken(token, repositoryURL string) error {
 	validURL, err := tH.External.ValidateURL(repositoryURL)
 	if err != nil {
 		return err
@@ -141,7 +141,7 @@ func (tH *TokenHandler) ValidateToken(token, repositoryURL string) error {
 
 // VerifyRepo will verify if exists an entry
 // for the received repository
-func (tH *TokenHandler) VerifyRepo(repositoryURL string) error {
+func (tH *THandler) VerifyRepo(repositoryURL string) error {
 	validURL, err := tH.External.ValidateURL(repositoryURL)
 	if err != nil {
 		return err
@@ -152,7 +152,7 @@ func (tH *TokenHandler) VerifyRepo(repositoryURL string) error {
 // InvalidateToken will set boolean flag IsValid
 // to false if the passed access token is found
 // in DB.
-func (tH *TokenHandler) InvalidateToken(token string) error {
+func (tH *THandler) InvalidateToken(token string) error {
 	uUID, _, err := tH.GetSplitted(token)
 	if err != nil {
 		return err
