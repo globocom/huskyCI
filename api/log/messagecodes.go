@@ -21,6 +21,8 @@ var MsgCode = map[int]string{
 	24: "URL received to generate a new token: ",
 
 	// HuskyCI API warnings
+	101: "Analysis started: ",
+	102: "Analysis finished: ",
 	104: "An analysis is already in place for this URL: ",
 	105: "The following analysis timed out inside MonitorAnalysis: ",
 	106: "Analysis not found using the following RID: ",
@@ -95,6 +97,7 @@ var MsgCode = map[int]string{
 	31: "Waiting pull image...",
 	32: "Container started successfully: ",
 	33: "Max container count reached. huskyCI is about to kill containers. ",
+	34: "Container finished successfully: ",
 
 	// Docker API warning
 	301: "",

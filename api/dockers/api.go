@@ -16,8 +16,6 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/globocom/huskyCI/api/context"
 	"github.com/globocom/huskyCI/api/log"
-	"github.com/globocom/huskyCI/api/types"
-	"github.com/globocom/huskyCI/api/util"
 	goContext "golang.org/x/net/context"
 )
 
@@ -70,9 +68,8 @@ func NewDocker() (*Docker, error) {
 	return docker, nil
 }
 
-// CreateContainer creates a new container
-func (d Docker) CreateContainer(analysis types.Analysis, image string, cmd string) (string, error) {
-	cmd = util.HandleCmd(analysis.URL, analysis.Branch, analysis.InternalDepURL, cmd)
+// CreateContainer creates a new container and return its CID and an error
+func (d Docker) CreateContainer(image, cmd string) (string, error) {
 	ctx := goContext.Background()
 	resp, err := d.client.ContainerCreate(ctx, &container.Config{
 		Image: image,
@@ -84,7 +81,6 @@ func (d Docker) CreateContainer(analysis types.Analysis, image string, cmd strin
 		log.Error("CreateContainer", "DOCKERAPI", 3005, err)
 		return "", err
 	}
-
 	return resp.ID, nil
 }
 
@@ -126,7 +122,7 @@ func (d Docker) RemoveContainer() error {
 	return err
 }
 
-// ListContainers returns a Docker type list with CIDs of stopped containers
+// ListStoppedContainers returns a Docker type list with CIDs of stopped containers
 func (d Docker) ListStoppedContainers() ([]Docker, error) {
 
 	ctx := goContext.Background()
