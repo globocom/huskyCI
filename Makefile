@@ -61,6 +61,11 @@ create-certs:
 	chmod +x deployments/scripts/run-create-certs.sh
 	./deployments/scripts/run-create-certs.sh
 
+## Generates a local token to be used in a local environment
+generate-local-token:
+	chmod +x deployments/scripts/generate-local-token.sh
+	./deployments/scripts/generate-local-token.sh
+
 ## Generates passwords and set them as environment variables
 generate-passwords:
 	chmod +x deployments/scripts/generate-env.sh
@@ -89,10 +94,10 @@ help:
 	printf "\n"
 
 ## Installs a development environment using docker-compose
-install: generate-passwords create-certs compose
+install: create-certs compose generate-passwords generate-local-token
 
 ## Installs a development environment using docker-compose and pulls security tests' images
-install-pull-images: generate-passwords create-certs compose pull-images
+install-pull-images: create-certs compose generate-passwords generate-local-token pull-images
 
 ## Runs lint
 lint:
@@ -132,6 +137,6 @@ ginkgo:
 coverage:
 	$(GO) test ./... -coverprofile=c.out
 	$(GO) tool cover -html=c.out -o coverage.html
-	
+
 ## Perfoms all make tests
 test: get-test-deps lint ginkgo coverage

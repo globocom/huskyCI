@@ -1,3 +1,7 @@
+// Copyright 2019 Globo.com authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package routes
 
 import (
@@ -35,13 +39,13 @@ func init() {
 func GetAnalysis(c echo.Context) error {
 
 	RID := c.Param("id")
-	aToken := c.Request().Header.Get("Husky-Token")
+	attemptToken := c.Request().Header.Get("Husky-Token")
 	if err := util.CheckMaliciousRID(RID, c); err != nil {
 		return err
 	}
 	analysisQuery := map[string]interface{}{"RID": RID}
 	analysisResult, err := db.FindOneDBAnalysis(analysisQuery)
-	if !tokenValidator.HasAuthorization(aToken, analysisResult.URL) {
+	if !tokenValidator.HasAuthorization(attemptToken, analysisResult.URL) {
 		log.Error("GetAnalysis", "ANALYSIS", 1027, RID)
 		reply := map[string]interface{}{"success": false, "error": "permission denied"}
 		return c.JSON(http.StatusUnauthorized, reply)
@@ -63,7 +67,7 @@ func GetAnalysis(c echo.Context) error {
 func ReceiveRequest(c echo.Context) error {
 
 	RID := c.Response().Header().Get(echo.HeaderXRequestID)
-	aToken := c.Request().Header.Get("Husky-Token")
+	attemptToken := c.Request().Header.Get("Husky-Token")
 
 	// step-00: is this a valid JSON?
 	repository := types.Repository{}
@@ -73,7 +77,7 @@ func ReceiveRequest(c echo.Context) error {
 		reply := map[string]interface{}{"success": false, "error": "invalid repository JSON"}
 		return c.JSON(http.StatusBadRequest, reply)
 	}
-	if !tokenValidator.HasAuthorization(aToken, repository.URL) {
+	if !tokenValidator.HasAuthorization(attemptToken, repository.URL) {
 		log.Error("ReceivedRequest", "ANALYSIS", 1027, RID)
 		reply := map[string]interface{}{"success": false, "error": "permission denied"}
 		return c.JSON(http.StatusUnauthorized, reply)

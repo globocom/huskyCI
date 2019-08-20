@@ -1,3 +1,7 @@
+// Copyright 2019 Globo.com authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package log
 
 // MsgCode holds all log messages and their respective codes.
@@ -14,7 +18,7 @@ var MsgCode = map[int]string{
 	18: "SecurityTest created into MongoDB: ",
 	19: "SecurityTest upserted in MondoDB: ",
 	20: "Default User found in MongoDB.",
-	24: "URL received",
+	24: "URL received to generate a new token: ",
 
 	// HuskyCI API warnings
 	104: "An analysis is already in place for this URL: ",
