@@ -11,6 +11,9 @@ import (
 	"github.com/globocom/huskyCI/api/types"
 )
 
+// ExternalCalls defines a group of functions
+// used for external calls and validate some
+// necessary information about TokenHandler.
 type ExternalCalls interface {
 	ValidateURL(url string) (string, error)
 	GenerateToken() (string, error)
@@ -24,19 +27,27 @@ type ExternalCalls interface {
 	DecodeToStringBase64(encodedVal string) (string, error)
 }
 
-type TokenHandler struct {
+// THandler is a struct used to handle with
+// token generation, validation and deactivation.
+// It implements TokenInterface interface.
+type THandler struct {
 	External ExternalCalls
 	HashGen  auth.Pbkdf2Generator
 }
 
-type TokenCaller struct{}
+// TCaller implements ExternalCalls interface.
+type TCaller struct{}
 
-type TokenInterface interface {
+// TInterface is used to define functions that
+// handle with access token management.
+type TInterface interface {
 	GenerateAccessToken(repo types.TokenRequest) (string, error)
 	ValidateToken(token, repositoryURL string) error
 	VerifyRepo(repositoryURL string) error
 }
 
-type TokenValidator struct {
-	TokenVerifier TokenInterface
+// TValidator is used to validate an access token
+// using the defined functions TokenInterface
+type TValidator struct {
+	TokenVerifier TInterface
 }
