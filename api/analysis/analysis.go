@@ -9,6 +9,7 @@ import (
 
 	"github.com/globocom/huskyCI/api/db"
 	"github.com/globocom/huskyCI/api/log"
+	"github.com/globocom/huskyCI/api/securitytest"
 	"github.com/globocom/huskyCI/api/types"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -21,7 +22,31 @@ var securityTestDoneCounter int
 // StartAnalysis starts the analysis given a RID and a repository.
 func StartAnalysis(RID string, repository types.Repository) {
 
-	// step 0: create a new analysis struct
+	// step 1: create a new analysis into MongoDB based on repository received
+	if err := registerNewAnalysis(RID, repository); err != nil {
+		return
+	}
+	log.Info("StartAnalysis", "ANALYSIS", 101, RID)
+
+	// step 2: run enry as huskyCI initial step
+	enryScan, err := securitytest.RunScanEnry(repository)
+	if err != nil {
+		return
+	}
+
+	// step 3: run generic and languages security tests based on enryScan result in parallel
+	allScanResults := securitytest.RunAllScans(enryScan)
+
+	// step 4: register all results found in MongoDB
+	if err := registerFinishedAnalysis(RID, allScanResults); err != nil {
+		return
+	}
+	log.Info("StartAnalysis", "ANALYSIS", 102, RID)
+
+}
+
+func registerNewAnalysis(RID string, repository types.Repository) error {
+
 	newAnalysis := types.Analysis{
 		RID:        RID,
 		URL:        repository.URL,
@@ -35,181 +60,31 @@ func StartAnalysis(RID string, repository types.Repository) {
 		newAnalysis.InternalDepURL = repository.InternalDepURL
 	}
 
-	// step 1: insert new analysis into MongoDB.
-	err := db.InsertDBAnalysis(newAnalysis)
-	if err != nil {
-		log.Error("StartAnalysis", "ANALYSIS", 2011, err)
-		return
-	}
-
-	// step 2: start enry and EnryStartAnalysis will start all others securityTests
-	enryQuery := map[string]interface{}{"name": "enry"}
-	enrySecurityTest, err := db.FindOneDBSecurityTest(enryQuery)
-	if err != nil {
-		log.Error("StartAnalysis", "ANALYSIS", 2011, "enry", err)
-		return
-	}
-	DockerRun(RID, &newAnalysis, enrySecurityTest)
-
-	// step 3: worker will check if jobs are done to set newAnalysis.Status = "finished".
-	go MonitorAnalysis(&newAnalysis)
-
-}
-
-// MonitorAnalysis querys an analysis every retryTick seconds to check if it has already finished.
-func MonitorAnalysis(analysis *types.Analysis) {
-
-	timeout := time.After(90 * time.Minute)
-	retryTick := time.Tick(5 * time.Second)
-
-	for {
-		select {
-		case <-timeout:
-			// cenario 1: MonitorAnalysis has timed out!
-			log.Warning("MonitorAnalysis", "ANALYSIS", 105, analysis.RID)
-			if err := registerAnalysisTimedOut(analysis.RID); err != nil {
-				log.Error("MonitorAnalysis", "ANALYSIS", 2013, err)
-				return
-			}
-			return
-		case <-retryTick:
-			// check if analysis has already finished.
-			analysisHasFinished, err := monitorAnalysisCheckStatus(analysis.RID)
-			if err != nil {
-				// already being logged
-			}
-			// cenario 2: analysis has finished!
-			if analysisHasFinished {
-				err := monitorAnalysisUpdateStatus(analysis.RID)
-				if err != nil {
-					// already being logged
-				}
-				return
-			} // cenario 3: retry after retryTick seconds!
-		}
-	}
-
-}
-
-// registerAnalysisTimedOut updates the status of a given analysis to "timedout".
-func registerAnalysisTimedOut(RID string) error {
-	analysisQuery := map[string]interface{}{"RID": RID}
-	updateAnalysisQuery := bson.M{
-		"$set": bson.M{
-			"status": "timedout",
-		},
-	}
-	err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateAnalysisQuery)
-	return err
-}
-
-// monitorAnalysisUpdateStatus updates status and result of a given analysis.
-func monitorAnalysisUpdateStatus(RID string) error {
-	analysisQuery := map[string]interface{}{"RID": RID}
-	analysisResult, err := db.FindOneDBAnalysis(analysisQuery)
-	if err != nil {
-		log.Error("monitorAnalysisUpdateStatus", "ANALYSIS", 2014, RID, err)
-		return err
-	}
-	// analyze each cResult from each container to determine what is the value of analysis.Result
-	finalResult := "passed"
-	for _, container := range analysisResult.Containers {
-		if container.CResult == "failed" || container.CResult == "error" {
-			finalResult = "failed"
-			break
-		}
-	}
-	updateAnalysisQuery := bson.M{
-		"$set": bson.M{
-			"status":     "finished",
-			"result":     finalResult,
-			"finishedAt": time.Now(),
-		},
-	}
-	err = db.UpdateOneDBAnalysisContainer(analysisQuery, updateAnalysisQuery)
-	if err != nil {
-		log.Error("monitorAnalysisUpdateStatus", "ANALYSIS", 2007, err)
-	}
-	return err
-}
-
-// monitorAnalysisCheckStatus checks if an analysis has already finished and returns the correspoding boolean.
-func monitorAnalysisCheckStatus(RID string) (bool, error) {
-	securityTestDoneCounter = 0
-	analysisFinished := false
-	analysisQuery := map[string]interface{}{"RID": RID}
-	analysisResult, err := db.FindOneDBAnalysis(analysisQuery)
-	if err != nil {
-		log.Error("monitorAnalysisCheckStatus", "ANALYSIS", 2014, RID, err)
-	}
-	for _, container := range analysisResult.Containers {
-		if container.CStatus != "finished" {
-			analysisFinished = false
-			break
-		} else {
-			// Enry must not be taken into account when verifying if the security tests have finished
-			containerIsDoneButIsNotEnry := container.SecurityTest.Name != "enry" || ((container.SecurityTest.Name != "enry") && (container.CResult == ""))
-			if containerIsDoneButIsNotEnry {
-				securityTestDoneCounter++
-				analysisFinished = true
-			}
-		}
-	}
-	// Makes sure all security tests found by Enry have finished
-	if (len(analysisResult.SecurityTests) - 1) != securityTestDoneCounter {
-		analysisFinished = false
-	}
-	return analysisFinished, err
-}
-
-func updateInfoAndResultBasedOnCID(cInfo, cResult, CID string) error {
-
-	updateContainerAnalysisQuery := bson.M{
-		"$set": bson.M{
-			"containers.$.cResult": cResult,
-			"containers.$.cInfo":   cInfo,
-		},
-	}
-
-	analysisQuery := map[string]interface{}{"containers.CID": CID}
-	err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateContainerAnalysisQuery)
-	if err != nil {
-		log.Error("updateInfoAndResultBasedOnCID", "ANALYSIS", 2007, err)
+	if err := db.InsertDBAnalysis(newAnalysis); err != nil {
+		log.Error("registerNewAnalysis", "ANALYSIS", 2011, err)
 		return err
 	}
 
+	// log.Info("registerNewAnalysis", "ANALYSIS", 2012
 	return nil
 }
 
-func updateHuskyCIResultsBasedOnRID(RID, securityTest string, securityTestResult interface{}) error {
-
+func registerFinishedAnalysis(RID string, allScanResults securitytest.AllScansResult) error {
 	analysisQuery := map[string]interface{}{"RID": RID}
-	analysis, err := db.FindOneDBAnalysis(analysisQuery)
-	if err != nil {
-		log.Error("updateHuskyCIResultsBasedOnRID", "ANALYSIS", 2008, err)
+	updateAnalysisQuery := bson.M{
+		"$set": bson.M{
+			"status":         allScanResults.Status,
+			"result":         allScanResults.FinalResult,
+			"containers":     allScanResults.Containers,
+			"huskyciresults": allScanResults.HuskyCIResults,
+			"codes":          allScanResults.Codes,
+			"finishedAt":     time.Now(),
+		},
+	}
+	if err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateAnalysisQuery); err != nil {
+		// log.Error("registerFinishedAnalysis", "ANALYSIS", 2011, err)
 		return err
 	}
-
-	switch securityTest {
-	case "bandit":
-		analysis.HuskyCIResults.PythonResults.HuskyCIBanditOutput = prepareHuskyCIBanditOutput(securityTestResult.(BanditOutput))
-	case "safety":
-		analysis.HuskyCIResults.PythonResults.HuskyCISafetyOutput = prepareHuskyCISafetyResults(securityTestResult.(SafetyOutput))
-	case "retirejs":
-		analysis.HuskyCIResults.JavaScriptResults.HuskyCIRetireJSOutput = prepareHuskyCIRetirejsOutput(securityTestResult.([]RetirejsOutput))
-	case "npmaudit":
-		analysis.HuskyCIResults.JavaScriptResults.HuskyCINpmAuditOutput = prepareHuskyCINpmAuditResults(securityTestResult.(NpmAuditOutput))
-	case "brakeman":
-		analysis.HuskyCIResults.RubyResults.HuskyCIBrakemanOutput = prepareHuskyCIBrakemanResults(securityTestResult.(BrakemanOutput))
-	case "gosec":
-		analysis.HuskyCIResults.GoResults.HuskyCIGosecOutput = prepareHuskyCIGosecResults(securityTestResult.(GosecOutput))
-	}
-
-	err = db.UpdateOneDBAnalysis(analysisQuery, analysis)
-	if err != nil {
-		log.Error("updateHuskyCIResultsBasedOnRID", "ANALYSIS", 2007, err)
-		return err
-	}
-
+	// log.Info("registerFinishedAnalysis", "ANALYSIS", 2012)
 	return nil
 }
