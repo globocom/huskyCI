@@ -7,9 +7,10 @@ import (
 )
 
 var securityTestFunctions = map[string]func(e EnryScan, a *AllScansResult) error{
-	"huskyci/gosec":  initGoSec,
-	"huskyci/bandit": initBandit,
-	"huskyci/safety": initSafety,
+	"huskyci/gosec":    initGoSec,
+	"huskyci/bandit":   initBandit,
+	"huskyci/safety":   initSafety,
+	"huskyci/brakeman": initBrakeman,
 }
 
 // AllScansResult store all scans results of an Analysis
