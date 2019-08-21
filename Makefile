@@ -109,7 +109,6 @@ pull-images:
 	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/gosec"
 	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/bandit"
 	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/brakeman"
-	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/retirejs"
 	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/safety"
 	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/npmaudit"
 

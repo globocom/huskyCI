@@ -51,7 +51,7 @@ func newScanSafety(URL, branch, command string) SafetyScan {
 		Image:   "huskyci/safety",
 		URL:     URL,
 		Branch:  branch,
-		Command: util.HandleCmd(URL, branch, "", command),
+		Command: util.HandleCmd(URL, branch, command),
 	}
 }
 

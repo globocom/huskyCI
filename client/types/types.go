@@ -23,7 +23,6 @@ var IsJSONoutput bool
 type JSONPayload struct {
 	RepositoryURL    string `json:"repositoryURL"`
 	RepositoryBranch string `json:"repositoryBranch"`
-	InternalDepURL   string `json:"internaldepURL"`
 }
 
 // Analysis is the struct that stores all data from analysis performed.
@@ -38,7 +37,6 @@ type Analysis struct {
 	Containers     []Container    `bson:"containers" json:"containers"`
 	StartedAt      time.Time      `bson:"startedAt" json:"startedAt"`
 	FinishedAt     time.Time      `bson:"finishedAt" json:"finishedAt"`
-	InternalDepURL string         `bson:"internaldepURL,omitempty" json:"internaldepURL"`
 	Codes          []Code         `bson:"codes" json:"codes"`
 	HuskyCIResults HuskyCIResults `bson:"huskyciresults,omitempty" json:"huskyciresults"`
 }
@@ -118,7 +116,6 @@ type PythonResults struct {
 
 // JavaScriptResults represents all JavaScript security tests results.
 type JavaScriptResults struct {
-	HuskyCIRetireJSOutput HuskyCISecurityTestOutput `bson:"retirejsoutput,omitempty" json:"retirejsoutput,omitempty"`
 	HuskyCINpmAuditOutput HuskyCISecurityTestOutput `bson:"npmauditoutput,omitempty" json:"npmauditoutput,omitempty"`
 }
 
@@ -142,7 +139,6 @@ type Summary struct {
 	GosecSummary    HuskyCISummary `json:"gosecsummary,omitempty"`
 	BanditSummary   HuskyCISummary `json:"banditsummary,omitempty"`
 	SafetySummary   HuskyCISummary `json:"safetysummary,omitempty"`
-	RetirejsSummary HuskyCISummary `json:"retirejssummary,omitempty"`
 	NpmAuditSummary HuskyCISummary `json:"npmauditsummary,omitempty"`
 	BrakemanSummary HuskyCISummary `json:"brakemansummary,omitempty"`
 	TotalSummary    HuskyCISummary `json:"totalsummary,omitempty"`
