@@ -56,10 +56,6 @@ func registerNewAnalysis(RID string, repository types.Repository) error {
 		StartedAt:  time.Now(),
 	}
 
-	if repository.InternalDepURL != "" {
-		newAnalysis.InternalDepURL = repository.InternalDepURL
-	}
-
 	if err := db.InsertDBAnalysis(newAnalysis); err != nil {
 		log.Error("registerNewAnalysis", "ANALYSIS", 2011, err)
 		return err

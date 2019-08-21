@@ -27,12 +27,11 @@ const (
 )
 
 // HandleCmd will extract %GIT_REPO%, %GIT_BRANCH% and %INTERNAL_DEP_URL% from cmd and replace it with the proper repository URL.
-func HandleCmd(repositoryURL, repositoryBranch, internalDepURL, cmd string) string {
+func HandleCmd(repositoryURL, repositoryBranch, cmd string) string {
 	if repositoryURL != "" && repositoryBranch != "" && cmd != "" {
 		replace1 := strings.Replace(cmd, "%GIT_REPO%", repositoryURL, -1)
 		replace2 := strings.Replace(replace1, "%GIT_BRANCH%", repositoryBranch, -1)
-		replace3 := strings.Replace(replace2, "%INTERNAL_DEP_URL%", internalDepURL, -1)
-		return replace3
+		return replace2
 	}
 	return ""
 }
@@ -115,12 +114,6 @@ func CheckValidInput(repository types.Repository, c echo.Context) (string, error
 		return "", err
 	}
 
-	if repository.InternalDepURL != "" {
-		if err := CheckMaliciousRepoInternalDepURL(repository.InternalDepURL, c); err != nil {
-			return "", err
-		}
-	}
-
 	return sanitiziedURL, nil
 }
 
@@ -151,23 +144,6 @@ func CheckMaliciousRepoBranch(repositoryBranch string, c echo.Context) error {
 	if !valid {
 		log.Error("ReceiveRequest", "ANALYSIS", 1017, repositoryBranch)
 		reply := map[string]interface{}{"success": false, "error": "invalid repository branch"}
-		return c.JSON(http.StatusBadRequest, reply)
-	}
-	return nil
-}
-
-// CheckMaliciousRepoInternalDepURL verifies if a given internal dependecy URL is "malicious" or not
-func CheckMaliciousRepoInternalDepURL(repositoryInternalDepURL string, c echo.Context) error {
-	regexpInternalDepURL := `https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)`
-	valid, err := regexp.MatchString(regexpInternalDepURL, repositoryInternalDepURL)
-	if err != nil {
-		log.Error("ReceiveRequest", "ANALYSIS", 1008, "Repository Branch regexp ", err)
-		reply := map[string]interface{}{"success": false, "error": "internal error"}
-		return c.JSON(http.StatusInternalServerError, reply)
-	}
-	if !valid {
-		log.Error("ReceiveRequest", "ANALYSIS", 1021, repositoryInternalDepURL)
-		reply := map[string]interface{}{"success": false, "error": "invalid internal dependency URL"}
 		return c.JSON(http.StatusBadRequest, reply)
 	}
 	return nil

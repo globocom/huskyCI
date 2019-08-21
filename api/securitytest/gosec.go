@@ -59,7 +59,7 @@ func newScanGosec(URL, branch, command string) GosecScan {
 		Image:   "huskyci/gosec",
 		URL:     URL,
 		Branch:  branch,
-		Command: util.HandleCmd(URL, branch, "", command),
+		Command: util.HandleCmd(URL, branch, command),
 	}
 }
 

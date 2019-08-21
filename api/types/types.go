@@ -12,11 +12,10 @@ import (
 
 // Repository is the struct that stores all data from repository to be analyzed.
 type Repository struct {
-	ID             bson.ObjectId `bson:"_id,omitempty"`
-	URL            string        `bson:"repositoryURL" json:"repositoryURL"`
-	Branch         string        `json:"repositoryBranch"`
-	CreatedAt      time.Time     `bson:"createdAt" json:"createdAt"`
-	InternalDepURL string        `json:"internaldepURL"`
+	ID        bson.ObjectId `bson:"_id,omitempty"`
+	URL       string        `bson:"repositoryURL" json:"repositoryURL"`
+	Branch    string        `json:"repositoryBranch"`
+	CreatedAt time.Time     `bson:"createdAt" json:"createdAt"`
 }
 
 // SecurityTest is the struct that stores all data from the security tests to be executed.
@@ -42,7 +41,6 @@ type Analysis struct {
 	Containers     []Container    `bson:"containers" json:"containers"`
 	StartedAt      time.Time      `bson:"startedAt" json:"startedAt"`
 	FinishedAt     time.Time      `bson:"finishedAt" json:"finishedAt"`
-	InternalDepURL string         `bson:"internaldepURL,omitempty" json:"internaldepURL"`
 	Codes          []Code         `bson:"codes" json:"codes"`
 	HuskyCIResults HuskyCIResults `bson:"huskyciresults,omitempty" json:"huskyciresults"`
 }
@@ -115,7 +113,6 @@ type PythonResults struct {
 
 // JavaScriptResults represents all JavaScript security tests results.
 type JavaScriptResults struct {
-	HuskyCIRetireJSOutput HuskyCISecurityTestOutput `bson:"retirejsoutput,omitempty" json:"retirejsoutput,omitempty"`
 	HuskyCINpmAuditOutput HuskyCISecurityTestOutput `bson:"npmauditoutput,omitempty" json:"npmauditoutput,omitempty"`
 }
 

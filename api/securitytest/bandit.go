@@ -54,7 +54,7 @@ func newScanBandit(URL, branch, command string) BanditScan {
 		Image:   "huskyci/bandit",
 		URL:     URL,
 		Branch:  branch,
-		Command: util.HandleCmd(URL, branch, "", command),
+		Command: util.HandleCmd(URL, branch, command),
 	}
 }
 

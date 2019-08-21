@@ -45,7 +45,6 @@ var MsgCode = map[int]string{
 	1011: "Internal error finding repository just inserted into MongoDB: ",
 	1012: "MongoDB message in FindOneDBSecurityTest: ",
 	1013: "MongoDB message in FindOneDBRepository: ",
-	1014: "Could not Unmarshall the following retirejsOutput: ",
 	1015: "Received an invalid repository JSON: ",
 	1016: "Received an invalid repository URL: ",
 	1017: "Received an invalid repository branch: ",
@@ -71,7 +70,6 @@ var MsgCode = map[int]string{
 	202: "Gosec securityTest not found.",
 	203: "Brakeman securityTest not found.",
 	204: "Bandit securityTest not found.",
-	205: "RetireJS securityTest not found.",
 	206: "Safety securityTest not found.",
 
 	// MongoDB errors
@@ -91,7 +89,6 @@ var MsgCode = map[int]string{
 	2014: "Could not find an analysis using the following RID: ",
 	2015: "Could not create a new repository: ",
 	2016: "Could not create a new securityTest: ",
-	2017: "Could not update repository's internaldepURL: ",
 
 	// Docker API info
 	31: "Waiting pull image...",
