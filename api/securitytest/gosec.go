@@ -96,7 +96,7 @@ func runScanGosec(URL, branch string) (GosecScan, types.Container, error) {
 		return gosecScan, gosecContainer, err
 	}
 
-	gosecScan.prepareContainerAfterScan(&gosecContainer)
+	gosecScan.prepareContainerAfterScanGosec(&gosecContainer)
 	return gosecScan, gosecContainer, nil
 }
 
@@ -168,7 +168,7 @@ func (gosecScan *GosecScan) prepareGosecOutput(gosecOutput GosecOutput) {
 	gosecScan.Vulnerabilities = huskyCIgosecResults
 }
 
-func (gosecScan *GosecScan) prepareContainerAfterScan(gosecContainer *types.Container) {
+func (gosecScan *GosecScan) prepareContainerAfterScanGosec(gosecContainer *types.Container) {
 	if len(gosecScan.Vulnerabilities.MediumVulns) > 0 || len(gosecScan.Vulnerabilities.HighVulns) > 0 {
 		gosecContainer.CInfo = "Issues found."
 		gosecContainer.CResult = "failed"

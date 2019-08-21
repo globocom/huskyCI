@@ -7,7 +7,9 @@ import (
 )
 
 var securityTestFunctions = map[string]func(e EnryScan, a *AllScansResult) error{
-	"huskyci/gosec": initGoSec,
+	"huskyci/gosec":  initGoSec,
+	"huskyci/bandit": initBandit,
+	"huskyci/safety": initSafety,
 }
 
 // AllScansResult store all scans results of an Analysis
@@ -86,7 +88,7 @@ func getAllDefaultSecurityTests(typeOf, language string) ([]types.SecurityTest, 
 	}
 	securityTests, err := db.FindAllDBSecurityTest(securityTestQuery)
 	if err != nil {
-		log.Error("getAllSecurityTestsBasedOnLanguage", "ENRY", 2009, err)
+		log.Error("getAllDefaultSecurityTests", "SECURITYTEST", 2009, err)
 		return securityTests, err
 	}
 	return securityTests, nil
