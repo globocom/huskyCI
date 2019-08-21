@@ -11,6 +11,7 @@ var securityTestFunctions = map[string]func(e EnryScan, a *AllScansResult) error
 	"huskyci/bandit":   initBandit,
 	"huskyci/safety":   initSafety,
 	"huskyci/brakeman": initBrakeman,
+	"huskyci/npmaudit": initNpmaudit,
 }
 
 // AllScansResult store all scans results of an Analysis
