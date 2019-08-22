@@ -12,6 +12,7 @@ import (
 
 	"github.com/globocom/huskyCI/api/db"
 	huskydocker "github.com/globocom/huskyCI/api/dockers"
+	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
 	"github.com/globocom/huskyCI/api/util"
 )
@@ -25,6 +26,7 @@ type NpmauditScan struct {
 	Image           string
 	Command         string
 	RawOutput       string
+	ErrorFound      error
 	FinalOutput     NpmAuditOutput
 	Vulnerabilities types.HuskyCISecurityTestOutput
 }
@@ -100,6 +102,7 @@ func runScanNpmaudit(URL, branch string) (NpmauditScan, types.Container, error) 
 	npmauditScan := NpmauditScan{}
 	npmauditContainer, err := newContainerNpmaudit()
 	if err != nil {
+		log.Error("runScanNpmaudit", "NPMAUDIT", 1029, err)
 		return npmauditScan, npmauditContainer, err
 	}
 	npmauditScan = newScanNpmaudit(URL, branch, npmauditContainer.SecurityTest.Cmd)
@@ -113,19 +116,19 @@ func runScanNpmaudit(URL, branch string) (NpmauditScan, types.Container, error) 
 
 func (npmauditScan *NpmauditScan) startNpmaudit() error {
 	if err := npmauditScan.dockerRunNpmaudit(); err != nil {
+		npmauditScan.ErrorFound = err
 		return err
 	}
 	if err := npmauditScan.analyzeNpmaudit(); err != nil {
+		npmauditScan.ErrorFound = err
 		return err
 	}
-	// log.Info("GosecStartAnalysis", "GOSEC", 1002, cOutput, err)
 	return nil
 }
 
 func (npmauditScan *NpmauditScan) dockerRunNpmaudit() error {
 	CID, cOutput, err := huskydocker.DockerRun(npmauditScan.Image, npmauditScan.Command)
 	if err != nil {
-		// log.Error("DockerRun", "DOCKERRUN", 3013, err)
 		return err
 	}
 	npmauditScan.CID = CID
@@ -134,29 +137,34 @@ func (npmauditScan *NpmauditScan) dockerRunNpmaudit() error {
 }
 
 func (npmauditScan *NpmauditScan) analyzeNpmaudit() error {
+
 	// step 1: check for any errors when clonning repo
 	errorClonning := strings.Contains(npmauditScan.RawOutput, "ERROR_CLONING")
 	failedRunning := strings.Contains(npmauditScan.RawOutput, "ERROR_RUNNING_NPMAUDIT")
 
 	if errorClonning {
-		// log.Error("GosecStartAnalysis", "GOSEC", 1002, cOutput, err)
-		return errors.New("error clonning")
+		errorMsg := errors.New("error clonning")
+		log.Error("analyzeNpmaudit", "NPMAUDIT", 1031, npmauditScan.URL, npmauditScan.Branch, errorMsg)
+		return errorMsg
 	}
 
 	if failedRunning {
-		// log.Error("GosecStartAnalysis", "GOSEC", 1002, cOutput, err)
-		return errors.New("failedRunning")
+		errorMsg := errors.New("internal error safety - ERROR_RUNNING_SAFETY")
+		log.Error("analyzeNpmaudit", "NPMAUDIT", 1034, errorMsg)
+		return errorMsg
 	}
 
 	// step 2: nil cOutput states that no Issues were found.
 	if npmauditScan.RawOutput == "" {
 		return nil
 	}
+
 	// step 3: Unmarshall rawOutput into finalOutput, that is a GosecOutput struct.
 	if err := json.Unmarshal([]byte(npmauditScan.RawOutput), &npmauditScan.FinalOutput); err != nil {
-		// log.Error("GosecStartAnalysis", "GOSEC", 1002, cOutput, err)
+		log.Error("analyzeNpmaudit", "NPMAUDIT", 1014, npmauditScan.RawOutput, err)
 		return err
 	}
+
 	// step 4: find Issues that have severity "MEDIUM" or "HIGH" and confidence "HIGH".
 	npmauditScan.prepareNpmauditOutput(npmauditScan.FinalOutput)
 	return nil
@@ -230,6 +238,7 @@ func newContainerNpmaudit() (types.Container, error) {
 	npmauditQuery := map[string]interface{}{"name": "npmaudit"}
 	npmauditSecurityTest, err := db.FindOneDBSecurityTest(npmauditQuery)
 	if err != nil {
+		log.Error("newContainerNpmaudit", "NPMAUDIT", 2012, err)
 		return npmauditContainer, err
 	}
 	return types.Container{

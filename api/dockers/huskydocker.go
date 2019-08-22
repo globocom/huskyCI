@@ -37,6 +37,7 @@ func DockerRun(containerImage, cmd string) (string, string, error) {
 
 	// step 4: start container
 	if err := d.StartContainer(); err != nil {
+		log.Error("DockerRun", "HUSKYDOCKER", 3015, err)
 		return "", "", err
 	}
 	log.Info("DockerRun", "HUSKYDOCKER", 32, containerImage)
@@ -46,7 +47,7 @@ func DockerRun(containerImage, cmd string) (string, string, error) {
 	if err != nil {
 		return "", "", err
 	}
-	log.Info("DockerRun", "HUSKYDOCKER", 34, containerImage)
+	log.Info("DockerRun", "HUSKYDOCKER", 34, containerImage, d.CID)
 
 	return CID, cOutput, nil
 }
@@ -58,16 +59,17 @@ func pullImage(d *Docker, image string) error {
 	for {
 		select {
 		case <-timeout:
-			// log.Error("pullImage", "HUSKYDOCKER", 3013, err)
-			return errors.New("time out")
+			timeOutErr := errors.New("time out")
+			log.Error("pullImage", "HUSKYDOCKER", 3013, timeOutErr)
+			return timeOutErr
 		case <-retryTick:
 			log.Info("pullImage", "DOCKERRUN", 31, image)
 			if d.ImageIsLoaded(image) {
-				// log.Info("pullImage", "HUSKYDOCKER", 3013, err)
+				log.Info("pullImage", "HUSKYDOCKER", 35, image)
 				return nil
 			}
 			if err := d.PullImage(canonicalURL); err != nil {
-				// log.Error("pullImage", "HUSKYDOCKER", 3013, err)
+				log.Error("pullImage", "HUSKYDOCKER", 3013, err)
 				return err
 			}
 		}
@@ -80,16 +82,16 @@ func readOutput(d *Docker) (string, error) {
 	for {
 		select {
 		case <-timeout:
-			// log.Error("DockerRun", "HUSKYDOCKER", 3013, err)
-			return "", errors.New("time out")
+			timeOutErr := errors.New("time out")
+			log.Error("readOutput", "HUSKYDOCKER", 3017, timeOutErr)
+			return "", timeOutErr
 		case <-retryTick:
 			cOutput, err := d.ReadOutput()
 			if err != nil {
-				// log.Error("DockerRun", "HUSKYDOCKER", 3013, err)
 				return "", err
 			}
 			if cOutput != "" {
-				// log.Info("DockerRun", "HUSKYDOCKER", 3013, err)
+				log.Info("DockerRun", "HUSKYDOCKER", 36, d.CID)
 				return cOutput, nil
 			}
 		}

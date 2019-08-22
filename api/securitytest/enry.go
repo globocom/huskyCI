@@ -13,6 +13,7 @@ import (
 
 	"github.com/globocom/huskyCI/api/db"
 	huskydocker "github.com/globocom/huskyCI/api/dockers"
+	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
 	"github.com/globocom/huskyCI/api/util"
 )
@@ -26,6 +27,7 @@ type EnryScan struct {
 	Image       string
 	Command     string
 	RawOutput   string
+	ErrorFound  error
 	FinalOutput EnryOutput
 }
 
@@ -49,45 +51,31 @@ func newScanEnry(URL, branch, command string) EnryScan {
 	}
 }
 
-func newContainerEnry() (types.Container, error) {
-	enryContainer := types.Container{}
-	enryQuery := map[string]interface{}{"name": "enry"}
-	enrySecurityTest, err := db.FindOneDBSecurityTest(enryQuery)
-	if err != nil {
-		return enryContainer, err
-	}
-	return types.Container{
-		SecurityTest: enrySecurityTest,
-		StartedAt:    time.Now(),
-	}, nil
-}
-
 // RunScanEnry runs enry as the initial step of huskyCI and returns an error
 func RunScanEnry(repository types.Repository) (EnryScan, error) {
-
 	enryScan := EnryScan{}
 	enryContainer, err := newContainerEnry()
 	if err != nil {
+		log.Error("RunScanEnry", "ENRY", 1029, err)
 		return enryScan, err
 	}
-
 	enryScan = newScanEnry(repository.URL, repository.Branch, enryContainer.SecurityTest.Cmd)
 	if err := enryScan.startEnry(); err != nil {
 		return enryScan, err
 	}
-
 	return enryScan, nil
 }
 
 // StartEnry starts a new enryScan and returns an error.
 func (enryScan *EnryScan) startEnry() error {
 	if err := enryScan.dockerRunEnry(); err != nil {
+		enryScan.ErrorFound = err
 		return err
 	}
 	if err := enryScan.analyzeEnry(); err != nil {
+		enryScan.ErrorFound = err
 		return err
 	}
-	// log.Info("GosecStartAnalysis", "GOSEC", 1002, cOutput, err)
 	return nil
 }
 
@@ -107,13 +95,16 @@ func (enryScan *EnryScan) analyzeEnry() error {
 	// step 1: check for any errors when clonning repo
 	errorClonning := strings.Contains(enryScan.RawOutput, "ERROR_CLONING")
 	if errorClonning {
-		// log.Error("GosecStartAnalysis", "GOSEC", 1002, cOutput, err)
-		return errors.New("error clonning")
+		errorMsg := errors.New("error clonning")
+		log.Error("analyzeEnry", "ENRY", 1031, enryScan.URL, enryScan.Branch, errorMsg)
+		return errorMsg
 	}
 
 	// step 2: nil cOutput states that no Issues were found.
 	if enryScan.RawOutput == "" {
-		return errors.New("empty enry results")
+		errorMsg := errors.New("internal error clonning repository (cOutput empty)")
+		log.Error("analyzeEnry", "ENRY", 1031, enryScan.URL, enryScan.Branch, errorMsg)
+		return errorMsg
 	}
 
 	// step 3: Get all languages and files found based on Enry output
@@ -132,7 +123,7 @@ func prepareEnryOutput(cOutput string) ([]Code, error) {
 	mapLanguages := make(map[string][]interface{})
 	err := json.Unmarshal([]byte(cOutput), &mapLanguages)
 	if err != nil {
-		// log.Error("EnryStartAnalysis", "ENRY", 1003, cOutput, err)
+		log.Error("prepareEnryOutput", "ENRY", 1003, cOutput, err)
 		return repositoryLanguages, err
 	}
 	for name, files := range mapLanguages {
@@ -141,8 +132,9 @@ func prepareEnryOutput(cOutput string) ([]Code, error) {
 			if reflect.TypeOf(f).String() == "string" {
 				fs = append(fs, f.(string))
 			} else {
-				// log.Error("getLanguagesFromEnryOutput", "ENRY", 1004, err)
-				return repositoryLanguages, errors.New("error mapping languages")
+				errMsg := errors.New("error mapping languages")
+				log.Error("prepareEnryOutput", "ENRY", 1032, errMsg)
+				return repositoryLanguages, errMsg
 			}
 		}
 		newLanguage = Code{
@@ -152,4 +144,18 @@ func prepareEnryOutput(cOutput string) ([]Code, error) {
 		repositoryLanguages = append(repositoryLanguages, newLanguage)
 	}
 	return repositoryLanguages, nil
+}
+
+func newContainerEnry() (types.Container, error) {
+	enryContainer := types.Container{}
+	enryQuery := map[string]interface{}{"name": "enry"}
+	enrySecurityTest, err := db.FindOneDBSecurityTest(enryQuery)
+	if err != nil {
+		log.Error("newContainerEnry", "ENRY", 2012, err)
+		return enryContainer, err
+	}
+	return types.Container{
+		SecurityTest: enrySecurityTest,
+		StartedAt:    time.Now(),
+	}, nil
 }

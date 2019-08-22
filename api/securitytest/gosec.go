@@ -12,6 +12,7 @@ import (
 
 	"github.com/globocom/huskyCI/api/db"
 	huskydocker "github.com/globocom/huskyCI/api/dockers"
+	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
 	"github.com/globocom/huskyCI/api/util"
 )
@@ -25,6 +26,7 @@ type GosecScan struct {
 	Image           string
 	Command         string
 	RawOutput       string
+	ErrorFound      error
 	FinalOutput     GosecOutput
 	Vulnerabilities types.HuskyCISecurityTestOutput
 }
@@ -89,6 +91,7 @@ func runScanGosec(URL, branch string) (GosecScan, types.Container, error) {
 	gosecScan := GosecScan{}
 	gosecContainer, err := newContainerGosec()
 	if err != nil {
+		log.Error("runScanGosec", "GOSEC", 1029, err)
 		return gosecScan, gosecContainer, err
 	}
 	gosecScan = newScanGosec(URL, branch, gosecContainer.SecurityTest.Cmd)
@@ -102,19 +105,19 @@ func runScanGosec(URL, branch string) (GosecScan, types.Container, error) {
 
 func (gosecScan *GosecScan) startGosec() error {
 	if err := gosecScan.dockerRunGosec(); err != nil {
+		gosecScan.ErrorFound = err
 		return err
 	}
 	if err := gosecScan.analyzeGosec(); err != nil {
+		gosecScan.ErrorFound = err
 		return err
 	}
-	// log.Info("GosecStartAnalysis", "GOSEC", 1002, cOutput, err)
 	return nil
 }
 
 func (gosecScan *GosecScan) dockerRunGosec() error {
 	CID, cOutput, err := huskydocker.DockerRun(gosecScan.Image, gosecScan.Command)
 	if err != nil {
-		// log.Error("DockerRun", "DOCKERRUN", 3013, err)
 		return err
 	}
 	gosecScan.CID = CID
@@ -123,21 +126,26 @@ func (gosecScan *GosecScan) dockerRunGosec() error {
 }
 
 func (gosecScan *GosecScan) analyzeGosec() error {
+
 	// step 1: check for any errors when clonning repo
 	errorClonning := strings.Contains(gosecScan.RawOutput, "ERROR_CLONING")
 	if errorClonning {
-		// log.Error("GosecStartAnalysis", "GOSEC", 1002, cOutput, err)
-		return errors.New("error clonning")
+		errorMsg := errors.New("error clonning")
+		log.Error("analyzeGosec", "GOSEC", 1031, gosecScan.URL, gosecScan.Branch, errorMsg)
+		return errorMsg
 	}
+
 	// step 2: nil cOutput states that no Issues were found.
 	if gosecScan.RawOutput == "" {
 		return nil
 	}
+
 	// step 3: Unmarshall rawOutput into finalOutput, that is a GosecOutput struct.
 	if err := json.Unmarshal([]byte(gosecScan.RawOutput), &gosecScan.FinalOutput); err != nil {
-		// log.Error("GosecStartAnalysis", "GOSEC", 1002, cOutput, err)
+		log.Error("analyzeGosec", "GOSEC", 1002, gosecScan.RawOutput, err)
 		return err
 	}
+
 	// step 4: find Issues that have severity "MEDIUM" or "HIGH" and confidence "HIGH".
 	gosecScan.prepareGosecOutput(gosecScan.FinalOutput)
 	return nil
@@ -187,6 +195,7 @@ func newContainerGosec() (types.Container, error) {
 	gosecQuery := map[string]interface{}{"name": "gosec"}
 	gosecSecurityTest, err := db.FindOneDBSecurityTest(gosecQuery)
 	if err != nil {
+		log.Error("newContainerGosec", "GOSEC", 2012, err)
 		return gosecContainer, err
 	}
 	return types.Container{

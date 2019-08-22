@@ -13,6 +13,7 @@ import (
 
 	"github.com/globocom/huskyCI/api/db"
 	huskydocker "github.com/globocom/huskyCI/api/dockers"
+	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
 	"github.com/globocom/huskyCI/api/util"
 )
@@ -26,6 +27,7 @@ type BrakemanScan struct {
 	Image           string
 	Command         string
 	RawOutput       string
+	ErrorFound      error
 	FinalOutput     BrakemanOutput
 	Vulnerabilities types.HuskyCISecurityTestOutput
 }
@@ -81,6 +83,7 @@ func runScanBrakeman(URL, branch string) (BrakemanScan, types.Container, error) 
 	brakemanScan := BrakemanScan{}
 	brakemanContainer, err := newContainerBrakeman()
 	if err != nil {
+		log.Error("runScanBrakeman", "BRAKEMAN", 1029, err)
 		return brakemanScan, brakemanContainer, err
 	}
 	brakemanScan = newScanBrakeman(URL, branch, brakemanContainer.SecurityTest.Cmd)
@@ -94,19 +97,19 @@ func runScanBrakeman(URL, branch string) (BrakemanScan, types.Container, error) 
 
 func (brakemanScan *BrakemanScan) startBrakeman() error {
 	if err := brakemanScan.dockerRunBrakeman(); err != nil {
+		brakemanScan.ErrorFound = err
 		return err
 	}
 	if err := brakemanScan.analyzeBrakeman(); err != nil {
+		brakemanScan.ErrorFound = err
 		return err
 	}
-	// log.Info("GosecStartAnalysis", "GOSEC", 1002, cOutput, err)
 	return nil
 }
 
 func (brakemanScan *BrakemanScan) dockerRunBrakeman() error {
 	CID, cOutput, err := huskydocker.DockerRun(brakemanScan.Image, brakemanScan.Command)
 	if err != nil {
-		// log.Error("DockerRun", "DOCKERRUN", 3013, err)
 		return err
 	}
 	brakemanScan.CID = CID
@@ -115,21 +118,26 @@ func (brakemanScan *BrakemanScan) dockerRunBrakeman() error {
 }
 
 func (brakemanScan *BrakemanScan) analyzeBrakeman() error {
+
 	// step 1: check for any errors when clonning repo
 	errorClonning := strings.Contains(brakemanScan.RawOutput, "ERROR_CLONING")
 	if errorClonning {
-		// log.Error("GosecStartAnalysis", "GOSEC", 1002, cOutput, err)
-		return errors.New("error clonning")
+		errorMsg := errors.New("error clonning")
+		log.Error("analyzeBrakeman", "BRAKEMAN", 1031, brakemanScan.URL, brakemanScan.Branch, errorMsg)
+		return errorMsg
 	}
+
 	// step 2: nil cOutput states that no Issues were found.
 	if brakemanScan.RawOutput == "" {
 		return nil
 	}
-	// step 3: Unmarshall rawOutput into finalOutput, that is a GosecOutput struct.
+
+	// step 3: Unmarshall rawOutput into finalOutput, that is a Brakeman struct.
 	if err := json.Unmarshal([]byte(brakemanScan.RawOutput), &brakemanScan.FinalOutput); err != nil {
-		// log.Error("GosecStartAnalysis", "GOSEC", 1002, cOutput, err)
+		log.Error("analyzeBrakeman", "BRAKEMAN", 1005, brakemanScan.RawOutput, err)
 		return err
 	}
+
 	// step 4: find Issues that have severity "MEDIUM" or "HIGH" and confidence "HIGH".
 	brakemanScan.prepareBrakemanOutput(brakemanScan.FinalOutput)
 	return nil
@@ -181,6 +189,7 @@ func newContainerBrakeman() (types.Container, error) {
 	brakemanQuery := map[string]interface{}{"name": "brakeman"}
 	brakemanSecurityTest, err := db.FindOneDBSecurityTest(brakemanQuery)
 	if err != nil {
+		log.Error("newContainerBrakeman", "BRAKEMAN", 2012, err)
 		return brakemanContainer, err
 	}
 	return types.Container{
