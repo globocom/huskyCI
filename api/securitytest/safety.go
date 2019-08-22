@@ -12,6 +12,7 @@ import (
 
 	"github.com/globocom/huskyCI/api/db"
 	huskydocker "github.com/globocom/huskyCI/api/dockers"
+	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
 	"github.com/globocom/huskyCI/api/util"
 )
@@ -25,6 +26,7 @@ type SafetyScan struct {
 	Image           string
 	Command         string
 	RawOutput       string
+	ErrorFound      error
 	FinalOutput     SafetyOutput
 	Vulnerabilities types.HuskyCISecurityTestOutput
 }
@@ -81,6 +83,7 @@ func runScanSafety(URL, branch string) (SafetyScan, types.Container, error) {
 	safetyScan := SafetyScan{}
 	safetyContainer, err := newContainerSafety()
 	if err != nil {
+		log.Error("runScanSafety", "SAFETY", 1029, err)
 		return safetyScan, safetyContainer, err
 	}
 	safetyScan = newScanSafety(URL, branch, safetyContainer.SecurityTest.Cmd)
@@ -94,19 +97,19 @@ func runScanSafety(URL, branch string) (SafetyScan, types.Container, error) {
 
 func (safetyScan *SafetyScan) startSafety() error {
 	if err := safetyScan.dockerRunSafety(); err != nil {
+		safetyScan.ErrorFound = err
 		return err
 	}
 	if err := safetyScan.analyzeSafety(); err != nil {
+		safetyScan.ErrorFound = err
 		return err
 	}
-	// log.Info("GosecStartAnalysis", "GOSEC", 1002, cOutput, err)
 	return nil
 }
 
 func (safetyScan *SafetyScan) dockerRunSafety() error {
 	CID, cOutput, err := huskydocker.DockerRun(safetyScan.Image, safetyScan.Command)
 	if err != nil {
-		// log.Error("DockerRun", "DOCKERRUN", 3013, err)
 		return err
 	}
 	safetyScan.CID = CID
@@ -121,22 +124,28 @@ func (safetyScan *SafetyScan) analyzeSafety() error {
 	reqNotFound := strings.Contains(safetyScan.RawOutput, "ERROR_REQ_NOT_FOUND")
 	warningFound := strings.Contains(safetyScan.RawOutput, "Warning: unpinned requirement ")
 
+	// step 1: check for any errors when clonning repo
 	if errorCloning {
-		// log.Error("GosecStartAnalysis", "GOSEC", 1002, cOutput, err)
-		return errors.New("error clonning")
+		errorMsg := errors.New("error clonning")
+		log.Error("analyzeSafety", "SAFETY", 1031, safetyScan.URL, safetyScan.Branch, errorMsg)
+		return errorMsg
 	}
 
+	// step 2: check if there were any internal errors running safety
 	if failedRunning {
-		// log.Error("GosecStartAnalysis", "GOSEC", 1002, cOutput, err)
-		return errors.New("failed running")
+		errorMsg := errors.New("internal error safety - ERROR_RUNNING_SAFETY")
+		log.Error("analyzeSafety", "SAFETY", 1033, errorMsg)
+		return errorMsg
 	}
 
+	// step 3: check if requirements.txt were found or not
 	if reqNotFound {
-		// log.Error("GosecStartAnalysis", "GOSEC", 1002, cOutput, err)
-		return errors.New("failed running")
+		safetyScan.FinalOutput.ReqNotFound = true
 	}
 
+	// step 4: check if warning were found and handle its output
 	if warningFound {
+		safetyScan.FinalOutput.WarningFound = true
 		outputJSON := util.GetLastLine(safetyScan.RawOutput)
 		safetyScan.FinalOutput.OutputWarnings = util.GetAllLinesButLast(safetyScan.RawOutput)
 		safetyScan.RawOutput = outputJSON
@@ -145,12 +154,12 @@ func (safetyScan *SafetyScan) analyzeSafety() error {
 	cOutputSanitized := util.SanitizeSafetyJSON(safetyScan.RawOutput)
 	safetyScan.RawOutput = cOutputSanitized
 
-	// step 3: Unmarshall rawOutput into finalOutput, that is a GosecOutput struct.
+	// step 5: Unmarshall rawOutput into finalOutput, that is a Safety struct.
 	if err := json.Unmarshal([]byte(safetyScan.RawOutput), &safetyScan.FinalOutput); err != nil {
-		// log.Error("GosecStartAnalysis", "GOSEC", 1002, cOutput, err)
+		log.Error("analyzeSafety", "SAFETY", 1018, safetyScan.RawOutput, err)
 		return err
 	}
-	// step 4: find Issues that have severity "MEDIUM" or "HIGH" and confidence "HIGH".
+	// step 6: find Issues that have severity "MEDIUM" or "HIGH" and confidence "HIGH".
 	safetyScan.prepareSafetyOutput(safetyScan.FinalOutput)
 	return nil
 }
@@ -229,6 +238,7 @@ func newContainerSafety() (types.Container, error) {
 	safetyQuery := map[string]interface{}{"name": "safety"}
 	safetySecurityTest, err := db.FindOneDBSecurityTest(safetyQuery)
 	if err != nil {
+		log.Error("newContainerSafety", "SAFETY", 2012, err)
 		return safetyContainer, err
 	}
 	return types.Container{

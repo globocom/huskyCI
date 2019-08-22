@@ -13,6 +13,7 @@ import (
 
 	"github.com/globocom/huskyCI/api/db"
 	huskydocker "github.com/globocom/huskyCI/api/dockers"
+	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
 	"github.com/globocom/huskyCI/api/util"
 )
@@ -26,6 +27,7 @@ type BanditScan struct {
 	Image           string
 	Command         string
 	RawOutput       string
+	ErrorsFound     []error
 	FinalOutput     BanditOutput
 	Vulnerabilities types.HuskyCISecurityTestOutput
 }
@@ -84,6 +86,7 @@ func runScanBandit(URL, branch string) (BanditScan, types.Container, error) {
 	banditScan := BanditScan{}
 	banditContainer, err := newContainerBandit()
 	if err != nil {
+		log.Error("runScanBandit", "BANDIT", 1029, err)
 		return banditScan, banditContainer, err
 	}
 	banditScan = newScanBandit(URL, branch, banditContainer.SecurityTest.Cmd)
@@ -97,9 +100,11 @@ func runScanBandit(URL, branch string) (BanditScan, types.Container, error) {
 
 func (banditScan *BanditScan) startBandit() error {
 	if err := banditScan.dockerRunBandit(); err != nil {
+		banditScan.ErrorsFound = append(banditScan.ErrorsFound, err)
 		return err
 	}
 	if err := banditScan.analyzeBandit(); err != nil {
+		banditScan.ErrorsFound = append(banditScan.ErrorsFound, err)
 		return err
 	}
 	// log.Info("GosecStartAnalysis", "GOSEC", 1002, cOutput, err)
@@ -118,22 +123,33 @@ func (banditScan *BanditScan) dockerRunBandit() error {
 }
 
 func (banditScan *BanditScan) analyzeBandit() error {
+
 	// step 1: check for any errors when clonning repo
 	errorClonning := strings.Contains(banditScan.RawOutput, "ERROR_CLONING")
 	if errorClonning {
-		// log.Error("GosecStartAnalysis", "GOSEC", 1002, cOutput, err)
-		return errors.New("error clonning")
+		errorMsg := errors.New("error clonning")
+		log.Error("analyzeBandit", "BANDIT", 1031, banditScan.URL, banditScan.Branch, errorMsg)
+		return errorMsg
 	}
-	// step 2: nil cOutput states that no Issues were found.
-	if banditScan.RawOutput == "" {
-		return nil
-	}
-	// step 3: Unmarshall rawOutput into finalOutput, that is a GosecOutput struct.
+
+	// step 2: Unmarshall rawOutput into finalOutput, that is a Bandit struct.
 	if err := json.Unmarshal([]byte(banditScan.RawOutput), &banditScan.FinalOutput); err != nil {
-		// log.Error("GosecStartAnalysis", "GOSEC", 1002, cOutput, err)
+		log.Error("analyzeBandit", "BANDIT", 1006, banditScan.RawOutput, err)
 		return err
 	}
-	// step 4: find Issues that have severity "MEDIUM" or "HIGH" and confidence "HIGH".
+
+	// step 3: verify if there was any error in the analysis.
+	if banditScan.FinalOutput.Errors != nil {
+		errorMsg := errors.New("internal error running bandit")
+		return errorMsg
+	}
+
+	// step 4: an empty Results slice states that no Issues were found.
+	if len(banditScan.FinalOutput.Results) == 0 {
+		return nil
+	}
+
+	// step 5: find Issues that have severity "MEDIUM" or "HIGH" and confidence "HIGH".
 	banditScan.prepareBanditOutput(banditScan.FinalOutput)
 	return nil
 }
@@ -183,6 +199,7 @@ func newContainerBandit() (types.Container, error) {
 	banditQuery := map[string]interface{}{"name": "bandit"}
 	banditSecurityTest, err := db.FindOneDBSecurityTest(banditQuery)
 	if err != nil {
+		log.Error("newContainerBandit", "BANDIT", 2012, err)
 		return banditContainer, err
 	}
 	return types.Container{
