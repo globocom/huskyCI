@@ -8,28 +8,9 @@ import (
 	"encoding/json"
 	"errors"
 	"reflect"
-	"strings"
-	"time"
 
-	"github.com/globocom/huskyCI/api/db"
-	huskydocker "github.com/globocom/huskyCI/api/dockers"
 	"github.com/globocom/huskyCI/api/log"
-	"github.com/globocom/huskyCI/api/types"
-	"github.com/globocom/huskyCI/api/util"
 )
-
-// EnryScan holds all information needed for a gosec scan.
-type EnryScan struct {
-	RID         string
-	CID         string
-	URL         string
-	Branch      string
-	Image       string
-	Command     string
-	RawOutput   string
-	ErrorFound  error
-	FinalOutput EnryOutput
-}
 
 // EnryOutput is the struct that holds all data from Gosec output.
 type EnryOutput struct {
@@ -42,89 +23,29 @@ type Code struct {
 	Files    []string `bson:"files" json:"files"`
 }
 
-func newScanEnry(URL, branch, command string) EnryScan {
-	return EnryScan{
-		Image:   "huskyci/enry",
-		URL:     URL,
-		Branch:  branch,
-		Command: util.HandleCmd(URL, branch, command),
-	}
-}
-
-// RunScanEnry runs enry as the initial step of huskyCI and returns an error
-func RunScanEnry(repository types.Repository) (EnryScan, error) {
-	enryScan := EnryScan{}
-	enryContainer, err := newContainerEnry()
-	if err != nil {
-		log.Error("RunScanEnry", "ENRY", 1029, err)
-		return enryScan, err
-	}
-	enryScan = newScanEnry(repository.URL, repository.Branch, enryContainer.SecurityTest.Cmd)
-	if err := enryScan.startEnry(); err != nil {
-		return enryScan, err
-	}
-	return enryScan, nil
-}
-
-// StartEnry starts a new enryScan and returns an error.
-func (enryScan *EnryScan) startEnry() error {
-	if err := enryScan.dockerRunEnry(); err != nil {
+func analyzeEnry(enryScan *SecTestScanInfo) error {
+	// Unmarshall rawOutput into finalOutput, that is a EnryOutput struct.
+	if err := json.Unmarshal([]byte(enryScan.Container.COutput), &enryScan.FinalOutput); err != nil {
+		log.Error("analyzeEnry", "ENRY", 1002, enryScan.Container.COutput, err)
 		enryScan.ErrorFound = err
 		return err
 	}
-	if err := enryScan.analyzeEnry(); err != nil {
+	// get all languages and files found based on Enry output
+	if err := enryScan.prepareEnryOutput(); err != nil {
 		enryScan.ErrorFound = err
 		return err
 	}
 	return nil
 }
 
-func (enryScan *EnryScan) dockerRunEnry() error {
-	CID, cOutput, err := huskydocker.DockerRun(enryScan.Image, enryScan.Command)
-	if err != nil {
-		// log.Error("DockerRun", "DOCKERRUN", 3013, err)
-		return err
-	}
-	enryScan.CID = CID
-	enryScan.RawOutput = cOutput
-	return nil
-}
-
-func (enryScan *EnryScan) analyzeEnry() error {
-
-	// step 1: check for any errors when clonning repo
-	errorClonning := strings.Contains(enryScan.RawOutput, "ERROR_CLONING")
-	if errorClonning {
-		errorMsg := errors.New("error clonning")
-		log.Error("analyzeEnry", "ENRY", 1031, enryScan.URL, enryScan.Branch, errorMsg)
-		return errorMsg
-	}
-
-	// step 2: nil cOutput states that no Issues were found.
-	if enryScan.RawOutput == "" {
-		errorMsg := errors.New("internal error clonning repository (cOutput empty)")
-		log.Error("analyzeEnry", "ENRY", 1031, enryScan.URL, enryScan.Branch, errorMsg)
-		return errorMsg
-	}
-
-	// step 3: Get all languages and files found based on Enry output
-	codesFound, err := prepareEnryOutput(enryScan.RawOutput)
-	if err != nil {
-		return err
-	}
-
-	enryScan.FinalOutput.Codes = codesFound
-	return nil
-}
-
-func prepareEnryOutput(cOutput string) ([]Code, error) {
+func (enryScan *SecTestScanInfo) prepareEnryOutput() error {
 	repositoryLanguages := []Code{}
 	newLanguage := Code{}
 	mapLanguages := make(map[string][]interface{})
-	err := json.Unmarshal([]byte(cOutput), &mapLanguages)
+	err := json.Unmarshal([]byte(enryScan.Container.COutput), &mapLanguages)
 	if err != nil {
-		log.Error("prepareEnryOutput", "ENRY", 1003, cOutput, err)
-		return repositoryLanguages, err
+		log.Error("prepareEnryOutput", "ENRY", 1003, enryScan.Container.COutput, err)
+		return err
 	}
 	for name, files := range mapLanguages {
 		fs := []string{}
@@ -134,7 +55,7 @@ func prepareEnryOutput(cOutput string) ([]Code, error) {
 			} else {
 				errMsg := errors.New("error mapping languages")
 				log.Error("prepareEnryOutput", "ENRY", 1032, errMsg)
-				return repositoryLanguages, errMsg
+				return errMsg
 			}
 		}
 		newLanguage = Code{
@@ -143,19 +64,6 @@ func prepareEnryOutput(cOutput string) ([]Code, error) {
 		}
 		repositoryLanguages = append(repositoryLanguages, newLanguage)
 	}
-	return repositoryLanguages, nil
-}
-
-func newContainerEnry() (types.Container, error) {
-	enryContainer := types.Container{}
-	enryQuery := map[string]interface{}{"name": "enry"}
-	enrySecurityTest, err := db.FindOneDBSecurityTest(enryQuery)
-	if err != nil {
-		log.Error("newContainerEnry", "ENRY", 2012, err)
-		return enryContainer, err
-	}
-	return types.Container{
-		SecurityTest: enrySecurityTest,
-		StartedAt:    time.Now(),
-	}, nil
+	enryScan.Codes = repositoryLanguages
+	return nil
 }

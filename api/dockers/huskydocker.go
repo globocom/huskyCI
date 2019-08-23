@@ -40,7 +40,7 @@ func DockerRun(containerImage, cmd string) (string, string, error) {
 		log.Error("DockerRun", "HUSKYDOCKER", 3015, err)
 		return "", "", err
 	}
-	log.Info("DockerRun", "HUSKYDOCKER", 32, containerImage)
+	log.Info("DockerRun", "HUSKYDOCKER", 32, containerImage, d.CID)
 
 	// step 5: read container's output
 	cOutput, err := readOutput(d)
@@ -91,7 +91,6 @@ func readOutput(d *Docker) (string, error) {
 				return "", err
 			}
 			if cOutput != "" {
-				log.Info("DockerRun", "HUSKYDOCKER", 36, d.CID)
 				return cOutput, nil
 			}
 		}

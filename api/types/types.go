@@ -37,7 +37,8 @@ type Analysis struct {
 	URL            string         `bson:"repositoryURL" json:"repositoryURL"`
 	Branch         string         `bson:"repositoryBranch" json:"repositoryBranch"`
 	Status         string         `bson:"status" json:"status"`
-	Result         string         `bson:"result" json:"result"`
+	Result         string         `bson:"result,omitempty" json:"result"`
+	ErrorFound     error          `bson:"errorsRunning,omitempty" json:"errorsRunning"`
 	Containers     []Container    `bson:"containers" json:"containers"`
 	StartedAt      time.Time      `bson:"startedAt" json:"startedAt"`
 	FinishedAt     time.Time      `bson:"finishedAt" json:"finishedAt"`
