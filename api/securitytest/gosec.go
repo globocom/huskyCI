@@ -6,30 +6,10 @@ package securitytest
 
 import (
 	"encoding/json"
-	"errors"
-	"strings"
-	"time"
 
-	"github.com/globocom/huskyCI/api/db"
-	huskydocker "github.com/globocom/huskyCI/api/dockers"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
-	"github.com/globocom/huskyCI/api/util"
 )
-
-// GosecScan holds all information needed for a gosec scan.
-type GosecScan struct {
-	RID             string
-	CID             string
-	URL             string
-	Branch          string
-	Image           string
-	Command         string
-	RawOutput       string
-	ErrorFound      error
-	FinalOutput     GosecOutput
-	Vulnerabilities types.HuskyCISecurityTestOutput
-}
 
 // GosecOutput is the struct that holds all data from Gosec output.
 type GosecOutput struct {
@@ -56,103 +36,36 @@ type GosecStats struct {
 	Found int `json:"found"`
 }
 
-func newScanGosec(URL, branch, command string) GosecScan {
-	return GosecScan{
-		Image:   "huskyci/gosec",
-		URL:     URL,
-		Branch:  branch,
-		Command: util.HandleCmd(URL, branch, command),
-	}
-}
+func analyzeGosec(gosecScan *SecTestScanInfo) error {
 
-func initGoSec(enryScan EnryScan, allScansResult *AllScansResult) error {
-	gosecScan, gosecContainer, err := runScanGosec(enryScan.URL, enryScan.Branch)
-	if err != nil {
-		return err
-	}
+	goSecOutput := GosecOutput{}
 
-	for _, highVuln := range gosecScan.Vulnerabilities.HighVulns {
-		allScansResult.HuskyCIResults.GoResults.HuskyCIGosecOutput.HighVulns = append(allScansResult.HuskyCIResults.GoResults.HuskyCIGosecOutput.HighVulns, highVuln)
-	}
-	for _, mediumVuln := range gosecScan.Vulnerabilities.MediumVulns {
-		allScansResult.HuskyCIResults.GoResults.HuskyCIGosecOutput.MediumVulns = append(allScansResult.HuskyCIResults.GoResults.HuskyCIGosecOutput.MediumVulns, mediumVuln)
-	}
-	for _, lowVuln := range gosecScan.Vulnerabilities.LowVulns {
-		allScansResult.HuskyCIResults.GoResults.HuskyCIGosecOutput.LowVulns = append(allScansResult.HuskyCIResults.GoResults.HuskyCIGosecOutput.LowVulns, lowVuln)
-	}
-
-	allScansResult.FinalResult = gosecContainer.CResult
-	allScansResult.Status = gosecContainer.CStatus
-	allScansResult.Containers = append(allScansResult.Containers, gosecContainer)
-	return nil
-}
-
-func runScanGosec(URL, branch string) (GosecScan, types.Container, error) {
-	gosecScan := GosecScan{}
-	gosecContainer, err := newContainerGosec()
-	if err != nil {
-		log.Error("runScanGosec", "GOSEC", 1029, err)
-		return gosecScan, gosecContainer, err
-	}
-	gosecScan = newScanGosec(URL, branch, gosecContainer.SecurityTest.Cmd)
-	if err := gosecScan.startGosec(); err != nil {
-		return gosecScan, gosecContainer, err
-	}
-
-	gosecScan.prepareContainerAfterScanGosec(&gosecContainer)
-	return gosecScan, gosecContainer, nil
-}
-
-func (gosecScan *GosecScan) startGosec() error {
-	if err := gosecScan.dockerRunGosec(); err != nil {
-		gosecScan.ErrorFound = err
-		return err
-	}
-	if err := gosecScan.analyzeGosec(); err != nil {
-		gosecScan.ErrorFound = err
-		return err
-	}
-	return nil
-}
-
-func (gosecScan *GosecScan) dockerRunGosec() error {
-	CID, cOutput, err := huskydocker.DockerRun(gosecScan.Image, gosecScan.Command)
-	if err != nil {
-		return err
-	}
-	gosecScan.CID = CID
-	gosecScan.RawOutput = cOutput
-	return nil
-}
-
-func (gosecScan *GosecScan) analyzeGosec() error {
-
-	// step 1: check for any errors when clonning repo
-	errorClonning := strings.Contains(gosecScan.RawOutput, "ERROR_CLONING")
-	if errorClonning {
-		errorMsg := errors.New("error clonning")
-		log.Error("analyzeGosec", "GOSEC", 1031, gosecScan.URL, gosecScan.Branch, errorMsg)
-		return errorMsg
-	}
-
-	// step 2: nil cOutput states that no Issues were found.
-	if gosecScan.RawOutput == "" {
+	// nil cOutput states that no Issues were found.
+	if gosecScan.Container.COutput == "" {
+		gosecScan.prepareContainerAfterScan()
 		return nil
 	}
 
-	// step 3: Unmarshall rawOutput into finalOutput, that is a GosecOutput struct.
-	if err := json.Unmarshal([]byte(gosecScan.RawOutput), &gosecScan.FinalOutput); err != nil {
-		log.Error("analyzeGosec", "GOSEC", 1002, gosecScan.RawOutput, err)
+	// Unmarshall rawOutput into finalOutput, that is a GosecOutput struct.
+	if err := json.Unmarshal([]byte(gosecScan.Container.COutput), &goSecOutput); err != nil {
+		log.Error("analyzeGosec", "GOSEC", 1002, gosecScan.Container.COutput, err)
+		gosecScan.ErrorFound = err
+		gosecScan.prepareContainerAfterScan()
 		return err
 	}
+	gosecScan.FinalOutput = goSecOutput
 
-	// step 4: find Issues that have severity "MEDIUM" or "HIGH" and confidence "HIGH".
-	gosecScan.prepareGosecOutput(gosecScan.FinalOutput)
+	// check results and prepare all vulnerabilities found
+	gosecScan.prepareGosecVulns()
+	gosecScan.prepareContainerAfterScan()
 	return nil
 }
 
-func (gosecScan *GosecScan) prepareGosecOutput(gosecOutput GosecOutput) {
+func (gosecScan *SecTestScanInfo) prepareGosecVulns() {
+
 	huskyCIgosecResults := types.HuskyCISecurityTestOutput{}
+	gosecOutput := gosecScan.FinalOutput.(GosecOutput)
+
 	for _, issue := range gosecOutput.GosecIssues {
 		gosecVuln := types.HuskyCIVulnerability{}
 		gosecVuln.Language = "Go"
@@ -173,33 +86,6 @@ func (gosecScan *GosecScan) prepareGosecOutput(gosecOutput GosecOutput) {
 			huskyCIgosecResults.HighVulns = append(huskyCIgosecResults.HighVulns, gosecVuln)
 		}
 	}
+
 	gosecScan.Vulnerabilities = huskyCIgosecResults
-}
-
-func (gosecScan *GosecScan) prepareContainerAfterScanGosec(gosecContainer *types.Container) {
-	if len(gosecScan.Vulnerabilities.MediumVulns) > 0 || len(gosecScan.Vulnerabilities.HighVulns) > 0 {
-		gosecContainer.CInfo = "Issues found."
-		gosecContainer.CResult = "failed"
-	} else if len(gosecScan.Vulnerabilities.LowVulns) > 0 && (len(gosecScan.Vulnerabilities.MediumVulns) == 0 || len(gosecScan.Vulnerabilities.HighVulns) == 0) {
-		gosecContainer.CInfo = "Warnings found."
-		gosecContainer.CResult = "passed"
-	}
-	gosecContainer.CStatus = "finished"
-	gosecContainer.CID = gosecScan.CID
-	gosecContainer.COutput = gosecScan.RawOutput
-	gosecContainer.FinishedAt = time.Now()
-}
-
-func newContainerGosec() (types.Container, error) {
-	gosecContainer := types.Container{}
-	gosecQuery := map[string]interface{}{"name": "gosec"}
-	gosecSecurityTest, err := db.FindOneDBSecurityTest(gosecQuery)
-	if err != nil {
-		log.Error("newContainerGosec", "GOSEC", 2012, err)
-		return gosecContainer, err
-	}
-	return types.Container{
-		SecurityTest: gosecSecurityTest,
-		StartedAt:    time.Now(),
-	}, nil
 }

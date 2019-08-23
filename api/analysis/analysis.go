@@ -14,11 +14,6 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-// securityTestDoneCounter keeps track of all the security tests that were already done,
-// it always starts with 0 and goes up to len(securityTests) - 1.
-// Enry is not taken into consideration, as all other security tests are called by it.
-var securityTestDoneCounter int
-
 // StartAnalysis starts the analysis given a RID and a repository.
 func StartAnalysis(RID string, repository types.Repository) {
 
@@ -29,16 +24,24 @@ func StartAnalysis(RID string, repository types.Repository) {
 	log.Info("StartAnalysis", "ANALYSIS", 101, RID)
 
 	// step 2: run enry as huskyCI initial step
-	enryScan, err := securitytest.RunScanEnry(repository)
-	if err != nil {
+	enryScan := securitytest.SecTestScanInfo{}
+	enryScan.SecurityTestName = "enry"
+	if err := enryScan.New(RID, repository.URL, repository.Branch, enryScan.SecurityTestName); err != nil {
+		log.Error("StartAnalysis", "ANALYSIS", 2011, err)
+		return
+	}
+	if err := enryScan.Start(); err != nil {
 		return
 	}
 
 	// step 3: run generic and languages security tests based on enryScan result in parallel
-	allScanResults := securitytest.RunAllScans(enryScan)
+	allScansResults := securitytest.RunAllInfo{}
+	if err := allScansResults.Start(enryScan); err != nil {
+		return
+	}
 
 	// step 4: register all results found in MongoDB
-	if err := registerFinishedAnalysis(RID, allScanResults); err != nil {
+	if err := registerFinishedAnalysis(RID, allScansResults); err != nil {
 		return
 	}
 	log.Info("StartAnalysis", "ANALYSIS", 102, RID)
@@ -48,12 +51,11 @@ func StartAnalysis(RID string, repository types.Repository) {
 func registerNewAnalysis(RID string, repository types.Repository) error {
 
 	newAnalysis := types.Analysis{
-		RID:        RID,
-		URL:        repository.URL,
-		Branch:     repository.Branch,
-		Status:     "running",
-		Containers: make([]types.Container, 0),
-		StartedAt:  time.Now(),
+		RID:       RID,
+		URL:       repository.URL,
+		Branch:    repository.Branch,
+		Status:    "running",
+		StartedAt: time.Now(),
 	}
 
 	if err := db.InsertDBAnalysis(newAnalysis); err != nil {
@@ -65,7 +67,7 @@ func registerNewAnalysis(RID string, repository types.Repository) error {
 	return nil
 }
 
-func registerFinishedAnalysis(RID string, allScanResults securitytest.AllScansResult) error {
+func registerFinishedAnalysis(RID string, allScanResults securitytest.RunAllInfo) error {
 	analysisQuery := map[string]interface{}{"RID": RID}
 	updateAnalysisQuery := bson.M{
 		"$set": bson.M{
@@ -74,13 +76,13 @@ func registerFinishedAnalysis(RID string, allScanResults securitytest.AllScansRe
 			"containers":     allScanResults.Containers,
 			"huskyciresults": allScanResults.HuskyCIResults,
 			"codes":          allScanResults.Codes,
+			"errorFound":     allScanResults.ErrorFound,
 			"finishedAt":     time.Now(),
 		},
 	}
 	if err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateAnalysisQuery); err != nil {
-		// log.Error("registerFinishedAnalysis", "ANALYSIS", 2011, err)
+		log.Error("registerFinishedAnalysis", "ANALYSIS", 2011, err)
 		return err
 	}
-	// log.Info("registerFinishedAnalysis", "ANALYSIS", 2012)
 	return nil
 }

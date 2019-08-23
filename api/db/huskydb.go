@@ -125,6 +125,7 @@ func InsertDBSecurityTest(securityTest types.SecurityTest) error {
 		"image":          securityTest.Image,
 		"cmd":            securityTest.Cmd,
 		"language":       securityTest.Language,
+		"type":           securityTest.Type,
 		"default":        securityTest.Default,
 		"timeOutSeconds": securityTest.TimeOutInSeconds,
 	}

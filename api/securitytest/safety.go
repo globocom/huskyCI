@@ -8,28 +8,11 @@ import (
 	"encoding/json"
 	"errors"
 	"strings"
-	"time"
 
-	"github.com/globocom/huskyCI/api/db"
-	huskydocker "github.com/globocom/huskyCI/api/dockers"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
 	"github.com/globocom/huskyCI/api/util"
 )
-
-// SafetyScan holds all information needed for a Safety scan.
-type SafetyScan struct {
-	RID             string
-	CID             string
-	URL             string
-	Branch          string
-	Image           string
-	Command         string
-	RawOutput       string
-	ErrorFound      error
-	FinalOutput     SafetyOutput
-	Vulnerabilities types.HuskyCISecurityTestOutput
-}
 
 // SafetyOutput is the struct that holds issues, messages and errors found on a Safety scan.
 type SafetyOutput struct {
@@ -48,155 +31,88 @@ type SafetyIssue struct {
 	ID         string `json:"id"`
 }
 
-func newScanSafety(URL, branch, command string) SafetyScan {
-	return SafetyScan{
-		Image:   "huskyci/safety",
-		URL:     URL,
-		Branch:  branch,
-		Command: util.HandleCmd(URL, branch, command),
-	}
-}
+func analyzeSafety(safetyScan *SecTestScanInfo) error {
 
-func initSafety(enryScan EnryScan, allScansResult *AllScansResult) error {
-	safetyScan, safetyContainer, err := runScanSafety(enryScan.URL, enryScan.Branch)
-	if err != nil {
-		return err
-	}
+	failedRunning := strings.Contains(safetyScan.Container.COutput, "ERROR_RUNNING_SAFETY")
+	reqNotFound := strings.Contains(safetyScan.Container.COutput, "ERROR_REQ_NOT_FOUND")
+	warningFound := strings.Contains(safetyScan.Container.COutput, "Warning: unpinned requirement ")
 
-	for _, highVuln := range safetyScan.Vulnerabilities.HighVulns {
-		allScansResult.HuskyCIResults.PythonResults.HuskyCISafetyOutput.HighVulns = append(allScansResult.HuskyCIResults.PythonResults.HuskyCISafetyOutput.HighVulns, highVuln)
-	}
-	for _, mediumVuln := range safetyScan.Vulnerabilities.MediumVulns {
-		allScansResult.HuskyCIResults.PythonResults.HuskyCISafetyOutput.MediumVulns = append(allScansResult.HuskyCIResults.PythonResults.HuskyCISafetyOutput.MediumVulns, mediumVuln)
-	}
-	for _, lowVuln := range safetyScan.Vulnerabilities.LowVulns {
-		allScansResult.HuskyCIResults.PythonResults.HuskyCISafetyOutput.LowVulns = append(allScansResult.HuskyCIResults.PythonResults.HuskyCISafetyOutput.LowVulns, lowVuln)
-	}
+	safetyOutput := SafetyOutput{}
+	safetyScan.FinalOutput = safetyOutput
 
-	allScansResult.FinalResult = safetyContainer.CResult
-	allScansResult.Status = safetyContainer.CStatus
-	allScansResult.Containers = append(allScansResult.Containers, safetyContainer)
-	return nil
-}
-
-func runScanSafety(URL, branch string) (SafetyScan, types.Container, error) {
-	safetyScan := SafetyScan{}
-	safetyContainer, err := newContainerSafety()
-	if err != nil {
-		log.Error("runScanSafety", "SAFETY", 1029, err)
-		return safetyScan, safetyContainer, err
-	}
-	safetyScan = newScanSafety(URL, branch, safetyContainer.SecurityTest.Cmd)
-	if err := safetyScan.startSafety(); err != nil {
-		return safetyScan, safetyContainer, err
-	}
-
-	safetyScan.prepareContainerAfterScanSafety(&safetyContainer)
-	return safetyScan, safetyContainer, nil
-}
-
-func (safetyScan *SafetyScan) startSafety() error {
-	if err := safetyScan.dockerRunSafety(); err != nil {
-		safetyScan.ErrorFound = err
-		return err
-	}
-	if err := safetyScan.analyzeSafety(); err != nil {
-		safetyScan.ErrorFound = err
-		return err
-	}
-	return nil
-}
-
-func (safetyScan *SafetyScan) dockerRunSafety() error {
-	CID, cOutput, err := huskydocker.DockerRun(safetyScan.Image, safetyScan.Command)
-	if err != nil {
-		return err
-	}
-	safetyScan.CID = CID
-	safetyScan.RawOutput = cOutput
-	return nil
-}
-
-func (safetyScan *SafetyScan) analyzeSafety() error {
-
-	errorCloning := strings.Contains(safetyScan.RawOutput, "ERROR_CLONING")
-	failedRunning := strings.Contains(safetyScan.RawOutput, "ERROR_RUNNING_SAFETY")
-	reqNotFound := strings.Contains(safetyScan.RawOutput, "ERROR_REQ_NOT_FOUND")
-	warningFound := strings.Contains(safetyScan.RawOutput, "Warning: unpinned requirement ")
-
-	// step 1: check for any errors when clonning repo
-	if errorCloning {
-		errorMsg := errors.New("error clonning")
-		log.Error("analyzeSafety", "SAFETY", 1031, safetyScan.URL, safetyScan.Branch, errorMsg)
-		return errorMsg
-	}
-
-	// step 2: check if there were any internal errors running safety
+	// check if there were any internal errors running safety
 	if failedRunning {
 		errorMsg := errors.New("internal error safety - ERROR_RUNNING_SAFETY")
 		log.Error("analyzeSafety", "SAFETY", 1033, errorMsg)
+		safetyScan.ErrorFound = errorMsg
+		safetyScan.prepareContainerAfterScan()
 		return errorMsg
 	}
 
-	// step 3: check if requirements.txt were found or not
+	// check if requirements.txt were found or not
 	if reqNotFound {
-		safetyScan.FinalOutput.ReqNotFound = true
+		safetyScan.ReqNotFound = true
+		safetyScan.prepareSafetyVulns()
+		safetyScan.prepareContainerAfterScan()
+		return nil
 	}
 
-	// step 4: check if warning were found and handle its output
+	// check if warning were found and handle its output
 	if warningFound {
-		safetyScan.FinalOutput.WarningFound = true
-		outputJSON := util.GetLastLine(safetyScan.RawOutput)
-		safetyScan.FinalOutput.OutputWarnings = util.GetAllLinesButLast(safetyScan.RawOutput)
-		safetyScan.RawOutput = outputJSON
+		safetyScan.WarningFound = true
+		outputJSON := util.GetLastLine(safetyScan.Container.COutput)
+		safetyOutput.OutputWarnings = util.GetAllLinesButLast(safetyScan.Container.COutput)
+		safetyScan.Container.COutput = outputJSON
 	}
 
-	cOutputSanitized := util.SanitizeSafetyJSON(safetyScan.RawOutput)
-	safetyScan.RawOutput = cOutputSanitized
+	cOutputSanitized := util.SanitizeSafetyJSON(safetyScan.Container.COutput)
+	safetyScan.Container.COutput = cOutputSanitized
 
-	// step 5: Unmarshall rawOutput into finalOutput, that is a Safety struct.
-	if err := json.Unmarshal([]byte(safetyScan.RawOutput), &safetyScan.FinalOutput); err != nil {
-		log.Error("analyzeSafety", "SAFETY", 1018, safetyScan.RawOutput, err)
+	// Unmarshall rawOutput into finalOutput, that is a Safety struct.
+	if err := json.Unmarshal([]byte(safetyScan.Container.COutput), &safetyOutput); err != nil {
+		log.Error("analyzeSafety", "SAFETY", 1018, safetyScan.Container.COutput, err)
+		safetyScan.ErrorFound = err
+		safetyScan.prepareContainerAfterScan()
 		return err
 	}
-	// step 6: find Issues that have severity "MEDIUM" or "HIGH" and confidence "HIGH".
-	safetyScan.prepareSafetyOutput(safetyScan.FinalOutput)
+	safetyScan.FinalOutput = safetyOutput
+
+	// check results and prepare all vulnerabilities found
+	safetyScan.prepareSafetyVulns()
+	safetyScan.prepareContainerAfterScan()
 	return nil
 }
 
-func (safetyScan *SafetyScan) prepareSafetyOutput(safetyOutput SafetyOutput) {
+func (safetyScan *SecTestScanInfo) prepareSafetyVulns() {
 
-	var huskyCIsafetyResults types.HuskyCISecurityTestOutput
-	var onlyWarning bool
+	huskyCIsafetyResults := types.HuskyCISecurityTestOutput{}
+	safetyOutput := safetyScan.FinalOutput.(SafetyOutput)
+	onlyWarning := false
 
-	if safetyOutput.ReqNotFound {
+	if safetyScan.ReqNotFound {
 		safetyVuln := types.HuskyCIVulnerability{}
 		safetyVuln.Language = "Python"
 		safetyVuln.SecurityTool = "Safety"
-		safetyVuln.Severity = "info"
-		safetyVuln.Details = "requirements.txt not found"
+		safetyVuln.Severity = "low"
+		safetyVuln.Details = "It looks like your project doesn't have a requirements.txt file. huskyCI was not able to run safety properly."
 
 		huskyCIsafetyResults.LowVulns = append(huskyCIsafetyResults.LowVulns, safetyVuln)
-
 		safetyScan.Vulnerabilities = huskyCIsafetyResults
 		return
 	}
 
 	if safetyOutput.WarningFound {
-
 		if len(safetyOutput.SafetyIssues) == 0 {
 			onlyWarning = true
 		}
-
 		for _, warning := range safetyOutput.OutputWarnings {
 			safetyVuln := types.HuskyCIVulnerability{}
 			safetyVuln.Language = "Python"
 			safetyVuln.SecurityTool = "Safety"
-			safetyVuln.Severity = "warning"
+			safetyVuln.Severity = "low"
 			safetyVuln.Details = util.AdjustWarningMessage(warning)
 
 			huskyCIsafetyResults.LowVulns = append(huskyCIsafetyResults.LowVulns, safetyVuln)
-
 		}
 		if onlyWarning {
 			safetyScan.Vulnerabilities = huskyCIsafetyResults
@@ -217,32 +133,4 @@ func (safetyScan *SafetyScan) prepareSafetyOutput(safetyOutput SafetyOutput) {
 	}
 
 	safetyScan.Vulnerabilities = huskyCIsafetyResults
-}
-
-func (safetyScan *SafetyScan) prepareContainerAfterScanSafety(safetyContainer *types.Container) {
-	if len(safetyScan.Vulnerabilities.MediumVulns) > 0 || len(safetyScan.Vulnerabilities.HighVulns) > 0 {
-		safetyContainer.CInfo = "Issues found."
-		safetyContainer.CResult = "failed"
-	} else if len(safetyScan.Vulnerabilities.LowVulns) > 0 && (len(safetyScan.Vulnerabilities.MediumVulns) == 0 || len(safetyScan.Vulnerabilities.HighVulns) == 0) {
-		safetyContainer.CInfo = "Warnings found."
-		safetyContainer.CResult = "passed"
-	}
-	safetyContainer.CStatus = "finished"
-	safetyContainer.CID = safetyScan.CID
-	safetyContainer.COutput = safetyScan.RawOutput
-	safetyContainer.FinishedAt = time.Now()
-}
-
-func newContainerSafety() (types.Container, error) {
-	safetyContainer := types.Container{}
-	safetyQuery := map[string]interface{}{"name": "safety"}
-	safetySecurityTest, err := db.FindOneDBSecurityTest(safetyQuery)
-	if err != nil {
-		log.Error("newContainerSafety", "SAFETY", 2012, err)
-		return safetyContainer, err
-	}
-	return types.Container{
-		SecurityTest: safetySecurityTest,
-		StartedAt:    time.Now(),
-	}, nil
 }

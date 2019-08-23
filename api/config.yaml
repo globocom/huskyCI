@@ -117,10 +117,10 @@ safety:
           cat output.json
         else
           echo "ERROR_RUNNING_SAFETY"
-          cat /tmp/errorRunning 
+          cat /tmp/errorRunning
         fi
       else
-        echo "ERROR_REQ_NOT_FOUND"  
+        echo "ERROR_REQ_NOT_FOUND"
       fi
     else
       echo "ERROR_CLONING"
@@ -147,7 +147,7 @@ npmaudit:
         npm audit --only=prod --json > /tmp/results.json 2> /tmp/errorNpmaudit
         jq -j -M -c . /tmp/results.json
       else
-        echo 'ERROR_RUNNING_NPMAUDIT'
+        echo 'ERROR_PACKAGE_LOCK_NOT_FOUND'
       fi
     else
       echo "ERROR_CLONING"
