@@ -125,6 +125,7 @@ func InsertDBSecurityTest(securityTest types.SecurityTest) error {
 		"image":          securityTest.Image,
 		"cmd":            securityTest.Cmd,
 		"language":       securityTest.Language,
+		"type":           securityTest.Type,
 		"default":        securityTest.Default,
 		"timeOutSeconds": securityTest.TimeOutInSeconds,
 	}
@@ -138,12 +139,10 @@ func InsertDBAnalysis(analysis types.Analysis) error {
 		"RID":              analysis.RID,
 		"repositoryURL":    analysis.URL,
 		"repositoryBranch": analysis.Branch,
-		"securityTests":    analysis.SecurityTests,
 		"status":           analysis.Status,
 		"result":           analysis.Result,
 		"containers":       analysis.Containers,
 		"startedAt":        analysis.StartedAt,
-		"internaldepURL":   analysis.InternalDepURL,
 	}
 	err := mongoHuskyCI.Conn.Insert(newAnalysis, mongoHuskyCI.AnalysisCollection)
 	return err

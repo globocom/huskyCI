@@ -48,11 +48,6 @@ func printSTDOUTOutput() {
 	printSTDOUTOutputBrakeman(outputJSON.RubyResults.HuskyCIBrakemanOutput.MediumVulns)
 	printSTDOUTOutputBrakeman(outputJSON.RubyResults.HuskyCIBrakemanOutput.HighVulns)
 
-	// retirejs
-	printSTDOUTOutputRetireJS(outputJSON.JavaScriptResults.HuskyCIRetireJSOutput.LowVulns)
-	printSTDOUTOutputRetireJS(outputJSON.JavaScriptResults.HuskyCIRetireJSOutput.MediumVulns)
-	printSTDOUTOutputRetireJS(outputJSON.JavaScriptResults.HuskyCIRetireJSOutput.HighVulns)
-
 	// npmaudit
 	printSTDOUTOutputNpmAudit(outputJSON.JavaScriptResults.HuskyCINpmAuditOutput.LowVulns)
 	printSTDOUTOutputNpmAudit(outputJSON.JavaScriptResults.HuskyCINpmAuditOutput.MediumVulns)
@@ -114,17 +109,6 @@ func prepareAllSummary(analysis types.Analysis) {
 		outputJSON.Summary.BrakemanSummary.FoundVuln = true
 	}
 
-	// RetireJS summary
-	outputJSON.Summary.RetirejsSummary.LowVuln = len(outputJSON.JavaScriptResults.HuskyCIRetireJSOutput.LowVulns)
-	outputJSON.Summary.RetirejsSummary.MediumVuln = len(outputJSON.JavaScriptResults.HuskyCIRetireJSOutput.MediumVulns)
-	outputJSON.Summary.RetirejsSummary.HighVuln = len(outputJSON.JavaScriptResults.HuskyCIRetireJSOutput.HighVulns)
-	if len(outputJSON.JavaScriptResults.HuskyCIRetireJSOutput.LowVulns) > 0 {
-		outputJSON.Summary.RetirejsSummary.FoundInfo = true
-	}
-	if len(outputJSON.JavaScriptResults.HuskyCIRetireJSOutput.MediumVulns) > 0 || len(outputJSON.JavaScriptResults.HuskyCIRetireJSOutput.HighVulns) > 0 {
-		outputJSON.Summary.RetirejsSummary.FoundVuln = true
-	}
-
 	// NpmAudit summary
 	outputJSON.Summary.NpmAuditSummary.LowVuln = len(outputJSON.JavaScriptResults.HuskyCINpmAuditOutput.LowVulns)
 	outputJSON.Summary.NpmAuditSummary.MediumVuln = len(outputJSON.JavaScriptResults.HuskyCINpmAuditOutput.MediumVulns)
@@ -137,17 +121,17 @@ func prepareAllSummary(analysis types.Analysis) {
 	}
 
 	// Total summary
-	if outputJSON.Summary.GosecSummary.FoundVuln || outputJSON.Summary.BanditSummary.FoundVuln || outputJSON.Summary.SafetySummary.FoundVuln || outputJSON.Summary.BrakemanSummary.FoundVuln || outputJSON.Summary.RetirejsSummary.FoundVuln || outputJSON.Summary.NpmAuditSummary.FoundVuln {
+	if outputJSON.Summary.GosecSummary.FoundVuln || outputJSON.Summary.BanditSummary.FoundVuln || outputJSON.Summary.SafetySummary.FoundVuln || outputJSON.Summary.BrakemanSummary.FoundVuln || outputJSON.Summary.NpmAuditSummary.FoundVuln {
 		outputJSON.Summary.TotalSummary.FoundVuln = true
 		types.FoundVuln = true
-	} else if outputJSON.Summary.GosecSummary.FoundInfo || outputJSON.Summary.BanditSummary.FoundInfo || outputJSON.Summary.SafetySummary.FoundInfo || outputJSON.Summary.BrakemanSummary.FoundInfo || outputJSON.Summary.RetirejsSummary.FoundInfo || outputJSON.Summary.NpmAuditSummary.FoundInfo {
+	} else if outputJSON.Summary.GosecSummary.FoundInfo || outputJSON.Summary.BanditSummary.FoundInfo || outputJSON.Summary.SafetySummary.FoundInfo || outputJSON.Summary.BrakemanSummary.FoundInfo || outputJSON.Summary.NpmAuditSummary.FoundInfo {
 		outputJSON.Summary.TotalSummary.FoundInfo = true
 		types.FoundInfo = true
 	}
 
-	totalLow = outputJSON.Summary.RetirejsSummary.LowVuln + outputJSON.Summary.BrakemanSummary.LowVuln + outputJSON.Summary.SafetySummary.LowVuln + outputJSON.Summary.BanditSummary.LowVuln + outputJSON.Summary.GosecSummary.LowVuln + outputJSON.Summary.NpmAuditSummary.LowVuln
-	totalMedium = outputJSON.Summary.RetirejsSummary.MediumVuln + outputJSON.Summary.BrakemanSummary.MediumVuln + outputJSON.Summary.SafetySummary.MediumVuln + outputJSON.Summary.BanditSummary.MediumVuln + outputJSON.Summary.GosecSummary.MediumVuln + outputJSON.Summary.NpmAuditSummary.MediumVuln
-	totalHigh = outputJSON.Summary.RetirejsSummary.HighVuln + outputJSON.Summary.BrakemanSummary.HighVuln + outputJSON.Summary.SafetySummary.HighVuln + outputJSON.Summary.BanditSummary.HighVuln + outputJSON.Summary.GosecSummary.HighVuln + outputJSON.Summary.NpmAuditSummary.HighVuln
+	totalLow = outputJSON.Summary.BrakemanSummary.LowVuln + outputJSON.Summary.SafetySummary.LowVuln + outputJSON.Summary.BanditSummary.LowVuln + outputJSON.Summary.GosecSummary.LowVuln + outputJSON.Summary.NpmAuditSummary.LowVuln
+	totalMedium = outputJSON.Summary.BrakemanSummary.MediumVuln + outputJSON.Summary.SafetySummary.MediumVuln + outputJSON.Summary.BanditSummary.MediumVuln + outputJSON.Summary.GosecSummary.MediumVuln + outputJSON.Summary.NpmAuditSummary.MediumVuln
+	totalHigh = outputJSON.Summary.BrakemanSummary.HighVuln + outputJSON.Summary.SafetySummary.HighVuln + outputJSON.Summary.BanditSummary.HighVuln + outputJSON.Summary.GosecSummary.HighVuln + outputJSON.Summary.NpmAuditSummary.HighVuln
 
 	outputJSON.Summary.TotalSummary.HighVuln = totalHigh
 	outputJSON.Summary.TotalSummary.MediumVuln = totalMedium
@@ -187,14 +171,6 @@ func printAllSummary() {
 		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", outputJSON.Summary.BrakemanSummary.HighVuln)
 		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", outputJSON.Summary.BrakemanSummary.MediumVuln)
 		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", outputJSON.Summary.BrakemanSummary.LowVuln)
-	}
-
-	if outputJSON.Summary.RetirejsSummary.FoundVuln || outputJSON.Summary.RetirejsSummary.FoundInfo {
-		fmt.Println()
-		fmt.Printf("[HUSKYCI][SUMMARY] JavaScript -> RetireJS\n")
-		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", outputJSON.Summary.RetirejsSummary.HighVuln)
-		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", outputJSON.Summary.RetirejsSummary.MediumVuln)
-		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", outputJSON.Summary.RetirejsSummary.LowVuln)
 	}
 
 	if outputJSON.Summary.NpmAuditSummary.FoundVuln || outputJSON.Summary.NpmAuditSummary.FoundInfo {
@@ -269,21 +245,6 @@ func printSTDOUTOutputBrakeman(issues []types.HuskyCIVulnerability) {
 		fmt.Printf("[HUSKYCI][!] Line: %s\n", issue.Line)
 		fmt.Printf("[HUSKYCI][!] Code: %s\n", issue.Code)
 		fmt.Printf("[HUSKYCI][!] Type: %s\n", issue.Type)
-	}
-}
-
-func printSTDOUTOutputRetireJS(issues []types.HuskyCIVulnerability) {
-	for _, issue := range issues {
-		fmt.Println()
-		fmt.Printf("[HUSKYCI][!] Language: %s\n", issue.Language)
-		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
-		fmt.Printf("[HUSKYCI][!] Severity: %s\n", issue.Severity)
-		if !strings.Contains(issue.Details, "doesn't have package.json") {
-			fmt.Printf("[HUSKYCI][!] Code: %s\n", issue.Code)
-			fmt.Printf("[HUSKYCI][!] Version: %s\n", issue.Version)
-			fmt.Printf("[HUSKYCI][!] Occurrences: %d\n", issue.Occurrences)
-		}
-		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
 	}
 }
 

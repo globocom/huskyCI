@@ -13,7 +13,6 @@ import (
 	"strings"
 
 	"github.com/globocom/huskyCI/api/log"
-	"github.com/globocom/huskyCI/client/types"
 )
 
 const (
@@ -103,24 +102,4 @@ func AdjustWarningMessage(warningRaw string) string {
 	}
 
 	return warningRaw
-}
-
-// CountRetireJSOccurrences remove duplicates and increment occurrences in each RetireJS vuln found
-func CountRetireJSOccurrences(retireJSresults []types.HuskyCIVulnerability) []types.HuskyCIVulnerability {
-
-	var result []types.HuskyCIVulnerability
-	for _, vuln1 := range retireJSresults {
-		exists := false
-		for i, res := range result {
-			if res.Code == vuln1.Code {
-				exists = true
-				result[i].Occurrences++
-			}
-		}
-		if !exists {
-			result = append(result, vuln1)
-			result[len(result)-1].Occurrences++
-		}
-	}
-	return result
 }
