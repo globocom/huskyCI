@@ -19,11 +19,11 @@ huskyCI can perform static security analysis in Python ([Bandit][Bandit] and [Sa
 
 ## Requirements
 
-#### Docker and Docker-Compose
+### Docker and Docker-Compose
 
 The easiest way to deploy huskyCI locally is by using [Docker][Docker Install] and [Docker Compose][Docker Compose Install], thus you should have them installed on your machine.
 
-#### Golang
+### Golang
 
 You must also have [Go](https://golang.org/doc/install) installed and huskyCI needs to be inside your [$GOPATH](https://github.com/golang/go/wiki/GOPATH) to run properly.
 
@@ -31,7 +31,7 @@ You must also have [Go](https://golang.org/doc/install) installed and huskyCI ne
 
 After cloning this repository, simply run the command inside huskyCI's folder:
 
-```
+```sh
 make install
 ```
 
@@ -55,11 +55,13 @@ You can change the repository and branch being analysed by modifying the content
 ```
 
 Mac OS:
+
 ```sh
 make run-client
 ```
 
 Linux:
+
 ```sh
 make run-client-linux
 ```
@@ -83,5 +85,4 @@ This project is licensed under the BSD 3-Clause "New" or "Revised" License - rea
 [Safety]: https://github.com/pyupio/safety
 [Brakeman]: https://github.com/presidentbeef/brakeman
 [Gosec]: https://github.com/securego/gosec
-[RetireJS]: https://github.com/retirejs/retire.js
 [NpmAudit]: https://docs.npmjs.com/cli/audit

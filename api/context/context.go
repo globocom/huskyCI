@@ -72,7 +72,6 @@ type APIConfig struct {
 	GosecSecurityTest    *types.SecurityTest
 	BanditSecurityTest   *types.SecurityTest
 	BrakemanSecurityTest *types.SecurityTest
-	RetirejsSecurityTest *types.SecurityTest
 	NpmAuditSecurityTest *types.SecurityTest
 	SafetySecurityTest   *types.SecurityTest
 }
@@ -110,7 +109,6 @@ func (dF DefaultConfig) SetOnceConfig() {
 			GosecSecurityTest:    dF.getSecurityTestConfig("gosec"),
 			BanditSecurityTest:   dF.getSecurityTestConfig("bandit"),
 			BrakemanSecurityTest: dF.getSecurityTestConfig("brakeman"),
-			RetirejsSecurityTest: dF.getSecurityTestConfig("retirejs"),
 			NpmAuditSecurityTest: dF.getSecurityTestConfig("npmaudit"),
 			SafetySecurityTest:   dF.getSecurityTestConfig("safety"),
 		}
@@ -274,6 +272,7 @@ func (dF DefaultConfig) getSecurityTestConfig(securityTestName string) *types.Se
 		Name:             dF.Caller.GetStringFromConfigFile(fmt.Sprintf("%s.name", securityTestName)),
 		Image:            dF.Caller.GetStringFromConfigFile(fmt.Sprintf("%s.image", securityTestName)),
 		Cmd:              dF.Caller.GetStringFromConfigFile(fmt.Sprintf("%s.cmd", securityTestName)),
+		Type:             dF.Caller.GetStringFromConfigFile(fmt.Sprintf("%s.type", securityTestName)),
 		Language:         dF.Caller.GetStringFromConfigFile(fmt.Sprintf("%s.language", securityTestName)),
 		Default:          dF.Caller.GetBoolFromConfigFile(fmt.Sprintf("%s.default", securityTestName)),
 		TimeOutInSeconds: dF.Caller.GetIntFromConfigFile(fmt.Sprintf("%s.timeOutInSeconds", securityTestName)),

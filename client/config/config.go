@@ -19,9 +19,6 @@ var HuskyAPI string
 // RepositoryBranch stores the repository branch of the project to be analyzed.
 var RepositoryBranch string
 
-// InternalDepURL stores the URL needed by NPM to properly install internal dependencies.
-var InternalDepURL string
-
 // HuskyToken is the token used to scan a repository.
 var HuskyToken string
 
@@ -34,7 +31,6 @@ func SetConfigs() {
 	RepositoryBranch = os.Getenv(`HUSKYCI_CLIENT_REPO_BRANCH`)
 	HuskyAPI = os.Getenv(`HUSKYCI_CLIENT_API_ADDR`)
 	HuskyToken = os.Getenv(`HUSKYCI_CLIENT_TOKEN`)
-	InternalDepURL = os.Getenv(`HUSKYCI_CLIENT_NPM_DEP_URL`)
 	HuskyUseTLS = getUseTLS()
 }
 

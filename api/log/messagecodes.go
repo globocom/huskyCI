@@ -21,6 +21,8 @@ var MsgCode = map[int]string{
 	24: "URL received to generate a new token: ",
 
 	// HuskyCI API warnings
+	101: "Analysis started: ",
+	102: "Analysis finished: ",
 	104: "An analysis is already in place for this URL: ",
 	105: "The following analysis timed out inside MonitorAnalysis: ",
 	106: "Analysis not found using the following RID: ",
@@ -43,7 +45,7 @@ var MsgCode = map[int]string{
 	1011: "Internal error finding repository just inserted into MongoDB: ",
 	1012: "MongoDB message in FindOneDBSecurityTest: ",
 	1013: "MongoDB message in FindOneDBRepository: ",
-	1014: "Could not Unmarshall the following retirejsOutput: ",
+	1014: "Could not Unmarshal the following npmauditOutput: ",
 	1015: "Received an invalid repository JSON: ",
 	1016: "Received an invalid repository URL: ",
 	1017: "Received an invalid repository branch: ",
@@ -58,6 +60,12 @@ var MsgCode = map[int]string{
 	1026: "Error during access token generation",
 	1027: "Request doesn't have permission",
 	1028: "Error during access token deactivation",
+	1029: "Could not create a new container struct: ",
+	1030: "Could not start a new securityTest scan: ",
+	1031: "Error clonning the following repository and branch: ",
+	1032: "Internal error mapping codes: ",
+	1033: "Internal error running Safety: ",
+	1034: "Internal error running Npmaudit: ",
 
 	// MongoDB infos
 	21: "Connecting to MongoDB.",
@@ -69,7 +77,6 @@ var MsgCode = map[int]string{
 	202: "Gosec securityTest not found.",
 	203: "Brakeman securityTest not found.",
 	204: "Bandit securityTest not found.",
-	205: "RetireJS securityTest not found.",
 	206: "Safety securityTest not found.",
 
 	// MongoDB errors
@@ -81,20 +88,22 @@ var MsgCode = map[int]string{
 	2006: "Could not find securityTestName: ",
 	2007: "Could not update AnalysisCollection: ",
 	2008: "Could not find an analysis using the following CID: ",
-	2009: "Error finding securityTest (language=Generic and default=true): ",
+	2009: "Error finding default securityTest in MongoDB: ",
 	2010: "Could not update repository's securityTests: ",
 	2011: "Error inserting new analysis: ",
-	2012: "Could not find securityTest into MongoDB using the following name: ",
+	2012: "Could not find securityTest into MongoDB: ",
 	2013: "Could not update container status to timedout of an analysis: ",
 	2014: "Could not find an analysis using the following RID: ",
 	2015: "Could not create a new repository: ",
 	2016: "Could not create a new securityTest: ",
-	2017: "Could not update repository's internaldepURL: ",
 
 	// Docker API info
 	31: "Waiting pull image...",
 	32: "Container started successfully: ",
 	33: "Max container count reached. huskyCI is about to kill containers. ",
+	34: "Container finished successfully: ",
+	35: "Container image has been pulled successfully: ",
+	36: "Container cOutput read sucessfully for CID: ",
 
 	// Docker API warning
 	301: "",
@@ -109,12 +118,12 @@ var MsgCode = map[int]string{
 	3009: "Could not pull image into Docker API via d.client: ",
 	3010: "Could not get docker image list from Docker API: ",
 	3011: "Docker API Healthcheck failed: ",
-	3012: "Could not create a new docker via HuskyCI: ",
-	3013: "Could not pull image via HuskyCI: ",
-	3014: "Could not create a new container via HuskyCI: ",
-	3015: "Could not start a new container via HuskyCI: ",
+	3012: "Could not create a new docker via huskyCI: ",
+	3013: "Could not pull image in huskyCI API: ",
+	3014: "Could not create a new container via huskyCI: ",
+	3015: "Could not start a new container via huskyCI: ",
 	3016: "Could not wait container via HuskyCI: ",
-	3017: "Could not read container output via HuskyCI: ",
+	3017: "Could not read container output via huskyCI: ",
 	3018: "Unexpected securityTest.Name: ",
 	3019: "Could not set DOCKER_CERT_PATH enviroment variable: ",
 	3020: "Could not set DOCKER_TLS_VERIFY enviroment variable: ",

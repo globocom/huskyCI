@@ -5,9 +5,10 @@ import (
 	. "github.com/onsi/gomega"
 
 	"errors"
+	"time"
+
 	. "github.com/globocom/huskyCI/api/context"
 	"github.com/globocom/huskyCI/api/types"
-	"time"
 )
 
 type FakeCaller struct {
@@ -354,6 +355,7 @@ var _ = Describe("Context", func() {
 						Name:             fakeCaller.expectedStringFromConfig,
 						Image:            fakeCaller.expectedStringFromConfig,
 						Cmd:              fakeCaller.expectedStringFromConfig,
+						Type:             fakeCaller.expectedStringFromConfig,
 						Language:         fakeCaller.expectedStringFromConfig,
 						Default:          fakeCaller.expectedBoolFromConfig,
 						TimeOutInSeconds: fakeCaller.expectedIntFromConfig,
@@ -362,6 +364,7 @@ var _ = Describe("Context", func() {
 						Name:             fakeCaller.expectedStringFromConfig,
 						Image:            fakeCaller.expectedStringFromConfig,
 						Cmd:              fakeCaller.expectedStringFromConfig,
+						Type:             fakeCaller.expectedStringFromConfig,
 						Language:         fakeCaller.expectedStringFromConfig,
 						Default:          fakeCaller.expectedBoolFromConfig,
 						TimeOutInSeconds: fakeCaller.expectedIntFromConfig,
@@ -370,6 +373,7 @@ var _ = Describe("Context", func() {
 						Name:             fakeCaller.expectedStringFromConfig,
 						Image:            fakeCaller.expectedStringFromConfig,
 						Cmd:              fakeCaller.expectedStringFromConfig,
+						Type:             fakeCaller.expectedStringFromConfig,
 						Language:         fakeCaller.expectedStringFromConfig,
 						Default:          fakeCaller.expectedBoolFromConfig,
 						TimeOutInSeconds: fakeCaller.expectedIntFromConfig,
@@ -378,14 +382,7 @@ var _ = Describe("Context", func() {
 						Name:             fakeCaller.expectedStringFromConfig,
 						Image:            fakeCaller.expectedStringFromConfig,
 						Cmd:              fakeCaller.expectedStringFromConfig,
-						Language:         fakeCaller.expectedStringFromConfig,
-						Default:          fakeCaller.expectedBoolFromConfig,
-						TimeOutInSeconds: fakeCaller.expectedIntFromConfig,
-					},
-					RetirejsSecurityTest: &types.SecurityTest{
-						Name:             fakeCaller.expectedStringFromConfig,
-						Image:            fakeCaller.expectedStringFromConfig,
-						Cmd:              fakeCaller.expectedStringFromConfig,
+						Type:             fakeCaller.expectedStringFromConfig,
 						Language:         fakeCaller.expectedStringFromConfig,
 						Default:          fakeCaller.expectedBoolFromConfig,
 						TimeOutInSeconds: fakeCaller.expectedIntFromConfig,
@@ -394,6 +391,7 @@ var _ = Describe("Context", func() {
 						Name:             fakeCaller.expectedStringFromConfig,
 						Image:            fakeCaller.expectedStringFromConfig,
 						Cmd:              fakeCaller.expectedStringFromConfig,
+						Type:             fakeCaller.expectedStringFromConfig,
 						Language:         fakeCaller.expectedStringFromConfig,
 						Default:          fakeCaller.expectedBoolFromConfig,
 						TimeOutInSeconds: fakeCaller.expectedIntFromConfig,
@@ -402,6 +400,7 @@ var _ = Describe("Context", func() {
 						Name:             fakeCaller.expectedStringFromConfig,
 						Image:            fakeCaller.expectedStringFromConfig,
 						Cmd:              fakeCaller.expectedStringFromConfig,
+						Type:             fakeCaller.expectedStringFromConfig,
 						Language:         fakeCaller.expectedStringFromConfig,
 						Default:          fakeCaller.expectedBoolFromConfig,
 						TimeOutInSeconds: fakeCaller.expectedIntFromConfig,

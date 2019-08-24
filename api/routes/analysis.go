@@ -132,7 +132,7 @@ func ReceiveRequest(c echo.Context) error {
 	}
 
 	// step 04: lets start this analysis!
-	log.Info("ReceiveRequest", "ANALYSIS", 16, repository.Branch, repository.URL, repository.InternalDepURL)
+	log.Info("ReceiveRequest", "ANALYSIS", 16, repository.Branch, repository.URL)
 	go analysis.StartAnalysis(RID, repository)
 	reply := map[string]interface{}{"success": true, "error": ""}
 	return c.JSON(http.StatusCreated, reply)
