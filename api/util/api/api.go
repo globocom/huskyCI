@@ -136,7 +136,7 @@ func (cH *CheckUtils) checkMongoDB() error {
 }
 
 func (cH *CheckUtils) checkEachSecurityTest(configAPI *apiContext.APIConfig) error {
-	securityTests := []string{"enry", "gosec", "brakeman", "bandit", "npmaudit", "safety"}
+	securityTests := []string{"enry", "gitauthors", "gosec", "brakeman", "bandit", "npmaudit", "safety"}
 	for _, securityTest := range securityTests {
 		if err := checkSecurityTest(securityTest, configAPI); err != nil {
 			errMsg := fmt.Sprintf("%s %s", securityTest, err)
@@ -172,6 +172,8 @@ func checkSecurityTest(securityTestName string, configAPI *apiContext.APIConfig)
 	switch securityTestName {
 	case "enry":
 		securityTestConfig = *configAPI.EnrySecurityTest
+	case "gitauthors":
+		securityTestConfig = *configAPI.GitAuthorsSecurityTest
 	case "gosec":
 		securityTestConfig = *configAPI.GosecSecurityTest
 	case "brakeman":
