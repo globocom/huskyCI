@@ -60,20 +60,21 @@ type GraylogConfig struct {
 
 // APIConfig represents API configuration.
 type APIConfig struct {
-	Port                 int
-	Version              string
-	ReleaseDate          string
-	UseTLS               bool
-	GitPrivateSSHKey     string
-	GraylogConfig        *GraylogConfig
-	MongoDBConfig        *MongoConfig
-	DockerHostsConfig    *DockerHostsConfig
-	EnrySecurityTest     *types.SecurityTest
-	GosecSecurityTest    *types.SecurityTest
-	BanditSecurityTest   *types.SecurityTest
-	BrakemanSecurityTest *types.SecurityTest
-	NpmAuditSecurityTest *types.SecurityTest
-	SafetySecurityTest   *types.SecurityTest
+	Port                   int
+	Version                string
+	ReleaseDate            string
+	UseTLS                 bool
+	GitPrivateSSHKey       string
+	GraylogConfig          *GraylogConfig
+	MongoDBConfig          *MongoConfig
+	DockerHostsConfig      *DockerHostsConfig
+	EnrySecurityTest       *types.SecurityTest
+	GitAuthorsSecurityTest *types.SecurityTest
+	GosecSecurityTest      *types.SecurityTest
+	BanditSecurityTest     *types.SecurityTest
+	BrakemanSecurityTest   *types.SecurityTest
+	NpmAuditSecurityTest   *types.SecurityTest
+	SafetySecurityTest     *types.SecurityTest
 }
 
 // DefaultConfig is the struct that stores the caller for testing.
@@ -97,20 +98,21 @@ func (dF DefaultConfig) GetAPIConfig() (*APIConfig, error) {
 func (dF DefaultConfig) SetOnceConfig() {
 	onceConfig.Do(func() {
 		APIConfiguration = &APIConfig{
-			Port:                 dF.GetAPIPort(),
-			Version:              dF.GetAPIVersion(),
-			ReleaseDate:          dF.GetAPIReleaseDate(),
-			UseTLS:               dF.GetAPIUseTLS(),
-			GitPrivateSSHKey:     dF.getGitPrivateSSHKey(),
-			GraylogConfig:        dF.getGraylogConfig(),
-			MongoDBConfig:        dF.getMongoConfig(),
-			DockerHostsConfig:    dF.getDockerHostsConfig(),
-			EnrySecurityTest:     dF.getSecurityTestConfig("enry"),
-			GosecSecurityTest:    dF.getSecurityTestConfig("gosec"),
-			BanditSecurityTest:   dF.getSecurityTestConfig("bandit"),
-			BrakemanSecurityTest: dF.getSecurityTestConfig("brakeman"),
-			NpmAuditSecurityTest: dF.getSecurityTestConfig("npmaudit"),
-			SafetySecurityTest:   dF.getSecurityTestConfig("safety"),
+			Port:                   dF.GetAPIPort(),
+			Version:                dF.GetAPIVersion(),
+			ReleaseDate:            dF.GetAPIReleaseDate(),
+			UseTLS:                 dF.GetAPIUseTLS(),
+			GitPrivateSSHKey:       dF.getGitPrivateSSHKey(),
+			GraylogConfig:          dF.getGraylogConfig(),
+			MongoDBConfig:          dF.getMongoConfig(),
+			DockerHostsConfig:      dF.getDockerHostsConfig(),
+			EnrySecurityTest:       dF.getSecurityTestConfig("enry"),
+			GitAuthorsSecurityTest: dF.getSecurityTestConfig("gitauthors"),
+			GosecSecurityTest:      dF.getSecurityTestConfig("gosec"),
+			BanditSecurityTest:     dF.getSecurityTestConfig("bandit"),
+			BrakemanSecurityTest:   dF.getSecurityTestConfig("brakeman"),
+			NpmAuditSecurityTest:   dF.getSecurityTestConfig("npmaudit"),
+			SafetySecurityTest:     dF.getSecurityTestConfig("safety"),
 		}
 	})
 }

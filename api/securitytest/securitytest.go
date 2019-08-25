@@ -13,28 +13,31 @@ import (
 )
 
 var securityTestAnalyze = map[string]func(scanInfo *SecTestScanInfo) error{
-	"bandit":   analyzeBandit,
-	"brakeman": analyzeBrakeman,
-	"enry":     analyzeEnry,
-	"gosec":    analyzeGosec,
-	"npmaudit": analyzeNpmaudit,
-	"safety":   analyzeSafety,
+	"bandit":     analyzeBandit,
+	"brakeman":   analyzeBrakeman,
+	"enry":       analyzeEnry,
+	"gitauthors": analyzeGitAuthors,
+	"gosec":      analyzeGosec,
+	"npmaudit":   analyzeNpmaudit,
+	"safety":     analyzeSafety,
 }
 
 // SecTestScanInfo holds all information of securityTest scan.
 type SecTestScanInfo struct {
-	RID              string
-	URL              string
-	Branch           string
-	SecurityTestName string
-	ErrorFound       error
-	ReqNotFound      bool
-	WarningFound     bool
-	PackageNotFound  bool
-	Codes            []Code
-	Container        types.Container
-	FinalOutput      interface{}
-	Vulnerabilities  types.HuskyCISecurityTestOutput
+	RID                   string
+	URL                   string
+	Branch                string
+	SecurityTestName      string
+	ErrorFound            error
+	ReqNotFound           bool
+	WarningFound          bool
+	PackageNotFound       bool
+	CommitAuthorsNotFound bool
+	CommitAuthors         GitAuthorsOutput
+	Codes                 []Code
+	Container             types.Container
+	FinalOutput           interface{}
+	Vulnerabilities       types.HuskyCISecurityTestOutput
 }
 
 // New creates a new huskyCI scan based given RID, URL, Branch and a securityTest name and returns an error.
@@ -60,7 +63,7 @@ func (scanInfo *SecTestScanInfo) setSecurityTestContainer(securityTestName strin
 
 // Start starts a new huskyCI scan!
 func (scanInfo *SecTestScanInfo) Start() error {
-	if err := scanInfo.dockerRun(); err != nil {
+	if err := scanInfo.dockerRun(scanInfo.Container.SecurityTest.TimeOutInSeconds); err != nil {
 		scanInfo.ErrorFound = err
 		scanInfo.prepareContainerAfterScan()
 		return err
@@ -73,10 +76,10 @@ func (scanInfo *SecTestScanInfo) Start() error {
 	return nil
 }
 
-func (scanInfo *SecTestScanInfo) dockerRun() error {
+func (scanInfo *SecTestScanInfo) dockerRun(timeOutInSeconds int) error {
 	image := scanInfo.Container.SecurityTest.Image
 	cmd := util.HandleCmd(scanInfo.URL, scanInfo.Branch, scanInfo.Container.SecurityTest.Cmd)
-	CID, cOutput, err := huskydocker.DockerRun(image, cmd)
+	CID, cOutput, err := huskydocker.DockerRun(image, cmd, timeOutInSeconds)
 	if err != nil {
 		return err
 	}
@@ -99,8 +102,10 @@ func (scanInfo *SecTestScanInfo) analyze() error {
 
 func (scanInfo *SecTestScanInfo) prepareContainerAfterScan() {
 
-	scanInfo.Container.CStatus = "finished"
 	scanInfo.Container.FinishedAt = time.Now()
+	scanInfo.Container.CInfo = "No issues found."
+	scanInfo.Container.CResult = "success"
+	scanInfo.Container.CStatus = "finished"
 
 	if scanInfo.ErrorFound != nil {
 		scanInfo.Container.CInfo = "Error found running container"
@@ -117,6 +122,12 @@ func (scanInfo *SecTestScanInfo) prepareContainerAfterScan() {
 
 	if scanInfo.PackageNotFound {
 		scanInfo.Container.CInfo = "package-lock.json was not found."
+		scanInfo.Container.CResult = "warning"
+		return
+	}
+
+	if scanInfo.CommitAuthorsNotFound {
+		scanInfo.Container.CInfo = "Could not get authors. Probably master branch is being analyzed."
 		scanInfo.Container.CResult = "warning"
 		return
 	}
