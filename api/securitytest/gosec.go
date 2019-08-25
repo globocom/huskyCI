@@ -39,6 +39,7 @@ type GosecStats struct {
 func analyzeGosec(gosecScan *SecTestScanInfo) error {
 
 	goSecOutput := GosecOutput{}
+	gosecScan.FinalOutput = goSecOutput
 
 	// nil cOutput states that no Issues were found.
 	if gosecScan.Container.COutput == "" {
