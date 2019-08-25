@@ -13,7 +13,7 @@ import (
 )
 
 // DockerRun starts a new container and returns its output and an error.
-func DockerRun(containerImage, cmd string) (string, string, error) {
+func DockerRun(containerImage, cmd string, timeOutInSeconds int) (string, string, error) {
 
 	// step 1: create a new docker API client
 	d, err := NewDocker()
@@ -42,8 +42,12 @@ func DockerRun(containerImage, cmd string) (string, string, error) {
 	}
 	log.Info("DockerRun", "HUSKYDOCKER", 32, containerImage, d.CID)
 
-	// step 5: read container's output
-	cOutput, err := readOutput(d)
+	// step 5: read container's output when it finishes
+	if err := d.WaitContainer(timeOutInSeconds); err != nil {
+		log.Error("DockerRun", "HUSKYDOCKER", 3016, err)
+		return "", "", err
+	}
+	cOutput, err := d.ReadOutput()
 	if err != nil {
 		return "", "", err
 	}
@@ -71,27 +75,6 @@ func pullImage(d *Docker, image string) error {
 			if err := d.PullImage(canonicalURL); err != nil {
 				log.Error("pullImage", "HUSKYDOCKER", 3013, err)
 				return err
-			}
-		}
-	}
-}
-
-func readOutput(d *Docker) (string, error) {
-	timeout := time.After(15 * time.Minute)
-	retryTick := time.Tick(15 * time.Second)
-	for {
-		select {
-		case <-timeout:
-			timeOutErr := errors.New("time out")
-			log.Error("readOutput", "HUSKYDOCKER", 3017, timeOutErr)
-			return "", timeOutErr
-		case <-retryTick:
-			cOutput, err := d.ReadOutput()
-			if err != nil {
-				return "", err
-			}
-			if cOutput != "" {
-				return cOutput, nil
 			}
 		}
 	}
