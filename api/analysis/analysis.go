@@ -72,6 +72,7 @@ func registerFinishedAnalysis(RID string, allScanResults securitytest.RunAllInfo
 	updateAnalysisQuery := bson.M{
 		"$set": bson.M{
 			"status":         allScanResults.Status,
+			"commitAuthors":  allScanResults.CommitAuthors,
 			"result":         allScanResults.FinalResult,
 			"containers":     allScanResults.Containers,
 			"huskyciresults": allScanResults.HuskyCIResults,

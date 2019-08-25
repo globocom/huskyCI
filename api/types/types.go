@@ -36,6 +36,7 @@ type Analysis struct {
 	RID            string         `bson:"RID" json:"RID"`
 	URL            string         `bson:"repositoryURL" json:"repositoryURL"`
 	Branch         string         `bson:"repositoryBranch" json:"repositoryBranch"`
+	CommitAuthors  []string       `bson:"commitAuthors" json:"commitAuthors"`
 	Status         string         `bson:"status" json:"status"`
 	Result         string         `bson:"result,omitempty" json:"result"`
 	ErrorFound     error          `bson:"errorsRunning,omitempty" json:"errorsRunning"`

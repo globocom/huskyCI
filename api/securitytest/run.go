@@ -11,6 +11,7 @@ type RunAllInfo struct {
 	RID            string
 	Status         string
 	Containers     []types.Container
+	CommitAuthors  []string
 	Codes          []Code
 	FinalResult    string
 	ErrorFound     error
@@ -52,6 +53,9 @@ func (results *RunAllInfo) runGenericScans(enryScan SecTestScanInfo) error {
 				return err
 			}
 			results.Containers = append(results.Containers, newGenericScan.Container)
+			if genericTest.Name == "gitauthors" {
+				results.CommitAuthors = newGenericScan.CommitAuthors.Authors
+			}
 		}
 	}
 

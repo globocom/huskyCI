@@ -19,6 +19,33 @@ enry:
   default: true
   timeOutInSeconds: 60
 
+gitauthors:
+  name: gitauthors
+  image: huskyci/gitauthors
+  cmd: |+
+    mkdir -p ~/.ssh &&
+    echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
+    chmod 600 ~/.ssh/huskyci_id_rsa &&
+    echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
+    echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
+    git clone %GIT_REPO% code --quiet 2> /tmp/errorGitCloneEnry
+    if [ $? -eq 0 ]; then
+      cd code
+      for i in $(git log origin/master..origin/%GIT_BRANCH% --pretty="%ae" | sort -u); do
+        jsonMiddle="\"$i\",$jsonMiddle"
+      done
+      length=${#jsonMiddle}
+      endindex=$(expr $length - 1)
+      authors="${jsonMiddle:0:$endindex}"
+      echo "{\"authors\":[$authors]}"
+    else
+      echo "ERROR_CLONING"
+      cat /tmp/errorGitCloneEnry
+    fi
+  type: Generic
+  default: true
+  timeOutInSeconds: 60
+
 gosec:
   name: gosec
   image: huskyci/gosec
