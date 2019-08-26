@@ -44,15 +44,24 @@ func (pC *Pbkdf2Caller) GenerateSalt() (string, error) {
 
 // GetHashName returns the default hash name that is stored in an env var.
 func (pC *Pbkdf2Caller) GetHashName() string {
-	return os.Getenv("HUSKYCI_API_DEFAULT_HASH_FUNCTION")
+	if value, ok := os.LookupEnv("HUSKYCI_API_DEFAULT_HASH_FUNCTION"); ok {
+		return value
+	}
+	return "SHA512"
 }
 
 // GetIterations returns the default number of iteration that is stored in an env var.
 func (pC *Pbkdf2Caller) GetIterations() (int, error) {
-	return strconv.Atoi(os.Getenv("HUSKYCI_API_DEFAULT_ITERATIONS"))
+	if value, ok := os.LookupEnv("HUSKYCI_API_DEFAULT_ITERATIONS"); ok {
+		return strconv.Atoi(value)
+	}
+	return 100000, nil
 }
 
 // GetKeyLength returns the default key lenght that is stored in an env var.
 func (pC *Pbkdf2Caller) GetKeyLength() (int, error) {
-	return strconv.Atoi(os.Getenv("HUSKYCI_API_DEFAULT_KEY_LENGTH"))
+	if value, ok := os.LookupEnv("HUSKYCI_API_DEFAULT_KEY_LENGTH"); ok {
+		return strconv.Atoi(value)
+	}
+	return 512, nil
 }
