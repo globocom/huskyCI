@@ -15,7 +15,7 @@ enry:
       echo "ERROR_CLONING"
       cat /tmp/errorGitCloneEnry
     fi
-  type: Generic
+  type: Enry
   default: true
   timeOutInSeconds: 60
 
