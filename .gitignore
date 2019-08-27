@@ -13,3 +13,5 @@ coverage.html
 huskyci
 dockers.env
 huskyci-client
+node_modules/
+.vscode
