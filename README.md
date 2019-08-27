@@ -1,9 +1,21 @@
-# huskyCI - Performing security tests inside your CI
+<h1 align="center">
+  <p align="center">huskyCI - Performing security tests inside your CI</p>
+</h1>
 
-<img src="https://raw.githubusercontent.com/wiki/globocom/huskyCI/images/huskyCI-logo.png" align="center" height="" />
-<!-- logo font: Anton -->
+<p align="center">
+  <img src="https://raw.githubusercontent.com/wiki/globocom/huskyCI/images/huskyCI-logo.png" align="center" height="" />
+  <!-- logo font: Anton -->
+</p>
 
-[![Coverage Status](https://coveralls.io/repos/github/globocom/huskyCI/badge.svg?branch=master)](https://coveralls.io/github/globocom/huskyCI?branch=master) [![CircleCI](https://circleci.com/gh/globocom/huskyCI/tree/master.svg?style=svg&circle-token=415bfb6b5aa0dfce8d2129878a66326da9533150)](https://circleci.com/gh/globocom/huskyCI/tree/master) [![Join the chat at https://gitter.im/globocom/huskyCI](https://badges.gitter.im/globocom/huskyCI.svg)](https://gitter.im/globocom/huskyCI?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+<p align="center">
+  <a href="https://github.com/globocom/huskyCI/releases"><img src="https://img.shields.io/github/v/release/globocom/huskyCI"/></a>
+  <a href="https://coveralls.io/github/globocom/huskyCI?branch=master"><img src="https://coveralls.io/repos/github/globocom/huskyCI/badge.svg?branch=master"/></a>
+  <a href="https://circleci.com/gh/globocom/huskyCI/tree/master"><img src="https://img.shields.io/circleci/build/github/globocom/huskyCI/master?token=415bfb6b5aa0dfce8d2129878a66326da9533150"/></a>
+  <a href="https://gitter.im/globocom/huskyCI"><img src="https://badges.gitter.im/globocom/huskyCI.svg"/></a>
+  <a href="https://github.com/globocom/huskyCI/blob/master/CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?"/></a>
+  <a href="https://github.com/globocom/huskyCI/wiki"><img src="https://img.shields.io/badge/docs-wiki-informational"/></a>
+
+</p>
 
 huskyCI is an open-source tool that performs security tests inside CI pipelines of multiple projects and centralizes all results into a database for further analysis and metrics.
 
@@ -13,7 +25,7 @@ The main goal of this project is to help development teams improve the quality o
 
 huskyCI can perform static security analysis in Python ([Bandit][Bandit] and [Safety][Safety]), Ruby ([Brakeman][Brakeman]), JavaScript ([Npm Audit][NpmAudit]) and Golang ([Gosec][Gosec]). You should check our [wiki](https://github.com/globocom/huskyCI/wiki/How-does-huskyCI-work%3F) to better understand how this tool could help securing your organization projects!
 
-<p allign="center">
+<p align="center">
   <img src="huskyCI.gif" />
 </p>
 
