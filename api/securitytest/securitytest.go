@@ -79,7 +79,8 @@ func (scanInfo *SecTestScanInfo) Start() error {
 func (scanInfo *SecTestScanInfo) dockerRun(timeOutInSeconds int) error {
 	image := scanInfo.Container.SecurityTest.Image
 	cmd := util.HandleCmd(scanInfo.URL, scanInfo.Branch, scanInfo.Container.SecurityTest.Cmd)
-	CID, cOutput, err := huskydocker.DockerRun(image, cmd, timeOutInSeconds)
+	finalCMD := util.HandlePrivateSSHKey(cmd)
+	CID, cOutput, err := huskydocker.DockerRun(image, finalCMD, timeOutInSeconds)
 	if err != nil {
 		return err
 	}

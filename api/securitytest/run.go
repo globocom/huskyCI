@@ -44,18 +44,16 @@ func (results *RunAllInfo) runGenericScans(enryScan SecTestScanInfo) error {
 	}
 
 	for _, genericTest := range genericTests {
-		if genericTest.Name != "enry" {
-			newGenericScan := SecTestScanInfo{}
-			if err := newGenericScan.New(enryScan.RID, enryScan.URL, enryScan.Branch, genericTest.Name); err != nil {
-				return err
-			}
-			if err := newGenericScan.Start(); err != nil {
-				return err
-			}
-			results.Containers = append(results.Containers, newGenericScan.Container)
-			if genericTest.Name == "gitauthors" {
-				results.CommitAuthors = newGenericScan.CommitAuthors.Authors
-			}
+		newGenericScan := SecTestScanInfo{}
+		if err := newGenericScan.New(enryScan.RID, enryScan.URL, enryScan.Branch, genericTest.Name); err != nil {
+			return err
+		}
+		if err := newGenericScan.Start(); err != nil {
+			return err
+		}
+		results.Containers = append(results.Containers, newGenericScan.Container)
+		if genericTest.Name == "gitauthors" {
+			results.CommitAuthors = newGenericScan.CommitAuthors.Authors
 		}
 	}
 
