@@ -14,6 +14,7 @@
   <a href="https://gitter.im/globocom/huskyCI"><img src="https://badges.gitter.im/globocom/huskyCI.svg"/></a>
   <a href="https://github.com/globocom/huskyCI/blob/master/CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?"/></a>
   <a href="https://github.com/globocom/huskyCI/wiki"><img src="https://img.shields.io/badge/docs-wiki-informational"/></a>
+  <a href="https://github.com/rafaveira3/writing-and-presentations/blob/master/DEFCON-27-APP-SEC-VILLAGE-Rafael-Santos-huskyCI-Finding-security-flaws-in-CI-before-deploying-them.pdf"><img src="https://img.shields.io/badge/DEFCON%2027-AppSec%20Village-blueviolet"/></a>
 
 </p>
 
