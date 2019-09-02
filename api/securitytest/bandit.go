@@ -7,9 +7,11 @@ package securitytest
 import (
 	"encoding/json"
 	"strconv"
+	"strings"
 
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
+	"github.com/globocom/huskyCI/api/util"
 )
 
 // BanditOutput is the struct that holds all data from Bandit output.
@@ -62,6 +64,16 @@ func (banditScan *SecTestScanInfo) prepareBanditVulns() {
 		banditVuln := types.HuskyCIVulnerability{}
 		banditVuln.Language = "Python"
 		banditVuln.SecurityTool = "Bandit"
+		lineNumberLength := util.CountDigits(issue.LineNumber)
+		splitCode := strings.Split(issue.Code, "\n")
+		for _, codeLine := range splitCode {
+			if len(codeLine) > 0 {
+				codeLineNumber := codeLine[:lineNumberLength]
+				if strings.Contains(codeLine, "#nohusky") && (codeLineNumber == strconv.Itoa(issue.LineNumber)) {
+					issue.IssueSeverity = "NOSEC"
+				}
+			}
+		}
 		banditVuln.Severity = issue.IssueSeverity
 		banditVuln.Confidence = issue.IssueConfidence
 		banditVuln.Details = issue.IssueText
@@ -70,6 +82,8 @@ func (banditScan *SecTestScanInfo) prepareBanditVulns() {
 		banditVuln.Code = issue.Code
 
 		switch banditVuln.Severity {
+		case "NOSEC":
+			huskyCIbanditResults.NoSecVulns = append(huskyCIbanditResults.NoSecVulns, banditVuln)
 		case "LOW":
 			huskyCIbanditResults.LowVulns = append(huskyCIbanditResults.LowVulns, banditVuln)
 		case "MEDIUM":

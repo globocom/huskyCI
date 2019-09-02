@@ -144,4 +144,26 @@ Line4`
 			})
 		})
 	})
+
+	Describe("CountDigits", func() {
+
+		rawSliceInteger := []int{-1, 0, 10}
+		expected := []int{0, 1, 2}
+
+		Context("When rawSliceInteger is greater than zero", func() {
+			It("Should return the expected integer.", func() {
+				Expect(util.CountDigits(rawSliceInteger[2])).To(Equal(expected[2]))
+			})
+		})
+		Context("When rawSliceInteger is less than zero", func() {
+			It("Should return the expected integer.", func() {
+				Expect(util.CountDigits(rawSliceInteger[0])).To(Equal(expected[1]))
+			})
+		})
+		Context("When rawSliceInteger is zero", func() {
+			It("Should return the expected integer.", func() {
+				Expect(util.CountDigits(rawSliceInteger[1])).To(Equal(expected[0]))
+			})
+		})
+	})
 })
