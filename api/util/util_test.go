@@ -166,4 +166,29 @@ Line4`
 			})
 		})
 	})
+
+	Describe("VerifyNoHusky", func() {
+
+		rawBanditCodeSliceString := []string{"1 secret = 'password123!'\n2 password = 'thisisnotapassword' #nohusky"}
+		rawLineNumberSliceInteger := []int{1, 2}
+		rawSecurityToolSliceString := []string{"Bandit"}
+
+		Context("Bandit: When line number doesn't match the one in the code string", func() {
+			It("Should return false.", func() {
+				Expect(util.VerifyNoHusky(rawBanditCodeSliceString[0], rawLineNumberSliceInteger[0], rawSecurityToolSliceString[0])).To(BeFalse())
+			})
+		})
+
+		Context("Bandit: When line number matches the one in the code string", func() {
+			It("Should return true.", func() {
+				Expect(util.VerifyNoHusky(rawBanditCodeSliceString[0], rawLineNumberSliceInteger[1], rawSecurityToolSliceString[0])).To(BeTrue())
+			})
+		})
+
+		Context("Bandit: When line number doesn't match the one in the code string", func() {
+			It("Should return false.", func() {
+				Expect(util.VerifyNoHusky(rawBanditCodeSliceString[0], rawLineNumberSliceInteger[0], rawSecurityToolSliceString[0])).To(BeFalse())
+			})
+		})
+	})
 })
