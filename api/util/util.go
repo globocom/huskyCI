@@ -178,3 +178,14 @@ func AdjustWarningMessage(warningRaw string) string {
 
 	return warningRaw
 }
+
+// CountDigits returns the number of digits in an integer.
+func CountDigits(i int) int {
+	count := 0
+	for i != 0 {
+		i /= 10
+		count = count + 1
+	}
+
+	return count
+}
