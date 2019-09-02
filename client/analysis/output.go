@@ -58,7 +58,7 @@ func printSTDOUTOutput() {
 
 // prepareAllSummary prepares how many low, medium and high vulnerabilites were found.
 func prepareAllSummary(analysis types.Analysis) {
-	var totalLow, totalMedium, totalHigh int
+	var totalNoSec, totalLow, totalMedium, totalHigh int
 
 	outputJSON.GoResults = analysis.HuskyCIResults.GoResults
 	outputJSON.JavaScriptResults = analysis.HuskyCIResults.JavaScriptResults
@@ -77,6 +77,7 @@ func prepareAllSummary(analysis types.Analysis) {
 	}
 
 	// Bandit summary
+	outputJSON.Summary.BanditSummary.NoSecVuln = len(outputJSON.PythonResults.HuskyCIBanditOutput.NoSecVulns)
 	outputJSON.Summary.BanditSummary.LowVuln = len(outputJSON.PythonResults.HuskyCIBanditOutput.LowVulns)
 	outputJSON.Summary.BanditSummary.MediumVuln = len(outputJSON.PythonResults.HuskyCIBanditOutput.MediumVulns)
 	outputJSON.Summary.BanditSummary.HighVuln = len(outputJSON.PythonResults.HuskyCIBanditOutput.HighVulns)
@@ -129,6 +130,7 @@ func prepareAllSummary(analysis types.Analysis) {
 		types.FoundInfo = true
 	}
 
+	totalNoSec = outputJSON.Summary.BanditSummary.NoSecVuln
 	totalLow = outputJSON.Summary.BrakemanSummary.LowVuln + outputJSON.Summary.SafetySummary.LowVuln + outputJSON.Summary.BanditSummary.LowVuln + outputJSON.Summary.GosecSummary.LowVuln + outputJSON.Summary.NpmAuditSummary.LowVuln
 	totalMedium = outputJSON.Summary.BrakemanSummary.MediumVuln + outputJSON.Summary.SafetySummary.MediumVuln + outputJSON.Summary.BanditSummary.MediumVuln + outputJSON.Summary.GosecSummary.MediumVuln + outputJSON.Summary.NpmAuditSummary.MediumVuln
 	totalHigh = outputJSON.Summary.BrakemanSummary.HighVuln + outputJSON.Summary.SafetySummary.HighVuln + outputJSON.Summary.BanditSummary.HighVuln + outputJSON.Summary.GosecSummary.HighVuln + outputJSON.Summary.NpmAuditSummary.HighVuln
@@ -136,6 +138,7 @@ func prepareAllSummary(analysis types.Analysis) {
 	outputJSON.Summary.TotalSummary.HighVuln = totalHigh
 	outputJSON.Summary.TotalSummary.MediumVuln = totalMedium
 	outputJSON.Summary.TotalSummary.LowVuln = totalLow
+	outputJSON.Summary.TotalSummary.NoSecVuln = totalNoSec
 
 }
 
@@ -155,6 +158,7 @@ func printAllSummary() {
 		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", outputJSON.Summary.BanditSummary.HighVuln)
 		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", outputJSON.Summary.BanditSummary.MediumVuln)
 		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", outputJSON.Summary.BanditSummary.LowVuln)
+		fmt.Printf("[HUSKYCI][SUMMARY] NoSecHusky: %d\n", outputJSON.Summary.BanditSummary.NoSecVuln)
 	}
 
 	if outputJSON.Summary.SafetySummary.FoundVuln || outputJSON.Summary.SafetySummary.FoundInfo {
@@ -187,6 +191,7 @@ func printAllSummary() {
 		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", outputJSON.Summary.TotalSummary.HighVuln)
 		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", outputJSON.Summary.TotalSummary.MediumVuln)
 		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", outputJSON.Summary.TotalSummary.LowVuln)
+		fmt.Printf("[HUSKYCI][SUMMARY] NoSecHusky: %d\n", outputJSON.Summary.TotalSummary.NoSecVuln)
 	}
 
 	fmt.Println()
