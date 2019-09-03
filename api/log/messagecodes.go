@@ -30,6 +30,7 @@ var MsgCode = map[int]string{
 	108: "Received an invalid security Test JSON: ",
 	109: "The following security test is already in MongoDB: ",
 	110: "The following repository is already in MongoDB: ",
+	111: "Invalid user input for AnalysisCount time range: ",
 
 	// HuskyCI API errors
 	1001: "Error(s) found when starting HuskyCI API: ",
@@ -97,6 +98,7 @@ var MsgCode = map[int]string{
 	2014: "Could not find an analysis using the following RID: ",
 	2015: "Could not create a new repository: ",
 	2016: "Could not create a new securityTest: ",
+	2017: "Error running the following MongoDB aggregation: ",
 
 	// Docker API info
 	31: "Waiting pull image...",
