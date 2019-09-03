@@ -1,1 +1,1 @@
-web: ./huskyci
+web: $TSURU_APPDIR/huskyci
