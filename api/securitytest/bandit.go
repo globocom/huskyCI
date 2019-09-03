@@ -7,7 +7,6 @@ package securitytest
 import (
 	"encoding/json"
 	"strconv"
-	"strings"
 
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
@@ -64,8 +63,8 @@ func (banditScan *SecTestScanInfo) prepareBanditVulns() {
 		banditVuln := types.HuskyCIVulnerability{}
 		banditVuln.Language = "Python"
 		banditVuln.SecurityTool = "Bandit"
-		noHusky := util.VerifyNoHusky(issue.Code, issue.LineNumber, banditVuln.SecurityTool)
-		if noHusky {
+		noHuskyInLine := util.VerifyNoHusky(issue.Code, issue.LineNumber, banditVuln.SecurityTool)
+		if noHuskyInLine {
 			issue.IssueSeverity = "NOSEC"
 		}
 		banditVuln.Severity = issue.IssueSeverity
