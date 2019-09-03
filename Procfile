@@ -1,1 +1,1 @@
-web: ./api/huskyci
+web: ./huskyci
