@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"errors"
@@ -188,4 +189,21 @@ func CountDigits(i int) int {
 	}
 
 	return count
+}
+
+// VerifyNoHusky verifies if the code string is marked with the #nohusky tag.
+func VerifyNoHusky(code string, lineNumber int, securityTool string) bool {
+	if securityTool == "Bandit" {
+		lineNumberLength := CountDigits(lineNumber)
+		splitCode := strings.Split(code, "\n")
+		for _, codeLine := range splitCode {
+			if len(codeLine) > 0 {
+				codeLineNumber := codeLine[:lineNumberLength]
+				if strings.Contains(codeLine, "#nohusky") && (codeLineNumber == strconv.Itoa(lineNumber)) {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }
