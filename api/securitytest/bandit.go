@@ -7,6 +7,7 @@ package securitytest
 import (
 	"encoding/json"
 	"strconv"
+	"strings"
 
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
