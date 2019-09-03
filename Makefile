@@ -28,7 +28,7 @@ LDFLAGS := '-X "main.version=$(TAG)" -X "main.commit=$(COMMIT)" -X "main.date=$(
 
 ## Builds Go project to the executable file huskyci
 build:
-	cd api && GOOS=linux GOARCH=amd64 $(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCIBIN)"
+	cd api && GOOS=linux GOARCH=amd64 $(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCIBIN)" && mv "$(HUSKYCIBIN)" ..
 
 ## Builds client to the executable file huskyci-client
 build-client:
