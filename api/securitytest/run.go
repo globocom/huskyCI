@@ -44,18 +44,16 @@ func (results *RunAllInfo) runGenericScans(enryScan SecTestScanInfo) error {
 	}
 
 	for _, genericTest := range genericTests {
-		if genericTest.Name != "enry" {
-			newGenericScan := SecTestScanInfo{}
-			if err := newGenericScan.New(enryScan.RID, enryScan.URL, enryScan.Branch, genericTest.Name); err != nil {
-				return err
-			}
-			if err := newGenericScan.Start(); err != nil {
-				return err
-			}
-			results.Containers = append(results.Containers, newGenericScan.Container)
-			if genericTest.Name == "gitauthors" {
-				results.CommitAuthors = newGenericScan.CommitAuthors.Authors
-			}
+		newGenericScan := SecTestScanInfo{}
+		if err := newGenericScan.New(enryScan.RID, enryScan.URL, enryScan.Branch, genericTest.Name); err != nil {
+			return err
+		}
+		if err := newGenericScan.Start(); err != nil {
+			return err
+		}
+		results.Containers = append(results.Containers, newGenericScan.Container)
+		if genericTest.Name == "gitauthors" {
+			results.CommitAuthors = newGenericScan.CommitAuthors.Authors
 		}
 	}
 
@@ -132,6 +130,21 @@ func (results *RunAllInfo) setVulns(securityTestScan SecTestScanInfo) {
 			results.HuskyCIResults.GoResults.HuskyCIGosecOutput.LowVulns = append(results.HuskyCIResults.GoResults.HuskyCIGosecOutput.LowVulns, lowVuln)
 		case "npmaudit":
 			results.HuskyCIResults.JavaScriptResults.HuskyCINpmAuditOutput.LowVulns = append(results.HuskyCIResults.JavaScriptResults.HuskyCINpmAuditOutput.LowVulns, lowVuln)
+		}
+	}
+
+	for _, noSec := range securityTestScan.Vulnerabilities.NoSecVulns {
+		switch securityTestScan.SecurityTestName {
+		case "bandit":
+			results.HuskyCIResults.PythonResults.HuskyCIBanditOutput.NoSecVulns = append(results.HuskyCIResults.PythonResults.HuskyCIBanditOutput.NoSecVulns, noSec)
+		case "brakeman":
+			results.HuskyCIResults.RubyResults.HuskyCIBrakemanOutput.NoSecVulns = append(results.HuskyCIResults.RubyResults.HuskyCIBrakemanOutput.NoSecVulns, noSec)
+		case "safety":
+			results.HuskyCIResults.PythonResults.HuskyCISafetyOutput.NoSecVulns = append(results.HuskyCIResults.PythonResults.HuskyCISafetyOutput.NoSecVulns, noSec)
+		case "gosec":
+			results.HuskyCIResults.GoResults.HuskyCIGosecOutput.NoSecVulns = append(results.HuskyCIResults.GoResults.HuskyCIGosecOutput.LowVulns, noSec)
+		case "npmaudit":
+			results.HuskyCIResults.JavaScriptResults.HuskyCINpmAuditOutput.NoSecVulns = append(results.HuskyCIResults.JavaScriptResults.HuskyCINpmAuditOutput.NoSecVulns, noSec)
 		}
 	}
 }

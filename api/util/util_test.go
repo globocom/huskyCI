@@ -144,4 +144,51 @@ Line4`
 			})
 		})
 	})
+
+	Describe("CountDigits", func() {
+
+		rawSliceInteger := []int{-1, 0, 10}
+		expected := []int{0, 1, 2}
+
+		Context("When rawSliceInteger is greater than zero", func() {
+			It("Should return the expected integer.", func() {
+				Expect(util.CountDigits(rawSliceInteger[2])).To(Equal(expected[2]))
+			})
+		})
+		Context("When rawSliceInteger is less than zero", func() {
+			It("Should return the expected integer.", func() {
+				Expect(util.CountDigits(rawSliceInteger[0])).To(Equal(expected[1]))
+			})
+		})
+		Context("When rawSliceInteger is zero", func() {
+			It("Should return the expected integer.", func() {
+				Expect(util.CountDigits(rawSliceInteger[1])).To(Equal(expected[0]))
+			})
+		})
+	})
+
+	Describe("VerifyNoHusky", func() {
+
+		rawBanditCodeSliceString := []string{"1 secret = 'password123!'\n2 password = 'thisisnotapassword' #nohusky"}
+		rawLineNumberSliceInteger := []int{1, 2}
+		rawSecurityToolSliceString := []string{"Bandit"}
+
+		Context("Bandit: When line number doesn't match the one in the code string", func() {
+			It("Should return false.", func() {
+				Expect(util.VerifyNoHusky(rawBanditCodeSliceString[0], rawLineNumberSliceInteger[0], rawSecurityToolSliceString[0])).To(BeFalse())
+			})
+		})
+
+		Context("Bandit: When line number matches the one in the code string", func() {
+			It("Should return true.", func() {
+				Expect(util.VerifyNoHusky(rawBanditCodeSliceString[0], rawLineNumberSliceInteger[1], rawSecurityToolSliceString[0])).To(BeTrue())
+			})
+		})
+
+		Context("Bandit: When line number doesn't match the one in the code string", func() {
+			It("Should return false.", func() {
+				Expect(util.VerifyNoHusky(rawBanditCodeSliceString[0], rawLineNumberSliceInteger[0], rawSecurityToolSliceString[0])).To(BeFalse())
+			})
+		})
+	})
 })

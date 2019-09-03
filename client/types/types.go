@@ -126,6 +126,7 @@ type RubyResults struct {
 
 // HuskyCISecurityTestOutput stores all Low, Medium and High vulnerabilities for a sec test
 type HuskyCISecurityTestOutput struct {
+	NoSecVulns  []HuskyCIVulnerability `bson:"nosecvulns,omitempty" json:"nosecvulns,omitempty"`
 	LowVulns    []HuskyCIVulnerability `bson:"lowvulns,omitempty" json:"lowvulns,omitempty"`
 	MediumVulns []HuskyCIVulnerability `bson:"mediumvulns,omitempty" json:"mediumvulns,omitempty"`
 	HighVulns   []HuskyCIVulnerability `bson:"highvulns,omitempty" json:"highvulns,omitempty"`
@@ -148,6 +149,7 @@ type Summary struct {
 type HuskyCISummary struct {
 	FoundVuln  bool `json:"foundvuln,omitempty"`
 	FoundInfo  bool `json:"foundinfo,omitempty"`
+	NoSecVuln  int  `json:"nosecvuln,omitempty"`
 	LowVuln    int  `json:"lowvuln,omitempty"`
 	MediumVuln int  `json:"mediumvuln,omitempty"`
 	HighVuln   int  `json:"highvuln,omitempty"`

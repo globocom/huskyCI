@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -190,4 +191,32 @@ func EndOfTheDay(t time.Time) time.Time {
 func BeginningOfTheDay(t time.Time) time.Time {
 	year, month, day := t.Date()
 	return time.Date(year, month, day, 0, 0, 0, 0, t.Location())
+}
+
+// CountDigits returns the number of digits in an integer.
+func CountDigits(i int) int {
+	count := 0
+	for i != 0 {
+		i /= 10
+		count = count + 1
+	}
+
+	return count
+}
+
+// VerifyNoHusky verifies if the code string is marked with the #nohusky tag.
+func VerifyNoHusky(code string, lineNumber int, securityTool string) bool {
+	if securityTool == "Bandit" {
+		lineNumberLength := CountDigits(lineNumber)
+		splitCode := strings.Split(code, "\n")
+		for _, codeLine := range splitCode {
+			if len(codeLine) > 0 {
+				codeLineNumber := codeLine[:lineNumberLength]
+				if strings.Contains(codeLine, "#nohusky") && (codeLineNumber == strconv.Itoa(lineNumber)) {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }
