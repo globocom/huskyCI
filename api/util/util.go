@@ -10,6 +10,7 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"time"
 
 	"errors"
 	"fmt"
@@ -177,4 +178,16 @@ func AdjustWarningMessage(warningRaw string) string {
 	}
 
 	return warningRaw
+}
+
+// EndOfTheDay returns the the time at the end of the day t.
+func EndOfTheDay(t time.Time) time.Time {
+	year, month, day := t.Date()
+	return time.Date(year, month, day, 23, 59, 59, 0, t.Location())
+}
+
+// BeginningOfTheDay returns the the time at the beginning of the day t.
+func BeginningOfTheDay(t time.Time) time.Time {
+	year, month, day := t.Date()
+	return time.Date(year, month, day, 0, 0, 0, 0, t.Location())
 }
