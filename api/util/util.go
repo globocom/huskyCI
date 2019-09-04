@@ -220,3 +220,13 @@ func VerifyNoHusky(code string, lineNumber int, securityTool string) bool {
 	}
 	return false
 }
+
+// SliceContains returns true if a given value is present on the given slice
+func SliceContains(slice []string, str string) bool {
+	for _, value := range slice {
+		if value == str {
+			return true
+		}
+	}
+	return false
+}

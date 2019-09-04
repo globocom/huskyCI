@@ -69,11 +69,7 @@ func main() {
 	// echoInstance.DELETE("/analysis/:id", routes.DeleteAnalysis)
 
 	// stats routes
-	echoInstance.GET("/stats/analysis_count/:time_range", routes.AnalysisCount)
-	echoInstance.GET("/stats/language_count", routes.LanguageCount)
-	echoInstance.GET("/stats/repository_count", routes.RepositoryCount)
-	echoInstance.GET("/stats/author_count", routes.AuthorCount)
-	echoInstance.GET("/stats/container_count", routes.ContainerCount)
+	echoInstance.GET("/stats/:metric_type", routes.GetMetric)
 
 	// securityTest routes
 	// echoInstance.GET("securityTest/:securityTestName", routes.GetSecurityTest)

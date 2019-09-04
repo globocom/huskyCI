@@ -14,63 +14,31 @@ import (
 	"github.com/labstack/echo"
 )
 
-// AnalysisCount is the endpoint that returns data about HuskyCI scans.
-func AnalysisCount(c echo.Context) error {
-	timeRange := strings.ToLower(c.Param("time_range"))
-	result, err := db.AnalysisCountMetric(timeRange)
+// GetMetric returns data about the metric received
+func GetMetric(c echo.Context) error {
+	metricType := strings.ToLower(c.Param("metric_type"))
+	queryParams := c.QueryParams()
+	result, err := db.GetMetricByType(metricType, queryParams)
 	if err != nil {
-		if err == errors.New("invalid time_range type") {
-			log.Warning("AnalysisCount", "STATS", 111, err, timeRange)
-			reply := map[string]interface{}{"success": false, "error": "invalid time_range type"}
-			return c.JSON(http.StatusBadRequest, reply)
-		}
-		log.Error("AnalysisCount", "STATS", 2017, "AnalysisCount", err)
-		reply := map[string]interface{}{"success": false, "error": "internal error"}
-		return c.JSON(http.StatusInternalServerError, reply)
+		httpStatus, reply := checkError(err, metricType)
+		return c.JSON(httpStatus, reply)
 	}
 	return c.JSON(http.StatusOK, result)
 }
 
-// LanguageCount is the endpoint that returns the counter for each language scanned.
-func LanguageCount(c echo.Context) error {
-	result, err := db.LanguageCountMetric()
-	if err != nil {
-		log.Error("LanguageCount", "STATS", 2017, "LanguageCount", err)
+func checkError(err error, metricType string) (int, map[string]interface{}) {
+	switch err {
+	case errors.New("invalid time_range query string param"):
+		log.Warning("GetMetric", "STATS", 111, err)
+		reply := map[string]interface{}{"success": false, "error": "invalid time_range type"}
+		return http.StatusBadRequest, reply
+	case errors.New("invalid metric type"):
+		log.Warning("GetMetric", "STATS", 112, metricType, err)
+		reply := map[string]interface{}{"success": false, "error": "invalid metric type"}
+		return http.StatusBadRequest, reply
+	default:
+		log.Error("GetMetric", "STATS", 2017, metricType, err)
 		reply := map[string]interface{}{"success": false, "error": "internal error"}
-		return c.JSON(http.StatusInternalServerError, reply)
+		return http.StatusInternalServerError, reply
 	}
-	return c.JSON(http.StatusOK, result)
-}
-
-// RepositoryCount is the endpoint that returns the counter for each repository scanned.
-func RepositoryCount(c echo.Context) error {
-	result, err := db.RepositoryCountMetric()
-	if err != nil {
-		log.Error("RepositoryCount", "STATS", 2017, "RepositoryCount", err)
-		reply := map[string]interface{}{"success": false, "error": "internal error"}
-		return c.JSON(http.StatusInternalServerError, reply)
-	}
-	return c.JSON(http.StatusOK, result)
-}
-
-// AuthorCount is the endpoint that returns the counter for each author from repositories scanned.
-func AuthorCount(c echo.Context) error {
-	result, err := db.AuthorCountMetric()
-	if err != nil {
-		log.Error("AuthorCount", "STATS", 2017, "AuthorCount", err)
-		reply := map[string]interface{}{"success": false, "error": "internal error"}
-		return c.JSON(http.StatusInternalServerError, reply)
-	}
-	return c.JSON(http.StatusOK, result)
-}
-
-// ContainerCount is the endpoint that returns the counter for each container deployed.
-func ContainerCount(c echo.Context) error {
-	result, err := db.ContainerCountMetric()
-	if err != nil {
-		log.Error("ContainerCount", "STATS", 2017, "ContainerCount", err)
-		reply := map[string]interface{}{"success": false, "error": "internal error"}
-		return c.JSON(http.StatusInternalServerError, reply)
-	}
-	return c.JSON(http.StatusOK, result)
 }
