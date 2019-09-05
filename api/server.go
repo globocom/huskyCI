@@ -68,6 +68,9 @@ func main() {
 	// echoInstance.PUT("/analysis/:id", routes.UpdateAnalysis)
 	// echoInstance.DELETE("/analysis/:id", routes.DeleteAnalysis)
 
+	// stats routes
+	echoInstance.GET("/stats/:metric_type", routes.GetMetric)
+
 	// securityTest routes
 	// echoInstance.GET("securityTest/:securityTestName", routes.GetSecurityTest)
 	// echoInstance.POST("/securitytest", routes.CreateNewSecurityTest)
