@@ -152,7 +152,7 @@ func (results *RunAllInfo) setVulns(securityTestScan SecTestScanInfo) {
 func (results *RunAllInfo) setToAnalysis() {
 
 	results.Status = "finished"
-	results.FinalResult = "success"
+	results.FinalResult = "passed"
 
 	if results.ErrorFound != nil {
 		results.Status = "error running"
