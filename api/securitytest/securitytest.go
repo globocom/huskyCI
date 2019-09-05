@@ -105,7 +105,7 @@ func (scanInfo *SecTestScanInfo) prepareContainerAfterScan() {
 
 	scanInfo.Container.FinishedAt = time.Now()
 	scanInfo.Container.CInfo = "No issues found."
-	scanInfo.Container.CResult = "success"
+	scanInfo.Container.CResult = "passed"
 	scanInfo.Container.CStatus = "finished"
 
 	if scanInfo.ErrorFound != nil {
@@ -129,7 +129,6 @@ func (scanInfo *SecTestScanInfo) prepareContainerAfterScan() {
 
 	if scanInfo.CommitAuthorsNotFound {
 		scanInfo.Container.CInfo = "Could not get authors. Probably master branch is being analyzed."
-		scanInfo.Container.CResult = "warning"
 		return
 	}
 
