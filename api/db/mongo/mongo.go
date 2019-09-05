@@ -149,6 +149,20 @@ func (db *DB) Search(query bson.M, selectors []string, collection string, obj in
 	return err
 }
 
+// Aggregation prepares a pipeline to aggregate.
+func (db *DB) Aggregation(aggregation []bson.M, collection string) (interface{}, error) {
+	session := db.Session.Clone()
+	defer session.Close()
+	c := session.DB("").C(collection)
+
+	pipe := c.Pipe(aggregation)
+	resp := []bson.M{}
+	iter := pipe.Iter()
+	err := iter.All(&resp)
+
+	return resp, err
+}
+
 // SearchOne searchs for the first element that matchs with the given query.
 func (db *DB) SearchOne(query bson.M, selectors []string, collection string, obj interface{}) error {
 	session := db.Session.Clone()

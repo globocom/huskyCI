@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"errors"
 	"fmt"
@@ -180,6 +181,18 @@ func AdjustWarningMessage(warningRaw string) string {
 	return warningRaw
 }
 
+// EndOfTheDay returns the the time at the end of the day t.
+func EndOfTheDay(t time.Time) time.Time {
+	year, month, day := t.Date()
+	return time.Date(year, month, day, 23, 59, 59, 0, t.Location())
+}
+
+// BeginningOfTheDay returns the the time at the beginning of the day t.
+func BeginningOfTheDay(t time.Time) time.Time {
+	year, month, day := t.Date()
+	return time.Date(year, month, day, 0, 0, 0, 0, t.Location())
+}
+
 // CountDigits returns the number of digits in an integer.
 func CountDigits(i int) int {
 	count := 0
@@ -203,6 +216,16 @@ func VerifyNoHusky(code string, lineNumber int, securityTool string) bool {
 					return true
 				}
 			}
+		}
+	}
+	return false
+}
+
+// SliceContains returns true if a given value is present on the given slice
+func SliceContains(slice []string, str string) bool {
+	for _, value := range slice {
+		if value == str {
+			return true
 		}
 	}
 	return false
