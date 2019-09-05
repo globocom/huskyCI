@@ -26,6 +26,12 @@ var statsQueryBase = map[string][]bson.M{
 	"container": generateSimpleAggr("containers", "container", "containers.securityTest.name"),
 	"analysis": []bson.M{
 		bson.M{
+			"$project": bson.M{
+				"finishedAt": 1,
+				"result":     1,
+			},
+		},
+		bson.M{
 			"$group": bson.M{
 				"_id": "$result",
 				"count": bson.M{
@@ -111,10 +117,10 @@ var statsQueryBase = map[string][]bson.M{
 }
 
 var aggrTimeFilterStage = map[string][]bson.M{
-	"today":      generateTimeFilterStage(-1, 0),
-	"yesterday":  generateTimeFilterStage(-2, -1),
-	"last7days":  generateTimeFilterStage(-7, 0),
-	"last30days": generateTimeFilterStage(-30, 0),
+	"today":      generateTimeFilterStage(0, 0),
+	"yesterday":  generateTimeFilterStage(-1, -1),
+	"last7days":  generateTimeFilterStage(-6, 0),
+	"last30days": generateTimeFilterStage(-29, 0),
 }
 
 // GetMetricByType returns data about the metric received
