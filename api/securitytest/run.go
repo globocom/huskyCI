@@ -1,6 +1,8 @@
 package securitytest
 
 import (
+	"sync"
+
 	"github.com/globocom/huskyCI/api/db"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
@@ -22,45 +24,120 @@ type RunAllInfo struct {
 func (results *RunAllInfo) Start(enryScan SecTestScanInfo) error {
 
 	results.Codes = enryScan.Codes
+	errChan := make(chan error)
+	waitChan := make(chan struct{})
+	syncChan := make(chan struct{})
 
-	if err := results.runGenericScans(enryScan); err != nil {
+	var wg sync.WaitGroup
+
+	defer close(errChan)
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		if err := results.runGenericScans(enryScan); err != nil {
+			select {
+			case <-syncChan:
+				return
+			case errChan <- err:
+				return
+			}
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		if err := results.runLanguageScans(enryScan); err != nil {
+			select {
+			case <-syncChan:
+				return
+			case errChan <- err:
+				return
+			}
+		}
+	}()
+
+	go func() {
+		wg.Wait()
+		close(waitChan)
+	}()
+
+	select {
+	case <-waitChan:
+		results.setToAnalysis()
+		return nil
+	case err := <-errChan:
+		close(syncChan)
 		return err
 	}
-
-	if err := results.runLanguageScans(enryScan); err != nil {
-		return err
-	}
-
-	results.setToAnalysis()
-
-	return nil
 }
 
 func (results *RunAllInfo) runGenericScans(enryScan SecTestScanInfo) error {
+
+	errChan := make(chan error)
+	waitChan := make(chan struct{})
+	syncChan := make(chan struct{})
+
+	var wg sync.WaitGroup
+
+	defer close(errChan)
 
 	genericTests, err := getAllDefaultSecurityTests("Generic", "")
 	if err != nil {
 		return err
 	}
 
-	for _, genericTest := range genericTests {
-		newGenericScan := SecTestScanInfo{}
-		if err := newGenericScan.New(enryScan.RID, enryScan.URL, enryScan.Branch, genericTest.Name); err != nil {
-			return err
-		}
-		if err := newGenericScan.Start(); err != nil {
-			return err
-		}
-		results.Containers = append(results.Containers, newGenericScan.Container)
-		if genericTest.Name == "gitauthors" {
-			results.CommitAuthors = newGenericScan.CommitAuthors.Authors
-		}
+	for genericTestIndex := range genericTests {
+		wg.Add(1)
+		go func(genericTest *types.SecurityTest) {
+			defer wg.Done()
+			newGenericScan := SecTestScanInfo{}
+			if err := newGenericScan.New(enryScan.RID, enryScan.URL, enryScan.Branch, genericTest.Name); err != nil {
+				select {
+				case <-syncChan:
+					return
+				case errChan <- err:
+					return
+				}
+			}
+			if err := newGenericScan.Start(); err != nil {
+				select {
+				case <-syncChan:
+					return
+				case errChan <- err:
+					return
+				}
+			}
+			results.Containers = append(results.Containers, newGenericScan.Container)
+			if genericTest.Name == "gitauthors" {
+				results.CommitAuthors = newGenericScan.CommitAuthors.Authors
+			}
+		}(&genericTests[genericTestIndex])
 	}
 
-	return nil
+	go func() {
+		wg.Wait()
+		close(waitChan)
+	}()
+
+	select {
+	case <-waitChan:
+		return nil
+	case err := <-errChan:
+		close(syncChan)
+		return err
+	}
 }
 
 func (results *RunAllInfo) runLanguageScans(enryScan SecTestScanInfo) error {
+
+	errChan := make(chan error)
+	waitChan := make(chan struct{})
+	syncChan := make(chan struct{})
+
+	var wg sync.WaitGroup
+
+	defer close(errChan)
 
 	languageTests := []types.SecurityTest{}
 	for _, code := range enryScan.Codes {
@@ -71,19 +148,44 @@ func (results *RunAllInfo) runLanguageScans(enryScan SecTestScanInfo) error {
 		languageTests = append(languageTests, codeTests...)
 	}
 
-	for _, languageTest := range languageTests {
-		newLanguageScan := SecTestScanInfo{}
-		if err := newLanguageScan.New(enryScan.RID, enryScan.URL, enryScan.Branch, languageTest.Name); err != nil {
-			return err
-		}
-		if err := newLanguageScan.Start(); err != nil {
-			return err
-		}
-		results.Containers = append(results.Containers, newLanguageScan.Container)
-		results.setVulns(newLanguageScan)
+	for languageTestIndex := range languageTests {
+		wg.Add(1)
+		go func(languageTest *types.SecurityTest) {
+			defer wg.Done()
+			newLanguageScan := SecTestScanInfo{}
+			if err := newLanguageScan.New(enryScan.RID, enryScan.URL, enryScan.Branch, languageTest.Name); err != nil {
+				select {
+				case <-syncChan:
+					return
+				case errChan <- err:
+					return
+				}
+			}
+			if err := newLanguageScan.Start(); err != nil {
+				select {
+				case <-syncChan:
+					return
+				case errChan <- err:
+					return
+				}
+			}
+			results.Containers = append(results.Containers, newLanguageScan.Container)
+			results.setVulns(newLanguageScan)
+		}(&languageTests[languageTestIndex])
 	}
 
-	return nil
+	go func() {
+		wg.Wait()
+		close(waitChan)
+	}()
+
+	select {
+	case <-waitChan:
+		return nil
+	case err := <-errChan:
+		close(syncChan)
+		return err
+	}
 }
 
 func (results *RunAllInfo) setVulns(securityTestScan SecTestScanInfo) {
