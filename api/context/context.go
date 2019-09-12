@@ -74,6 +74,7 @@ type APIConfig struct {
 	BanditSecurityTest     *types.SecurityTest
 	BrakemanSecurityTest   *types.SecurityTest
 	NpmAuditSecurityTest   *types.SecurityTest
+	YarnAuditSecurityTest  *types.SecurityTest
 	SafetySecurityTest     *types.SecurityTest
 }
 
@@ -112,6 +113,7 @@ func (dF DefaultConfig) SetOnceConfig() {
 			BanditSecurityTest:     dF.getSecurityTestConfig("bandit"),
 			BrakemanSecurityTest:   dF.getSecurityTestConfig("brakeman"),
 			NpmAuditSecurityTest:   dF.getSecurityTestConfig("npmaudit"),
+			YarnAuditSecurityTest:  dF.getSecurityTestConfig("yarnaudit"),
 			SafetySecurityTest:     dF.getSecurityTestConfig("safety"),
 		}
 	})

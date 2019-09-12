@@ -115,7 +115,8 @@ type PythonResults struct {
 
 // JavaScriptResults represents all JavaScript security tests results.
 type JavaScriptResults struct {
-	HuskyCINpmAuditOutput HuskyCISecurityTestOutput `bson:"npmauditoutput,omitempty" json:"npmauditoutput,omitempty"`
+	HuskyCINpmAuditOutput  HuskyCISecurityTestOutput `bson:"npmauditoutput,omitempty" json:"npmauditoutput,omitempty"`
+	HuskyCIYarnAuditOutput HuskyCISecurityTestOutput `bson:"yarnauditoutput,omitempty" json:"yarnauditoutput,omitempty"`
 }
 
 // RubyResults represents all Ruby security tests results.
