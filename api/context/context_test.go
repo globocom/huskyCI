@@ -405,6 +405,15 @@ var _ = Describe("Context", func() {
 						Default:          fakeCaller.expectedBoolFromConfig,
 						TimeOutInSeconds: fakeCaller.expectedIntFromConfig,
 					},
+					YarnAuditSecurityTest: &types.SecurityTest{
+						Name:             fakeCaller.expectedStringFromConfig,
+						Image:            fakeCaller.expectedStringFromConfig,
+						Cmd:              fakeCaller.expectedStringFromConfig,
+						Type:             fakeCaller.expectedStringFromConfig,
+						Language:         fakeCaller.expectedStringFromConfig,
+						Default:          fakeCaller.expectedBoolFromConfig,
+						TimeOutInSeconds: fakeCaller.expectedIntFromConfig,
+					},
 					SafetySecurityTest: &types.SecurityTest{
 						Name:             fakeCaller.expectedStringFromConfig,
 						Image:            fakeCaller.expectedStringFromConfig,

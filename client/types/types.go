@@ -116,7 +116,8 @@ type PythonResults struct {
 
 // JavaScriptResults represents all JavaScript security tests results.
 type JavaScriptResults struct {
-	HuskyCINpmAuditOutput HuskyCISecurityTestOutput `bson:"npmauditoutput,omitempty" json:"npmauditoutput,omitempty"`
+	HuskyCINpmAuditOutput  HuskyCISecurityTestOutput `bson:"npmauditoutput,omitempty" json:"npmauditoutput,omitempty"`
+	HuskyCIYarnAuditOutput HuskyCISecurityTestOutput `bson:"yarnauditoutput,omitempty" json:"yarnauditoutput,omitempty"`
 }
 
 // RubyResults represents all Ruby security tests results.
@@ -134,15 +135,16 @@ type HuskyCISecurityTestOutput struct {
 
 // Summary holds a summary of the information on all security tests.
 type Summary struct {
-	URL             string         `json:"repositoryURL"`
-	Branch          string         `json:"repositoryBranch"`
-	RID             string         `json:"RID"`
-	GosecSummary    HuskyCISummary `json:"gosecsummary,omitempty"`
-	BanditSummary   HuskyCISummary `json:"banditsummary,omitempty"`
-	SafetySummary   HuskyCISummary `json:"safetysummary,omitempty"`
-	NpmAuditSummary HuskyCISummary `json:"npmauditsummary,omitempty"`
-	BrakemanSummary HuskyCISummary `json:"brakemansummary,omitempty"`
-	TotalSummary    HuskyCISummary `json:"totalsummary,omitempty"`
+	URL              string         `json:"repositoryURL"`
+	Branch           string         `json:"repositoryBranch"`
+	RID              string         `json:"RID"`
+	GosecSummary     HuskyCISummary `json:"gosecsummary,omitempty"`
+	BanditSummary    HuskyCISummary `json:"banditsummary,omitempty"`
+	SafetySummary    HuskyCISummary `json:"safetysummary,omitempty"`
+	NpmAuditSummary  HuskyCISummary `json:"npmauditsummary,omitempty"`
+	YarnAuditSummary HuskyCISummary `json:"yarnauditsummary,omitempty"`
+	BrakemanSummary  HuskyCISummary `json:"brakemansummary,omitempty"`
+	TotalSummary     HuskyCISummary `json:"totalsummary,omitempty"`
 }
 
 // HuskyCISummary is the struct that holds summary information.

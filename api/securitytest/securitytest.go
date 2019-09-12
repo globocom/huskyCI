@@ -19,6 +19,7 @@ var securityTestAnalyze = map[string]func(scanInfo *SecTestScanInfo) error{
 	"gitauthors": analyzeGitAuthors,
 	"gosec":      analyzeGosec,
 	"npmaudit":   analyzeNpmaudit,
+	"yarnaudit":  analyzeYarnaudit,
 	"safety":     analyzeSafety,
 }
 
@@ -32,6 +33,7 @@ type SecTestScanInfo struct {
 	ReqNotFound           bool
 	WarningFound          bool
 	PackageNotFound       bool
+	YarnLockNotFound      bool
 	CommitAuthorsNotFound bool
 	CommitAuthors         GitAuthorsOutput
 	Codes                 []Code
@@ -123,6 +125,12 @@ func (scanInfo *SecTestScanInfo) prepareContainerAfterScan() {
 
 	if scanInfo.PackageNotFound {
 		scanInfo.Container.CInfo = "package-lock.json was not found."
+		scanInfo.Container.CResult = "warning"
+		return
+	}
+
+	if scanInfo.YarnLockNotFound {
+		scanInfo.Container.CInfo = "yarn.lock was not found."
 		scanInfo.Container.CResult = "warning"
 		return
 	}
