@@ -24,7 +24,7 @@ huskyCI is an open-source tool that performs security tests inside CI pipelines 
 
 The main goal of this project is to help development teams improve the quality of their code by finding vulnerabilities as soon as possible.
 
-huskyCI can perform static security analysis in Python ([Bandit][Bandit] and [Safety][Safety]), Ruby ([Brakeman][Brakeman]), JavaScript ([Npm Audit][NpmAudit]) and Golang ([Gosec][Gosec]). You should check our [wiki](https://github.com/globocom/huskyCI/wiki/How-does-huskyCI-work%3F) to better understand how this tool could help securing your organization projects!
+huskyCI can perform static security analysis in Python ([Bandit][Bandit] and [Safety][Safety]), Ruby ([Brakeman][Brakeman]), JavaScript ([Npm Audit][NpmAudit] and [Yarn Audit][YarnAudit]) and Golang ([Gosec][Gosec]). You should check our [wiki](https://github.com/globocom/huskyCI/wiki/How-does-huskyCI-work%3F) to better understand how this tool could help securing your organization projects!
 
 <p align="center">
   <img src="huskyCI.gif" />
@@ -99,3 +99,4 @@ This project is licensed under the BSD 3-Clause "New" or "Revised" License - rea
 [Brakeman]: https://github.com/presidentbeef/brakeman
 [Gosec]: https://github.com/securego/gosec
 [NpmAudit]: https://docs.npmjs.com/cli/audit
+[YarnAudit]: https://yarnpkg.com/lang/en/docs/cli/audit/

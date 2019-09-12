@@ -69,6 +69,8 @@ var MsgCode = map[int]string{
 	1033: "Internal error running Safety: ",
 	1034: "Internal error running Npmaudit: ",
 	1035: "Could not Unmarshall the following gitAuthorsOutput: ",
+	1036: "Could not Unmarshal the following yarnauditOutput: ",
+	1037: "Internal error running Yarnaudit: ",
 
 	// MongoDB infos
 	21: "Connecting to MongoDB.",
