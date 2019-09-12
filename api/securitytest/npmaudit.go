@@ -91,7 +91,7 @@ func (npmAuditScan *SecTestScanInfo) prepareNpmAuditVulns() {
 		npmauditVuln.Language = "JavaScript"
 		npmauditVuln.SecurityTool = "NpmAudit"
 		npmauditVuln.Severity = "low"
-		npmauditVuln.Details = "It looks like your project doesn't have a package-lock.json file. huskyCI was not able to run npm audit properly."
+		npmauditVuln.Details = "It looks like your project doesn't have a package-lock.json file. If you use NPM to handle your dependencies, it would be a good idea to commit it so huskyCI can check for vulnerabilities."
 
 		npmAuditScan.Vulnerabilities.LowVulns = append(npmAuditScan.Vulnerabilities.LowVulns, npmauditVuln)
 		return
