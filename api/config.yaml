@@ -29,9 +29,10 @@ gitauthors:
     echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
     echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
     git clone %GIT_REPO% code --quiet 2> /tmp/errorGitCloneEnry
+    cd code
+    git checkout %GIT_BRANCH% --quiet
     if [ $? -eq 0 ]; then
-      cd code
-      for i in $(git log origin/master..origin/%GIT_BRANCH% --pretty="%ae" | sort -u); do
+      for i in $(git log origin/master.. --pretty="%ae" | sort -u); do
         jsonMiddle="\"$i\",$jsonMiddle"
       done
       length=${#jsonMiddle}
