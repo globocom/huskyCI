@@ -39,7 +39,7 @@ type Analysis struct {
 	CommitAuthors  []string       `bson:"commitAuthors" json:"commitAuthors"`
 	Status         string         `bson:"status" json:"status"`
 	Result         string         `bson:"result,omitempty" json:"result"`
-	ErrorFound     error          `bson:"errorsRunning,omitempty" json:"errorsRunning"`
+	ErrorFound     string         `bson:"errorFound,omitempty" json:"errorFound"`
 	Containers     []Container    `bson:"containers" json:"containers"`
 	StartedAt      time.Time      `bson:"startedAt" json:"startedAt"`
 	FinishedAt     time.Time      `bson:"finishedAt" json:"finishedAt"`

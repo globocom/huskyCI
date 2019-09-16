@@ -31,6 +31,7 @@ func (results *RunAllInfo) Start(enryScan SecTestScanInfo) error {
 	var wg sync.WaitGroup
 
 	defer close(errChan)
+	defer results.setToAnalysis()
 	wg.Add(2)
 
 	go func() {
@@ -64,10 +65,10 @@ func (results *RunAllInfo) Start(enryScan SecTestScanInfo) error {
 
 	select {
 	case <-waitChan:
-		results.setToAnalysis()
 		return nil
 	case err := <-errChan:
 		close(syncChan)
+		results.ErrorFound = err
 		return err
 	}
 }
@@ -161,10 +162,13 @@ func (results *RunAllInfo) runLanguageScans(enryScan SecTestScanInfo) error {
 					return
 				}
 			}
+			// if err := newLanguageScan.Start(); err == nil {
 			if err := newLanguageScan.Start(); err != nil {
+				results.Containers = append(results.Containers, newLanguageScan.Container)
 				select {
 				case <-syncChan:
 					return
+					// case errChan <- errors.New("ERRROR"):
 				case errChan <- err:
 					return
 				}
@@ -257,6 +261,13 @@ func (results *RunAllInfo) setVulns(securityTestScan SecTestScanInfo) {
 			results.HuskyCIResults.JavaScriptResults.HuskyCIYarnAuditOutput.NoSecVulns = append(results.HuskyCIResults.JavaScriptResults.HuskyCIYarnAuditOutput.NoSecVulns, noSec)
 		}
 	}
+}
+
+// SetAnalysisError sets error on an analysis that did not got to the setToAnalysis phase
+func (results *RunAllInfo) SetAnalysisError(err error) {
+	results.ErrorFound = err
+	results.Status = "error running"
+	results.FinalResult = "error"
 }
 
 func (results *RunAllInfo) setToAnalysis() {

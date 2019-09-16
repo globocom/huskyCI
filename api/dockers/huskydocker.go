@@ -63,9 +63,10 @@ func pullImage(d *Docker, image string) error {
 	for {
 		select {
 		case <-timeout:
-			timeOutErr := errors.New("time out")
+			timeOutErr := errors.New("timeout")
 			log.Error("pullImage", "HUSKYDOCKER", 3013, timeOutErr)
 			return timeOutErr
+		// TODO: verify if this makes sense
 		case <-retryTick:
 			log.Info("pullImage", "DOCKERRUN", 31, image)
 			if d.ImageIsLoaded(image) {
