@@ -17,6 +17,7 @@ type YarnAuditOutput struct {
 	Advisories       []YarnIssue `json:"advisories"`
 	Metadata         Metadata    `json:"metadata"`
 	YarnLockNotFound bool
+	YarnErrorRunning bool
 }
 
 // YarnIssue is the granular output of a security info about yarn found
@@ -62,6 +63,15 @@ func analyzeYarnaudit(yarnAuditScan *SecTestScanInfo) error {
 		return nil
 	}
 
+	// if yarn audit fails to run, a warning will be genrated as a low vuln
+	YarnErrorRunning := strings.Contains(yarnAuditScan.Container.COutput, "ERROR_RUNNING_YARN_AUDIT")
+	if YarnErrorRunning {
+		yarnAuditScan.YarnErrorRunning = true
+		yarnAuditScan.prepareYarnAuditVulns()
+		yarnAuditScan.prepareContainerAfterScan()
+		return nil
+	}
+
 	// nil cOutput states that no Issues were found.
 	if yarnAuditScan.Container.COutput == "" {
 		yarnAuditScan.prepareContainerAfterScan()
@@ -92,6 +102,17 @@ func (yarnAuditScan *SecTestScanInfo) prepareYarnAuditVulns() {
 		yarnauditVuln.SecurityTool = "YarnAudit"
 		yarnauditVuln.Severity = "low"
 		yarnauditVuln.Details = "It looks like your project doesn't have a yarn.lock file. If you use Yarn to handle your dependencies, it would be a good idea to commit it so huskyCI can check for vulnerabilities."
+
+		yarnAuditScan.Vulnerabilities.LowVulns = append(yarnAuditScan.Vulnerabilities.LowVulns, yarnauditVuln)
+		return
+	}
+
+	if yarnAuditScan.YarnErrorRunning {
+		yarnauditVuln := types.HuskyCIVulnerability{}
+		yarnauditVuln.Language = "JavaScript"
+		yarnauditVuln.SecurityTool = "YarnAudit"
+		yarnauditVuln.Severity = "low"
+		yarnauditVuln.Details = "Yarn returned an error"
 
 		yarnAuditScan.Vulnerabilities.LowVulns = append(yarnAuditScan.Vulnerabilities.LowVulns, yarnauditVuln)
 		return

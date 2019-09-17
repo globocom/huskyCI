@@ -34,6 +34,7 @@ type SecTestScanInfo struct {
 	WarningFound          bool
 	PackageNotFound       bool
 	YarnLockNotFound      bool
+	YarnErrorRunning      bool
 	CommitAuthorsNotFound bool
 	CommitAuthors         GitAuthorsOutput
 	Codes                 []Code
@@ -75,6 +76,7 @@ func (scanInfo *SecTestScanInfo) Start() error {
 		scanInfo.prepareContainerAfterScan()
 		return err
 	}
+	scanInfo.prepareContainerAfterScan()
 	return nil
 }
 

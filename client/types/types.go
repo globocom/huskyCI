@@ -35,6 +35,7 @@ type Analysis struct {
 	Status         string         `bson:"status" json:"status"`
 	Result         string         `bson:"result" json:"result"`
 	Containers     []Container    `bson:"containers" json:"containers"`
+	ErrorFound     string         `bson:"errorFound" json:"errorFound"`
 	StartedAt      time.Time      `bson:"startedAt" json:"startedAt"`
 	FinishedAt     time.Time      `bson:"finishedAt" json:"finishedAt"`
 	Codes          []Code         `bson:"codes" json:"codes"`
