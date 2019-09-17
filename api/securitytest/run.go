@@ -162,13 +162,11 @@ func (results *RunAllInfo) runLanguageScans(enryScan SecTestScanInfo) error {
 					return
 				}
 			}
-			// if err := newLanguageScan.Start(); err == nil {
 			if err := newLanguageScan.Start(); err != nil {
 				results.Containers = append(results.Containers, newLanguageScan.Container)
 				select {
 				case <-syncChan:
 					return
-					// case errChan <- errors.New("ERRROR"):
 				case errChan <- err:
 					return
 				}
