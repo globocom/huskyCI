@@ -92,43 +92,39 @@ func ReceiveRequest(c echo.Context) error {
 	// step-02: is this repository already in MongoDB?
 	repositoryQuery := map[string]interface{}{"repositoryURL": repository.URL}
 	_, err = db.FindOneDBRepository(repositoryQuery)
-	if err != nil {
-		if err == mgo.ErrNotFound {
-			// step-02-a: repository not found! insert it into MongoDB
-			repository.CreatedAt = time.Now()
-			err = db.InsertDBRepository(repository)
-			if err != nil {
-				log.Error("ReceiveRequest", "ANALYSIS", 1010, err)
-				reply := map[string]interface{}{"success": false, "error": "internal error"}
-				return c.JSON(http.StatusInternalServerError, reply)
-			}
+	if err == mgo.ErrNotFound {
+		// step-02-o1: repository not found! insert it into MongoDB
+		repository.CreatedAt = time.Now()
+		err = db.InsertDBRepository(repository)
+		if err != nil {
+			log.Error("ReceiveRequest", "ANALYSIS", 1010, err)
+			reply := map[string]interface{}{"success": false, "error": "internal error"}
+			return c.JSON(http.StatusInternalServerError, reply)
 		}
-	} else if err == nil {
+	} else if err != nil {
+		// step-02-o2: another error searching for repositoryQuery
+		log.Error("ReceiveRequest", "ANALYSIS", 1013, err)
+		reply := map[string]interface{}{"success": false, "error": "internal error"}
+		return c.JSON(http.StatusInternalServerError, reply)
+	} else { // err == nil
 		// step-03: repository found! does it have a running status analysis?
 		analysisQuery := map[string]interface{}{"repositoryURL": repository.URL, "repositoryBranch": repository.Branch}
 		analysisResult, err := db.FindOneDBAnalysis(analysisQuery)
-		if err != nil {
-			if err == mgo.ErrNotFound {
-				// nice! we can start this analysis!
-			}
-		} else if err == nil {
+		if err == mgo.ErrNotFound {
+			// nice! we can start this analysis!
+		} else if err != nil {
+			// step-03-err: another error searching for analysisQuery
+			log.Error("ReceiveRequest", "ANALYSIS", 1009, err)
+			reply := map[string]interface{}{"success": false, "error": "internal error"}
+			return c.JSON(http.StatusInternalServerError, reply)
+		} else { // err == nil
 			// step 03-a: Ops, this analysis is already running!
 			if analysisResult.Status == "running" {
 				log.Warning("ReceiveRequest", "ANALYSIS", 104, analysisResult.URL)
 				reply := map[string]interface{}{"success": false, "error": "an analysis is already in place for this URL and branch"}
 				return c.JSON(http.StatusConflict, reply)
 			}
-		} else {
-			// mongoDB internal error!
-			log.Error("ReceiveRequest", "ANALYSIS", 1009, err)
-			reply := map[string]interface{}{"success": false, "error": "internal error"}
-			return c.JSON(http.StatusInternalServerError, reply)
 		}
-	} else {
-		// mongoDB internal error!
-		log.Error("ReceiveRequest", "ANALYSIS", 1013, err)
-		reply := map[string]interface{}{"success": false, "error": "internal error"}
-		return c.JSON(http.StatusInternalServerError, reply)
 	}
 
 	// step 04: lets start this analysis!

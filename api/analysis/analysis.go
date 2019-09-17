@@ -26,26 +26,27 @@ func StartAnalysis(RID string, repository types.Repository) {
 	// step 2: run enry as huskyCI initial step
 	enryScan := securitytest.SecTestScanInfo{}
 	enryScan.SecurityTestName = "enry"
+	allScansResults := securitytest.RunAllInfo{}
+
+	defer registerFinishedAnalysis(RID, &allScansResults)
+
 	if err := enryScan.New(RID, repository.URL, repository.Branch, enryScan.SecurityTestName); err != nil {
 		log.Error("StartAnalysis", "ANALYSIS", 2011, err)
 		return
 	}
 	if err := enryScan.Start(); err != nil {
+		allScansResults.SetAnalysisError(err)
 		return
 	}
 
 	// step 3: run generic and languages security tests based on enryScan result in parallel
-	allScansResults := securitytest.RunAllInfo{}
 	if err := allScansResults.Start(enryScan); err != nil {
+		allScansResults.SetAnalysisError(err)
 		return
 	}
 
-	// step 4: register all results found in MongoDB
-	if err := registerFinishedAnalysis(RID, allScansResults); err != nil {
-		return
-	}
 	log.Info("StartAnalysis", "ANALYSIS", 102, RID)
-
+	return
 }
 
 func registerNewAnalysis(RID string, repository types.Repository) error {
@@ -67,8 +68,14 @@ func registerNewAnalysis(RID string, repository types.Repository) error {
 	return nil
 }
 
-func registerFinishedAnalysis(RID string, allScanResults securitytest.RunAllInfo) error {
+func registerFinishedAnalysis(RID string, allScanResults *securitytest.RunAllInfo) error {
 	analysisQuery := map[string]interface{}{"RID": RID}
+	var errorString string
+	if _, ok := allScanResults.ErrorFound.(error); ok {
+		errorString = allScanResults.ErrorFound.Error()
+	} else {
+		errorString = ""
+	}
 	updateAnalysisQuery := bson.M{
 		"$set": bson.M{
 			"status":         allScanResults.Status,
@@ -77,7 +84,7 @@ func registerFinishedAnalysis(RID string, allScanResults securitytest.RunAllInfo
 			"containers":     allScanResults.Containers,
 			"huskyciresults": allScanResults.HuskyCIResults,
 			"codes":          allScanResults.Codes,
-			"errorFound":     allScanResults.ErrorFound,
+			"errorFound":     errorString,
 			"finishedAt":     time.Now(),
 		},
 	}

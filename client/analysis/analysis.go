@@ -133,6 +133,8 @@ func MonitorAnalysis(RID string) (types.Analysis, error) {
 			}
 			if analysis.Status == "finished" {
 				return analysis, nil
+			} else if analysis.Status == "error running" {
+				return analysis, fmt.Errorf("huskyCI encountered an error trying to execute this analysis: %v", analysis.ErrorFound)
 			}
 			if !types.IsJSONoutput {
 				fmt.Println("[HUSKYCI][!] Hold on! huskyCI is still running...")
