@@ -63,6 +63,7 @@ type APIConfig struct {
 	Port                   int
 	Version                string
 	ReleaseDate            string
+	AllowOriginValue       string
 	UseTLS                 bool
 	GitPrivateSSHKey       string
 	GraylogConfig          *GraylogConfig
@@ -102,6 +103,7 @@ func (dF DefaultConfig) SetOnceConfig() {
 			Port:                   dF.GetAPIPort(),
 			Version:                dF.GetAPIVersion(),
 			ReleaseDate:            dF.GetAPIReleaseDate(),
+			AllowOriginValue:       dF.GetAllowOriginValue(),
 			UseTLS:                 dF.GetAPIUseTLS(),
 			GitPrivateSSHKey:       dF.getGitPrivateSSHKey(),
 			GraylogConfig:          dF.getGraylogConfig(),
@@ -139,6 +141,11 @@ func (dF DefaultConfig) GetAPIVersion() string {
 // GetAPIReleaseDate returns current API release date
 func (dF DefaultConfig) GetAPIReleaseDate() string {
 	return "2019-07-18"
+}
+
+// GetAllowOriginValue returns the allow origin value
+func (dF DefaultConfig) GetAllowOriginValue() string {
+	return dF.Caller.GetEnvironmentVariable("HUSKYCI_API_ALLOW_ORIGIN_CORS")
 }
 
 // GetAPIUseTLS returns a boolean. If true, Husky API
