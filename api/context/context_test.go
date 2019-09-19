@@ -323,6 +323,7 @@ var _ = Describe("Context", func() {
 					Port:             fakeCaller.expectedIntegerValue,
 					Version:          "0.6.0",
 					ReleaseDate:      "2019-07-18",
+					AllowOriginValue: fakeCaller.expectedEnvVar,
 					UseTLS:           true,
 					GitPrivateSSHKey: fakeCaller.expectedEnvVar,
 					GraylogConfig: &GraylogConfig{

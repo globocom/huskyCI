@@ -28,6 +28,7 @@ services:
             HUSKYCI_API_DEFAULT_PASSWORD: huskyCIPassword
             HUSKYCI_API_DEFAULT_ITERATIONS: 100000
             HUSKYCI_API_DEFAULT_KEY_LENGTH: 512
+            HUSKYCI_API_ALLOW_ORIGIN_CORS: "*"
             HUSKYCI_API_DEFAULT_HASH_FUNCTION: SHA512
             HUSKYCI_DOCKERAPI_ADDR: dockerapi
             HUSKYCI_DOCKERAPI_CERT_FILE: /go/src/github.com/globocom/huskyCI/cert.pem

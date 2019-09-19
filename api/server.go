@@ -6,6 +6,7 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 
 	"github.com/globocom/huskyCI/api/auth"
@@ -47,6 +48,11 @@ func main() {
 	echoInstance.Use(middleware.Logger())
 	echoInstance.Use(middleware.Recover())
 	echoInstance.Use(middleware.RequestID())
+
+	echoInstance.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{configAPI.AllowOriginValue},
+		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
+	}))
 
 	// set new object for /api/1.0 route
 	g := echoInstance.Group("/api/1.0")
