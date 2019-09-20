@@ -279,10 +279,20 @@ func (results *RunAllInfo) setToAnalysis() {
 		return
 	}
 
+	jsWarningFlag := false
+
 	for _, container := range results.Containers {
 		switch container.CResult {
 		case "warning":
-			results.FinalResult = "warning"
+			if container.SecurityTest.Language == "JavaScript" {
+				if jsWarningFlag {
+					results.FinalResult = "warning"
+				} else {
+					jsWarningFlag = true
+				}
+			} else {
+				results.FinalResult = "warning"
+			}
 		case "failed":
 			results.FinalResult = "failed"
 			return
