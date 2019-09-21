@@ -282,6 +282,7 @@ func (dF DefaultConfig) getSecurityTestConfig(securityTestName string) *types.Se
 	return &types.SecurityTest{
 		Name:             dF.Caller.GetStringFromConfigFile(fmt.Sprintf("%s.name", securityTestName)),
 		Image:            dF.Caller.GetStringFromConfigFile(fmt.Sprintf("%s.image", securityTestName)),
+		ImageTag:         dF.Caller.GetStringFromConfigFile(fmt.Sprintf("%s.imageTag", securityTestName)),
 		Cmd:              dF.Caller.GetStringFromConfigFile(fmt.Sprintf("%s.cmd", securityTestName)),
 		Type:             dF.Caller.GetStringFromConfigFile(fmt.Sprintf("%s.type", securityTestName)),
 		Language:         dF.Caller.GetStringFromConfigFile(fmt.Sprintf("%s.language", securityTestName)),

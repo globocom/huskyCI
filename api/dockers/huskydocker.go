@@ -13,7 +13,7 @@ import (
 )
 
 // DockerRun starts a new container and returns its output and an error.
-func DockerRun(containerImage, cmd string, timeOutInSeconds int) (string, string, error) {
+func DockerRun(fullContainerImage, cmd string, timeOutInSeconds int) (string, string, error) {
 
 	// step 1: create a new docker API client
 	d, err := NewDocker()
@@ -22,14 +22,14 @@ func DockerRun(containerImage, cmd string, timeOutInSeconds int) (string, string
 	}
 
 	// step 2: pull image if it is not there yet
-	if !d.ImageIsLoaded(containerImage) {
-		if err := pullImage(d, containerImage); err != nil {
+	if !d.ImageIsLoaded(fullContainerImage) {
+		if err := pullImage(d, fullContainerImage); err != nil {
 			return "", "", err
 		}
 	}
 
 	// step 3: create a new container given an image and it's cmd
-	CID, err := d.CreateContainer(containerImage, cmd)
+	CID, err := d.CreateContainer(fullContainerImage, cmd)
 	if err != nil {
 		return "", "", err
 	}
@@ -40,7 +40,7 @@ func DockerRun(containerImage, cmd string, timeOutInSeconds int) (string, string
 		log.Error("DockerRun", "HUSKYDOCKER", 3015, err)
 		return "", "", err
 	}
-	log.Info("DockerRun", "HUSKYDOCKER", 32, containerImage, d.CID)
+	log.Info("DockerRun", "HUSKYDOCKER", 32, fullContainerImage, d.CID)
 
 	// step 5: read container's output when it finishes
 	if err := d.WaitContainer(timeOutInSeconds); err != nil {
@@ -51,7 +51,7 @@ func DockerRun(containerImage, cmd string, timeOutInSeconds int) (string, string
 	if err != nil {
 		return "", "", err
 	}
-	log.Info("DockerRun", "HUSKYDOCKER", 34, containerImage, d.CID)
+	log.Info("DockerRun", "HUSKYDOCKER", 34, fullContainerImage, d.CID)
 
 	return CID, cOutput, nil
 }

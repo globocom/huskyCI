@@ -355,6 +355,7 @@ var _ = Describe("Context", func() {
 					EnrySecurityTest: &types.SecurityTest{
 						Name:             fakeCaller.expectedStringFromConfig,
 						Image:            fakeCaller.expectedStringFromConfig,
+						ImageTag:         fakeCaller.expectedStringFromConfig,
 						Cmd:              fakeCaller.expectedStringFromConfig,
 						Type:             fakeCaller.expectedStringFromConfig,
 						Language:         fakeCaller.expectedStringFromConfig,
@@ -364,6 +365,7 @@ var _ = Describe("Context", func() {
 					GitAuthorsSecurityTest: &types.SecurityTest{
 						Name:             fakeCaller.expectedStringFromConfig,
 						Image:            fakeCaller.expectedStringFromConfig,
+						ImageTag:         fakeCaller.expectedStringFromConfig,
 						Cmd:              fakeCaller.expectedStringFromConfig,
 						Type:             fakeCaller.expectedStringFromConfig,
 						Language:         fakeCaller.expectedStringFromConfig,
@@ -373,6 +375,7 @@ var _ = Describe("Context", func() {
 					GosecSecurityTest: &types.SecurityTest{
 						Name:             fakeCaller.expectedStringFromConfig,
 						Image:            fakeCaller.expectedStringFromConfig,
+						ImageTag:         fakeCaller.expectedStringFromConfig,
 						Cmd:              fakeCaller.expectedStringFromConfig,
 						Type:             fakeCaller.expectedStringFromConfig,
 						Language:         fakeCaller.expectedStringFromConfig,
@@ -382,6 +385,7 @@ var _ = Describe("Context", func() {
 					BanditSecurityTest: &types.SecurityTest{
 						Name:             fakeCaller.expectedStringFromConfig,
 						Image:            fakeCaller.expectedStringFromConfig,
+						ImageTag:         fakeCaller.expectedStringFromConfig,
 						Cmd:              fakeCaller.expectedStringFromConfig,
 						Type:             fakeCaller.expectedStringFromConfig,
 						Language:         fakeCaller.expectedStringFromConfig,
@@ -391,6 +395,7 @@ var _ = Describe("Context", func() {
 					BrakemanSecurityTest: &types.SecurityTest{
 						Name:             fakeCaller.expectedStringFromConfig,
 						Image:            fakeCaller.expectedStringFromConfig,
+						ImageTag:         fakeCaller.expectedStringFromConfig,
 						Cmd:              fakeCaller.expectedStringFromConfig,
 						Type:             fakeCaller.expectedStringFromConfig,
 						Language:         fakeCaller.expectedStringFromConfig,
@@ -400,6 +405,7 @@ var _ = Describe("Context", func() {
 					NpmAuditSecurityTest: &types.SecurityTest{
 						Name:             fakeCaller.expectedStringFromConfig,
 						Image:            fakeCaller.expectedStringFromConfig,
+						ImageTag:         fakeCaller.expectedStringFromConfig,
 						Cmd:              fakeCaller.expectedStringFromConfig,
 						Type:             fakeCaller.expectedStringFromConfig,
 						Language:         fakeCaller.expectedStringFromConfig,
@@ -409,6 +415,7 @@ var _ = Describe("Context", func() {
 					YarnAuditSecurityTest: &types.SecurityTest{
 						Name:             fakeCaller.expectedStringFromConfig,
 						Image:            fakeCaller.expectedStringFromConfig,
+						ImageTag:         fakeCaller.expectedStringFromConfig,
 						Cmd:              fakeCaller.expectedStringFromConfig,
 						Type:             fakeCaller.expectedStringFromConfig,
 						Language:         fakeCaller.expectedStringFromConfig,
@@ -418,6 +425,7 @@ var _ = Describe("Context", func() {
 					SafetySecurityTest: &types.SecurityTest{
 						Name:             fakeCaller.expectedStringFromConfig,
 						Image:            fakeCaller.expectedStringFromConfig,
+						ImageTag:         fakeCaller.expectedStringFromConfig,
 						Cmd:              fakeCaller.expectedStringFromConfig,
 						Type:             fakeCaller.expectedStringFromConfig,
 						Language:         fakeCaller.expectedStringFromConfig,

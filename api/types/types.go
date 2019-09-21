@@ -23,6 +23,7 @@ type SecurityTest struct {
 	ID               bson.ObjectId `bson:"_id,omitempty"`
 	Name             string        `bson:"name" json:"name"`
 	Image            string        `bson:"image" json:"image"`
+	ImageTag         string        `bson:"imageTag" json:"imageTag"`
 	Cmd              string        `bson:"cmd" json:"cmd"`
 	Type             string        `bson:"type" json:"type"`
 	Language         string        `bson:"language" json:"language"`
