@@ -139,6 +139,7 @@ var MsgCode = map[int]string{
 	3024: "Could not call die containers: ",
 	3025: "Could not update listed containers: ",
 	3026: "Could not initialize default configurations: ",
+	3027: "Could not remove container via huskyCI: ",
 
 	// Util package errors
 	4001: "Could not read certificate file: ",
