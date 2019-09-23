@@ -79,6 +79,12 @@ Linux:
 make run-client-linux
 ```
 
+## Frontend
+
+huskyCI has also a Frontend in React! If you want to see a cool dashboard with all stats done in your organization you should check [this repository](https://github.com/globocom/huskyCI-dashboard).
+
+<p align="center"><img src="https://github.com/globocom/huskyCI-dashboard/raw/master/fe.png"/></p>
+
 ## Contributing
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests to huskyCI.
