@@ -42,16 +42,24 @@ func DockerRun(containerImage, cmd string, timeOutInSeconds int) (string, string
 	}
 	log.Info("DockerRun", "HUSKYDOCKER", 32, containerImage, d.CID)
 
-	// step 5: read container's output when it finishes
+	// step 5: wait container finish
 	if err := d.WaitContainer(timeOutInSeconds); err != nil {
 		log.Error("DockerRun", "HUSKYDOCKER", 3016, err)
 		return "", "", err
 	}
+
+	// step 6: read container's output when it finishes
 	cOutput, err := d.ReadOutput()
 	if err != nil {
 		return "", "", err
 	}
 	log.Info("DockerRun", "HUSKYDOCKER", 34, containerImage, d.CID)
+
+	// step 7: remove container from docker API
+	if err := d.RemoveContainer(); err != nil {
+		log.Error("DockerRun", "HUSKYDOCKER", 3027, err)
+		return "", "", err
+	}
 
 	return CID, cOutput, nil
 }
