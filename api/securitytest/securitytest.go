@@ -2,6 +2,7 @@ package securitytest
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -82,9 +83,11 @@ func (scanInfo *SecTestScanInfo) Start() error {
 
 func (scanInfo *SecTestScanInfo) dockerRun(timeOutInSeconds int) error {
 	image := scanInfo.Container.SecurityTest.Image
+	imageTag := scanInfo.Container.SecurityTest.ImageTag
+	fullContainerImage := fmt.Sprintf("%s:%s", image, imageTag)
 	cmd := util.HandleCmd(scanInfo.URL, scanInfo.Branch, scanInfo.Container.SecurityTest.Cmd)
 	finalCMD := util.HandlePrivateSSHKey(cmd)
-	CID, cOutput, err := huskydocker.DockerRun(image, finalCMD, timeOutInSeconds)
+	CID, cOutput, err := huskydocker.DockerRun(fullContainerImage, finalCMD, timeOutInSeconds)
 	if err != nil {
 		return err
 	}

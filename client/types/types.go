@@ -31,7 +31,6 @@ type Analysis struct {
 	RID            string         `bson:"RID" json:"RID"`
 	URL            string         `bson:"repositoryURL" json:"repositoryURL"`
 	Branch         string         `bson:"repositoryBranch" json:"repositoryBranch"`
-	SecurityTests  []SecurityTest `bson:"securityTests" json:"securityTests"`
 	Status         string         `bson:"status" json:"status"`
 	Result         string         `bson:"result" json:"result"`
 	Containers     []Container    `bson:"containers" json:"containers"`
@@ -73,6 +72,7 @@ type SecurityTest struct {
 	ID               bson.ObjectId `bson:"_id,omitempty"`
 	Name             string        `bson:"name" json:"name"`
 	Image            string        `bson:"image" json:"image"`
+	ImageTag         string        `bson:"imageTag" json:"imageTag"`
 	Cmd              string        `bson:"cmd" json:"cmd"`
 	Language         string        `bson:"language" json:"language"`
 	Default          bool          `bson:"default" json:"default"`
