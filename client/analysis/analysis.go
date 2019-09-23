@@ -154,7 +154,7 @@ func PrintResults(formatOutput string, analysis types.Analysis) error {
 			return err
 		}
 	} else {
-		printSTDOUTOutput()
+		printSTDOUTOutput(analysis)
 	}
 
 	return nil
