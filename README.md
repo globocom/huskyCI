@@ -81,9 +81,15 @@ make run-client-linux
 
 ## Frontend
 
-huskyCI has also a Frontend in React! If you want to see a cool dashboard with all stats done in your organization you should check [this repository](https://github.com/globocom/huskyCI-dashboard).
+huskyCI has also a cool [Frontend](https://github.com/globocom/huskyCI-dashboard) built in React so you can check some stats regarding your huskyCI results! After running your first scan, simply visit:
+
+```
+http://localhost:8080
+```
 
 <p align="center"><img src="https://github.com/globocom/huskyCI-dashboard/raw/master/fe.png"/></p>
+
+
 
 ## Contributing
 
