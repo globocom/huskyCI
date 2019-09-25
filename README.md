@@ -12,10 +12,10 @@
   <a href="https://coveralls.io/github/globocom/huskyCI?branch=master"><img src="https://coveralls.io/repos/github/globocom/huskyCI/badge.svg?branch=master"/></a>
   <a href="https://circleci.com/gh/globocom/huskyCI/tree/master"><img src="https://img.shields.io/circleci/build/github/globocom/huskyCI/master?token=415bfb6b5aa0dfce8d2129878a66326da9533150"/></a>
   <a href="https://gitter.im/globocom/huskyCI"><img src="https://badges.gitter.im/globocom/huskyCI.svg"/></a>
-  <a href="https://github.com/globocom/huskyCI/blob/master/CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?"/></a>
   <a href="https://github.com/globocom/huskyCI/wiki"><img src="https://img.shields.io/badge/docs-wiki-informational"/></a>
   <a href="https://github.com/rafaveira3/writing-and-presentations/blob/master/DEFCON-27-APP-SEC-VILLAGE-Rafael-Santos-huskyCI-Finding-security-flaws-in-CI-before-deploying-them.pdf"><img src="https://img.shields.io/badge/DEFCON%2027-AppSec%20Village-blueviolet"/></a>
-
+  <a href="https://www.blackhat.com/eu-19/arsenal/schedule/#huskyci-performing-security-tests-inside-your-ci-17792"><img src="https://img.shields.io/badge/Black%20Hat%20Arsenal-Europe%202019-black"/></a>
+  
 </p>
 
 huskyCI is an open-source tool that performs security tests inside CI pipelines of multiple projects and centralizes all results into a database for further analysis and metrics.
