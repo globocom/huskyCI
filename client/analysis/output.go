@@ -323,5 +323,6 @@ func printSTDOUTOutputYarnAudit(issues []types.HuskyCIVulnerability) {
 			fmt.Printf("[HUSKYCI][!] Vulnerable Below: %s\n", issue.VunerableBelow)
 		}
 		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
+		fmt.Printf("[HUSKYCI][!] Occurrences: %d\n", issue.Occurrences)
 	}
 }
