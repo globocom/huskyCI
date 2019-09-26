@@ -87,7 +87,7 @@ huskyCI has also a cool [Frontend](https://github.com/globocom/huskyCI-dashboard
 http://localhost:8080
 ```
 
-<p align="center"><img src="https://github.com/globocom/huskyCI-dashboard/raw/master/fe.png"/></p>
+<p align="center"><img src="https://github.com/globocom/huskyCI-dashboard/raw/master/charts.png"/></p>
 
 
 
