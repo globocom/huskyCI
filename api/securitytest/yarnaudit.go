@@ -125,6 +125,7 @@ func (yarnAuditScan *SecTestScanInfo) prepareYarnAuditVulns() {
 		yarnauditVuln.Details = issue.Overview
 		yarnauditVuln.VunerableBelow = issue.VulnerableVersions
 		yarnauditVuln.Code = issue.ModuleName
+		yarnauditVuln.Occurrences = 1
 		for _, findings := range issue.Findings {
 			yarnauditVuln.Version = findings.Version
 		}
@@ -132,22 +133,43 @@ func (yarnAuditScan *SecTestScanInfo) prepareYarnAuditVulns() {
 		switch issue.Severity {
 		case "info":
 			yarnauditVuln.Severity = "low"
-			huskyCIyarnauditResults.LowVulns = append(huskyCIyarnauditResults.LowVulns, yarnauditVuln)
+			if !vulnListContains(huskyCIyarnauditResults.LowVulns, yarnauditVuln) {
+				huskyCIyarnauditResults.LowVulns = append(huskyCIyarnauditResults.LowVulns, yarnauditVuln)
+			}
 		case "low":
 			yarnauditVuln.Severity = "low"
-			huskyCIyarnauditResults.LowVulns = append(huskyCIyarnauditResults.LowVulns, yarnauditVuln)
+			if !vulnListContains(huskyCIyarnauditResults.LowVulns, yarnauditVuln) {
+				huskyCIyarnauditResults.LowVulns = append(huskyCIyarnauditResults.LowVulns, yarnauditVuln)
+			}
 		case "moderate":
 			yarnauditVuln.Severity = "medium"
-			huskyCIyarnauditResults.MediumVulns = append(huskyCIyarnauditResults.MediumVulns, yarnauditVuln)
+			if !vulnListContains(huskyCIyarnauditResults.MediumVulns, yarnauditVuln) {
+				huskyCIyarnauditResults.MediumVulns = append(huskyCIyarnauditResults.MediumVulns, yarnauditVuln)
+			}
 		case "high":
 			yarnauditVuln.Severity = "high"
-			huskyCIyarnauditResults.HighVulns = append(huskyCIyarnauditResults.HighVulns, yarnauditVuln)
+			if !vulnListContains(huskyCIyarnauditResults.HighVulns, yarnauditVuln) {
+				huskyCIyarnauditResults.HighVulns = append(huskyCIyarnauditResults.HighVulns, yarnauditVuln)
+			}
 		case "critical":
 			yarnauditVuln.Severity = "high"
-			huskyCIyarnauditResults.HighVulns = append(huskyCIyarnauditResults.HighVulns, yarnauditVuln)
+			if !vulnListContains(huskyCIyarnauditResults.HighVulns, yarnauditVuln) {
+				huskyCIyarnauditResults.HighVulns = append(huskyCIyarnauditResults.HighVulns, yarnauditVuln)
+			}
 		}
 
 	}
 
 	yarnAuditScan.Vulnerabilities = huskyCIyarnauditResults
+}
+
+// vulnListContains increments the occurrence counter in case a vulnerability is found again
+func vulnListContains(vulnList []types.HuskyCIVulnerability, vuln types.HuskyCIVulnerability) bool {
+	for i := range vulnList {
+		if vulnList[i].Details == vuln.Details && vulnList[i].Code == vuln.Code {
+			vulnList[i].Occurrences = vulnList[i].Occurrences + 1
+			return true
+		}
+	}
+	return false
 }

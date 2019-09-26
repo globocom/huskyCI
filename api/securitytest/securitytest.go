@@ -110,10 +110,16 @@ func (scanInfo *SecTestScanInfo) analyze() error {
 
 func (scanInfo *SecTestScanInfo) prepareContainerAfterScan() {
 
+	cOutputMaxSize := 1000000
 	scanInfo.Container.FinishedAt = time.Now()
 	scanInfo.Container.CInfo = "No issues found."
 	scanInfo.Container.CResult = "passed"
 	scanInfo.Container.CStatus = "finished"
+
+	// change scanInfo.Container.COutput to prevent error writing to MongoDB
+	if len(scanInfo.Container.COutput) > cOutputMaxSize {
+		scanInfo.Container.COutput = "Container Output is too large."
+	}
 
 	if scanInfo.ErrorFound != nil {
 		scanInfo.Container.CInfo = "Error found running container"
