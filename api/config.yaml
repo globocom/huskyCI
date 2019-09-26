@@ -206,7 +206,7 @@ yarnaudit:
     git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneYarnAudit
     if [ $? -eq 0 ]; then
         cd code
-        pathLock=$(dirname "$(find . -name "yarn.lock")")
+        pathLock=$(dirname "$(find . -name 'yarn.lock')")
         if [ $? -eq 0 ]; then
             cd $pathLock
             yarn audit --json > /tmp/results.json 2> /tmp/errorYarnAudit
