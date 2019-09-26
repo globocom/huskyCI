@@ -319,10 +319,10 @@ func printSTDOUTOutputYarnAudit(issues []types.HuskyCIVulnerability) {
 		fmt.Printf("[HUSKYCI][!] Severity: %s\n", issue.Severity)
 		if !strings.Contains(issue.Details, "doesn't have yarn.lock.") {
 			fmt.Printf("[HUSKYCI][!] Code: %s\n", issue.Code)
+			fmt.Printf("[HUSKYCI][!] Occurrences: %d\n", issue.Occurrences)
 			fmt.Printf("[HUSKYCI][!] Version: %s\n", issue.Version)
 			fmt.Printf("[HUSKYCI][!] Vulnerable Below: %s\n", issue.VunerableBelow)
 		}
 		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
-		fmt.Printf("[HUSKYCI][!] Occurrences: %d\n", issue.Occurrences)
 	}
 }
