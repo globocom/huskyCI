@@ -119,6 +119,11 @@ install: create-certs compose generate-passwords generate-local-token
 lint:
 	$(GOLINT) $(shell $(GO) list ./...)
 
+## Push securityTest containers to hub.docker
+push-containers:
+	chmod +x deployments/scripts/push-containers.sh
+	./deployments/scripts/push-containers.sh
+
 ## Runs huskyci-client
 run-client: build-client
 	./"$(HUSKYCICLIENTBIN)"
@@ -142,3 +147,6 @@ tag-containers:
 
 ## Perfoms all make tests
 test: get-test-deps lint ginkgo coverage
+
+## Builds and push securityTest containers with the latest tags
+update-containers: build-containers tag-containers push-containers
