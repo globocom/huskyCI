@@ -5,7 +5,6 @@
 package routes
 
 import (
-	"errors"
 	"net/http"
 	"strings"
 
@@ -27,12 +26,12 @@ func GetMetric(c echo.Context) error {
 }
 
 func checkError(err error, metricType string) (int, map[string]interface{}) {
-	switch err {
-	case errors.New("invalid time_range query string param"):
+	switch err.Error() {
+	case "invalid time_range query string param":
 		log.Warning("GetMetric", "STATS", 111, err)
 		reply := map[string]interface{}{"success": false, "error": "invalid time_range type"}
 		return http.StatusBadRequest, reply
-	case errors.New("invalid metric type"):
+	case "invalid metric type":
 		log.Warning("GetMetric", "STATS", 112, metricType, err)
 		reply := map[string]interface{}{"success": false, "error": "invalid metric type"}
 		return http.StatusBadRequest, reply
