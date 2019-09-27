@@ -5,6 +5,7 @@
 package db
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -19,6 +20,7 @@ var statsQueryStringParams = map[string][]string{
 	"analysis":   []string{"time_range"},
 	"repository": []string{"time_range"},
 	"author":     []string{"time_range"},
+	"severity":   []string{"time_range"},
 }
 
 var statsQueryBase = map[string][]bson.M{
@@ -114,6 +116,54 @@ var statsQueryBase = map[string][]bson.M{
 			},
 		},
 	},
+	"severity": []bson.M{
+		bson.M{
+			"$project": bson.M{
+				"huskyresults": bson.M{
+					"$objectToArray": "$huskyciresults",
+				},
+			},
+		},
+		bson.M{
+			"$unwind": "$huskyresults",
+		},
+		bson.M{
+			"$project": bson.M{
+				"languageresults": bson.M{
+					"$objectToArray": "$huskyresults.v",
+				},
+			},
+		},
+		bson.M{
+			"$unwind": "$languageresults",
+		},
+		bson.M{
+			"$project": bson.M{
+				"results": bson.M{
+					"$objectToArray": "$languageresults.v",
+				},
+			},
+		},
+		bson.M{
+			"$unwind": "$results",
+		},
+		bson.M{
+			"$group": bson.M{
+				"_id": "$results.k",
+				"count": bson.M{
+					"$sum": bson.M{
+						"$size": "$results.v",
+					},
+				},
+			},
+		},
+		bson.M{
+			"$project": bson.M{
+				"severity": "$_id",
+				"count":    1,
+			},
+		},
+	},
 }
 
 var aggrTimeFilterStage = map[string][]bson.M{
@@ -126,7 +176,7 @@ var aggrTimeFilterStage = map[string][]bson.M{
 // GetMetricByType returns data about the metric received
 func GetMetricByType(metricType string, queryStringParams map[string][]string) (interface{}, error) {
 	if !validMetric(metricType) {
-		return nil, fmt.Errorf("invalid metric type")
+		return nil, errors.New("invalid metric type")
 	}
 	validParams := validQueryStringParams(metricType, queryStringParams)
 	err := validateParams(validParams)
@@ -216,7 +266,7 @@ func validateParams(params map[string][]string) error {
 		case "time_range":
 			value := values[len(values)-1]
 			if !validTimeRange(value) {
-				return fmt.Errorf("invalid time_range query string param")
+				return errors.New("invalid time_range query string param")
 			}
 		}
 	}
