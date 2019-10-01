@@ -83,9 +83,9 @@ make run-client-linux
 
 huskyCI has also a cool [Frontend](https://github.com/globocom/huskyCI-dashboard) built in React so you can check some stats regarding your huskyCI results! After running your first scan, simply visit:
 
-```
+``
 http://localhost:8080
-```
+``
 
 <p align="center"><img src="https://github.com/globocom/huskyCI-dashboard/raw/master/charts.png"/></p>
 
