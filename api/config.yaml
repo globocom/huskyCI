@@ -1,7 +1,7 @@
 enry:
   name: enry
   image: huskyci/enry
-  imageTag: dev-6ccf0b6
+  imageTag: dev-fd3c31c
   cmd: |+
     mkdir -p ~/.ssh &&
     echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
@@ -78,7 +78,7 @@ gosec:
 bandit:
   name: bandit
   image: huskyci/bandit
-  imageTag: "1.6.0"
+  imageTag: "1.6.2"
   cmd: |+
      mkdir -p ~/.ssh &&
      echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
@@ -102,7 +102,7 @@ bandit:
 brakeman:
   name: brakeman
   image: huskyci/brakeman
-  imageTag: "4.5.1"
+  imageTag: "4.6.1"
   cmd: |+
     mkdir -p ~/.ssh &&
     echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
@@ -168,7 +168,7 @@ safety:
 npmaudit:
   name: npmaudit
   image: huskyci/npmaudit
-  imageTag: "6.9.0"
+  imageTag: "6.10.3"
   cmd: |+
     mkdir -p ~/.ssh &&
     echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
@@ -196,7 +196,7 @@ npmaudit:
 yarnaudit:
   name: yarnaudit
   image: huskyci/yarnaudit
-  imageTag: "6.9.0"
+  imageTag: "1.17.3"
   cmd: |+
     mkdir -p ~/.ssh &&
     echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
