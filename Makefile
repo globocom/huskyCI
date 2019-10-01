@@ -60,7 +60,7 @@ check-env:
 check-containers-version:
 	chmod +x deployments/scripts/check-containers-version.sh
 	./deployments/scripts/check-containers-version.sh
-	
+
 ## Run tests with code coverage
 coverage:
 	$(GO) test ./... -coverprofile=c.out
@@ -140,13 +140,8 @@ run-client-linux: build-client-linux
 run-client-linux-json: build-client-linux
 	./"$(HUSKYCICLIENTBIN)" JSON
 
-## Tag all securityTest containers from latest to the version found from container
-tag-containers: 
-	chmod +x deployments/scripts/tag-containers.sh
-	./deployments/scripts/tag-containers.sh
-
 ## Perfoms all make tests
 test: get-test-deps lint ginkgo coverage
 
 ## Builds and push securityTest containers with the latest tags
-update-containers: build-containers tag-containers push-containers
+update-containers: build-containers push-containers
