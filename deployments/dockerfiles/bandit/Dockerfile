@@ -3,12 +3,11 @@
 
 FROM python:3.6-alpine
 
-RUN apk update && apk upgrade \
-	&& apk add --no-cache alpine-sdk bash openssh-client \
-	&& apk add git
+# Installing bandit via pip
+RUN apk add --virtual .build-deps --no-cache git alpine-sdk bash openssh-client \
+    && pip3 install bandit \
+    && apk del .build-deps # remove virtual namespace after building is done 
 
-RUN pip3 install bandit
-
-RUN wget -O jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64
-RUN chmod +x ./jq
-RUN cp jq /usr/bin
+# Installing https://github.com/stedolan/jq
+RUN wget -O jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 \
+    && chmod +x ./jq && cp jq /usr/bin
