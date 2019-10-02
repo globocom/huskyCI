@@ -1,7 +1,4 @@
-# Dockerfile used to create "husyci/gosec" image
-# https://hub.docker.com/r/huskyci/gosec/
-
-FROM golang:alpine 
+FROM golang:alpine as builder
 
 RUN apk update && apk upgrade \
 	&& apk add --no-cache alpine-sdk git \
@@ -9,3 +6,10 @@ RUN apk update && apk upgrade \
 
 RUN go get github.com/securego/gosec/cmd/gosec/...
 
+FROM alpine:latest
+
+RUN apk --no-cache add ca-certificates
+WORKDIR /go
+
+COPY --from=builder /go/bin/gosec /go/bin/gosec
+ENV PATH=/go/bin:$PATH
