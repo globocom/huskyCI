@@ -31,7 +31,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/globocom/huskyCI/cli/analysis"
 	"github.com/globocom/huskyCI/cli/config"
@@ -44,7 +43,7 @@ var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Run an huskyCI analysis",
 	Long:  `Run a security analysis using huskyCI backend.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 
 		// Get current target
 		currentTarget, err := config.GetCurrentTarget()
@@ -57,37 +56,32 @@ var runCmd = &cobra.Command{
 
 		analysisRunnerResults, err := analysis.Start(*currentTarget)
 		if err != nil {
-			fmt.Println("[HUSKYCI][ERROR] Sending request to huskyCI:", err)
-			os.Exit(1)
+			return fmt.Errorf("[HUSKYCI][ERROR] Sending request to huskyCI: %s", err.Error())
 		}
 
 		fmt.Printf("[HUSKYCI][*] huskyCI analysis started: %s\n", analysisRunnerResults.Summary.RID)
 
 		analysisResult, err := analysis.Monitor(*currentTarget, analysisRunnerResults.Summary.RID)
 		if err != nil {
-			fmt.Printf("[HUSKYCI][ERROR] Monitoring analysis %s: %v\n", analysisRunnerResults.Summary.RID, err)
-			os.Exit(1)
+			return fmt.Errorf("[HUSKYCI][ERROR] Monitoring analysis %s: %v", analysisRunnerResults.Summary.RID, err)
 		}
 
 		err = analysis.PrintResults(analysisResult, analysisRunnerResults)
 		if err != nil {
-			fmt.Printf("[HUSKYCI][ERROR] Printing output: (%v)\n", err)
-			os.Exit(1)
+			return fmt.Errorf("[HUSKYCI][ERROR] Printing output: (%v)", err)
 		}
 
 		if viper.GetBool("found_vuln") == false {
 			if viper.GetBool("found_info") == false {
 				fmt.Printf("[HUSKYCI][*] Nice! No issues were found :)\n")
-				os.Exit(0)
 			}
 			if viper.GetBool("found_info") == true {
 				fmt.Printf("[HUSKYCI][*] Some LOW/INFO issues were found :|\n")
-				os.Exit(0)
 			}
 		} else {
 			fmt.Printf("[HUSKYCI][*] Some HIGH/MEDIUM issues were found :(\n")
-			os.Exit(1)
 		}
+		return nil
 	},
 }
 

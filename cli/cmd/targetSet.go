@@ -31,7 +31,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -45,7 +44,7 @@ var targetSetCmd = &cobra.Command{
 Change current target (huskyci api).
 	`,
 	Args: cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 
 		// check if target name is used
 		notUsed := true
@@ -65,17 +64,16 @@ Change current target (huskyci api).
 			}
 		}
 		if notUsed {
-			fmt.Printf("Client error, target does not exist: %s\n", args[0])
-			os.Exit(1)
+			return fmt.Errorf("Client error, target does not exist: %s", args[0])
 		}
 
 		// save config (only if target is found)
 		err := viper.WriteConfig()
 		if err != nil {
-			fmt.Printf("Client error saving config with current target: (%s)\n", err.Error())
-			os.Exit(1)
+			return fmt.Errorf("Client error saving config with current target: (%s)", err.Error())
 		}
 		fmt.Printf("New target is %s -> %s\n", args[0], endpoint)
+		return nil
 	},
 }
 

@@ -31,7 +31,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -45,7 +44,7 @@ var targetRemoveCmd = &cobra.Command{
 	Remove a target from target-list (huskyci api).
 	`,
 	Args: cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 
 		// check if target name is used
 		notUsed := true
@@ -56,8 +55,7 @@ var targetRemoveCmd = &cobra.Command{
 			}
 		}
 		if notUsed {
-			fmt.Printf("Error, target does not exist: %s\n", args[0])
-			os.Exit(1)
+			return fmt.Errorf("Error, target does not exist: %s", args[0])
 		}
 
 		// remove entry from data struct but, before, storing data to show to user
@@ -68,10 +66,11 @@ var targetRemoveCmd = &cobra.Command{
 		// save config
 		err := viper.WriteConfig()
 		if err != nil {
-			fmt.Printf("Client error saving config without target: (%s)\n", err.Error())
-			os.Exit(1)
+			return fmt.Errorf("Client error saving config without target: (%s)", err.Error())
 		}
+
 		fmt.Printf("Target %s -> %s removed from target list\n", args[0], endpoint)
+		return nil
 	},
 }
 
