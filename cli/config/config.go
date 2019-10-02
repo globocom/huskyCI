@@ -46,6 +46,7 @@ func GetCurrentTarget() (*types.Target, error) {
 		currentTarget.Endpoint = os.Getenv("HUSKYCI_CLIENT_API_ADDR")
 		currentTarget.Label = "env-var"
 		currentTarget.TokenStorage = "env-var"
+		currentTarget.Token = os.Getenv("HUSKYCI_CLIENT_TOKEN")
 	} else {
 		targets := viper.GetStringMap("targets")
 		for k, v := range targets {
