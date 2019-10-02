@@ -33,6 +33,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/globocom/huskyCI/cli/config"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -83,14 +84,9 @@ func initConfig() {
 		}
 
 		// check if .huskyci folder exists and creates if it not exists
-		path := home + "/.huskyci"
-		if _, err := os.Stat(path); os.IsNotExist(err) {
-			err := os.Mkdir(path, 0750)
-			if err != nil {
-				fmt.Printf("Client error creating config folder: %s (%s)\n", path, err.Error())
-				os.Exit(1)
-			}
-			fmt.Printf("Client created config folder: %s\n", path)
+		path, err := config.CheckAndCreateConfigFolder(home, true)
+		if err != nil {
+			os.Exit(1)
 		}
 
 		// add path to viper config
@@ -101,23 +97,16 @@ func initConfig() {
 		viper.SetConfigType("yaml")
 
 		// test if config file exists and creates if it not exists
-		configFile := path + "/config.yaml"
 		err = viper.ReadInConfig()
 		if err != nil {
-			f, err := os.Create(configFile)
+			_, err = config.CreateConfigFile(path, true)
 			if err != nil {
-				fmt.Printf("Client error creating config file: %s (%s)\n", configFile, err.Error())
 				os.Exit(1)
 			}
-			err = f.Close()
-			if err != nil {
-				fmt.Printf("Client error closing config file: %s (%s)\n", configFile, err.Error())
-				os.Exit(1)
-			}
-			fmt.Printf("Client created new config file: %s\n", configFile)
 		}
 	}
 
+	viper.SetEnvPrefix("HUSKYCI_CLIENT")
 	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.
