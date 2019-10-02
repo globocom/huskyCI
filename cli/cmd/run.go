@@ -51,6 +51,7 @@ var runCmd = &cobra.Command{
 		if err != nil {
 			fmt.Printf("[HUSKYCI][ERROR] Current target not detected: (%v)", err)
 		}
+		fmt.Printf("[HUSKYCI][*] Using target %s -> %s\n", currentTarget.Label, currentTarget.Endpoint)
 
 		fmt.Printf("[HUSKYCI][*] %s -> %s\n", viper.Get("repo_branch"), viper.Get("repo_url"))
 
