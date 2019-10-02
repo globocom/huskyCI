@@ -11,8 +11,13 @@ RUN go get github.com/securego/gosec/cmd/gosec/...
 
 FROM alpine:latest
 
-RUN apk --no-cache add ca-certificates git jq
+RUN apk update && apk upgrade && apk --no-cache add ca-certificates git openssh-client jq
+
 WORKDIR /go
 
 COPY --from=builder /go/bin/gosec /go/bin/gosec
-ENV PATH=/go/bin:$PATH
+COPY --from=builder /usr/local/go/bin/go /usr/local/go/bin/go
+COPY --from=builder /usr/local/go/bin/gofmt /usr/local/go/bin/gofmt
+COPY --from=builder /usr/local/go/src/ /usr/local/go/src/
+
+ENV PATH=/go/bin:/usr/local/go/bin:$PATH
