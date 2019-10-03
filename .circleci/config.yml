@@ -8,6 +8,8 @@ jobs:
     steps:
       - checkout
       - run: make test
+      - store_artifacts:
+          path: /tmp/artifacts
 
   build:
     docker:
