@@ -7,8 +7,7 @@ jobs:
     working_directory: /go/src/github.com/globocom/huskyCI
     steps:
       - checkout
-      - run:
-        command: make test
+      - run: make test
 
   build:
     docker:
