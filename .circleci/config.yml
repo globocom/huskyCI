@@ -6,9 +6,9 @@ jobs:
       - image: circleci/golang:1.11
     working_directory: /go/src/github.com/globocom/huskyCI
     steps:
+      - checkout
       - run:
-        command: |
-          make test
+        command: make test
 
   build:
     docker:
@@ -29,21 +29,14 @@ jobs:
           path: /tmp/artifacts
 
 workflows:
-  build-deploy:
+  version: 2
+  test-build-deploy:
     jobs:
-      - test:
+      - test
       - build:
-        requires:
-          - test
-      # - deploy-dev:
-      #   requires:
-      #     - build
-      #   filters:
-      #     branches:
-      #       only: master
-      # - deploy-prod:
-      #   requires:
-      #     - build
-      #   filters:
-      #     branches:
-      #       only: master
+          filters:
+            branches:
+              only:
+                - master
+          requires:
+            - test
