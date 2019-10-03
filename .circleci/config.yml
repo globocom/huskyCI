@@ -1,12 +1,19 @@
 version: 2
 
 jobs:
+  test:
+    docker:
+      - image: circleci/golang:1.11
+    working_directory: /go/src/github.com/globocom/huskyCI
+    steps:
+      - run:
+        command: |
+          make test
+
   build:
     docker:
       - image: circleci/golang:1.11
-
     working_directory: /go/src/github.com/globocom/huskyCI
-
     steps:
       - checkout
       - run:
@@ -15,9 +22,28 @@ jobs:
             mkdir -p /tmp/artifacts
       - run:
           command: |
-            make test
             make check-sec
             mv coverage.html /tmp/artifacts
             $GOPATH/bin/goveralls -coverprofile=c.out -service=circle-ci -repotoken=$COVERALLS_TOKEN
       - store_artifacts:
           path: /tmp/artifacts
+
+workflows:
+  build-deploy:
+    jobs:
+      - test:
+      - build:
+        requires:
+          - test
+      # - deploy-dev:
+      #   requires:
+      #     - build
+      #   filters:
+      #     branches:
+      #       only: master
+      # - deploy-prod:
+      #   requires:
+      #     - build
+      #   filters:
+      #     branches:
+      #       only: master
