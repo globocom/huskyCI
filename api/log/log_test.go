@@ -1,83 +1,152 @@
 package log_test
 
 import (
-	"bufio"
-	"net"
-	"sync"
+	"errors"
+	"reflect"
+	"strings"
 	"testing"
-	"time"
 
-	"github.com/globocom/glbgelf"
 	apiContext "github.com/globocom/huskyCI/api/context"
 
 	"github.com/globocom/huskyCI/api/log"
 )
 
-func startGelfServer(t *testing.T, wg *sync.WaitGroup, msgCount int) {
-	defer wg.Done()
-
-	// set apiContext vars
-	listener, err := net.Listen("tcp", ":12201")
-	if err != nil {
-		t.Errorf("expected to listening server, but failed: %s", err)
-		return
-	}
-	// We could use ExampleInitLog, however, I think it is better if we read it from the stream.
-	conn, err := listener.Accept()
-	if err != nil {
-		t.Errorf("could not accept messages: %s", err)
-		return
-	}
-	var gotMsgs int
-	conn.SetReadDeadline(time.Now().Add(3 * time.Second))
-	reader := bufio.NewReader(conn)
-	for {
-		b, err := reader.ReadByte()
-		if err != nil {
-			t.Errorf("could not read bytes from conn: %s", err)
-			return
-		}
-		if b == '\u0000' { // as per gelf docs: a message is finished when it is NUL terminated
-			gotMsgs++
-		}
-		if gotMsgs == msgCount {
-			break
-		}
-	}
-	if gotMsgs != msgCount {
-		t.Errorf("expected %d msgs, but got %d", msgCount, gotMsgs)
-		return
-	}
-	conn.Close()
-}
-
-func TestLog(t *testing.T) {
+func TestInitLog(t *testing.T) {
 	apiContext.APIConfiguration = &apiContext.APIConfig{
 		GraylogConfig: &apiContext.GraylogConfig{
-			DevelopmentEnv: false,
-			Address:        "localhost:12201",
-			Protocol:       "tcp",
+			DevelopmentEnv: true,
 			AppName:        "log_test",
 			Tag:            "log_test",
 		},
 	}
 
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
-	go startGelfServer(t,
-		wg,
-		5, // logging to stdout, starting husky, logging to localhost, info, warning, error.
-	)
 	log.InitLog()
 
-	if glbgelf.Logger == nil {
+	if log.Logger == nil {
 		t.Error("expected logger to be initialized, but it wasn't")
 		return
 	}
+}
 
-	// Try to send a simple message to our mock server
-	log.Info("action", "info", 11, "infoTest")
-	log.Warning("action", "info", 101, "warnTest")
-	log.Error("action", "info", 1006, "errorTest")
-	wg.Wait()
+func TestLog(t *testing.T) {
+
+	testCases := []struct {
+		logger interface {
+			SendLog(extra map[string]interface{}, loglevel string, messages ...interface{}) error
+		}
+		name         string
+		wantAction   string
+		wantInfo     string
+		wantMsgCode  int
+		wantLogLevel string
+		wantMessages []string
+		logFunc      func(action, info string, msgCode int, message ...interface{})
+		err          error
+		wantErr      string
+	}{
+		{
+			name:         "Testing log.Info",
+			logger:       &stubLogger{},
+			wantAction:   "action",
+			wantInfo:     "info",
+			wantMsgCode:  11,
+			wantLogLevel: "INFO",
+			wantMessages: []string{"got some info!"},
+			logFunc:      log.Info,
+		},
+		{
+			name:         "Testing log.Error",
+			logger:       &stubLogger{},
+			wantAction:   "action",
+			wantInfo:     "err",
+			wantMsgCode:  11,
+			wantLogLevel: "ERROR",
+			wantMessages: []string{"got some error!"},
+			logFunc:      log.Error,
+		},
+		{
+			name:         "Testing log.Warning",
+			logger:       &stubLogger{},
+			wantAction:   "action",
+			wantInfo:     "err",
+			wantMsgCode:  11,
+			wantLogLevel: "WARNING",
+			wantMessages: []string{"got some warning!"},
+			logFunc:      log.Warning,
+		},
+		{
+			name:         "Testing 'log server is down!'",
+			logger:       &stubLogger{},
+			wantAction:   "action",
+			wantInfo:     "info",
+			wantMsgCode:  11,
+			wantLogLevel: "INFO",
+			wantMessages: []string{"got some info!"},
+			logFunc:      log.Info,
+			err:          errors.New("server is down!"),
+			wantErr:      "server is down!",
+		},
+		{
+			name:         "Testing Send errored out",
+			logger:       &stubLogger{err: errors.New("server is down!")},
+			wantAction:   "action",
+			wantInfo:     "info",
+			wantMsgCode:  11,
+			wantLogLevel: "INFO",
+			wantMessages: []string{"got some info!"},
+			logFunc:      log.Info,
+			wantErr:      "server is down!",
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			log.Logger = testCase.logger
+			testCase.logFunc(testCase.wantAction, testCase.wantInfo, testCase.wantMsgCode, testCase.wantMessages)
+
+			stub := testCase.logger.(*stubLogger)
+			extra := stub.calledWith["extra"].(map[string]interface{})
+			if got, ok := extra["action"]; !ok || got != testCase.wantAction {
+				t.Errorf("in action key, we expected %s; but got %s", testCase.wantAction, got)
+				return
+			}
+			if got, ok := extra["info"]; !ok || got != testCase.wantInfo {
+				t.Errorf("in info key, we expected %s; but got %s", testCase.wantInfo, got)
+				return
+			}
+			gotLogLevel := stub.calledWith["loglevel"]
+			if gotLogLevel != testCase.wantLogLevel {
+				t.Errorf("in loglevel, we expected %s; but got %s", testCase.wantLogLevel, gotLogLevel)
+				return
+			}
+			gotMessages := stub.calledWith["messages"]
+			if reflect.DeepEqual(gotMessages, testCase.wantMessages) {
+				t.Errorf("in messages, we expected %s; but got %s", strings.Join(testCase.wantMessages, " "), strings.Join(gotMessages.([]string), " "))
+				return
+			}
+
+			var err error
+			if testCase.err != nil {
+				err = testCase.err
+			} else if stub.err != nil {
+				err = stub.err
+			}
+			if err != nil && err.Error() != testCase.wantErr {
+				t.Errorf("in err case, we expected %s; but got %s", testCase.err.Error(), testCase.wantErr)
+				return
+			}
+
+		})
+	}
+
+}
+
+type stubLogger struct {
+	calledWith map[string]interface{}
+	err        error
+}
+
+func (s *stubLogger) SendLog(extra map[string]interface{}, loglevel string, messages ...interface{}) error {
+	s.calledWith = map[string]interface{}{"extra": extra, "loglevel": loglevel, "messages": messages}
+	return s.err
 }
