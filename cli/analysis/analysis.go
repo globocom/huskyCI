@@ -43,6 +43,23 @@ import (
 	"github.com/spf13/viper"
 )
 
+// creates a custom httpClient
+func createClient() *http.Client {
+	// Setting custom HTTP client with timeouts
+	var netTransport = &http.Transport{
+		Dial: (&net.Dialer{
+			Timeout: 10 * time.Second,
+		}).Dial,
+		TLSHandshakeTimeout: time.Second,
+	}
+	var netClient = &http.Client{
+		Timeout:   10 * time.Second,
+		Transport: netTransport,
+	}
+
+	return netClient
+}
+
 // Start starts a container and returns its RID and error.
 func Start(currentTarget types.Target) (types.JSONOutput, error) {
 
@@ -56,17 +73,7 @@ func Start(currentTarget types.Target) (types.JSONOutput, error) {
 		return types.JSONOutput{}, err
 	}
 
-	// Setting custom HTTP client with timeouts
-	var netTransport = &http.Transport{
-		Dial: (&net.Dialer{
-			Timeout: 10 * time.Second,
-		}).Dial,
-		TLSHandshakeTimeout: time.Second,
-	}
-	var netClient = &http.Client{
-		Timeout:   10 * time.Second,
-		Transport: netTransport,
-	}
+	netClient := createClient()
 
 	// Make request
 	huskyStartAnalysisURL := currentTarget.Endpoint + "/analysis"
@@ -114,7 +121,7 @@ func Monitor(currentTarget types.Target, RID string) (types.Analysis, error) {
 	for {
 		select {
 		case <-timeout:
-			return analysis, errors.New("time out")
+			return analysis, errors.New("timeout")
 		case <-retryTick:
 			analysis, err := Get(currentTarget, RID)
 			if err != nil {
@@ -135,18 +142,7 @@ func Monitor(currentTarget types.Target, RID string) (types.Analysis, error) {
 // Get gets the results of an analysis.
 func Get(currentTarget types.Target, RID string) (types.Analysis, error) {
 
-	// Setting custom HTTP client with timeouts
-	var netTransport = &http.Transport{
-		Dial: (&net.Dialer{
-			Timeout: 10 * time.Second,
-		}).Dial,
-		TLSHandshakeTimeout: time.Second,
-	}
-	var netClient = &http.Client{
-		Timeout:   10 * time.Second,
-		Transport: netTransport,
-	}
-
+	netClient := createClient()
 	getAnalysisURL := currentTarget.Endpoint + "/analysis/" + RID
 	req, err := http.NewRequest("GET", getAnalysisURL, nil)
 	req.Header.Add("Husky-Token", currentTarget.Token)
