@@ -64,7 +64,7 @@ gosec:
     if [ $? -eq 0 ]; then
       cd code
       touch results.json
-      /go/bin/gosec -quiet -fmt=json -log=log.txt -out=results.json ./... 2> /dev/null
+      $(which gosec) -quiet -fmt=json -log=log.txt -out=results.json ./... 2> /dev/null
       jq -j -M -c . results.json
     else
       echo "ERROR_CLONING"
