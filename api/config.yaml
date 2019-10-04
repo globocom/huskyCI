@@ -140,15 +140,14 @@ safety:
         cat requirements.txt | grep '=' | grep -v '#' 1> safety_huskyci_analysis_requirements_raw.txt
         sed -i -e 's/>=/==/g; s/<=/==/g' safety_huskyci_analysis_requirements_raw.txt
         cat safety_huskyci_analysis_requirements_raw.txt | cut -f1 -d "," > safety_huskyci_analysis_requirements.txt
-        safety check -r safety_huskyci_analysis_requirements.txt --json > safety_huskyci_analysis_output.json 2> /tmp/errorRunning
+        safety check -r safety_huskyci_analysis_requirements.txt --json > /tmp/safety_huskyci_analysis_output.json 2> /tmp/errorRunning
         safety check -r safety_huskyci_analysis_requirements_raw.txt --json > /dev/null 2> /tmp/warning
         if [ -f /tmp/warning ]; then
           if grep -q "unpinned requirement" "/tmp/warning"; then
             cat /tmp/warning
           fi
-          chmod +x /script.sh
-          /script.sh safety_huskyci_analysis_output.json
-          cat output.json
+          jq '{"issues":map({"dependency": .[0], "vulnerable_below": .[1], "installed_verson": .[2], "description": .[3], "id": .[4]})}' /tmp/safety_huskyci_analysis_output.json > /tmp/output.json
+          cat /tmp/output.json
         else
           echo "ERROR_RUNNING_SAFETY"
           cat /tmp/errorRunning
