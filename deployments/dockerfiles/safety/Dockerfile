@@ -3,10 +3,6 @@
 
 FROM python:3.6-alpine as builder
 
-# Copy JSON Values from Safety
-COPY ./script.sh /
-RUN chmod +x /script.sh
-
 # Install and compile safety + its dependencies
 RUN apk add --no-cache jq alpine-sdk bash openssh-client \
     && pip install safety
