@@ -8,29 +8,17 @@ import (
 	"bufio"
 	"crypto/tls"
 	"crypto/x509"
-	"fmt"
-	"io/ioutil"
 	"net/http"
-	"os"
 	"strings"
 )
 
 // NewClient returns an http client.
 func NewClient(httpsEnable bool) (*http.Client, error) {
 	if httpsEnable {
-		ClientCertFile := os.Getenv("HUSKYCI_CLIENT_CRT_PATH")
 		// Tries to find system's certificate pool
 		caCertPool, _ := x509.SystemCertPool() // #nosec - SystemCertPool tries to get local cert pool, if it fails, a new cer pool is created
 		if caCertPool == nil {
 			caCertPool = x509.NewCertPool()
-		}
-
-		cert, err := ioutil.ReadFile(ClientCertFile)
-		if err != nil {
-			fmt.Println("[HUSKYCI][ERROR] Could not read certificate file: ", err)
-		}
-		if ok := caCertPool.AppendCertsFromPEM(cert); !ok {
-			fmt.Println("[HUSKYCI][ERROR] Could not append ceritificates: ", err)
 		}
 
 		tlsConfig := &tls.Config{
