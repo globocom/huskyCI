@@ -11,18 +11,14 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
-)
-
-const (
-	// ClientCertFile contains the address for the certificate which the ca certificate will be extracted
-	ClientCertFile = "/etc/ssl/cert.pem"
 )
 
 // NewClient returns an http client.
 func NewClient(httpsEnable bool) (*http.Client, error) {
-
 	if httpsEnable {
+		ClientCertFile := os.Getenv("HUSKYCI_CLIENT_CRT_PATH")
 		// Tries to find system's certificate pool
 		caCertPool, _ := x509.SystemCertPool() // #nosec - SystemCertPool tries to get local cert pool, if it fails, a new cer pool is created
 		if caCertPool == nil {
