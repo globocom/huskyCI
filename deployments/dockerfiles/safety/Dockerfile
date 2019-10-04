@@ -13,9 +13,5 @@ FROM python:3.6-alpine
 COPY --from=builder /usr/local/lib/python3.6 /usr/local/lib/python3.6
 COPY --from=builder /usr/local/bin/safety /usr/local/bin/safety
 
-# Copy JSON Values from Safety
-COPY ./script.sh /
-RUN chmod +x /script.sh
-
 # Add packages that we need in the final image on runtime
 RUN apk add --no-cache git jq bash openssh-client 
