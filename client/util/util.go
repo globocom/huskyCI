@@ -8,18 +8,15 @@ import (
 	"bufio"
 	"crypto/tls"
 	"crypto/x509"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
-
-	"github.com/globocom/huskyCI/api/log"
 )
 
 const (
-	// CertFile contains the address for the API's TLS certificate.
-	CertFile = "api/api-tls-cert.pem"
-	// KeyFile contains the address for the API's TLS certificate key file.
-	KeyFile = "api/api-tls-key.pem"
+	// ClientCertFile contains the address for the certificate which the ca certificate will be extracted
+	ClientCertFile = "/etc/ssl/cert.pem"
 )
 
 // NewClient returns an http client.
@@ -32,12 +29,12 @@ func NewClient(httpsEnable bool) (*http.Client, error) {
 			caCertPool = x509.NewCertPool()
 		}
 
-		cert, err := ioutil.ReadFile(CertFile)
+		cert, err := ioutil.ReadFile(ClientCertFile)
 		if err != nil {
-			log.Error("NewClientTLS", "UTIL", 4001, err)
+			fmt.Println("[HUSKYCI][ERROR] Could not read certificate file: ", err)
 		}
 		if ok := caCertPool.AppendCertsFromPEM(cert); !ok {
-			log.Error("NewClientTLS", "UTIL", 4002, err)
+			fmt.Println("[HUSKYCI][ERROR] Could not append ceritificates: ", err)
 		}
 
 		tlsConfig := &tls.Config{
