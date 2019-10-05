@@ -93,7 +93,7 @@ http://localhost:8080
 
 ## Contributing
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests to huskyCI.
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our Code of Conduct and the process for submitting pull requests to huskyCI.
 
 ## Documentation
 
