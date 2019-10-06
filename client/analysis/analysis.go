@@ -120,13 +120,13 @@ func MonitorAnalysis(RID string) (types.Analysis, error) {
 
 	analysis := types.Analysis{}
 	timeout := time.After(15 * time.Minute)
-	retryTick := time.Tick(60 * time.Second)
+	retryTick := time.NewTicker(60 * time.Second)
 
 	for {
 		select {
 		case <-timeout:
 			return analysis, errors.New("time out")
-		case <-retryTick:
+		case <-retryTick.C:
 			analysis, err := GetAnalysis(RID)
 			if err != nil {
 				return analysis, err

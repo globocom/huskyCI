@@ -111,7 +111,7 @@ func (cH *CheckUtils) checkEnvVars() error {
 		}
 	}
 
-	if allEnvIsSet == false {
+	if !allEnvIsSet {
 		finalError := fmt.Sprintf("Check environment variables: %s", errorString)
 		return errors.New(finalError)
 	}

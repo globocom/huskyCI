@@ -16,9 +16,8 @@ var outputJSON types.JSONOutput
 
 // printJSONOutput prints the analysis output in a JSON format
 func printJSONOutput() error {
-	jsonReady := []byte{}
-	var err error
-	if jsonReady, err = json.Marshal(outputJSON); err != nil {
+	jsonReady, err := json.Marshal(outputJSON)
+	if err != nil {
 		return err
 	}
 	fmt.Println(string(jsonReady))
