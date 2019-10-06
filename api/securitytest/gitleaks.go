@@ -68,7 +68,7 @@ func (gitleaksScan *SecTestScanInfo) prepareGitleaksVulns() {
 		gitleaksVuln.File = issue.File
 		gitleaksVuln.Code = issue.Line
 
-		swithc issue.Rule{
+		switch issue.Rule {
 		case "PKCS8", "RSA", "SSH", "PGP", "EC":
 			gitleaksVuln.Severity = "HIGH"
 		case "AWS Secret Key", "Facebook Secret Key", "Facebook access token", "Twitter Secret Key", "LinkedIn Secret Key", "Google OAuth access token", "Google Cloud Platform API key", "Heroku API key", "MailChimp API key", "Mailgun API key", "PayPal Braintree access token", "Picatic API key", "Stripe API key", "Twilio API key":
