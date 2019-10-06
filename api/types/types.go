@@ -101,6 +101,7 @@ type HuskyCIResults struct {
 	PythonResults     PythonResults     `bson:"pythonresults,omitempty" json:"pythonresults,omitempty"`
 	JavaScriptResults JavaScriptResults `bson:"javascriptresults,omitempty" json:"javascriptresults,omitempty"`
 	RubyResults       RubyResults       `bson:"rubyresults,omitempty" json:"rubyresults,omitempty"`
+	GitResults        GitResults        `bson:"gitresults,omitempty" json:"gitresults,omitempty"`
 }
 
 // GoResults represents all Golang security tests results.

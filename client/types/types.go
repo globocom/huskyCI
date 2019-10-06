@@ -53,6 +53,7 @@ type HuskyCIResults struct {
 	PythonResults     PythonResults     `bson:"pythonresults,omitempty" json:"pythonresults,omitempty"`
 	JavaScriptResults JavaScriptResults `bson:"javascriptresults,omitempty" json:"javascriptresults,omitempty"`
 	RubyResults       RubyResults       `bson:"rubyresults,omitempty" json:"rubyresults,omitempty"`
+	GitResults        GitResults        `bson:"gitresults,omitempty" json:"gitresults,omitempty"`
 }
 
 // Container is the struct that stores all data from a container run.
@@ -101,6 +102,7 @@ type JSONOutput struct {
 	PythonResults     PythonResults     `json:"pythonresults,omitempty"`
 	JavaScriptResults JavaScriptResults `json:"javascriptresults,omitempty"`
 	RubyResults       RubyResults       `json:"rubyresults,omitempty"`
+	GitResults        GitResults        `json:"gitresults,omitempty"`
 	Summary           Summary           `json:"summary,omitempty"`
 }
 
