@@ -59,9 +59,9 @@ func printSTDOUTOutput(analysis types.Analysis) {
 	printSTDOUTOutputYarnAudit(outputJSON.JavaScriptResults.HuskyCIYarnAuditOutput.HighVulns)
 
 	// gitleaks
-	printSTDOUTOutputGitleaks(outputJSON.GoResults.HuskyCIGitleaksOutput.LowVulns)
-	printSTDOUTOutputGitleaks(outputJSON.GoResults.HuskyCIGitleaksOutput.MediumVulns)
-	printSTDOUTOutputGitleaks(outputJSON.GoResults.HuskyCIGitleaksOutput.HighVulns)
+	printSTDOUTOutputGitleaks(outputJSON.GitResults.HuskyCIGitleaksOutput.LowVulns)
+	printSTDOUTOutputGitleaks(outputJSON.GitResults.HuskyCIGitleaksOutput.MediumVulns)
+	printSTDOUTOutputGitleaks(outputJSON.GitResults.HuskyCIGitleaksOutput.HighVulns)
 
 	printAllSummary(analysis)
 }
@@ -143,13 +143,13 @@ func prepareAllSummary(analysis types.Analysis) {
 	}
 
 	// GitLeaks summary
-	outputJSON.Summary.GitleaksSummary.LowVuln = len(outputJSON.GoResults.HuskyCIGitleaksOutput.LowVulns)
-	outputJSON.Summary.GitleaksSummary.MediumVuln = len(outputJSON.GoResults.HuskyCIGitleaksOutput.MediumVulns)
-	outputJSON.Summary.GitleaksSummary.HighVuln = len(outputJSON.GoResults.HuskyCIGitleaksOutput.HighVulns)
-	if len(outputJSON.GoResults.HuskyCIGitleaksOutput.LowVulns) > 0 {
+	outputJSON.Summary.GitleaksSummary.LowVuln = len(outputJSON.GitResults.HuskyCIGitleaksOutput.LowVulns)
+	outputJSON.Summary.GitleaksSummary.MediumVuln = len(outputJSON.GitResults.HuskyCIGitleaksOutput.MediumVulns)
+	outputJSON.Summary.GitleaksSummary.HighVuln = len(outputJSON.GitResults.HuskyCIGitleaksOutput.HighVulns)
+	if len(outputJSON.GitResults.HuskyCIGitleaksOutput.LowVulns) > 0 {
 		outputJSON.Summary.GitleaksSummary.FoundInfo = true
 	}
-	if len(outputJSON.GoResults.HuskyCIGitleaksOutput.MediumVulns) > 0 || len(outputJSON.GoResults.HuskyCIGitleaksOutput.HighVulns) > 0 {
+	if len(outputJSON.GitResults.HuskyCIGitleaksOutput.MediumVulns) > 0 || len(outputJSON.GitResults.HuskyCIGitleaksOutput.HighVulns) > 0 {
 		outputJSON.Summary.GitleaksSummary.FoundVuln = true
 	}
 
