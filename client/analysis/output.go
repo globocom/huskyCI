@@ -74,6 +74,7 @@ func prepareAllSummary(analysis types.Analysis) {
 	outputJSON.JavaScriptResults = analysis.HuskyCIResults.JavaScriptResults
 	outputJSON.PythonResults = analysis.HuskyCIResults.PythonResults
 	outputJSON.RubyResults = analysis.HuskyCIResults.RubyResults
+	outputJSON.GitResults = analysis.HuskyCIResults.GitResults
 
 	// GoSec summary
 	outputJSON.Summary.GosecSummary.LowVuln = len(outputJSON.GoResults.HuskyCIGosecOutput.LowVulns)
