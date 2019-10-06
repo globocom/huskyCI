@@ -125,6 +125,11 @@ type RubyResults struct {
 	HuskyCIBrakemanOutput HuskyCISecurityTestOutput `bson:"brakemanoutput,omitempty" json:"brakemanoutput,omitempty"`
 }
 
+// GitResults represents all Git security tests results.
+type GitResults struct {
+	HuskyCIGitleaksOutput HuskyCISecurityTestOutput `bson:"gitleaksoutput,omitempty" json:"gitleaksoutput,omitempty"`
+}
+
 // HuskyCISecurityTestOutput stores all Low, Medium and High vulnerabilities for a sec test
 type HuskyCISecurityTestOutput struct {
 	NoSecVulns  []HuskyCIVulnerability `bson:"nosecvulns,omitempty" json:"nosecvulns,omitempty"`

@@ -206,6 +206,8 @@ func (results *RunAllInfo) setVulns(securityTestScan SecTestScanInfo) {
 			results.HuskyCIResults.JavaScriptResults.HuskyCINpmAuditOutput.HighVulns = append(results.HuskyCIResults.JavaScriptResults.HuskyCINpmAuditOutput.HighVulns, highVuln)
 		case "yarnaudit":
 			results.HuskyCIResults.JavaScriptResults.HuskyCIYarnAuditOutput.HighVulns = append(results.HuskyCIResults.JavaScriptResults.HuskyCIYarnAuditOutput.HighVulns, highVuln)
+		case "gitleaks":
+			results.HuskyCIResults.GoResults.HuskyCIGitleaksOutput.HighVulns = append(results.HuskyCIResults.GoResults.HuskyCIGitleaksOutput.HighVulns, highVuln)
 		}
 	}
 
@@ -223,6 +225,8 @@ func (results *RunAllInfo) setVulns(securityTestScan SecTestScanInfo) {
 			results.HuskyCIResults.JavaScriptResults.HuskyCINpmAuditOutput.MediumVulns = append(results.HuskyCIResults.JavaScriptResults.HuskyCINpmAuditOutput.MediumVulns, mediumVuln)
 		case "yarnaudit":
 			results.HuskyCIResults.JavaScriptResults.HuskyCIYarnAuditOutput.MediumVulns = append(results.HuskyCIResults.JavaScriptResults.HuskyCIYarnAuditOutput.MediumVulns, mediumVuln)
+		case "gitleaks":
+			results.HuskyCIResults.GoResults.HuskyCIGitleaksOutput.MediumVulns = append(results.HuskyCIResults.GoResults.HuskyCIGitleaksOutput.MediumVulns, mediumVuln)
 		}
 	}
 
@@ -240,6 +244,8 @@ func (results *RunAllInfo) setVulns(securityTestScan SecTestScanInfo) {
 			results.HuskyCIResults.JavaScriptResults.HuskyCINpmAuditOutput.LowVulns = append(results.HuskyCIResults.JavaScriptResults.HuskyCINpmAuditOutput.LowVulns, lowVuln)
 		case "yarnaudit":
 			results.HuskyCIResults.JavaScriptResults.HuskyCIYarnAuditOutput.LowVulns = append(results.HuskyCIResults.JavaScriptResults.HuskyCIYarnAuditOutput.LowVulns, lowVuln)
+		case "gitleaks":
+			results.HuskyCIResults.GoResults.HuskyCIGitleaksOutput.LowVulns = append(results.HuskyCIResults.GoResults.HuskyCIGitleaksOutput.LowVulns, lowVuln)
 		}
 	}
 
@@ -257,6 +263,8 @@ func (results *RunAllInfo) setVulns(securityTestScan SecTestScanInfo) {
 			results.HuskyCIResults.JavaScriptResults.HuskyCINpmAuditOutput.NoSecVulns = append(results.HuskyCIResults.JavaScriptResults.HuskyCINpmAuditOutput.NoSecVulns, noSec)
 		case "yarnaudit":
 			results.HuskyCIResults.JavaScriptResults.HuskyCIYarnAuditOutput.NoSecVulns = append(results.HuskyCIResults.JavaScriptResults.HuskyCIYarnAuditOutput.NoSecVulns, noSec)
+		case "gitleaks":
+			results.HuskyCIResults.GoResults.HuskyCIGitleaksOutput.NoSecVulns = append(results.HuskyCIResults.GoResults.HuskyCIGitleaksOutput.LowVulns, noSec)
 		}
 	}
 }
