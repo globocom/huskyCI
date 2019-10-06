@@ -356,7 +356,6 @@ func printSTDOUTOutputYarnAudit(issues []types.HuskyCIVulnerability) {
 func printSTDOUTOutputGitleaks(issues []types.HuskyCIVulnerability) {
 	for _, issue := range issues {
 		fmt.Println()
-		fmt.Printf("[HUSKYCI][!] Language: %s\n", issue.Language)
 		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
 		fmt.Printf("[HUSKYCI][!] Severity: %s\n", issue.Severity)
 		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
