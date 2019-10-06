@@ -64,12 +64,27 @@ func (gitleaksScan *SecTestScanInfo) prepareGitleaksVulns() {
 	for _, issue := range gitleaksOutput {
 		gitleaksVuln := types.HuskyCIVulnerability{}
 		gitleaksVuln.SecurityTool = "GitLeaks"
-		gitleaksVuln.Severity = "medium"
 		gitleaksVuln.Details = issue.Info + " @ " + issue.CommitMessage
 		gitleaksVuln.File = issue.File
 		gitleaksVuln.Code = issue.Line
 
-		huskyCIgitleaksResults.MediumVulns = append(huskyCIgitleaksResults.MediumVulns, gitleaksVuln)
+		swithc issue.Rule{
+		case "PKCS8", "RSA", "SSH", "PGP", "EC":
+			gitleaksVuln.Severity = "HIGH"
+		case "AWS Secret Key", "Facebook Secret Key", "Facebook access token", "Twitter Secret Key", "LinkedIn Secret Key", "Google OAuth access token", "Google Cloud Platform API key", "Heroku API key", "MailChimp API key", "Mailgun API key", "PayPal Braintree access token", "Picatic API key", "Stripe API key", "Twilio API key":
+			gitleaksVuln.Severity = "MEDIUM"
+		default:
+			gitleaksVuln.Severity = "LOW"
+		}
+
+		switch gitleaksVuln.Severity {
+		case "LOW":
+			huskyCIgitleaksResults.LowVulns = append(huskyCIgitleaksResults.LowVulns, gosecVuln)
+		case "MEDIUM":
+			huskyCIgitleaksResults.MediumVulns = append(huskyCIgitleaksResults.MediumVulns, gosecVuln)
+		case "HIGH":
+			huskyCIgitleaksResults.HighVulns = append(huskyCIgitleaksResults.HighVulns, gosecVuln)
+		}
 	}
 
 	gitleaksScan.Vulnerabilities = huskyCIgitleaksResults
