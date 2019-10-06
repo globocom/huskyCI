@@ -79,11 +79,11 @@ func (gitleaksScan *SecTestScanInfo) prepareGitleaksVulns() {
 
 		switch gitleaksVuln.Severity {
 		case "LOW":
-			huskyCIgitleaksResults.LowVulns = append(huskyCIgitleaksResults.LowVulns, gosecVuln)
+			huskyCIgitleaksResults.LowVulns = append(huskyCIgitleaksResults.LowVulns, gitleaksVuln)
 		case "MEDIUM":
-			huskyCIgitleaksResults.MediumVulns = append(huskyCIgitleaksResults.MediumVulns, gosecVuln)
+			huskyCIgitleaksResults.MediumVulns = append(huskyCIgitleaksResults.MediumVulns, gitleaksVuln)
 		case "HIGH":
-			huskyCIgitleaksResults.HighVulns = append(huskyCIgitleaksResults.HighVulns, gosecVuln)
+			huskyCIgitleaksResults.HighVulns = append(huskyCIgitleaksResults.HighVulns, gitleaksVuln)
 		}
 	}
 
