@@ -176,7 +176,7 @@ func prepareAllSummary(analysis types.Analysis) {
 
 func printAllSummary(analysis types.Analysis) {
 
-	var gosecVersion, banditVersion, safetyVersion, brakemanVersion, npmauditVersion, yarnauditVersion string
+	var gosecVersion, banditVersion, safetyVersion, brakemanVersion, npmauditVersion, yarnauditVersion, gitleaksVersion string
 
 	for _, container := range analysis.Containers {
 		switch container.SecurityTest.Name {
