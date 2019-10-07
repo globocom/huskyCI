@@ -248,8 +248,8 @@ gitleaks:
             jq -j -M -c . results.json
         fi
     else
-          echo "ERROR_CLONING"
-          cat /tmp/errorGitCloneGitleaks
+        echo "ERROR_CLONING"
+        cat /tmp/errorGitCloneGitleaks
     fi
   type: Generic
   default: true
