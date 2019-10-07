@@ -238,14 +238,18 @@ gitleaks:
     chmod 600 ~/.ssh/huskyci_id_rsa &&
     echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
     echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
-    cd src
     git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneGitleaks
     if [ $? -eq 0 ]; then
-      $(which gitleaks) --log=warn --report=results.json --repo-path=./code 2> /dev/null
-      jq -j -M -c . results.json
+        $(which gitleaks) --log=warn --report=results.json --repo-path=./code 2> /tmp/errorGitleaks
+        if [ ! -s /tmp/errorGitleaks ]; then
+            jq -j -M -c . results.json
+        else
+            echo -n 'ERROR_RUNNING_GITLEAKS'
+            cat /tmp/errorGitleaks
+        fi
     else
-      echo "ERROR_CLONING"
-      cat /tmp/errorGitCloneGitleaks
+          echo "ERROR_CLONING"
+          cat /tmp/errorGitCloneGitleaks
     fi
   type: Generic
   default: true
