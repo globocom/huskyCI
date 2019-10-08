@@ -65,21 +65,21 @@ func main() {
 	}
 
 	// step 4: block developer CI if vulnerabilities were found
-	if types.FoundVuln == false && types.FoundInfo == false {
+	if !types.FoundVuln && !types.FoundInfo {
 		if !types.IsJSONoutput {
 			fmt.Printf("[HUSKYCI][*] Nice! No issues were found :)\n")
 		}
 		os.Exit(0)
 	}
 
-	if types.FoundVuln == false && types.FoundInfo == true {
+	if !types.FoundVuln && types.FoundInfo {
 		if !types.IsJSONoutput {
 			fmt.Printf("[HUSKYCI][*] Some LOW/INFO issues were found :|\n")
 		}
 		os.Exit(0)
 	}
 
-	if types.FoundVuln == true {
+	if types.FoundVuln {
 		if !types.IsJSONoutput {
 			fmt.Printf("[HUSKYCI][*] Some HIGH/MEDIUM issues were found :(\n")
 		}

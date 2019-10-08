@@ -301,7 +301,6 @@ func (results *RunAllInfo) setToAnalysis() {
 }
 
 func getAllDefaultSecurityTests(typeOf, language string) ([]types.SecurityTest, error) {
-	securityTests := []types.SecurityTest{}
 	securityTestQuery := map[string]interface{}{"type": typeOf, "default": true}
 	if language != "" {
 		securityTestQuery = map[string]interface{}{"language": language, "default": true}

@@ -67,14 +67,14 @@ func DockerRun(fullContainerImage, cmd string, timeOutInSeconds int) (string, st
 func pullImage(d *Docker, image string) error {
 	canonicalURL := fmt.Sprintf("docker.io/%s", image)
 	timeout := time.After(15 * time.Minute)
-	retryTick := time.Tick(15 * time.Second)
+	retryTick := time.NewTicker(15 * time.Second)
 	for {
 		select {
 		case <-timeout:
 			timeOutErr := errors.New("timeout")
 			log.Error("pullImage", "HUSKYDOCKER", 3013, timeOutErr)
 			return timeOutErr
-		case <-retryTick:
+		case <-retryTick.C:
 			log.Info("pullImage", "DOCKERRUN", 31, image)
 			if d.ImageIsLoaded(image) {
 				log.Info("pullImage", "HUSKYDOCKER", 35, image)

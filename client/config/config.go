@@ -6,7 +6,6 @@ package config
 
 import (
 	"errors"
-	"fmt"
 	"os"
 )
 
@@ -59,9 +58,8 @@ func CheckEnvVars() error {
 			allEnvIsSet = false
 		}
 	}
-	if allEnvIsSet == false {
-		finalError := fmt.Sprintf("%s", errorString)
-		return errors.New(finalError)
+	if !allEnvIsSet {
+		return errors.New(errorString)
 	}
 	return nil
 }
