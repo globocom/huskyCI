@@ -5,7 +5,6 @@ GO ?= go
 GOROOT ?= $(shell $(GO) env GOROOT)
 GOPATH ?= $(shell $(GO) env GOPATH)
 GOBIN ?= $(GOPATH)/bin
-GODEP ?= $(GOBIN)/dep
 GOLINT ?= $(GOBIN)/golint
 GOSEC ?= $(GOBIN)/gosec
 GINKGO ?= $(GOBIN)/ginkgo
@@ -28,15 +27,15 @@ LDFLAGS := '-X "main.version=$(TAG)" -X "main.commit=$(COMMIT)" -X "main.date=$(
 
 ## Builds Go project to the executable file huskyci
 build:
-	cd api && GOOS=linux GOARCH=amd64 $(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCIBIN)"
+	cd api && GOOS=linux GOARCH=amd64 $(GO) build -mod vendor -ldflags $(LDFLAGS) -o "$(HUSKYCIBIN)"
 
 ## Builds client to the executable file huskyci-client
 build-client:
-	cd client/cmd && $(GO) build -o "$(HUSKYCICLIENTBIN)" && mv "$(HUSKYCICLIENTBIN)" ../..
+	cd client/cmd && $(GO) build -mod vendor -o "$(HUSKYCICLIENTBIN)" && mv "$(HUSKYCICLIENTBIN)" ../..
 
 ## Builds client to the executable file huskyci-client
 build-client-linux:
-	cd client/cmd && GOOS=linux GOARCH=amd64 $(GO) build -o "$(HUSKYCICLIENTBIN)" && mv "$(HUSKYCICLIENTBIN)" ../..
+	cd client/cmd && GOOS=linux GOARCH=amd64 $(GO) build -mod vendor -o "$(HUSKYCICLIENTBIN)" && mv "$(HUSKYCICLIENTBIN)" ../..
 
 ## Builds all securityTest containers locally with the tag latest
 build-containers:
@@ -45,7 +44,8 @@ build-containers:
 
 ## Checks depencies of the project
 check-deps:
-	$(GODEP) ensure -v
+	$(GO) mod verify
+	$(GO) mod vendor
 
 ## Runs a security static analysis using Gosec
 check-sec:
@@ -63,7 +63,7 @@ check-containers-version:
 
 ## Run tests with code coverage
 coverage:
-	$(GO) test ./... -coverprofile=c.out
+	$(GO) test -mod vendor ./... -coverprofile=c.out
 	$(GO) tool cover -html=c.out -o coverage.html
 
 ## Composes huskyCI environment using docker-compose
@@ -88,7 +88,6 @@ generate-passwords:
 
 ## Gets all go test dependencies
 get-test-deps:
-	$(GO) get -u github.com/golang/dep/cmd/dep
 	$(GO) get -u golang.org/x/lint/golint
 	$(GO) get -u github.com/onsi/ginkgo/ginkgo
 	$(GO) get -u github.com/onsi/gomega/...
