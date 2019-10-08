@@ -54,7 +54,6 @@ func GetCurrentTarget() (*types.Target, error) {
 
 			// check if target is properly configured
 			if target["current"] == nil {
-				fmt.Printf("You need to configure a target using target-add command\n")
 				return nil, fmt.Errorf("You need to configure a target using target-add command")
 			}
 
