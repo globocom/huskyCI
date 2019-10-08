@@ -49,7 +49,11 @@ Adds a new entry to the list of available targets.
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 
-		match, _ := regexp.MatchString(`^\w+$`, args[0])
+		match, err := regexp.MatchString(`^\w+$`, args[0])
+		if err != nil {
+			fmt.Printf("Client error validanting label name: %s (%s)\n", args[0], err.Error())
+			os.Exit(1)
+		}
 		if !match {
 			fmt.Printf("Client error parsing target name: %s (must have number, letters and/or underscores)\n", args[0])
 			os.Exit(1)
