@@ -79,7 +79,7 @@ func GetCurrentTarget() (*types.Target, error) {
 	return currentTarget, nil
 }
 
-// CheckAndCreateConfigFolder check if config folder exists and create if it not exists
+// CheckAndCreateConfigFolder check if config folder exists and create if it doesn't exists
 func CheckAndCreateConfigFolder(home string, debug bool) (string, error) {
 	// check if .huskyci folder exists and creates if it not exists
 	path := home + "/.huskyci"
