@@ -43,9 +43,9 @@ var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "husky",
-	Short: "husky is a CLI to use huskyCI",
-	Long: `husky is a CLI to use huskyCI.
+	Use:   "huskyci",
+	Short: "huskyci is a CLI to use huskyCI",
+	Long: `huskyci is a CLI to use huskyCI.
 	
 huskyCI is an open-source tool that performs security tests
 inside CI pipelines of multiple projects and centralizes all results 
