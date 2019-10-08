@@ -50,15 +50,14 @@ Adds a new entry to the list of available targets.
 
 		match, err := regexp.MatchString(`^\w+$`, args[0])
 		if err != nil {
-			fmt.Printf("Client error validanting label name: %s (%s)\n", args[0], err.Error())
-			os.Exit(1)
+			return fmt.Errorf("Client error validanting label name: %s (%s)", args[0], err.Error())
 		}
 		if !match {
 			return fmt.Errorf("Client error parsing target name: %s (must have number, letters and/or underscores)", args[0])
 		}
 
 		// check huskyci-api-endpoint
-		_, err := url.Parse(args[1])
+		_, err = url.Parse(args[1])
 		if err != nil {
 			return fmt.Errorf("Client error parsing target endpoint: %s (%s)", args[1], err.Error())
 		}
