@@ -109,11 +109,16 @@ brakeman:
     chmod 600 ~/.ssh/huskyci_id_rsa &&
     echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
     echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
-    mkdir app
-    git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% ./app/code --quiet 2> /tmp/errorGitCloneBrakeman
+    git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneBrakeman
     if [ $? -eq 0 ]; then
-      brakeman -q -o results.json .
-      jq -j -M -c . results.json
+      if [ -d /code/app ]; then
+        brakeman -q -o results.json /code
+        jq -j -M -c . results.json
+      else
+        mv code app
+        brakeman -q -o results.json .
+        jq -j -M -c . results.json
+      fi
     else
       echo "ERROR_CLONING"
       cat /tmp/errorGitCloneBrakeman
