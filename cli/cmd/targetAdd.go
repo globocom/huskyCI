@@ -32,7 +32,6 @@ package cmd
 import (
 	"fmt"
 	"net/url"
-	"os"
 	"regexp"
 
 	"github.com/spf13/cobra"
@@ -47,7 +46,7 @@ var targetAddCmd = &cobra.Command{
 Adds a new entry to the list of available targets.
 	`,
 	Args: cobra.ExactArgs(2),
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 
 		match, err := regexp.MatchString(`^\w+$`, args[0])
 		if err != nil {
@@ -55,15 +54,13 @@ Adds a new entry to the list of available targets.
 			os.Exit(1)
 		}
 		if !match {
-			fmt.Printf("Client error parsing target name: %s (must have number, letters and/or underscores)\n", args[0])
-			os.Exit(1)
+			return fmt.Errorf("Client error parsing target name: %s (must have number, letters and/or underscores)", args[0])
 		}
 
 		// check huskyci-api-endpoint
 		_, err := url.Parse(args[1])
 		if err != nil {
-			fmt.Printf("Client error parsing target endpoint: %s (%s)\n", args[1], err.Error())
-			os.Exit(1)
+			return fmt.Errorf("Client error parsing target endpoint: %s (%s)", args[1], err.Error())
 		}
 
 		// check if target name is used before
@@ -71,17 +68,16 @@ Adds a new entry to the list of available targets.
 		for k, v := range targets {
 			if k == args[0] {
 				target := v.(map[string]interface{})
-				fmt.Printf("Client error, target name already exists: %s (with endpoint: %s)\n", k, target["endpoint"])
-				os.Exit(1)
+				return fmt.Errorf("Client error, target name already exists: %s (with endpoint: %s)", k, target["endpoint"])
 			}
 		}
 
 		// if new target must be current, we unset all others
 		setCurrent, err := cmd.Flags().GetBool("set-current")
 		if err != nil {
-			fmt.Printf("Client error parsing set-current option: (%s)\n", err.Error())
-			os.Exit(1)
+			fmt.Errorf("Client error parsing set-current option: (%s)", err.Error())
 		}
+
 		if setCurrent {
 			for _, v := range targets {
 				target := v.(map[string]interface{})
@@ -96,10 +92,10 @@ Adds a new entry to the list of available targets.
 		viper.Set("targets", targets)
 		err = viper.WriteConfig()
 		if err != nil {
-			fmt.Printf("Client error saving config with new target: (%s)\n", err.Error())
-			os.Exit(1)
+			return fmt.Errorf("Client error saving config with new target: (%s)", err.Error())
 		}
 		fmt.Printf("New target %s -> %s added to target list\n", args[0], args[1])
+		return nil
 	},
 }
 
