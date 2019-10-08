@@ -101,14 +101,14 @@ func CheckAndCreateConfigFolder(home string, debug bool) (string, error) {
 // CreateConfigFile creates a config file for huskyci CLI
 func CreateConfigFile(path string, debug bool) (string, error) {
 	configFile := path + "/config.yaml"
-	f, err := os.Create(configFile)
+	file, err := os.Create(configFile)
 	if err != nil {
 		if debug {
 			fmt.Printf("Client error creating config file: %s (%s)\n", configFile, err.Error())
 		}
 		return "", err
 	}
-	err = f.Close()
+	err = file.Close()
 	if err != nil {
 		if debug {
 			fmt.Printf("Client error closing config file: %s (%s)\n", configFile, err.Error())
