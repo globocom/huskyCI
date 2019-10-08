@@ -105,14 +105,5 @@ Adds a new entry to the list of available targets.
 
 func init() {
 	rootCmd.AddCommand(targetAddCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// targetAddCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
 	targetAddCmd.Flags().BoolP("set-current", "s", false, "Add and define the target as the current target")
 }
