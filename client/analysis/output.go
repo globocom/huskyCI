@@ -59,9 +59,9 @@ func printSTDOUTOutput(analysis types.Analysis) {
 	printSTDOUTOutputYarnAudit(outputJSON.JavaScriptResults.HuskyCIYarnAuditOutput.HighVulns)
 
 	// gitleaks
-	printSTDOUTOutputGitleaks(outputJSON.GitResults.HuskyCIGitleaksOutput.LowVulns)
-	printSTDOUTOutputGitleaks(outputJSON.GitResults.HuskyCIGitleaksOutput.MediumVulns)
-	printSTDOUTOutputGitleaks(outputJSON.GitResults.HuskyCIGitleaksOutput.HighVulns)
+	printSTDOUTOutputGitleaks(outputJSON.GenericResults.HuskyCIGitleaksOutput.LowVulns)
+	printSTDOUTOutputGitleaks(outputJSON.GenericResults.HuskyCIGitleaksOutput.MediumVulns)
+	printSTDOUTOutputGitleaks(outputJSON.GenericResults.HuskyCIGitleaksOutput.HighVulns)
 
 	printAllSummary(analysis)
 }
@@ -74,7 +74,7 @@ func prepareAllSummary(analysis types.Analysis) {
 	outputJSON.JavaScriptResults = analysis.HuskyCIResults.JavaScriptResults
 	outputJSON.PythonResults = analysis.HuskyCIResults.PythonResults
 	outputJSON.RubyResults = analysis.HuskyCIResults.RubyResults
-	outputJSON.GitResults = analysis.HuskyCIResults.GitResults
+	outputJSON.GenericResults = analysis.HuskyCIResults.GenericResults
 
 	// GoSec summary
 	outputJSON.Summary.GosecSummary.LowVuln = len(outputJSON.GoResults.HuskyCIGosecOutput.LowVulns)
@@ -144,13 +144,13 @@ func prepareAllSummary(analysis types.Analysis) {
 	}
 
 	// GitLeaks summary
-	outputJSON.Summary.GitleaksSummary.LowVuln = len(outputJSON.GitResults.HuskyCIGitleaksOutput.LowVulns)
-	outputJSON.Summary.GitleaksSummary.MediumVuln = len(outputJSON.GitResults.HuskyCIGitleaksOutput.MediumVulns)
-	outputJSON.Summary.GitleaksSummary.HighVuln = len(outputJSON.GitResults.HuskyCIGitleaksOutput.HighVulns)
-	if len(outputJSON.GitResults.HuskyCIGitleaksOutput.LowVulns) > 0 {
+	outputJSON.Summary.GitleaksSummary.LowVuln = len(outputJSON.GenericResults.HuskyCIGitleaksOutput.LowVulns)
+	outputJSON.Summary.GitleaksSummary.MediumVuln = len(outputJSON.GenericResults.HuskyCIGitleaksOutput.MediumVulns)
+	outputJSON.Summary.GitleaksSummary.HighVuln = len(outputJSON.GenericResults.HuskyCIGitleaksOutput.HighVulns)
+	if len(outputJSON.GenericResults.HuskyCIGitleaksOutput.LowVulns) > 0 {
 		outputJSON.Summary.GitleaksSummary.FoundInfo = true
 	}
-	if len(outputJSON.GitResults.HuskyCIGitleaksOutput.MediumVulns) > 0 || len(outputJSON.GitResults.HuskyCIGitleaksOutput.HighVulns) > 0 {
+	if len(outputJSON.GenericResults.HuskyCIGitleaksOutput.MediumVulns) > 0 || len(outputJSON.GenericResults.HuskyCIGitleaksOutput.HighVulns) > 0 {
 		outputJSON.Summary.GitleaksSummary.FoundVuln = true
 	}
 

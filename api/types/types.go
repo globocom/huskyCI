@@ -101,7 +101,7 @@ type HuskyCIResults struct {
 	PythonResults     PythonResults     `bson:"pythonresults,omitempty" json:"pythonresults,omitempty"`
 	JavaScriptResults JavaScriptResults `bson:"javascriptresults,omitempty" json:"javascriptresults,omitempty"`
 	RubyResults       RubyResults       `bson:"rubyresults,omitempty" json:"rubyresults,omitempty"`
-	GitResults        GitResults        `bson:"gitresults,omitempty" json:"gitresults,omitempty"`
+	GenericResults    GenericResults    `bson:"genericresults,omitempty" json:"genericresults,omitempty"`
 }
 
 // GoResults represents all Golang security tests results.
@@ -126,8 +126,8 @@ type RubyResults struct {
 	HuskyCIBrakemanOutput HuskyCISecurityTestOutput `bson:"brakemanoutput,omitempty" json:"brakemanoutput,omitempty"`
 }
 
-// GitResults represents all Git security tests results.
-type GitResults struct {
+// GenericResults represents all generic securityTests results
+type GenericResults struct {
 	HuskyCIGitleaksOutput HuskyCISecurityTestOutput `bson:"gitleaksoutput,omitempty" json:"gitleaksoutput,omitempty"`
 }
 
