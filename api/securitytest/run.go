@@ -112,6 +112,8 @@ func (results *RunAllInfo) runGenericScans(enryScan SecTestScanInfo) error {
 			results.Containers = append(results.Containers, newGenericScan.Container)
 			if genericTest.Name == "gitauthors" {
 				results.CommitAuthors = newGenericScan.CommitAuthors.Authors
+			} else if genericTest.Name == "gitleaks" {
+				results.setVulns(newGenericScan)
 			}
 		}(&genericTests[genericTestIndex])
 	}
@@ -206,6 +208,8 @@ func (results *RunAllInfo) setVulns(securityTestScan SecTestScanInfo) {
 			results.HuskyCIResults.JavaScriptResults.HuskyCINpmAuditOutput.HighVulns = append(results.HuskyCIResults.JavaScriptResults.HuskyCINpmAuditOutput.HighVulns, highVuln)
 		case "yarnaudit":
 			results.HuskyCIResults.JavaScriptResults.HuskyCIYarnAuditOutput.HighVulns = append(results.HuskyCIResults.JavaScriptResults.HuskyCIYarnAuditOutput.HighVulns, highVuln)
+		case "gitleaks":
+			results.HuskyCIResults.GenericResults.HuskyCIGitleaksOutput.HighVulns = append(results.HuskyCIResults.GenericResults.HuskyCIGitleaksOutput.HighVulns, highVuln)
 		}
 	}
 
@@ -223,6 +227,8 @@ func (results *RunAllInfo) setVulns(securityTestScan SecTestScanInfo) {
 			results.HuskyCIResults.JavaScriptResults.HuskyCINpmAuditOutput.MediumVulns = append(results.HuskyCIResults.JavaScriptResults.HuskyCINpmAuditOutput.MediumVulns, mediumVuln)
 		case "yarnaudit":
 			results.HuskyCIResults.JavaScriptResults.HuskyCIYarnAuditOutput.MediumVulns = append(results.HuskyCIResults.JavaScriptResults.HuskyCIYarnAuditOutput.MediumVulns, mediumVuln)
+		case "gitleaks":
+			results.HuskyCIResults.GenericResults.HuskyCIGitleaksOutput.MediumVulns = append(results.HuskyCIResults.GenericResults.HuskyCIGitleaksOutput.MediumVulns, mediumVuln)
 		}
 	}
 
@@ -240,6 +246,8 @@ func (results *RunAllInfo) setVulns(securityTestScan SecTestScanInfo) {
 			results.HuskyCIResults.JavaScriptResults.HuskyCINpmAuditOutput.LowVulns = append(results.HuskyCIResults.JavaScriptResults.HuskyCINpmAuditOutput.LowVulns, lowVuln)
 		case "yarnaudit":
 			results.HuskyCIResults.JavaScriptResults.HuskyCIYarnAuditOutput.LowVulns = append(results.HuskyCIResults.JavaScriptResults.HuskyCIYarnAuditOutput.LowVulns, lowVuln)
+		case "gitleaks":
+			results.HuskyCIResults.GenericResults.HuskyCIGitleaksOutput.LowVulns = append(results.HuskyCIResults.GenericResults.HuskyCIGitleaksOutput.LowVulns, lowVuln)
 		}
 	}
 
@@ -257,6 +265,8 @@ func (results *RunAllInfo) setVulns(securityTestScan SecTestScanInfo) {
 			results.HuskyCIResults.JavaScriptResults.HuskyCINpmAuditOutput.NoSecVulns = append(results.HuskyCIResults.JavaScriptResults.HuskyCINpmAuditOutput.NoSecVulns, noSec)
 		case "yarnaudit":
 			results.HuskyCIResults.JavaScriptResults.HuskyCIYarnAuditOutput.NoSecVulns = append(results.HuskyCIResults.JavaScriptResults.HuskyCIYarnAuditOutput.NoSecVulns, noSec)
+		case "gitleaks":
+			results.HuskyCIResults.GenericResults.HuskyCIGitleaksOutput.NoSecVulns = append(results.HuskyCIResults.GenericResults.HuskyCIGitleaksOutput.LowVulns, noSec)
 		}
 	}
 }
@@ -301,7 +311,6 @@ func (results *RunAllInfo) setToAnalysis() {
 }
 
 func getAllDefaultSecurityTests(typeOf, language string) ([]types.SecurityTest, error) {
-	securityTests := []types.SecurityTest{}
 	securityTestQuery := map[string]interface{}{"type": typeOf, "default": true}
 	if language != "" {
 		securityTestQuery = map[string]interface{}{"language": language, "default": true}

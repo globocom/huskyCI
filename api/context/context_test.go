@@ -321,8 +321,8 @@ var _ = Describe("Context", func() {
 				apiConfig, err := config.GetAPIConfig()
 				expectedConfig := &APIConfig{
 					Port:             fakeCaller.expectedIntegerValue,
-					Version:          "0.6.0",
-					ReleaseDate:      "2019-07-18",
+					Version:          "0.8.0",
+					ReleaseDate:      "2019-09-30",
 					AllowOriginValue: fakeCaller.expectedEnvVar,
 					UseTLS:           true,
 					GitPrivateSSHKey: fakeCaller.expectedEnvVar,
@@ -423,6 +423,16 @@ var _ = Describe("Context", func() {
 						TimeOutInSeconds: fakeCaller.expectedIntFromConfig,
 					},
 					SafetySecurityTest: &types.SecurityTest{
+						Name:             fakeCaller.expectedStringFromConfig,
+						Image:            fakeCaller.expectedStringFromConfig,
+						ImageTag:         fakeCaller.expectedStringFromConfig,
+						Cmd:              fakeCaller.expectedStringFromConfig,
+						Type:             fakeCaller.expectedStringFromConfig,
+						Language:         fakeCaller.expectedStringFromConfig,
+						Default:          fakeCaller.expectedBoolFromConfig,
+						TimeOutInSeconds: fakeCaller.expectedIntFromConfig,
+					},
+					GitleaksSecurityTest: &types.SecurityTest{
 						Name:             fakeCaller.expectedStringFromConfig,
 						Image:            fakeCaller.expectedStringFromConfig,
 						ImageTag:         fakeCaller.expectedStringFromConfig,

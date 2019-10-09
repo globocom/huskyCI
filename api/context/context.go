@@ -76,6 +76,7 @@ type APIConfig struct {
 	BrakemanSecurityTest   *types.SecurityTest
 	NpmAuditSecurityTest   *types.SecurityTest
 	YarnAuditSecurityTest  *types.SecurityTest
+	GitleaksSecurityTest   *types.SecurityTest
 	SafetySecurityTest     *types.SecurityTest
 }
 
@@ -117,6 +118,7 @@ func (dF DefaultConfig) SetOnceConfig() {
 			NpmAuditSecurityTest:   dF.getSecurityTestConfig("npmaudit"),
 			YarnAuditSecurityTest:  dF.getSecurityTestConfig("yarnaudit"),
 			SafetySecurityTest:     dF.getSecurityTestConfig("safety"),
+			GitleaksSecurityTest:   dF.getSecurityTestConfig("gitleaks"),
 		}
 	})
 }
@@ -135,12 +137,12 @@ func (dF DefaultConfig) GetAPIPort() int {
 
 // GetAPIVersion returns current API version
 func (dF DefaultConfig) GetAPIVersion() string {
-	return "0.6.0"
+	return "0.8.0"
 }
 
 // GetAPIReleaseDate returns current API release date
 func (dF DefaultConfig) GetAPIReleaseDate() string {
-	return "2019-07-18"
+	return "2019-09-30"
 }
 
 // GetAllowOriginValue returns the allow origin value

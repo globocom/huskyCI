@@ -40,7 +40,6 @@ func analyzeEnry(enryScan *SecTestScanInfo) error {
 
 func (enryScan *SecTestScanInfo) prepareEnryOutput() error {
 	repositoryLanguages := []Code{}
-	newLanguage := Code{}
 	mapLanguages := make(map[string][]interface{})
 	err := json.Unmarshal([]byte(enryScan.Container.COutput), &mapLanguages)
 	if err != nil {
@@ -58,7 +57,7 @@ func (enryScan *SecTestScanInfo) prepareEnryOutput() error {
 				return errMsg
 			}
 		}
-		newLanguage = Code{
+		newLanguage := Code{
 			Language: name,
 			Files:    fs,
 		}

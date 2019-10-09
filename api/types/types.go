@@ -101,6 +101,7 @@ type HuskyCIResults struct {
 	PythonResults     PythonResults     `bson:"pythonresults,omitempty" json:"pythonresults,omitempty"`
 	JavaScriptResults JavaScriptResults `bson:"javascriptresults,omitempty" json:"javascriptresults,omitempty"`
 	RubyResults       RubyResults       `bson:"rubyresults,omitempty" json:"rubyresults,omitempty"`
+	GenericResults    GenericResults    `bson:"genericresults,omitempty" json:"genericresults,omitempty"`
 }
 
 // GoResults represents all Golang security tests results.
@@ -123,6 +124,11 @@ type JavaScriptResults struct {
 // RubyResults represents all Ruby security tests results.
 type RubyResults struct {
 	HuskyCIBrakemanOutput HuskyCISecurityTestOutput `bson:"brakemanoutput,omitempty" json:"brakemanoutput,omitempty"`
+}
+
+// GenericResults represents all generic securityTests results
+type GenericResults struct {
+	HuskyCIGitleaksOutput HuskyCISecurityTestOutput `bson:"gitleaksoutput,omitempty" json:"gitleaksoutput,omitempty"`
 }
 
 // HuskyCISecurityTestOutput stores all Low, Medium and High vulnerabilities for a sec test

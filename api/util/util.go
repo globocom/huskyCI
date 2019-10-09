@@ -153,7 +153,7 @@ func CheckMaliciousRepoBranch(repositoryBranch string, c echo.Context) error {
 
 // CheckMaliciousRID verifies if a given RID is "malicious" or not
 func CheckMaliciousRID(RID string, c echo.Context) error {
-	regexpRID := `^[a-zA-Z0-9]*$`
+	regexpRID := `^[-a-zA-Z0-9]*$`
 	valid, err := regexp.MatchString(regexpRID, RID)
 	if err != nil {
 		log.Error("GetAnalysis", "ANALYSIS", 1008, "RID regexp ", err)

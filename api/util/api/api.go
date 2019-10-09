@@ -111,7 +111,7 @@ func (cH *CheckUtils) checkEnvVars() error {
 		}
 	}
 
-	if allEnvIsSet == false {
+	if !allEnvIsSet {
 		finalError := fmt.Sprintf("Check environment variables: %s", errorString)
 		return errors.New(finalError)
 	}
@@ -137,7 +137,7 @@ func (cH *CheckUtils) checkMongoDB() error {
 }
 
 func (cH *CheckUtils) checkEachSecurityTest(configAPI *apiContext.APIConfig) error {
-	securityTests := []string{"enry", "gitauthors", "gosec", "brakeman", "bandit", "npmaudit", "yarnaudit", "safety"}
+	securityTests := []string{"enry", "gitauthors", "gosec", "brakeman", "bandit", "npmaudit", "yarnaudit", "safety", "gitleaks"}
 	for _, securityTest := range securityTests {
 		if err := checkSecurityTest(securityTest, configAPI); err != nil {
 			errMsg := fmt.Sprintf("%s %s", securityTest, err)
@@ -187,6 +187,8 @@ func checkSecurityTest(securityTestName string, configAPI *apiContext.APIConfig)
 		securityTestConfig = *configAPI.YarnAuditSecurityTest
 	case "safety":
 		securityTestConfig = *configAPI.SafetySecurityTest
+	case "gitleaks":
+		securityTestConfig = *configAPI.GitleaksSecurityTest
 	default:
 		return errors.New("securityTest name not defined")
 	}

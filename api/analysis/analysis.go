@@ -28,7 +28,12 @@ func StartAnalysis(RID string, repository types.Repository) {
 	enryScan.SecurityTestName = "enry"
 	allScansResults := securitytest.RunAllInfo{}
 
-	defer registerFinishedAnalysis(RID, &allScansResults)
+	defer func() {
+		err := registerFinishedAnalysis(RID, &allScansResults)
+		if err != nil {
+			log.Error("StartAnalysis", "ANALYSIS", 2011, err)
+		}
+	}()
 
 	if err := enryScan.New(RID, repository.URL, repository.Branch, enryScan.SecurityTestName); err != nil {
 		log.Error("StartAnalysis", "ANALYSIS", 2011, err)
@@ -46,7 +51,6 @@ func StartAnalysis(RID string, repository types.Repository) {
 	}
 
 	log.Info("StartAnalysis", "ANALYSIS", 102, RID)
-	return
 }
 
 func registerNewAnalysis(RID string, repository types.Repository) error {

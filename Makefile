@@ -5,7 +5,6 @@ GO ?= go
 GOROOT ?= $(shell $(GO) env GOROOT)
 GOPATH ?= $(shell $(GO) env GOPATH)
 GOBIN ?= $(GOPATH)/bin
-GODEP ?= $(GOBIN)/dep
 GOLINT ?= $(GOBIN)/golint
 GOSEC ?= $(GOBIN)/gosec
 GINKGO ?= $(GOBIN)/ginkgo
@@ -28,7 +27,7 @@ LDFLAGS := '-X "main.version=$(TAG)" -X "main.commit=$(COMMIT)" -X "main.date=$(
 
 ## Builds Go project to the executable file huskyci
 build:
-	cd api && GOOS=linux GOARCH=amd64 $(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCIBIN)"
+	cd api && GOOS=linux GOARCH=amd64 $(GO) build -mod vendor -ldflags $(LDFLAGS) -o "$(HUSKYCIBIN)"
 
 ## Builds client to the executable file huskyci-client
 build-client:
@@ -38,9 +37,15 @@ build-client:
 build-client-linux:
 	cd cli/cmd && GOOS=linux GOARCH=amd64 $(GO) build -o "$(HUSKYCICLIENTBIN)" && mv "$(HUSKYCICLIENTBIN)" ../..
 
+## Builds all securityTest containers locally with the tag latest
+build-containers:
+	chmod +x deployments/scripts/build-containers.sh
+	./deployments/scripts/build-containers.sh
+
 ## Checks depencies of the project
 check-deps:
-	$(GODEP) ensure -v
+	$(GO) mod verify
+	$(GO) mod vendor
 
 ## Runs a security static analysis using Gosec
 check-sec:
@@ -50,6 +55,16 @@ check-sec:
 ## Checks .env file from huskyCI
 check-env:
 	cat .env
+
+## Checks every securityTest version from their container images
+check-containers-version:
+	chmod +x deployments/scripts/check-containers-version.sh
+	./deployments/scripts/check-containers-version.sh
+
+## Run tests with code coverage
+coverage:
+	$(GO) test -mod vendor ./... -coverprofile=c.out
+	$(GO) tool cover -html=c.out -o coverage.html
 
 ## Composes huskyCI environment using docker-compose
 compose:
@@ -73,11 +88,14 @@ generate-passwords:
 
 ## Gets all go test dependencies
 get-test-deps:
-	$(GO) get -u github.com/golang/dep/cmd/dep
 	$(GO) get -u golang.org/x/lint/golint
 	$(GO) get -u github.com/onsi/ginkgo/ginkgo
 	$(GO) get -u github.com/onsi/gomega/...
 	$(GO) get -u github.com/mattn/goveralls
+
+## Runs ginkgo
+ginkgo:
+	$(GINKGO) -r -keepGoing
 
 ## Prints help message
 help:
@@ -96,22 +114,14 @@ help:
 ## Installs a development environment using docker-compose
 install: create-certs compose generate-passwords generate-local-token
 
-## Installs a development environment using docker-compose and pulls security tests' images
-install-pull-images: create-certs compose generate-passwords generate-local-token pull-images
-
 ## Runs lint
 lint:
 	$(GOLINT) $(shell $(GO) list ./...)
 
-## Pulls every HuskyCI docker image into huskyCI_Docker_API container
-pull-images:
-	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/enry"
-	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/gosec"
-	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/bandit"
-	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/brakeman"
-	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/safety"
-	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/npmaudit"
-	docker exec huskyCI_Docker_API /bin/sh -c "docker pull huskyci/gitauthors"
+## Push securityTest containers to hub.docker
+push-containers:
+	chmod +x deployments/scripts/push-containers.sh
+	./deployments/scripts/push-containers.sh
 
 ## Runs huskyci-client
 run-client: build-client
@@ -129,14 +139,8 @@ run-client-linux: build-client-linux
 run-client-linux-json: build-client-linux
 	./"$(HUSKYCICLIENTBIN)" JSON
 
-## Runs ginkgo
-ginkgo:
-	$(GINKGO) -r -keepGoing
-
-## Run tests with code coverage
-coverage:
-	$(GO) test ./... -coverprofile=c.out
-	$(GO) tool cover -html=c.out -o coverage.html
-
 ## Perfoms all make tests
 test: get-test-deps lint ginkgo coverage
+
+## Builds and push securityTest containers with the latest tags
+update-containers: build-containers push-containers
