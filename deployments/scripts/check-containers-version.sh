@@ -16,6 +16,7 @@ gosecVersion=$(docker run --rm huskyci/gosec:latest gosec --version | grep Versi
 npmAuditVersion=$(docker run --rm huskyci/npmaudit:latest npm audit --version)
 yarnAuditVersion=$(docker run --rm huskyci/yarnaudit:latest yarn audit --version )
 safetyVersion=$(docker run --rm huskyci/safety:latest safety --version | awk -F " " '{print $3}')
+gitleaksVersion=$(docker run --rm huskyci/gitleaks:latest gitleaks --version)
 
 echo "bandit: $banditVersion"
 echo "brakeman: $brakemanVersion"
@@ -25,3 +26,4 @@ echo "gosecVersion: $gosecVersion"
 echo "npmauditVersion: $npmAuditVersion"
 echo "yarnauditVersion: $yarnAuditVersion"
 echo "safetyVersion: $safetyVersion"
+echo "gitleaksVersion: $gitleaksVersion"

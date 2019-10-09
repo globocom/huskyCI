@@ -22,6 +22,7 @@ var securityTestAnalyze = map[string]func(scanInfo *SecTestScanInfo) error{
 	"npmaudit":   analyzeNpmaudit,
 	"yarnaudit":  analyzeYarnaudit,
 	"safety":     analyzeSafety,
+	"gitleaks":   analyseGitleaks,
 }
 
 // SecTestScanInfo holds all information of securityTest scan.
@@ -154,7 +155,7 @@ func (scanInfo *SecTestScanInfo) prepareContainerAfterScan() {
 	if len(scanInfo.Vulnerabilities.MediumVulns) > 0 || len(scanInfo.Vulnerabilities.HighVulns) > 0 {
 		scanInfo.Container.CInfo = "Issues found."
 		scanInfo.Container.CResult = "failed"
-	} else if len(scanInfo.Vulnerabilities.LowVulns) > 0 && (len(scanInfo.Vulnerabilities.MediumVulns) == 0 || len(scanInfo.Vulnerabilities.HighVulns) == 0) {
+	} else if len(scanInfo.Vulnerabilities.LowVulns) > 0 {
 		scanInfo.Container.CInfo = "Warnings found."
 		scanInfo.Container.CResult = "passed"
 	}

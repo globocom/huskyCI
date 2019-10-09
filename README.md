@@ -15,7 +15,7 @@
   <a href="https://github.com/globocom/huskyCI/wiki"><img src="https://img.shields.io/badge/docs-wiki-informational"/></a>
   <a href="https://github.com/rafaveira3/writing-and-presentations/blob/master/DEFCON-27-APP-SEC-VILLAGE-Rafael-Santos-huskyCI-Finding-security-flaws-in-CI-before-deploying-them.pdf"><img src="https://img.shields.io/badge/DEFCON%2027-AppSec%20Village-blueviolet"/></a>
   <a href="https://www.blackhat.com/eu-19/arsenal/schedule/#huskyci-performing-security-tests-inside-your-ci-17792"><img src="https://img.shields.io/badge/Black%20Hat%20Arsenal-Europe%202019-black"/></a>
-  
+
 </p>
 
 huskyCI is an open-source tool that performs security tests inside CI pipelines of multiple projects and centralizes all results into a database for further analysis and metrics.
@@ -24,7 +24,7 @@ huskyCI is an open-source tool that performs security tests inside CI pipelines 
 
 The main goal of this project is to help development teams improve the quality of their code by finding vulnerabilities as soon as possible.
 
-huskyCI can perform static security analysis in Python ([Bandit][Bandit] and [Safety][Safety]), Ruby ([Brakeman][Brakeman]), JavaScript ([Npm Audit][NpmAudit] and [Yarn Audit][YarnAudit]) and Golang ([Gosec][Gosec]). You should check our [wiki](https://github.com/globocom/huskyCI/wiki/How-does-huskyCI-work%3F) to better understand how this tool could help securing your organization projects!
+huskyCI can perform static security analysis in Python ([Bandit][Bandit] and [Safety][Safety]), Ruby ([Brakeman][Brakeman]), JavaScript ([Npm Audit][NpmAudit] and [Yarn Audit][YarnAudit]) and Golang ([Gosec][Gosec]). It can also audit repositories for secrets like AWS Secret Keys, Private SSH Keys, and many others using ([GitLeaks][Gitleaks]). You should check our [wiki](https://github.com/globocom/huskyCI/wiki/How-does-huskyCI-work%3F) to better understand how this tool could help securing your organization projects!
 
 <p align="center">
   <img src="huskyCI.gif" />
@@ -112,3 +112,4 @@ This project is licensed under the BSD 3-Clause "New" or "Revised" License - rea
 [Gosec]: https://github.com/securego/gosec
 [NpmAudit]: https://docs.npmjs.com/cli/audit
 [YarnAudit]: https://yarnpkg.com/lang/en/docs/cli/audit/
+[Gitleaks]: https://github.com/zricethezav/gitleaks

@@ -53,6 +53,7 @@ type HuskyCIResults struct {
 	PythonResults     PythonResults     `bson:"pythonresults,omitempty" json:"pythonresults,omitempty"`
 	JavaScriptResults JavaScriptResults `bson:"javascriptresults,omitempty" json:"javascriptresults,omitempty"`
 	RubyResults       RubyResults       `bson:"rubyresults,omitempty" json:"rubyresults,omitempty"`
+	GenericResults    GenericResults    `bson:"genericresults,omitempty" json:"genericresults,omitempty"`
 }
 
 // Container is the struct that stores all data from a container run.
@@ -101,6 +102,7 @@ type JSONOutput struct {
 	PythonResults     PythonResults     `json:"pythonresults,omitempty"`
 	JavaScriptResults JavaScriptResults `json:"javascriptresults,omitempty"`
 	RubyResults       RubyResults       `json:"rubyresults,omitempty"`
+	GenericResults    GenericResults    `json:"genericresults,omitempty"`
 	Summary           Summary           `json:"summary,omitempty"`
 }
 
@@ -126,6 +128,11 @@ type RubyResults struct {
 	HuskyCIBrakemanOutput HuskyCISecurityTestOutput `bson:"brakemanoutput,omitempty" json:"brakemanoutput,omitempty"`
 }
 
+// GenericResults represents all generic securityTests results.
+type GenericResults struct {
+	HuskyCIGitleaksOutput HuskyCISecurityTestOutput `bson:"gitleaksoutput,omitempty" json:"gitleaksoutput,omitempty"`
+}
+
 // HuskyCISecurityTestOutput stores all Low, Medium and High vulnerabilities for a sec test
 type HuskyCISecurityTestOutput struct {
 	NoSecVulns  []HuskyCIVulnerability `bson:"nosecvulns,omitempty" json:"nosecvulns,omitempty"`
@@ -145,6 +152,7 @@ type Summary struct {
 	NpmAuditSummary  HuskyCISummary `json:"npmauditsummary,omitempty"`
 	YarnAuditSummary HuskyCISummary `json:"yarnauditsummary,omitempty"`
 	BrakemanSummary  HuskyCISummary `json:"brakemansummary,omitempty"`
+	GitleaksSummary  HuskyCISummary `json:"gitleakssummary,omitempty"`
 	TotalSummary     HuskyCISummary `json:"totalsummary,omitempty"`
 }
 

@@ -15,3 +15,4 @@ docker build deployments/dockerfiles/gosec/ -t huskyci/gosec:latest
 docker build deployments/dockerfiles/npmaudit/ -t huskyci/npmaudit:latest
 docker build deployments/dockerfiles/npmaudit/ -t huskyci/yarnaudit:latest
 docker build deployments/dockerfiles/safety/ -t huskyci/safety:latest
+docker build deployments/dockerfiles/gitleaks/ -t huskyci/gitleaks:latest

@@ -232,3 +232,30 @@ yarnaudit:
   language: JavaScript
   default: true
   timeOutInSeconds: 360
+
+gitleaks:
+  name: gitleaks
+  image: huskyci/gitleaks
+  imageTag: "2.1.0"
+  cmd: |+
+    mkdir -p ~/.ssh &&
+    echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
+    chmod 600 ~/.ssh/huskyci_id_rsa &&
+    echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
+    echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
+    git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneGitleaks
+    if [ $? -eq 0 ]; then
+        $(which gitleaks) --log=warn --report=results.json --repo-path=./code > /tmp/errorGitleaks
+        if [ $? -eq 2 ]; then
+            echo -n 'ERROR_RUNNING_GITLEAKS'
+            cat /tmp/errorGitleaks
+        else
+            jq -j -M -c . results.json
+        fi
+    else
+        echo "ERROR_CLONING"
+        cat /tmp/errorGitCloneGitleaks
+    fi
+  type: Generic
+  default: true
+  timeOutInSeconds: 360
