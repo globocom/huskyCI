@@ -33,7 +33,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/globocom/huskyCI/cli/analysis"
 	"github.com/globocom/huskyCI/cli/client"
 	"github.com/globocom/huskyCI/cli/config"
 	"github.com/globocom/huskyCI/client/types"
@@ -74,7 +73,7 @@ var runCmd = &cobra.Command{
 		}
 
 		var outputJSON types.JSONOutput
-		err = analysis.PrintResults(analysisResult, outputJSON)
+		err = hcli.PrintResults(analysisResult, outputJSON)
 		if err != nil {
 			return fmt.Errorf("[HUSKYCI][ERROR] Printing output: (%v)", err)
 		}
