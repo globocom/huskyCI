@@ -6,6 +6,7 @@ package securitytest
 
 import (
 	"encoding/json"
+	"strings"
 
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
@@ -60,11 +61,15 @@ func (gitleaksScan *SecTestScanInfo) prepareGitleaksVulns() {
 
 	huskyCIgitleaksResults := types.HuskyCISecurityTestOutput{}
 	gitleaksOutput := gitleaksScan.FinalOutput.(GitleaksOutput)
-
 	for _, issue := range gitleaksOutput {
+		// vendor issues should not effect us
+		if strings.HasPrefix(issue.File, "vendor/") {
+			continue
+		}
+
 		gitleaksVuln := types.HuskyCIVulnerability{}
 		gitleaksVuln.SecurityTool = "GitLeaks"
-		gitleaksVuln.Details = issue.Info + " @ " + issue.CommitMessage
+		gitleaksVuln.Details = issue.Rule + " @ [" + issue.Commit + "]"
 		gitleaksVuln.File = issue.File
 		gitleaksVuln.Code = issue.Line
 

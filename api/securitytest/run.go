@@ -112,6 +112,8 @@ func (results *RunAllInfo) runGenericScans(enryScan SecTestScanInfo) error {
 			results.Containers = append(results.Containers, newGenericScan.Container)
 			if genericTest.Name == "gitauthors" {
 				results.CommitAuthors = newGenericScan.CommitAuthors.Authors
+			} else if genericTest.Name == "gitleaks" {
+				results.setVulns(newGenericScan)
 			}
 		}(&genericTests[genericTestIndex])
 	}
