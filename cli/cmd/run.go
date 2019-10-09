@@ -31,9 +31,12 @@ package cmd
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/globocom/huskyCI/cli/analysis"
+	"github.com/globocom/huskyCI/cli/client"
 	"github.com/globocom/huskyCI/cli/config"
+	"github.com/globocom/huskyCI/client/types"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -54,19 +57,24 @@ var runCmd = &cobra.Command{
 
 		fmt.Printf("[HUSKYCI][*] %s -> %s\n", viper.Get("repo_branch"), viper.Get("repo_url"))
 
-		analysisRunnerResults, err := analysis.Start(*currentTarget)
+		hcli := client.NewClient(*currentTarget)
+		analysisRunnerResults, err := hcli.Start(viper.GetString("repo_url"), viper.GetString("repo_branch"))
 		if err != nil {
 			return fmt.Errorf("[HUSKYCI][ERROR] Sending request to huskyCI: %s", err.Error())
 		}
 
-		fmt.Printf("[HUSKYCI][*] huskyCI analysis started: %s\n", analysisRunnerResults.Summary.RID)
+		fmt.Printf("[HUSKYCI][*] huskyCI analysis started: %s\n", analysisRunnerResults.RID)
 
-		analysisResult, err := analysis.Monitor(*currentTarget, analysisRunnerResults.Summary.RID)
+		timeoutMonitor, _ := time.ParseDuration("10m")
+		retryMonitor, _ := time.ParseDuration("30s")
+
+		analysisResult, err := hcli.Monitor(analysisRunnerResults.RID, timeoutMonitor, retryMonitor)
 		if err != nil {
-			return fmt.Errorf("[HUSKYCI][ERROR] Monitoring analysis %s: %v", analysisRunnerResults.Summary.RID, err)
+			return fmt.Errorf("[HUSKYCI][ERROR] Monitoring analysis %s: %v", analysisRunnerResults.RID, err)
 		}
 
-		err = analysis.PrintResults(analysisResult, analysisRunnerResults)
+		var outputJSON types.JSONOutput
+		err = analysis.PrintResults(analysisResult, outputJSON)
 		if err != nil {
 			return fmt.Errorf("[HUSKYCI][ERROR] Printing output: (%v)", err)
 		}
