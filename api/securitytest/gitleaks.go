@@ -62,8 +62,8 @@ func (gitleaksScan *SecTestScanInfo) prepareGitleaksVulns() {
 	huskyCIgitleaksResults := types.HuskyCISecurityTestOutput{}
 	gitleaksOutput := gitleaksScan.FinalOutput.(GitleaksOutput)
 	for _, issue := range gitleaksOutput {
-		// vendor issues should not effect us
-		if strings.HasPrefix(issue.File, "vendor/") {
+		// golang: vendor issues should not effect us
+		if strings.HasPrefix(issue.File, "vendor/") && strings.HasSuffix(issue.File, ".go") {
 			continue
 		}
 
