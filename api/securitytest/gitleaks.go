@@ -63,7 +63,7 @@ func (gitleaksScan *SecTestScanInfo) prepareGitleaksVulns() {
 	gitleaksOutput := gitleaksScan.FinalOutput.(GitleaksOutput)
 	for _, issue := range gitleaksOutput {
 		// golang: vendor issues should not effect us
-		if strings.HasPrefix(issue.File, "vendor/") && strings.HasSuffix(issue.File, ".go") {
+		if strings.HasPrefix(issue.File, "vendor/") {
 			continue
 		}
 
