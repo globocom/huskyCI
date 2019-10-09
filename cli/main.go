@@ -29,7 +29,9 @@
 
 package main
 
-import "github.com/globocom/huskyCI/cli/cmd"
+import (
+	"github.com/globocom/huskyCI/cli/cmd"
+)
 
 func main() {
 	cmd.Execute()
