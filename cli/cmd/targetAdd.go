@@ -74,7 +74,7 @@ Adds a new entry to the list of available targets.
 		// if new target must be current, we unset all others
 		setCurrent, err := cmd.Flags().GetBool("set-current")
 		if err != nil {
-			fmt.Errorf("Client error parsing set-current option: (%s)", err.Error())
+			return fmt.Errorf("Client error parsing set-current option: (%s)", err.Error())
 		}
 
 		if setCurrent {
