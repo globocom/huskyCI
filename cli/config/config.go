@@ -65,7 +65,7 @@ func GetCurrentTarget() (*types.Target, error) {
 
 					// check token storage
 					if target["token-storage"] == nil {
-						fmt.Printf("Token storage is not set. You can set it using the -s flag at 'husky login' command\n")
+						fmt.Printf("Token storage is not set. You can set it using the -s flag at 'huskyci login' command\n")
 						currentTarget.TokenStorage = ""
 					} else {
 						currentTarget.TokenStorage = target["token-storage"].(string)
