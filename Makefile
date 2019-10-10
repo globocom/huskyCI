@@ -57,9 +57,7 @@ check-deps:
 	$(GO) mod vendor
 
 ## Runs a security static analysis using Gosec
-check-sec:
-	$(GO) get -u github.com/securego/gosec/cmd/gosec
-	$(GOSEC) ./... 2> /dev/null
+check-sec: get-gosec-deps gosec
 
 ## Checks .env file from huskyCI
 check-env:
@@ -95,6 +93,10 @@ generate-passwords:
 	chmod +x deployments/scripts/generate-env.sh
 	./deployments/scripts/generate-env.sh
 
+## Gets all gosec dependencies
+get-gosec-deps:
+	$(GO) get -u github.com/securego/gosec/cmd/gosec
+
 ## Gets all link dependencies
 get-lint-deps:
 	$(GO) get -u github.com/golangci/golangci-lint/cmd/golangci-lint
@@ -102,10 +104,13 @@ get-lint-deps:
 
 ## Gets all go test dependencies
 get-test-deps:
-	$(GO) get -u golang.org/x/lint/golint
 	$(GO) get -u github.com/onsi/ginkgo/ginkgo
 	$(GO) get -u github.com/onsi/gomega/...
 	$(GO) get -u github.com/mattn/goveralls
+
+## Runs ginkgo
+ginkgo:
+	$(GINKGO) -r -keepGoing
 
 ## Runs go lint
 golint:
@@ -115,9 +120,9 @@ golint:
 golangci-lint:
 	$(GOCILINT) run
 
-## Runs ginkgo
-ginkgo:
-	$(GINKGO) -r -keepGoing
+## Runs gosec
+gosec:
+	$(GOSEC) ./... 2> /dev/null
 
 ## Prints help message
 help:
@@ -169,7 +174,7 @@ run-client-linux-json: build-client-linux
 	./"$(HUSKYCICLIENTBIN)" JSON
 
 ## Perfoms all make tests
-test: get-test-deps lint ginkgo coverage
+test: get-test-deps ginkgo coverage
 
 ## Builds and push securityTest containers with the latest tags
 update-containers: build-containers push-containers
