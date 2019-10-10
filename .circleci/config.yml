@@ -1,40 +1,98 @@
 version: 2
 
 jobs:
+  setup:
+    docker:
+      - image: circleci/golang:1.11
+    working_directory: /go/src/github.com/globocom/huskyCI  
+    steps:
+      - restore_cache:
+        keys:
+          - v1-pkg-cache
+      - checkout
+      - run:
+        name: "Gets all go test dependencies"
+        command: |
+          make get-all-test-deps
+      - save_cache:
+        key: v1-pkg-cache
+        paths:
+          - "/go"
+
   test:
     docker:
       - image: circleci/golang:1.11
     working_directory: /go/src/github.com/globocom/huskyCI
     steps:
+      - restore_cache:
+        keys:
+          - v1-pkg-cache
       - checkout
-      - run: make test
+      - run:
+        name: "Create a temp directory for artifacts"
+        command: |
+          mkdir -p /tmp/artifacts
+      - run:
+        name: "Make test"
+        command: |
+          make test
       - store_artifacts:
-          path: /tmp/artifacts
+        path: /tmp/artifacts
 
-  build:
+  lint:
     docker:
       - image: circleci/golang:1.11
     working_directory: /go/src/github.com/globocom/huskyCI
     steps:
-      - checkout
+      - restore_cache:
+        keys:
+          - v1-pkg-cache
       - run:
-          name: "Create a temp directory for artifacts"
-          command: |
-            mkdir -p /tmp/artifacts
+        name: "Make Lint"
+        command: |
+          make lint
+
+  check-sec:
+    docker:
+      - image: circleci/golang:1.11
+    working_directory: /go/src/github.com/globocom/huskyCI
+    steps:
+      - restore_cache:
+        keys:
+          - v1-pkg-cache
       - run:
-          command: |
-            make test
-            make check-sec
-            mv coverage.html /tmp/artifacts
-            $GOPATH/bin/goveralls -coverprofile=c.out -service=circle-ci -repotoken=$COVERALLS_TOKEN
-      - store_artifacts:
-          path: /tmp/artifacts
+        name: "Make check sec"
+        command: |
+          make check-sec
+    
+  goveralls:
+    docker:
+      - image: circleci/golang:1.11
+    working_directory: /go/src/github.com/globocom/huskyCI
+    steps:
+      - restore_cache:
+        keys:
+          - v1-pkg-cache
+      - run:
+        name: "goveralls"
+        command: |
+          $GOPATH/bin/goveralls -coverprofile=c.out -service=circle-ci -repotoken=$COVERALLS_TOKEN
+
 
 workflows:
   version: 2
-  test-build-deploy:
+  test-build:
     jobs:
-      - test
-      - build:
+      - setup
+      - test:
           requires:
-            - test
+            - setup
+      - lint:
+          requires:
+            - setup
+      - check-sec:
+          requires:
+            - setup
+      - goveralls:
+          requires:
+            - setup
