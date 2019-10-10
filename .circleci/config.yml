@@ -6,22 +6,21 @@ jobs:
       - image: circleci/golang:1.13
     environment:
       GO111MODULE: "on"
-      CACHE-KEY: v2-pkg-cache
     working_directory: /go/src/github.com/globocom/huskyCI  
     steps:
       - restore_cache:
           keys:
-            - $CACHE-KEY
+            - v3-pkg-cache
       - checkout
       - run:
           name: "Gets all go test dependencies"
           command: |
             make get-all-tests-deps
       - save_cache:
-          key: $CACHE-KEY
+          key: v3-pkg-cache
           paths:
             - "/go/pkg"
-            - "src/github.com/globocom/huskyCI"
+            - "/go/bin"
 
   test:
     docker:
@@ -30,7 +29,7 @@ jobs:
     steps:
       - restore_cache:
           keys:
-            - $CACHE-KEY
+            - v3-pkg-cache
       - checkout
       - run:
           name: "Create a temp directory for artifacts"
@@ -50,7 +49,7 @@ jobs:
     steps:
       - restore_cache:
           keys:
-            - $CACHE-KEY
+            - v3-pkg-cache
       - run:
           name: "Make Lint"
           command: |
@@ -63,7 +62,7 @@ jobs:
     steps:
       - restore_cache:
           keys:
-            - $CACHE-KEY
+            - v3-pkg-cache
       - run:
           name: "Make check sec"
           command: |
@@ -76,7 +75,7 @@ jobs:
     steps:
       - restore_cache:
           keys:
-            - $CACHE-KEY
+            - v3-pkg-cache
       - run:
           name: "goveralls"
           command: |
