@@ -56,11 +56,10 @@ var runCmd = &cobra.Command{
 		var outputJSON types.JSONOutput
 		hcli.PrintResults(analysisResult, outputJSON)
 
-		if viper.GetBool("found_vuln") == false {
-			if viper.GetBool("found_info") == false {
+		if !viper.GetBool("found_vuln") {
+			if !viper.GetBool("found_info") {
 				fmt.Printf("[HUSKYCI][*] Nice! No issues were found :)\n")
-			}
-			if viper.GetBool("found_info") == true {
+			} else {
 				fmt.Printf("[HUSKYCI][*] Some LOW/INFO issues were found :|\n")
 			}
 		} else {

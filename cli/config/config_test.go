@@ -111,7 +111,9 @@ func TestCheckAndCreateConfigFolder(t *testing.T) {
 			}
 
 			// Change permissions
-			os.Chmod(dir, 0000)
+			if err := os.Chmod(dir, 0000); err != nil {
+				t.Fatalf("Internal Error: (%v)", err)
+			}
 
 			_, err = CheckAndCreateConfigFolder(dir, true)
 			if err != nil {
@@ -119,7 +121,9 @@ func TestCheckAndCreateConfigFolder(t *testing.T) {
 			}
 
 			// Change permissions
-			os.Chmod(dir, 777)
+			if err := os.Chmod(dir, 0777); err != nil {
+				t.Fatalf("Internal Error: (%v)", err)
+			}
 
 			// Clean environment
 			defer os.RemoveAll(dir)
@@ -136,6 +140,9 @@ func TestCreateConfigFile(t *testing.T) {
 				t.Fatalf("CONFIG: (pre-test) fail to create config folder (%v)", err)
 			}
 			configFolder, err := CheckAndCreateConfigFolder(dir, true)
+			if err != nil {
+				t.Fatalf("Internal Error: (%v)", err)
+			}
 
 			_, err = CreateConfigFile(configFolder, true)
 			if err != nil {

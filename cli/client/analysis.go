@@ -69,13 +69,13 @@ func (hcli *Client) Monitor(RID string, timeoutMonitor, retry time.Duration) (ty
 
 	analysisResult := types.Analysis{}
 	timeout := time.After(timeoutMonitor)
-	retryTick := time.Tick(retry)
+	retryTick := time.NewTicker(retry)
 
 	for {
 		select {
 		case <-timeout:
 			return analysisResult, fmt.Errorf("huskyCI monitor timeout (%s)", timeoutMonitor.String())
-		case <-retryTick:
+		case <-retryTick.C:
 			analysisResult, err := hcli.Get(RID)
 			if err != nil {
 				return analysisResult, err

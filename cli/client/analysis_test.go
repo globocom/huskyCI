@@ -36,7 +36,10 @@ func TestClientStart(t *testing.T) {
 		func(t *testing.T) {
 			h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusGatewayTimeout)
-				w.Write([]byte(""))
+				_, err := w.Write([]byte(""))
+				if err != nil {
+					t.Fatalf("Internal Error: (%v)", err)
+				}
 			})
 			httpClient, teardown := testingHTTPClient(h)
 			defer teardown()
@@ -54,7 +57,10 @@ func TestClientStart(t *testing.T) {
 		func(t *testing.T) {
 			h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusCreated)
-				w.Write([]byte(""))
+				_, err := w.Write([]byte(""))
+				if err != nil {
+					t.Fatalf("Internal Error: (%v)", err)
+				}
 			})
 			httpClient, teardown := testingHTTPClient(h)
 			defer teardown()
@@ -74,10 +80,16 @@ func TestClientStart(t *testing.T) {
 				if r.Header.Get("Husky-Token") == "Husky-Token-Value" {
 					w.Header().Set("X-Request-Id", "token")
 					w.WriteHeader(http.StatusCreated)
-					w.Write([]byte(""))
+					_, err := w.Write([]byte(""))
+					if err != nil {
+						t.Fatalf("Internal Error: (%v)", err)
+					}
 				} else {
 					w.WriteHeader(http.StatusUnauthorized)
-					w.Write([]byte(""))
+					_, err := w.Write([]byte(""))
+					if err != nil {
+						t.Fatalf("Internal Error: (%v)", err)
+					}
 				}
 			})
 			httpClient, teardown := testingHTTPClient(h)
@@ -98,10 +110,16 @@ func TestClientStart(t *testing.T) {
 				if r.Header.Get("Husky-Token") == "Husky-Token-Value" {
 					w.Header().Set("X-Request-Id", "token")
 					w.WriteHeader(http.StatusCreated)
-					w.Write([]byte(""))
+					_, err := w.Write([]byte(""))
+					if err != nil {
+						t.Fatalf("Internal Error: (%v)", err)
+					}
 				} else {
 					w.WriteHeader(http.StatusUnauthorized)
-					w.Write([]byte(""))
+					_, err := w.Write([]byte(""))
+					if err != nil {
+						t.Fatalf("Internal Error: (%v)", err)
+					}
 				}
 			})
 			httpClient, teardown := testingHTTPClient(h)
@@ -129,7 +147,10 @@ func TestClientGet(t *testing.T) {
 		func(t *testing.T) {
 			h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusGatewayTimeout)
-				w.Write([]byte(""))
+				_, err := w.Write([]byte(""))
+				if err != nil {
+					t.Fatalf("Internal Error: (%v)", err)
+				}
 			})
 			httpClient, teardown := testingHTTPClient(h)
 			defer teardown()
@@ -147,7 +168,10 @@ func TestClientGet(t *testing.T) {
 		func(t *testing.T) {
 			h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusOK)
-				w.Write([]byte("{}}"))
+				_, err := w.Write([]byte("{}}"))
+				if err != nil {
+					t.Fatalf("Internal Error: (%v)", err)
+				}
 			})
 			httpClient, teardown := testingHTTPClient(h)
 			defer teardown()
@@ -217,7 +241,10 @@ func TestClientGet(t *testing.T) {
 			  }`
 			h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusOK)
-				w.Write([]byte(validOutput))
+				_, err := w.Write([]byte(validOutput))
+				if err != nil {
+					t.Fatalf("Internal Error: (%v)", err)
+				}
 			})
 			httpClient, teardown := testingHTTPClient(h)
 			defer teardown()
@@ -241,7 +268,10 @@ func TestClientMonitor(t *testing.T) {
 			h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				time.Sleep(2 * time.Second)
 				w.WriteHeader(http.StatusOK)
-				w.Write([]byte("{}"))
+				_, err := w.Write([]byte("{}"))
+				if err != nil {
+					t.Fatalf("Internal Error: (%v)", err)
+				}
 			})
 			httpClient, teardown := testingHTTPClient(h)
 			defer teardown()
@@ -261,7 +291,10 @@ func TestClientMonitor(t *testing.T) {
 		func(t *testing.T) {
 			h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusOK)
-				w.Write([]byte("{}}"))
+				_, err := w.Write([]byte("{}}"))
+				if err != nil {
+					t.Fatalf("Internal Error: (%v)", err)
+				}
 			})
 			httpClient, teardown := testingHTTPClient(h)
 			defer teardown()
@@ -333,7 +366,10 @@ func TestClientMonitor(t *testing.T) {
 				  }`
 			h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusOK)
-				w.Write([]byte(validOutput))
+				_, err := w.Write([]byte(validOutput))
+				if err != nil {
+					t.Fatalf("Internal Error: (%v)", err)
+				}
 			})
 			httpClient, teardown := testingHTTPClient(h)
 			defer teardown()
