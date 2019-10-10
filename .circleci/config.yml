@@ -15,9 +15,10 @@ jobs:
           command: |
             make get-all-tests-deps
       - save_cache:
-          key: v1-pkg-cache
+          key: v2-pkg-cache
           paths:
-            - "/go"
+            - "/go/pkg"
+            - "src/github.com/globocom/huskyCI"
 
   test:
     docker:
