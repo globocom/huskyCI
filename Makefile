@@ -37,6 +37,14 @@ build-client:
 build-client-linux:
 	cd client/cmd && GOOS=linux GOARCH=amd64 $(GO) build -mod vendor -o "$(HUSKYCICLIENTBIN)" && mv "$(HUSKYCICLIENTBIN)" ../..
 
+## Builds CLI to the executable file huskyci-client
+build-cli:
+	cd cli && $(GO) build -o "$(HUSKYCICLIENTBIN)" main.go
+
+## Builds CLI to the executable file huskyci-client
+build-cli-linux:
+	cd cli && GOOS=linux GOARCH=amd64 $(GO) build -o "$(HUSKYCICLIENTBIN)" main.go
+
 ## Builds all securityTest containers locally with the tag latest
 build-containers:
 	chmod +x deployments/scripts/build-containers.sh
@@ -122,6 +130,14 @@ lint:
 push-containers:
 	chmod +x deployments/scripts/push-containers.sh
 	./deployments/scripts/push-containers.sh
+
+## Runs huskyci-client
+run-cli: build-cli
+	cd cli && ./"$(HUSKYCICLIENTBIN)" run
+
+## Run huskyci-client compiling it in Linux arch
+run-cli-linux: build-cli-linux
+	cd cli && ./"$(HUSKYCICLIENTBIN)" run
 
 ## Runs huskyci-client
 run-client: build-client

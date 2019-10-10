@@ -23,6 +23,7 @@ require (
 	github.com/mattn/go-colorable v0.0.9 // indirect
 	github.com/mattn/go-isatty v0.0.7 // indirect
 	github.com/mattn/goveralls v0.0.3 // indirect
+	github.com/mitchellh/go-homedir v1.1.0
 	github.com/nightlyone/lockfile v0.0.0-20180618180623-0ad87eef1443 // indirect
 	github.com/onsi/ginkgo v1.10.2
 	github.com/onsi/gomega v1.7.0
@@ -30,17 +31,19 @@ require (
 	github.com/pelletier/go-toml v1.4.0 // indirect
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/sdboyer/constext v0.0.0-20170321163424-836a14457353 // indirect
-	github.com/securego/gosec v0.0.0-20191002120514-e680875ea14d // indirect
+	github.com/securego/gosec v0.0.0-20191008095658-28c1128b7336 // indirect
 	github.com/spf13/afero v1.2.2 // indirect
+	github.com/spf13/cobra v0.0.5
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/viper v1.3.2
+	github.com/stretchr/testify v1.4.0
 	github.com/valyala/fasttemplate v1.0.1 // indirect
 	golang.org/x/crypto v0.0.0-20190923035154-9ee001bba392
 	golang.org/x/lint v0.0.0-20190930215403-16217165b5de // indirect
 	golang.org/x/net v0.0.0-20191003171128-d98b1b443823
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e // indirect
 	golang.org/x/sys v0.0.0-20191003212358-c178f38b412c // indirect
-	golang.org/x/tools v0.0.0-20191004055002-72853e10c5a3 // indirect
+	golang.org/x/tools v0.0.0-20191010075000-0337d82405ff // indirect
 	gopkg.in/Graylog2/go-gelf.v2 v2.0.0-20180326133423-4dbb9d721348 // indirect
 	gopkg.in/fsnotify/fsnotify.v1 v1.4.7 // indirect
 	gopkg.in/mgo.v2 v2.0.0-20180705113604-9856a29383ce
