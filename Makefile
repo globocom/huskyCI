@@ -98,6 +98,7 @@ generate-passwords:
 ## Gets all link dependencies
 get-lint-deps:
 	$(GO) get -u github.com/golangci/golangci-lint/cmd/golangci-lint
+	$(GO) get -u golang.org/x/lint/golint
 
 ## Gets all go test dependencies
 get-test-deps:
