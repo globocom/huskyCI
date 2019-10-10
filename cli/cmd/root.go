@@ -20,9 +20,9 @@ var cfgFile string
 var rootCmd = &cobra.Command{
 	Use:   "huskyci",
 	Short: "huskyci is a CLI to use huskyCI",
-	Long: `huskyci is a CLI to use huskyCI.
+	Long: `huskyci is a CLI to use huskyCI
 	
-huskyCI is an open-source tool that performs security tests
+huskyCI is an Open Source tool that performs security tests
 inside CI pipelines of multiple projects and centralizes all results 
 into a database for further analysis and metrics.`,
 }

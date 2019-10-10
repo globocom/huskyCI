@@ -13,31 +13,29 @@ import (
 )
 
 // PrintResults prints huskyCI output either in JSON or the standard output.
-func (hcli *Client) PrintResults(analysis types.Analysis, analysisRunnerResults types.JSONOutput) error {
-
+func (hcli *Client) PrintResults(analysis types.Analysis, analysisRunnerResults types.JSONOutput) {
 	prepareAllSummary(analysis, &analysisRunnerResults)
 	printSTDOUTOutput(analysis, &analysisRunnerResults)
-	return nil
 }
 
 // printSTDOUTOutput prints the analysis output in STDOUT using printfs
 func printSTDOUTOutput(analysis types.Analysis, outputJSON *types.JSONOutput) {
 
-	printSTDOUTOutputGosec(outputJSON.GoResults.HuskyCIGosecOutput.LowVulns)
-	printSTDOUTOutputGosec(outputJSON.GoResults.HuskyCIGosecOutput.MediumVulns)
-	printSTDOUTOutputGosec(outputJSON.GoResults.HuskyCIGosecOutput.HighVulns)
+	printSTDOUTOutputSecurityTest(outputJSON.GoResults.HuskyCIGosecOutput.LowVulns)
+	printSTDOUTOutputSecurityTest(outputJSON.GoResults.HuskyCIGosecOutput.MediumVulns)
+	printSTDOUTOutputSecurityTest(outputJSON.GoResults.HuskyCIGosecOutput.HighVulns)
 
-	printSTDOUTOutputBandit(outputJSON.PythonResults.HuskyCIBanditOutput.LowVulns)
-	printSTDOUTOutputBandit(outputJSON.PythonResults.HuskyCIBanditOutput.MediumVulns)
-	printSTDOUTOutputBandit(outputJSON.PythonResults.HuskyCIBanditOutput.HighVulns)
+	printSTDOUTOutputSecurityTest(outputJSON.PythonResults.HuskyCIBanditOutput.LowVulns)
+	printSTDOUTOutputSecurityTest(outputJSON.PythonResults.HuskyCIBanditOutput.MediumVulns)
+	printSTDOUTOutputSecurityTest(outputJSON.PythonResults.HuskyCIBanditOutput.HighVulns)
+
+	printSTDOUTOutputSecurityTest(outputJSON.RubyResults.HuskyCIBrakemanOutput.LowVulns)
+	printSTDOUTOutputSecurityTest(outputJSON.RubyResults.HuskyCIBrakemanOutput.MediumVulns)
+	printSTDOUTOutputSecurityTest(outputJSON.RubyResults.HuskyCIBrakemanOutput.HighVulns)
 
 	printSTDOUTOutputSafety(outputJSON.PythonResults.HuskyCISafetyOutput.LowVulns)
 	printSTDOUTOutputSafety(outputJSON.PythonResults.HuskyCISafetyOutput.MediumVulns)
 	printSTDOUTOutputSafety(outputJSON.PythonResults.HuskyCISafetyOutput.HighVulns)
-
-	printSTDOUTOutputBrakeman(outputJSON.RubyResults.HuskyCIBrakemanOutput.LowVulns)
-	printSTDOUTOutputBrakeman(outputJSON.RubyResults.HuskyCIBrakemanOutput.MediumVulns)
-	printSTDOUTOutputBrakeman(outputJSON.RubyResults.HuskyCIBrakemanOutput.HighVulns)
 
 	printSTDOUTOutputNpmAudit(outputJSON.JavaScriptResults.HuskyCINpmAuditOutput.LowVulns)
 	printSTDOUTOutputNpmAudit(outputJSON.JavaScriptResults.HuskyCINpmAuditOutput.MediumVulns)
@@ -229,31 +227,18 @@ func printAllSummary(analysis types.Analysis, outputJSON *types.JSONOutput) {
 	fmt.Println()
 }
 
-func printSTDOUTOutputGosec(issues []types.HuskyCIVulnerability) {
+func printSTDOUTOutputSecurityTest(issues []types.HuskyCIVulnerability) {
 	for _, issue := range issues {
 		fmt.Println()
 		fmt.Printf("[HUSKYCI][!] Language: %s\n", issue.Language)
 		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
+		fmt.Printf("[HUSKYCI][!] Type: %s\n", issue.Type)
 		fmt.Printf("[HUSKYCI][!] Severity: %s\n", issue.Severity)
 		fmt.Printf("[HUSKYCI][!] Confidence: %s\n", issue.Confidence)
 		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
 		fmt.Printf("[HUSKYCI][!] File: %s\n", issue.File)
 		fmt.Printf("[HUSKYCI][!] Line: %s\n", issue.Line)
 		fmt.Printf("[HUSKYCI][!] Code: %s\n", issue.Code)
-	}
-}
-
-func printSTDOUTOutputBandit(issues []types.HuskyCIVulnerability) {
-	for _, issue := range issues {
-		fmt.Println()
-		fmt.Printf("[HUSKYCI][!] Language: %s\n", issue.Language)
-		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
-		fmt.Printf("[HUSKYCI][!] Severity: %s\n", issue.Severity)
-		fmt.Printf("[HUSKYCI][!] Confidence: %s\n", issue.Confidence)
-		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
-		fmt.Printf("[HUSKYCI][!] File: %s\n", issue.File)
-		fmt.Printf("[HUSKYCI][!] Line: %s\n", issue.Line)
-		fmt.Printf("[HUSKYCI][!] Code:\n%s\n", issue.Code)
 	}
 }
 
@@ -268,20 +253,6 @@ func printSTDOUTOutputSafety(issues []types.HuskyCIVulnerability) {
 			fmt.Printf("[HUSKYCI][!] Vulnerable Below: %s\n", issue.VunerableBelow)
 		}
 		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
-	}
-}
-
-func printSTDOUTOutputBrakeman(issues []types.HuskyCIVulnerability) {
-	for _, issue := range issues {
-		fmt.Println()
-		fmt.Printf("[HUSKYCI][!] Language: %s\n", issue.Language)
-		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
-		fmt.Printf("[HUSKYCI][!] Confidence: %s\n", issue.Confidence)
-		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
-		fmt.Printf("[HUSKYCI][!] File: %s\n", issue.File)
-		fmt.Printf("[HUSKYCI][!] Line: %s\n", issue.Line)
-		fmt.Printf("[HUSKYCI][!] Code: %s\n", issue.Code)
-		fmt.Printf("[HUSKYCI][!] Type: %s\n", issue.Type)
 	}
 }
 

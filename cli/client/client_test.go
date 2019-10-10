@@ -19,7 +19,10 @@ func TestCreateHTTPClient(t *testing.T) {
 			os.Unsetenv("HUSKYCI_CLIENT_TIMEOUT")
 			client := createHTTPClient()
 
-			defaultDuration, _ := time.ParseDuration("10s")
+			defaultDuration, err := time.ParseDuration("10s")
+			if err != nil {
+				t.Fatalf("Internal Error")
+			}
 
 			if client.Timeout != defaultDuration {
 				t.Fatalf("CLIENT: fail to read default timeout (%v)", client.Timeout)
@@ -31,7 +34,10 @@ func TestCreateHTTPClient(t *testing.T) {
 			os.Setenv("HUSKYCI_CLIENT_TIMEOUT", "15s")
 			client := createHTTPClient()
 
-			changedDuration, _ := time.ParseDuration("15s")
+			changedDuration, err := time.ParseDuration("15s")
+			if err != nil {
+				t.Fatalf("Internal Error")
+			}
 
 			if client.Timeout != changedDuration {
 				t.Fatalf("CLIENT: fail to read non default timeout (%v)", client.Timeout)
@@ -47,7 +53,10 @@ func TestNewClient(t *testing.T) {
 
 			hclient := NewClient(types.Target{Endpoint: "https://example.com"})
 
-			defaultDuration, _ := time.ParseDuration("10s")
+			defaultDuration, err := time.ParseDuration("10s")
+			if err != nil {
+				t.Fatalf("Internal Error")
+			}
 
 			if hclient.httpCli.Timeout != defaultDuration {
 				t.Fatalf("CLIENT: fail to read default timeout (%v)", hclient.httpCli.Timeout)
@@ -59,7 +68,10 @@ func TestNewClient(t *testing.T) {
 			os.Setenv("HUSKYCI_CLIENT_TIMEOUT", "15s")
 			hclient := NewClient(types.Target{Endpoint: "https://example.com"})
 
-			changedDuration, _ := time.ParseDuration("15s")
+			changedDuration, err := time.ParseDuration("15s")
+			if err != nil {
+				t.Fatalf("Internal Error")
+			}
 
 			if hclient.httpCli.Timeout != changedDuration {
 				t.Fatalf("CLIENT: fail to read non default timeout (%v)", hclient.httpCli.Timeout)

@@ -119,6 +119,8 @@ github.com/sdboyer/constext v0.0.0-20170321163424-836a14457353 h1:tnWWLf0nI2TI62
 github.com/sdboyer/constext v0.0.0-20170321163424-836a14457353/go.mod h1:5HStXbIikwtDAgAIqiQIqVgMn7mlvZa6PTpwiAVYGYg=
 github.com/securego/gosec v0.0.0-20191002120514-e680875ea14d h1:BzRvVq1EHuIjxpijCEKpAxzKUUMurOQ4sknehIATRh8=
 github.com/securego/gosec v0.0.0-20191002120514-e680875ea14d/go.mod h1:w5+eXa0mYznDkHaMCXA4XYffjlH+cy1oyKbfzJXa2Do=
+github.com/securego/gosec v0.0.0-20191008095658-28c1128b7336 h1:qlgneduvrO2HHdK1CcP+P1vlTAkT3J64A+1qd+PobNg=
+github.com/securego/gosec v0.0.0-20191008095658-28c1128b7336/go.mod h1:w5+eXa0mYznDkHaMCXA4XYffjlH+cy1oyKbfzJXa2Do=
 github.com/spf13/afero v1.1.2/go.mod h1:j4pytiNVoe2o6bmDsKpLACNPDBIoEAkihy7loJ1B0CQ=
 github.com/spf13/afero v1.2.2 h1:5jhuqJyZCZf2JRofRvN/nIFgIWNzPa3/Vz8mYylgbWc=
 github.com/spf13/afero v1.2.2/go.mod h1:9ZxEEn6pIJ8Rxe320qSDBk6AsU0r9pR7Q4OcevTdifk=
@@ -195,6 +197,8 @@ golang.org/x/tools v0.0.0-20190311212946-11955173bddd/go.mod h1:LCzVGOaR6xXOjkQ3
 golang.org/x/tools v0.0.0-20190930201159-7c411dea38b0/go.mod h1:b+2E5dAYhXwXZwtnZ6UAqBI28+e2cm9otk0dWdXHAEo=
 golang.org/x/tools v0.0.0-20191004055002-72853e10c5a3 h1:2AmBLzhAfXj+2HCW09VCkJtHIYgHTIPcTeYqgP7Bwt0=
 golang.org/x/tools v0.0.0-20191004055002-72853e10c5a3/go.mod h1:b+2E5dAYhXwXZwtnZ6UAqBI28+e2cm9otk0dWdXHAEo=
+golang.org/x/tools v0.0.0-20191010075000-0337d82405ff h1:XdBG6es/oFDr1HwaxkxgVve7NB281QhxgK/i4voubFs=
+golang.org/x/tools v0.0.0-20191010075000-0337d82405ff/go.mod h1:b+2E5dAYhXwXZwtnZ6UAqBI28+e2cm9otk0dWdXHAEo=
 golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 gopkg.in/Graylog2/go-gelf.v2 v2.0.0-20180326133423-4dbb9d721348 h1:7iDABQS+Bae9EV/FZLAhs9tlbntNnDXyhzvqD4ETNZQ=
 gopkg.in/Graylog2/go-gelf.v2 v2.0.0-20180326133423-4dbb9d721348 h1:7iDABQS+Bae9EV/FZLAhs9tlbntNnDXyhzvqD4ETNZQ=

@@ -39,8 +39,14 @@ var runCmd = &cobra.Command{
 
 		fmt.Printf("[HUSKYCI][*] huskyCI analysis started: %s\n", analysisRunnerResults.RID)
 
-		timeoutMonitor, _ := time.ParseDuration("10m")
-		retryMonitor, _ := time.ParseDuration("30s")
+		timeoutMonitor, err := time.ParseDuration("10m")
+		if err != nil {
+			return fmt.Errorf("[HUSKYCI][ERROR] Internal error %v", err)
+		}
+		retryMonitor, err := time.ParseDuration("30s")
+		if err != nil {
+			return fmt.Errorf("[HUSKYCI][ERROR] Internal error %v", err)
+		}
 
 		analysisResult, err := hcli.Monitor(analysisRunnerResults.RID, timeoutMonitor, retryMonitor)
 		if err != nil {
@@ -48,10 +54,7 @@ var runCmd = &cobra.Command{
 		}
 
 		var outputJSON types.JSONOutput
-		err = hcli.PrintResults(analysisResult, outputJSON)
-		if err != nil {
-			return fmt.Errorf("[HUSKYCI][ERROR] Printing output: (%v)", err)
-		}
+		hcli.PrintResults(analysisResult, outputJSON)
 
 		if viper.GetBool("found_vuln") == false {
 			if viper.GetBool("found_info") == false {
