@@ -7,17 +7,17 @@ jobs:
     working_directory: /go/src/github.com/globocom/huskyCI  
     steps:
       - restore_cache:
-        keys:
-          - v1-pkg-cache
+          keys:
+            - v1-pkg-cache
       - checkout
       - run:
-        name: "Gets all go test dependencies"
-        command: |
-          make get-all-test-deps
+          name: "Gets all go test dependencies"
+          command: |
+            make get-all-tests-deps
       - save_cache:
-        key: v1-pkg-cache
-        paths:
-          - "/go"
+          key: v1-pkg-cache
+          paths:
+            - "/go"
 
   test:
     docker:
@@ -25,19 +25,19 @@ jobs:
     working_directory: /go/src/github.com/globocom/huskyCI
     steps:
       - restore_cache:
-        keys:
-          - v1-pkg-cache
+          keys:
+            - v1-pkg-cache
       - checkout
       - run:
-        name: "Create a temp directory for artifacts"
-        command: |
-          mkdir -p /tmp/artifacts
+          name: "Create a temp directory for artifacts"
+          command: |
+            mkdir -p /tmp/artifacts
       - run:
-        name: "Make test"
-        command: |
-          make test
+          name: "Make test"
+          command: |
+            make test
       - store_artifacts:
-        path: /tmp/artifacts
+          path: /tmp/artifacts
 
   lint:
     docker:
@@ -45,12 +45,12 @@ jobs:
     working_directory: /go/src/github.com/globocom/huskyCI
     steps:
       - restore_cache:
-        keys:
-          - v1-pkg-cache
+          keys:
+            - v1-pkg-cache
       - run:
-        name: "Make Lint"
-        command: |
-          make lint
+          name: "Make Lint"
+          command: |
+            make lint
 
   check-sec:
     docker:
@@ -58,12 +58,12 @@ jobs:
     working_directory: /go/src/github.com/globocom/huskyCI
     steps:
       - restore_cache:
-        keys:
-          - v1-pkg-cache
+          keys:
+            - v1-pkg-cache
       - run:
-        name: "Make check sec"
-        command: |
-          make check-sec
+          name: "Make check sec"
+          command: |
+            make check-sec
     
   goveralls:
     docker:
@@ -71,12 +71,12 @@ jobs:
     working_directory: /go/src/github.com/globocom/huskyCI
     steps:
       - restore_cache:
-        keys:
-          - v1-pkg-cache
+          keys:
+            - v1-pkg-cache
       - run:
-        name: "goveralls"
-        command: |
-          $GOPATH/bin/goveralls -coverprofile=c.out -service=circle-ci -repotoken=$COVERALLS_TOKEN
+          name: "goveralls"
+          command: |
+            $GOPATH/bin/goveralls -coverprofile=c.out -service=circle-ci -repotoken=$COVERALLS_TOKEN
 
 
 workflows:
