@@ -1,7 +1,6 @@
 package client
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -12,33 +11,13 @@ import (
 // PrintResults prints huskyCI output either in JSON or the standard output.
 func (hcli *Client) PrintResults(analysis types.Analysis, analysisRunnerResults types.JSONOutput) error {
 
-	prepareAllSummary(analysis, analysisRunnerResults)
-
-	if types.IsJSONoutput {
-		err := printJSONOutput(analysisRunnerResults)
-		if err != nil {
-			return err
-		}
-	} else {
-		printSTDOUTOutput(analysis, analysisRunnerResults)
-	}
-
-	return nil
-}
-
-// printJSONOutput prints the analysis output in a JSON format
-func printJSONOutput(outputJSON types.JSONOutput) error {
-	jsonReady := []byte{}
-	var err error
-	if jsonReady, err = json.Marshal(outputJSON); err != nil {
-		return err
-	}
-	fmt.Println(string(jsonReady))
+	prepareAllSummary(analysis, &analysisRunnerResults)
+	printSTDOUTOutput(analysis, &analysisRunnerResults)
 	return nil
 }
 
 // printSTDOUTOutput prints the analysis output in STDOUT using printfs
-func printSTDOUTOutput(analysis types.Analysis, outputJSON types.JSONOutput) {
+func printSTDOUTOutput(analysis types.Analysis, outputJSON *types.JSONOutput) {
 
 	printSTDOUTOutputGosec(outputJSON.GoResults.HuskyCIGosecOutput.LowVulns)
 	printSTDOUTOutputGosec(outputJSON.GoResults.HuskyCIGosecOutput.MediumVulns)
@@ -68,7 +47,7 @@ func printSTDOUTOutput(analysis types.Analysis, outputJSON types.JSONOutput) {
 }
 
 // prepareAllSummary prepares how many low, medium and high vulnerabilites were found.
-func prepareAllSummary(analysis types.Analysis, outputJSON types.JSONOutput) {
+func prepareAllSummary(analysis types.Analysis, outputJSON *types.JSONOutput) {
 	var totalNoSec, totalLow, totalMedium, totalHigh int
 
 	outputJSON.GoResults = analysis.HuskyCIResults.GoResults
@@ -164,7 +143,7 @@ func prepareAllSummary(analysis types.Analysis, outputJSON types.JSONOutput) {
 
 }
 
-func printAllSummary(analysis types.Analysis, outputJSON types.JSONOutput) {
+func printAllSummary(analysis types.Analysis, outputJSON *types.JSONOutput) {
 
 	var gosecVersion, banditVersion, safetyVersion, brakemanVersion, npmauditVersion, yarnauditVersion string
 
