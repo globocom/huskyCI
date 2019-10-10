@@ -3,31 +3,34 @@ version: 2
 jobs:
   setup:
     docker:
-      - image: circleci/golang:1.11
+      - image: circleci/golang:1.13
+    environment:
+      GO111MODULE: "on"
+      CACHE-KEY: v2-pkg-cache
     working_directory: /go/src/github.com/globocom/huskyCI  
     steps:
       - restore_cache:
           keys:
-            - v1-pkg-cache
+            - $CACHE-KEY
       - checkout
       - run:
           name: "Gets all go test dependencies"
           command: |
             make get-all-tests-deps
       - save_cache:
-          key: v2-pkg-cache
+          key: $CACHE-KEY
           paths:
             - "/go/pkg"
             - "src/github.com/globocom/huskyCI"
 
   test:
     docker:
-      - image: circleci/golang:1.11
+      - image: circleci/golang:1.13
     working_directory: /go/src/github.com/globocom/huskyCI
     steps:
       - restore_cache:
           keys:
-            - v1-pkg-cache
+            - $CACHE-KEY
       - checkout
       - run:
           name: "Create a temp directory for artifacts"
@@ -42,12 +45,12 @@ jobs:
 
   lint:
     docker:
-      - image: circleci/golang:1.11
+      - image: circleci/golang:1.13
     working_directory: /go/src/github.com/globocom/huskyCI
     steps:
       - restore_cache:
           keys:
-            - v1-pkg-cache
+            - $CACHE-KEY
       - run:
           name: "Make Lint"
           command: |
@@ -55,12 +58,12 @@ jobs:
 
   check-sec:
     docker:
-      - image: circleci/golang:1.11
+      - image: circleci/golang:1.13
     working_directory: /go/src/github.com/globocom/huskyCI
     steps:
       - restore_cache:
           keys:
-            - v1-pkg-cache
+            - $CACHE-KEY
       - run:
           name: "Make check sec"
           command: |
@@ -68,12 +71,12 @@ jobs:
     
   goveralls:
     docker:
-      - image: circleci/golang:1.11
+      - image: circleci/golang:1.13
     working_directory: /go/src/github.com/globocom/huskyCI
     steps:
       - restore_cache:
           keys:
-            - v1-pkg-cache
+            - $CACHE-KEY
       - run:
           name: "goveralls"
           command: |
