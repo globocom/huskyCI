@@ -168,7 +168,7 @@ func (cH *CheckUtils) checkDefaultUser(configAPI *apiContext.APIConfig) error {
 
 func checkSecurityTest(securityTestName string, configAPI *apiContext.APIConfig) error {
 
-	securityTestConfig := types.SecurityTest{}
+	var securityTestConfig types.SecurityTest
 
 	switch securityTestName {
 	case "enry":

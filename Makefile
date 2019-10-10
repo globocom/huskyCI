@@ -5,6 +5,7 @@ GO ?= go
 GOROOT ?= $(shell $(GO) env GOROOT)
 GOPATH ?= $(shell $(GO) env GOPATH)
 GOBIN ?= $(GOPATH)/bin
+GOCILINT ?= $(GOBIN)/golangci-lint
 GOLINT ?= $(GOBIN)/golint
 GOSEC ?= $(GOBIN)/gosec
 GINKGO ?= $(GOBIN)/ginkgo
@@ -94,12 +95,24 @@ generate-passwords:
 	chmod +x deployments/scripts/generate-env.sh
 	./deployments/scripts/generate-env.sh
 
+## Gets all link dependencies
+get-lint-deps:
+	$(GO) get -u github.com/golangci/golangci-lint/cmd/golangci-lint
+
 ## Gets all go test dependencies
 get-test-deps:
 	$(GO) get -u golang.org/x/lint/golint
 	$(GO) get -u github.com/onsi/ginkgo/ginkgo
 	$(GO) get -u github.com/onsi/gomega/...
 	$(GO) get -u github.com/mattn/goveralls
+
+## Runs go lint
+golint:
+	$(GOLINT) $(shell $(GO) list ./...)
+
+## Runs Golangci-lint
+golangci-lint:
+	$(GOCILINT) run
 
 ## Runs ginkgo
 ginkgo:
@@ -122,9 +135,8 @@ help:
 ## Installs a development environment using docker-compose
 install: create-certs compose generate-passwords generate-local-token
 
-## Runs lint
-lint:
-	$(GOLINT) $(shell $(GO) list ./...)
+## Runs all huskyCI lint
+lint: get-lint-deps golint golangci-lint
 
 ## Push securityTest containers to hub.docker
 push-containers:

@@ -18,6 +18,7 @@ jobs:
       - run:
           command: |
             make test
+            make lint
             make check-sec
             mv coverage.html /tmp/artifacts
             $GOPATH/bin/goveralls -coverprofile=c.out -service=circle-ci -repotoken=$COVERALLS_TOKEN
