@@ -151,7 +151,7 @@ safety:
           if grep -q "unpinned requirement" "/tmp/warning"; then
             cat /tmp/warning
           fi
-          jq '{"issues":map({"dependency": .[0], "vulnerable_below": .[1], "installed_verson": .[2], "description": .[3], "id": .[4]})}' /tmp/safety_huskyci_analysis_output.json > /tmp/output.json
+          jq -c '{"issues":map({"dependency": .[0], "vulnerable_below": .[1], "installed_verson": .[2], "description": .[3], "id": .[4]})}' /tmp/safety_huskyci_analysis_output.json > /tmp/output.json
           cat /tmp/output.json
         else
           echo "ERROR_RUNNING_SAFETY"
