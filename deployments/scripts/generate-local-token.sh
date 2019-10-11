@@ -17,4 +17,4 @@ else
     echo " error. Try running make generate-local-token"
 fi
 
-echo "export HUSKYCI_CLIENT_TOKEN=\"$token\"" >> .env
+echo "HUSKYCI_CLIENT_TOKEN=\"$token\"" >> .env

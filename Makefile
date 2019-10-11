@@ -149,6 +149,11 @@ push-containers:
 	chmod +x deployments/scripts/push-containers.sh
 	./deployments/scripts/push-containers.sh
 
+## Restarts only huskyCI_API container
+restart-huskyci-api:
+	chmod +x deployments/scripts/restart-huskyci-api.sh
+	./deployments/scripts/restart-huskyci-api.sh
+
 ## Runs huskyci-client
 run-cli: build-cli
 	cd cli && ./"$(HUSKYCICLIENTBIN)" run
