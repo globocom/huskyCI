@@ -5,10 +5,8 @@ import (
 	"database/sql"
 	_ "github.com/lib/pq"
 	"sync"
-	"os"
 	"fmt"
 	config "github.com/globocom/huskyCI/api/context"
-	"time"
 )
 
 
