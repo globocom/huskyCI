@@ -9,4 +9,3 @@ RUN cd /opt \
       && mv spotbugs-${SPOTBUGS_VERSION} spotbugs \
       && wget -nc -O findsecbugs-plugin-1.9.0.jar https://repo1.maven.org/maven2/com/h3xstream/findsecbugs/findsecbugs-plugin/1.9.0/findsecbugs-plugin-1.9.0.jar \
       && echo $SPOTBUGS_VERSION > /opt/spotbugs/version
-# CMD ["java", "-jar", "/opt/spotbugs/lib/spotbugs.jar", "-textui", "-xml", "-exitcode", "-pluginList", "/opt/findsecbugs-plugin-1.9.0.jar", "/opt/build/"]
