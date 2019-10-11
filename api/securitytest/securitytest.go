@@ -21,8 +21,9 @@ var securityTestAnalyze = map[string]func(scanInfo *SecTestScanInfo) error{
 	"gosec":      analyzeGosec,
 	"npmaudit":   analyzeNpmaudit,
 	"yarnaudit":  analyzeYarnaudit,
-	"safety":     analyzeSafety,
+	"spotbugs":   analyseSpotbugs,
 	"gitleaks":   analyseGitleaks,
+	"safety":     analyzeSafety,
 }
 
 // SecTestScanInfo holds all information of securityTest scan.

@@ -259,3 +259,14 @@ gitleaks:
   type: Generic
   default: true
   timeOutInSeconds: 360
+
+spotbugs:
+  name: spotbugs
+  image: huskyci/spotbugs
+  imageTag: "?"
+  cmd: |+
+    do stuff
+  type: Language
+  language: Java
+  default: true
+  timeOutInSeconds: 360
