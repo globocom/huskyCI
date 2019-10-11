@@ -150,17 +150,16 @@ func (db *DB) Search(query bson.M, selectors []string, collection string, obj in
 }
 
 // Aggregation prepares a pipeline to aggregate.
-func (db *DB) Aggregation(aggregation []bson.M, collection string) (interface{}, error) {
+func (db *DB) Aggregation(aggregation []bson.M, collection string, obj interface{}) error {
 	session := db.Session.Clone()
 	defer session.Close()
 	c := session.DB("").C(collection)
 
 	pipe := c.Pipe(aggregation)
-	resp := []bson.M{}
 	iter := pipe.Iter()
-	err := iter.All(&resp)
+	err := iter.All(obj)
 
-	return resp, err
+	return err
 }
 
 // SearchOne searchs for the first element that matchs with the given query.

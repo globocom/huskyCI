@@ -6,8 +6,6 @@ package db
 
 import (
 	"errors"
-	"fmt"
-	"time"
 
 	mongoHuskyCI "github.com/globocom/huskyCI/api/db/mongo"
 	"github.com/globocom/huskyCI/api/util"
@@ -15,155 +13,13 @@ import (
 )
 
 var statsQueryStringParams = map[string][]string{
-	"language":   []string{"time_range"},
-	"container":  []string{"time_range"},
-	"analysis":   []string{"time_range"},
-	"repository": []string{"time_range"},
-	"author":     []string{"time_range"},
-	"severity":   []string{"time_range"},
-}
-
-var statsQueryBase = map[string][]bson.M{
-	"language":  generateSimpleAggr("codes", "language", "codes.language"),
-	"container": generateSimpleAggr("containers", "container", "containers.securityTest.name"),
-	"analysis": []bson.M{
-		bson.M{
-			"$project": bson.M{
-				"finishedAt": 1,
-				"result":     1,
-			},
-		},
-		bson.M{
-			"$group": bson.M{
-				"_id": "$result",
-				"count": bson.M{
-					"$sum": 1,
-				},
-			},
-		},
-		bson.M{
-			"$project": bson.M{
-				"count":  1,
-				"result": "$_id",
-			},
-		},
-	},
-	"repository": []bson.M{
-		bson.M{
-			"$match": bson.M{
-				"repositoryURL": bson.M{
-					"$exists": true,
-				},
-			},
-		},
-		bson.M{
-			"$match": bson.M{
-				"repositoryBranch": bson.M{
-					"$exists": true,
-				},
-			},
-		},
-		bson.M{
-			"$group": bson.M{
-				"_id": bson.M{
-					"repositoryBranch": "$repositoryBranch",
-					"repositoryURL":    "$repositoryURL",
-				},
-			},
-		},
-		bson.M{
-			"$group": bson.M{
-				"_id": bson.M{
-					"repositoryURL": "$_id.repositoryURL",
-				},
-				"branches": bson.M{
-					"$sum": 1,
-				},
-			},
-		},
-		bson.M{
-			"$group": bson.M{
-				"_id": "repositories",
-				"totalBranches": bson.M{
-					"$sum": "$branches",
-				},
-				"totalRepositories": bson.M{
-					"$sum": 1,
-				},
-			},
-		},
-	},
-	"author": []bson.M{
-		bson.M{
-			"$project": bson.M{
-				"commitAuthors": 1,
-			},
-		},
-		bson.M{
-			"$unwind": "$commitAuthors",
-		},
-		bson.M{
-			"$group": bson.M{
-				"_id": "$commitAuthors",
-			},
-		},
-		bson.M{
-			"$group": bson.M{
-				"_id": "commitAuthors",
-				"totalAuthors": bson.M{
-					"$sum": 1,
-				},
-			},
-		},
-	},
-	"severity": []bson.M{
-		bson.M{
-			"$project": bson.M{
-				"huskyresults": bson.M{
-					"$objectToArray": "$huskyciresults",
-				},
-			},
-		},
-		bson.M{
-			"$unwind": "$huskyresults",
-		},
-		bson.M{
-			"$project": bson.M{
-				"languageresults": bson.M{
-					"$objectToArray": "$huskyresults.v",
-				},
-			},
-		},
-		bson.M{
-			"$unwind": "$languageresults",
-		},
-		bson.M{
-			"$project": bson.M{
-				"results": bson.M{
-					"$objectToArray": "$languageresults.v",
-				},
-			},
-		},
-		bson.M{
-			"$unwind": "$results",
-		},
-		bson.M{
-			"$group": bson.M{
-				"_id": "$results.k",
-				"count": bson.M{
-					"$sum": bson.M{
-						"$size": "$results.v",
-					},
-				},
-			},
-		},
-		bson.M{
-			"$project": bson.M{
-				"severity": "$_id",
-				"count":    1,
-			},
-		},
-	},
+	"language":    []string{"time_range"},
+	"container":   []string{"time_range"},
+	"analysis":    []string{"time_range"},
+	"repository":  []string{"time_range"},
+	"author":      []string{"time_range"},
+	"severity":    []string{"time_range"},
+	"time-to-fix": []string{"time_range"},
 }
 
 var aggrTimeFilterStage = map[string][]bson.M{
@@ -194,48 +50,16 @@ func GetMetricByType(metricType string, queryStringParams map[string][]string) (
 		}
 	}
 
-	return mongoHuskyCI.Conn.Aggregation(query, mongoHuskyCI.AnalysisCollection)
-}
-
-// generateSimpleAggr generates an aggregation that counts each field group.
-func generateSimpleAggr(field, finalName, groupID string) []bson.M {
-	return []bson.M{
-		bson.M{
-			"$project": bson.M{
-				field: 1,
-			},
-		},
-		bson.M{
-			"$unwind": fmt.Sprintf("$%s", field),
-		},
-		bson.M{
-			"$group": bson.M{
-				"_id": fmt.Sprintf("$%s", groupID),
-				"count": bson.M{
-					"$sum": 1,
-				},
-			},
-		},
-		bson.M{
-			"$project": bson.M{
-				finalName: "$_id",
-				"count":   1,
-			},
-		},
-	}
-}
-
-// generateTimeFilterStage generates a stage that filter records by time range
-func generateTimeFilterStage(rangeInitDays, rangeEndDays int) []bson.M {
-	return []bson.M{
-		bson.M{
-			"$match": bson.M{
-				"finishedAt": bson.M{
-					"$gte": util.BeginningOfTheDay(time.Now().AddDate(0, 0, rangeInitDays)),
-					"$lte": util.EndOfTheDay(time.Now().AddDate(0, 0, rangeEndDays)),
-				},
-			},
-		},
+	switch metricType {
+	case "time-to-fix":
+		return TimeToFixData(query)
+	default:
+		var obj interface{}
+		err = mongoHuskyCI.Conn.Aggregation(query, mongoHuskyCI.AnalysisCollection, &obj)
+		if err != nil {
+			return nil, err
+		}
+		return obj, nil
 	}
 }
 
