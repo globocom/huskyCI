@@ -233,6 +233,17 @@ yarnaudit:
   default: true
   timeOutInSeconds: 360
 
+spotbugs:
+  name: spotbugs
+  image: huskyci/spotbugs
+  imageTag: "4.0.0-beta4"
+  cmd: |+
+    do stuff
+  type: Language
+  language: Java
+  default: true
+  timeOutInSeconds: 600
+
 gitleaks:
   name: gitleaks
   image: huskyci/gitleaks
@@ -257,16 +268,5 @@ gitleaks:
         cat /tmp/errorGitCloneGitleaks
     fi
   type: Generic
-  default: true
-  timeOutInSeconds: 360
-
-spotbugs:
-  name: spotbugs
-  image: huskyci/spotbugs
-  imageTag: "?"
-  cmd: |+
-    do stuff
-  type: Language
-  language: Java
   default: true
   timeOutInSeconds: 360
