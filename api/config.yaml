@@ -251,15 +251,19 @@ spotbugs:
            cd /usr/src/mymaven
            # this is a maven project
            project_type=$(cat pom.xml|grep packaging|cut -d'<' -f2|cut -d'>' -f2)
-           if [[ "$project_type" == "war" ]]; then
+           if [[ "$project_type" = "war" ]]; then
                # WAR
            else
                # JAR
-               # TODO: check for maven install errors
-               sh /usr/local/bin/mvn-entrypoint.sh > /dev/null
-               mkdir target/jars
-               cp target/*.jar target/jars/
-               java -jar /opt/spotbugs/lib/spotbugs.jar -textui -xml -exitcode -bugCategories SECURITY -pluginList /opt/findsecbugs-plugin-1.9.0.jar /usr/src/mymaven/target/
+               sh /usr/local/bin/mvn-entrypoint.sh 2> /tmp/errorSpotBugsBuild 1> /dev/null
+               if [ $? -eq 0 ]; then
+                   mkdir target/jars
+                   cp target/*.jar target/jars/
+                   java -jar /opt/spotbugs/lib/spotbugs.jar -textui -xml -exitcode -bugCategories SECURITY -pluginList /opt/findsecbugs-plugin-1.9.0.jar /usr/src/mymaven/target/
+               else
+                   echo "ERROR_RUNNING"
+                   cat /tmp/errorSpotBugsBuild
+               fi
            fi
        elif [ -f "build.gradle" ]; then
            # this is a gradle project
@@ -275,7 +279,7 @@ spotbugs:
   type: Language
   language: Java
   default: true
-  timeOutInSeconds: 600
+  timeOutInSeconds: 3600
 
 gitleaks:
   name: gitleaks
