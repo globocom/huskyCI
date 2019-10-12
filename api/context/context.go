@@ -118,7 +118,7 @@ func (dF DefaultConfig) SetOnceConfig() {
 			BrakemanSecurityTest:   dF.getSecurityTestConfig("brakeman"),
 			NpmAuditSecurityTest:   dF.getSecurityTestConfig("npmaudit"),
 			YarnAuditSecurityTest:  dF.getSecurityTestConfig("yarnaudit"),
-			SpotbugsSecurityTest:   dF.getSecurityTestConfig("spotbugs"),
+			SpotBugsSecurityTest:   dF.getSecurityTestConfig("spotbugs"),
 			GitleaksSecurityTest:   dF.getSecurityTestConfig("gitleaks"),
 			SafetySecurityTest:     dF.getSecurityTestConfig("safety"),
 		}

@@ -186,7 +186,7 @@ func checkSecurityTest(securityTestName string, configAPI *apiContext.APIConfig)
 	case "yarnaudit":
 		securityTestConfig = *configAPI.YarnAuditSecurityTest
 	case "spotbugs":
-		securityTestConfig = *configAPI.SpotbugsSecurityTest
+		securityTestConfig = *configAPI.SpotBugsSecurityTest
 	case "gitleaks":
 		securityTestConfig = *configAPI.GitleaksSecurityTest
 	case "safety":
