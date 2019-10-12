@@ -238,7 +238,40 @@ spotbugs:
   image: huskyci/spotbugs
   imageTag: "4.0.0-beta4"
   cmd: |+
-    do stuff
+    mkdir -p ~/.ssh &&
+    echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
+    chmod 600 ~/.ssh/huskyci_id_rsa &&
+    echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
+    echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
+    git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneSpotBugs
+    cd code
+    if [ $? -eq 0 ]; then
+       if [ -f "pom.xml" ]; then
+           mv ../code /usr/src/mymaven
+           cd /usr/src/mymaven
+           # this is a maven project
+           project_type=$(cat pom.xml|grep packaging|cut -d'<' -f2|cut -d'>' -f2)
+           if [[ "$project_type" == "war" ]]; then
+               # WAR
+           else
+               # JAR
+               # TODO: check for maven install errors
+               sh /usr/local/bin/mvn-entrypoint.sh > /dev/null
+               mkdir target/jars
+               cp target/*.jar target/jars/
+               java -jar /opt/spotbugs/lib/spotbugs.jar -textui -xml -exitcode -bugCategories SECURITY -pluginList /opt/findsecbugs-plugin-1.9.0.jar /usr/src/mymaven/target/
+           fi
+       elif [ -f "build.gradle" ]; then
+           # this is a gradle project
+       elif [ -f "build.sbt" ]; then
+           # this is a SBT project
+       else
+           # this is a pure java project
+       fi
+    else
+        echo "ERROR_CLONING"
+        cat /tmp/errorGitCloneSpotBugs
+    fi
   type: Language
   language: Java
   default: true
