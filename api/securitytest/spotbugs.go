@@ -6,6 +6,7 @@ package securitytest
 
 import (
 	"encoding/xml"
+	"strconv"
 
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
@@ -116,10 +117,20 @@ func (spotbugsScan *SecTestScanInfo) prepareSpotBugsVulns() {
 			spotbugsVuln.Details = spotbugsOutput.SpotBugsIssue[i].Type
 			spotbugsVuln.File = spotbugsOutput.SpotBugsIssue[i].SourceLine[j].SourcePath
 			spotbugsVuln.Line = spotbugsOutput.SpotBugsIssue[i].SourceLine[j].Start
+
 			switch spotbugsOutput.SpotBugsIssue[i].Priority {
 			case "1":
-				huskyCIspotbugsResults.HighVulns = append(huskyCIspotbugsResults.HighVulns, spotbugsVuln)
+				spotbugsVuln.Confidence = "HIGH"
 			case "2":
+				spotbugsVuln.Confidence = "MEDIUM"
+			default:
+				spotbugsVuln.Confidence = "LOW"
+			}
+
+			switch rank, _ := strconv.Atoi(spotbugsOutput.SpotBugsIssue[i].Rank); {
+			case rank < 10:
+				huskyCIspotbugsResults.HighVulns = append(huskyCIspotbugsResults.HighVulns, spotbugsVuln)
+			case rank < 15:
 				huskyCIspotbugsResults.MediumVulns = append(huskyCIspotbugsResults.MediumVulns, spotbugsVuln)
 			default:
 				huskyCIspotbugsResults.LowVulns = append(huskyCIspotbugsResults.LowVulns, spotbugsVuln)
