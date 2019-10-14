@@ -9,7 +9,12 @@
 
 docker stop huskyCI_API > /dev/null
 docker rm huskyCI_API > /dev/null
-docker-compose -f deployments/docker-compose.yml up -d --build --no-deps api
+cd deployments && docker-compose -f docker-compose.yml up -d --build --no-deps api
+if [ $? -ne 0 ]; then
+  cd ..
+  exit 1;
+fi
+cd ..
 while true; do
     if [ "$(curl -s -k -L localhost:8888/healthcheck)" = "WORKING" ]; then
         echo "huskyCI_API is UP!"
