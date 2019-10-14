@@ -63,7 +63,7 @@ func (gitleaksScan *SecTestScanInfo) prepareGitleaksVulns() {
 	gitleaksOutput := gitleaksScan.FinalOutput.(GitleaksOutput)
 	for _, issue := range gitleaksOutput {
 		// dependencies issues will not checked at this moment by huskyCI
-		if strings.HasPrefix(issue.File, "vendor/") || strings.HasPrefix(issue.File, "node_modules/") {
+		if strings.Contains(issue.File, "vendor/") || strings.Contains(issue.File, "node_modules/") {
 			continue
 		}
 
