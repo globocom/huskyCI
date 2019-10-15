@@ -114,8 +114,10 @@ func (spotbugsScan *SecTestScanInfo) prepareSpotBugsVulns() {
 			spotbugsVuln := types.HuskyCIVulnerability{}
 			spotbugsVuln.Language = "Java"
 			spotbugsVuln.SecurityTool = "SpotBugs"
+			spotbugsVuln.Type = spotbugsOutput.SpotBugsIssue[i].Abbreviation
 			spotbugsVuln.Details = spotbugsOutput.SpotBugsIssue[i].Type
 			spotbugsVuln.File = spotbugsOutput.SpotBugsIssue[i].SourceLine[j].SourcePath
+			spotbugsVuln.Code = spotbugsOutput.SpotBugsIssue[i].SourceLine[j].SourcePath
 			spotbugsVuln.Line = spotbugsOutput.SpotBugsIssue[i].SourceLine[j].Start
 
 			switch spotbugsOutput.SpotBugsIssue[i].Priority {
