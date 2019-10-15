@@ -244,26 +244,28 @@ spotbugs:
     echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
     echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
     git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneSpotBugs
-    cd code
     if [ $? -eq 0 ]; then
+       cd code
        if [ -f "pom.xml" ]; then
+           # this is a maven project
            mv ../code /usr/src/mymaven
            cd /usr/src/mymaven
-           # this is a maven project
            project_type=$(cat pom.xml|grep packaging|cut -d'<' -f2|cut -d'>' -f2)
-           if [[ "$project_type" = "war" ]]; then
-               # WAR
-           else
-               # JAR
-               sh /usr/local/bin/mvn-entrypoint.sh 2> /tmp/errorSpotBugsBuild 1> /dev/null
-               if [ $? -eq 0 ]; then
-                   mkdir target/jars
-                   cp target/*.jar target/jars/
-                   java -jar /opt/spotbugs/lib/spotbugs.jar -textui -xml -exitcode -bugCategories SECURITY -pluginList /opt/findsecbugs-plugin-1.9.0.jar /usr/src/mymaven/target/
+           bash /usr/local/bin/mvn-entrypoint.sh 2> /tmp/errorSpotBugsBuild 1> /dev/null
+           if [ $? -eq 0 ]; then
+               if [[ "$project_type" = "war" ]]; then
+                  # WAR
+                   war_file=$(ls -lS target/*.war|head -n1|cut -d'/' -f2|sed -e "s/.war//")
+                   mv target/$war_file target/needToBeScanned
                else
-                   echo "ERROR_RUNNING"
-                   cat /tmp/errorSpotBugsBuild
+                  # JAR
+                   mkdir target/needToBeScanned
+                   cp target/*.jar target/needToBeScanned/
                fi
+               java -jar /opt/spotbugs/lib/spotbugs.jar -textui -quiet -xml -exitcode -bugCategories SECURITY -exclude /opt/spotbugs/exclude.xml -pluginList /opt/findsecbugs-plugin-1.9.0.jar /usr/src/mymaven/target/needToBeScanned
+           else
+               echo "ERROR_RUNNING_SPOT_BUGS"
+               cat /tmp/errorSpotBugsBuild
            fi
        elif [ -f "build.gradle" ]; then
            # this is a gradle project

@@ -36,4 +36,4 @@ export -f copy_reference_file
 copy_reference_files
 unset MAVEN_CONFIG
 
-exec "mvn install"
+/usr/bin/mvn install -Dmaven.test.skip=true
