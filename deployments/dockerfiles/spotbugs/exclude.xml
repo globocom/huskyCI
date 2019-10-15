@@ -17,7 +17,13 @@
         <Package name="~org\.slf4j\..*" />
     </Match>
     <Match>
+        <Package name="~org\.hibernate\..*" />
+    </Match>
+    <Match>
         <Package name="~org\.springframework\..*" />
+    </Match>
+    <Match>
+        <Package name="~com\.mysql\..*" />
     </Match>
     <Match>
         <Package name="~spark\..*" />
