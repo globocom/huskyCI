@@ -15,13 +15,16 @@ import (
 )
 
 var statsQueryStringParams = map[string][]string{
-	"language":   []string{"time_range"},
-	"container":  []string{"time_range"},
-	"analysis":   []string{"time_range"},
-	"repository": []string{"time_range"},
-	"author":     []string{"time_range"},
-	"severity":   []string{"time_range"},
+	"language":        []string{"time_range"},
+	"container":       []string{"time_range"},
+	"analysis":        []string{"time_range"},
+	"repository":      []string{"time_range"},
+	"author":          []string{"time_range"},
+	"severity":        []string{"time_range"},
+	"historyanalysis": []string{"time_range"},
 }
+
+const aggHour = 1000 * 60 * 60
 
 var statsQueryBase = map[string][]bson.M{
 	"language":  generateSimpleAggr("codes", "language", "codes.language"),
@@ -164,6 +167,103 @@ var statsQueryBase = map[string][]bson.M{
 			},
 		},
 	},
+	"historyanalysis": []bson.M{
+		bson.M{
+			"$project": bson.M{
+				"result": bson.M{
+					"$cond": bson.M{
+						"if": bson.M{
+							"$eq": []string{
+								"$result",
+								"warning",
+							},
+						},
+						"then": "passed",
+						"else": bson.M{
+							"$cond": bson.M{
+								"if": bson.M{
+									"$eq": []string{
+										"$result",
+										"error",
+									},
+								},
+								"then": "failed",
+								"else": "$result",
+							},
+						},
+					},
+				},
+				"finishedAt": 1,
+			},
+		},
+		bson.M{
+			"$addFields": bson.M{
+				"dateNumber": bson.M{
+					"$toLong": "$finishedAt",
+				},
+			},
+		},
+		bson.M{
+			"$addFields": bson.M{
+				"dateMod": bson.M{
+					"$mod": []interface{}{
+						"$dateNumber",
+						aggHour,
+					},
+				},
+			},
+		},
+		bson.M{
+			"$addFields": bson.M{
+				"aggDate": bson.M{
+					"$toDate": bson.M{
+						"$subtract": []string{
+							"$dateNumber",
+							"$dateMod",
+						},
+					},
+				},
+			},
+		},
+		bson.M{
+			"$group": bson.M{
+				"_id": bson.M{
+					"date":   "$aggDate",
+					"result": "$result",
+				},
+				"count": bson.M{
+					"$sum": 1,
+				},
+			},
+		},
+		bson.M{
+			"$group": bson.M{
+				"_id": "$_id.date",
+				"results": bson.M{
+					"$push": bson.M{
+						"result": "$_id.result",
+						"count":  "$count",
+					},
+				},
+				"total": bson.M{
+					"$sum": "$count",
+				},
+			},
+		},
+		bson.M{
+			"$sort": bson.M{
+				"_id": -1,
+			},
+		},
+		bson.M{
+			"$project": bson.M{
+				"date":    "$_id",
+				"_id":     0,
+				"total":   1,
+				"results": "$results",
+			},
+		},
+	},
 }
 
 var aggrTimeFilterStage = map[string][]bson.M{
@@ -193,7 +293,6 @@ func GetMetricByType(metricType string, queryStringParams map[string][]string) (
 			query = append(aggrTimeFilterStage[value], query...)
 		}
 	}
-
 	return mongoHuskyCI.Conn.Aggregation(query, mongoHuskyCI.AnalysisCollection)
 }
 
