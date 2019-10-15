@@ -2,25 +2,25 @@
 <FindBugsFilter xmlns="https://github.com/spotbugs/filter/3.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://github.com/spotbugs/filter/3.0.0 https://raw.githubusercontent.com/spotbugs/spotbugs/3.1.0/spotbugs/etc/findbugsfilter.xsd">
     <Match>
-        <Package name="~java.*" />
+        <Package name="~java\..*" />
     </Match>
     <Match>
-        <Package name="~javax.*" />
+        <Package name="~javax\..*" />
     </Match>
     <Match>
-        <Package name="~org\.apache.*" />
+        <Package name="~org\.apache\..*" />
     </Match>
     <Match>
-        <Package name="~org\.eclipse.*" />
+        <Package name="~org\.eclipse\..*" />
     </Match>
     <Match>
-        <Package name="~org\.slf4j.*" />
+        <Package name="~org\.slf4j\..*" />
     </Match>
     <Match>
-        <Package name="~spark.*" />
+        <Package name="~org\.springframework\..*" />
     </Match>
     <Match>
-        <Source name="~lib\..*" />
+        <Package name="~spark\..*" />
     </Match>
     <Match>
         <Class name="~.*\.*Test" />
