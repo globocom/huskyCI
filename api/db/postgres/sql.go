@@ -2,6 +2,7 @@ package db
 
 import (
 	"errors"
+	"log"
 )
 
 // Connect will call Postgres and establish
@@ -35,7 +36,12 @@ func (sqlConfig *SQLConfig) GetValuesFromDB(query string,
 	if err != nil {
 		return nil, err
 	}
-	defer sqlConfig.Postgres.CloseRows()
+	defer func() {
+		err := sqlConfig.Postgres.CloseRows()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
 	columns, err := sqlConfig.Postgres.GetColumns()
 	if err != nil {
 		return nil, err
