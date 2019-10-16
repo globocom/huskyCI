@@ -7,7 +7,7 @@ import (
 // Connect will call Postgres and establish
 // a new connection considering the pool of
 // connections configured in the enviroment.
-func (sqlConfig *SqlConfig) Connect() error {
+func (sqlConfig *SQLConfig) Connect() error {
 	if err := sqlConfig.Postgres.ConfigureDB(); err != nil {
 		return err
 	}
@@ -17,7 +17,7 @@ func (sqlConfig *SqlConfig) Connect() error {
 
 // CloseDB will call Postgres and finish
 // its connection.
-func (sqlConfig *SqlConfig) CloseDB() error {
+func (sqlConfig *SQLConfig) CloseDB() error {
 	return sqlConfig.Postgres.CloseDB()
 }
 
@@ -29,7 +29,7 @@ func (sqlConfig *SqlConfig) CloseDB() error {
 // name of column and the value is the data stored in
 // the key. If no rows are found in the query, an error
 // will be dropped stating that no data were found.
-func (sqlConfig *SqlConfig) GetValuesFromDB(query string,
+func (sqlConfig *SQLConfig) GetValuesFromDB(query string,
 	args ...interface{}) ([]map[string]interface{}, error) {
 	err := sqlConfig.Postgres.ConfigureQuery(query, args...)
 	if err != nil {
@@ -65,7 +65,7 @@ func (sqlConfig *SqlConfig) GetValuesFromDB(query string,
 // WriteInDB will make Insert and Update queries
 // to DB and return the number of rows affected
 // during query process.
-func (sqlConfig *SqlConfig) WriteInDB(query string, args ...interface{}) (int64, error) {
+func (sqlConfig *SQLConfig) WriteInDB(query string, args ...interface{}) (int64, error) {
 	err := sqlConfig.Postgres.Exec(query, args)
 	if err != nil {
 		return 0, err
@@ -80,7 +80,7 @@ func (sqlConfig *SqlConfig) WriteInDB(query string, args ...interface{}) (int64,
 func generateRowPointers(numPointers int) []interface{} {
 	rowResults := make([]interface{}, numPointers)
 	rowPointers := make([]interface{}, numPointers)
-	for i, _ := range rowResults {
+	for i := range rowResults {
 		rowPointers[i] = &rowResults[i]
 	}
 	return rowPointers

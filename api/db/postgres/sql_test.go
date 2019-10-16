@@ -83,7 +83,7 @@ var _ = Describe("Sql", func() {
 				fakeDB := FakeSql{
 					ExpectedConfigDbError: errors.New("The configuration has failed"),
 				}
-				sqlConfig := SqlConfig{
+				sqlConfig := SQLConfig{
 					Postgres: &fakeDB,
 				}
 				Expect(sqlConfig.Connect()).To(Equal(fakeDB.ExpectedConfigDbError))
@@ -94,7 +94,7 @@ var _ = Describe("Sql", func() {
 				fakeDB := FakeSql{
 					ExpectedConfigDbError: nil,
 				}
-				sqlConfig := SqlConfig{
+				sqlConfig := SQLConfig{
 					Postgres: &fakeDB,
 				}
 				Expect(sqlConfig.Connect()).To(BeNil())
@@ -112,7 +112,7 @@ var _ = Describe("Sql", func() {
 					fakeDB := FakeSql{
 						ExpectedCloseDbError: closeError,
 					}
-					sqlConfig := SqlConfig{
+					sqlConfig := SQLConfig{
 						Postgres: &fakeDB,
 					}
 					if closeError != nil {
@@ -130,7 +130,7 @@ var _ = Describe("Sql", func() {
 				fakeDB := FakeSql{
 					ExpectedConfigError: errors.New("Error during get values from DB"),
 				}
-				sqlConfig := SqlConfig{
+				sqlConfig := SQLConfig{
 					Postgres: &fakeDB,
 				}
 				val, err := sqlConfig.GetValuesFromDB("blabla", "arg1", "arg2")
@@ -145,7 +145,7 @@ var _ = Describe("Sql", func() {
 					ExpectedCloseRowsError:  nil,
 					ExpectedGetColumnsError: errors.New("Failed trying to get columns"),
 				}
-				sqlConfig := SqlConfig{
+				sqlConfig := SQLConfig{
 					Postgres: &fakeDB,
 				}
 				myRows, err := sqlConfig.GetValuesFromDB("blabla", "somearg")
@@ -162,7 +162,7 @@ var _ = Describe("Sql", func() {
 					NumOfRows:               3,
 					ExpectedScanRowError:    errors.New("Failed during row scanning"),
 				}
-				sqlConfig := SqlConfig{
+				sqlConfig := SQLConfig{
 					Postgres: &fakeDB,
 				}
 				myRows, err := sqlConfig.GetValuesFromDB("blabla", "somearg")
@@ -180,7 +180,7 @@ var _ = Describe("Sql", func() {
 					NumOfRows:               3,
 					ExpectedRecError:        errors.New("Error trying to proccess a row"),
 				}
-				sqlConfig := SqlConfig{
+				sqlConfig := SQLConfig{
 					Postgres: &fakeDB,
 				}
 				myRows, err := sqlConfig.GetValuesFromDB("blabla", "somearg")
@@ -198,7 +198,7 @@ var _ = Describe("Sql", func() {
 					ExpectedScanRowError:    nil,
 					ExpectedRecError:        nil,
 				}
-				sqlConfig := SqlConfig{
+				sqlConfig := SQLConfig{
 					Postgres: &fakeDB,
 				}
 				myRows, err := sqlConfig.GetValuesFromDB("blabla", "somearg")
@@ -223,7 +223,7 @@ var _ = Describe("Sql", func() {
 						map[string]interface{}{"column1": "teste", "column2": "teste"},
 					},
 				}
-				sqlConfig := SqlConfig{
+				sqlConfig := SQLConfig{
 					Postgres: &fakeDB,
 				}
 				myRows, err := sqlConfig.GetValuesFromDB("blabla", "somearg")
@@ -239,7 +239,7 @@ var _ = Describe("Sql", func() {
 				fakeDB := FakeSql{
 					ExpectedExecError: errors.New("DB Failed"),
 				}
-				sqlConfig := SqlConfig{
+				sqlConfig := SQLConfig{
 					Postgres: &fakeDB,
 				}
 				val, err := sqlConfig.WriteInDB("bla", "myArgs")
@@ -254,7 +254,7 @@ var _ = Describe("Sql", func() {
 					ExpectedGetRowsError: nil,
 					ExpectedNumRows:      int64(1),
 				}
-				sqlConfig := SqlConfig{
+				sqlConfig := SQLConfig{
 					Postgres: &fakeDB,
 				}
 				val, err := sqlConfig.WriteInDB("bla", "myArgs")
@@ -267,7 +267,7 @@ var _ = Describe("Sql", func() {
 					ExpectedGetRowsError: errors.New("Error trying to get rows"),
 					ExpectedNumRows:      int64(0),
 				}
-				sqlConfig := SqlConfig{
+				sqlConfig := SQLConfig{
 					Postgres: &fakeDB,
 				}
 				val, err := sqlConfig.WriteInDB("bla", "myArgs")

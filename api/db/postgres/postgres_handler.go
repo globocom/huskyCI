@@ -1,43 +1,48 @@
 package db
 
-
 import (
 	"database/sql"
-	_ "github.com/lib/pq"
-	"sync"
 	"fmt"
-	config "github.com/globocom/huskyCI/api/context"
+	"sync"
+	"time"
+	_ "github.com/lib/pq" // Defining postgres plugin
 )
-
 
 var (
 	doOnce sync.Once
-	db *sql.DB = nil
-	dbErr error = nil
-	postgresConfig *config.MongoConfig = nil
+	db     *sql.DB = nil
+	dbErr  error   = nil
 )
 
-func (pHandler *PostgresHandler) ConfigureDB() error {
+// ConfigureDB will establish a new connection
+// with the postgres DB referenced in the arguments
+func (pHandler *PostgresHandler) ConfigureDB(
+	address string,
+	username string,
+	password string,
+	dbName string) error {
 	doOnce.Do(func() {
-		postgresConfig = config.APIConfiguration.MongoDBConfig
 		connStr := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable",
-			postgresConfig.Username, 
-			postgresConfig.Password,
-			postgresConfig.Address,
-			postgresConfig.DatabaseName)
-
+			username,
+			password,
+			address,
+			dbName)
 		db, dbErr = sql.Open("posgres", connStr)
 	})
 	return dbErr
 }
 
-
-func (pHandler *PostgresHandler) ConfigurePool() {
-	db.SetMaxOpenConns(postgresConfig.MaxOpenConns)
-	db.SetMaxIdleConns(postgresConfig.MaxIdleConns)
-	db.SetConnMaxLifetime(postgresConfig.ConnMaxLifetime)
+// ConfigurePool will set the pool of connections
+// Postgres based on the values passed in its arguments.
+func (pHandler *PostgresHandler) ConfigurePool(maxOpenConns, maxIdleConns int, connLT time.Duration) {
+	db.SetMaxOpenConns(maxOpenConns)
+	db.SetMaxIdleConns(maxIdleConns)
+	db.SetConnMaxLifetime(connLT)
 }
 
+// CloseDB will call the function to close
+// Postgres connection that has an opened status
+// in the pool of connections.
 func (pHandler *PostgresHandler) CloseDB() error {
 	return db.Close()
 }

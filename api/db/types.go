@@ -5,12 +5,12 @@ import (
 	"time"
 )
 
-// DBRequests defines all functions
+// Requests defines all functions
 // that make interactions with the
 // database. Based on this, any kind
 // of new database support can be done
-// implementing DBRequests.
-type DBRequests interface {
+// implementing Requests.
+type Requests interface {
 	ConnectDB(address string, dbName string, username string, password string, timeout time.Duration, poolLimit int, port int, maxOpenConns int, maxIdleConns int, connMaxLifetime time.Duration) error
 	FindOneDBRepository(mapParams map[string]interface{}) (types.Repository, error)
 	FindOneDBSecurityTest(mapParams map[string]interface{}) (types.SecurityTest, error)
@@ -33,10 +33,10 @@ type DBRequests interface {
 	UpdateOneDBAccessToken(mapParams map[string]interface{}, updatedAccessToken types.DBToken) error
 	GetMetricByType(metricType string, queryStringParams map[string][]string) (interface{}, error)
 }
-// MongoRequests implements DBRequests
+// MongoRequests implements Requests
 // for Mongo, a non-relational DB.
 type MongoRequests struct{}
 
-// PostgresRequests implements DBRequests
+// PostgresRequests implements Requests
 // for Postgres, a relational DB.
 type PostgresRequests struct{}
