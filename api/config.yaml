@@ -247,7 +247,6 @@ spotbugs:
     if [ $? -eq 0 ]; then
        cd code
        if [ -f "pom.xml" ]; then
-           # this is a maven project
            mv ../code /tmp/code
            cd /tmp/code
            project_type=$(cat pom.xml|grep packaging|cut -d'<' -f2|cut -d'>' -f2)

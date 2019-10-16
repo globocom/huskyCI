@@ -6,6 +6,7 @@ package securitytest
 
 import (
 	"encoding/xml"
+	"fmt"
 	"strconv"
 
 	"github.com/globocom/huskyCI/api/log"
@@ -90,16 +91,17 @@ func parseXMLtoJSON(byteValue []byte) (SpotBugsOutput, error) {
 	if err := xml.Unmarshal(byteValue, &bugs); err != nil {
 		return bugs, err
 	}
-	// if numOfErrors, err := strconv.Atoi(bugs.Errors.Errors); err == nil {
-	// 	if numOfErrors > 0 {
-	// 		fmt.Println("Errors happened")
-	// 	}
-	// }
-	// if numOfMissingClasses, err := strconv.Atoi(bugs.Errors.MissingClasses); err == nil {
-	// 	if numOfMissingClasses > 0 {
-	// 		fmt.Println("missing classes")
-	// 	}
-	// }
+	numOfErrors, err := strconv.Atoi(bugs.Errors.Errors)
+	if err != nil {
+		return bugs, err
+	}
+	numOfMissingClasses, err := strconv.Atoi(bugs.Errors.MissingClasses)
+	if err != nil {
+		return bugs, err
+	}
+	if (len(bugs.SpotBugsIssue) == 0) && (numOfErrors > 0 || numOfMissingClasses > 0) {
+		return bugs, fmt.Errorf("spotbugs has risen errors because of [%d] missing classes and [%d] errors while analysing", numOfMissingClasses, numOfErrors)
+	}
 	return bugs, nil
 }
 
