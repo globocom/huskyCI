@@ -151,7 +151,7 @@ safety:
           if grep -q "unpinned requirement" "/tmp/warning"; then
             cat /tmp/warning
           fi
-          jq '{"issues":map({"dependency": .[0], "vulnerable_below": .[1], "installed_verson": .[2], "description": .[3], "id": .[4]})}' /tmp/safety_huskyci_analysis_output.json > /tmp/output.json
+          jq -c '{"issues":map({"dependency": .[0], "vulnerable_below": .[1], "installed_verson": .[2], "description": .[3], "id": .[4]})}' /tmp/safety_huskyci_analysis_output.json > /tmp/output.json
           cat /tmp/output.json
         else
           echo "ERROR_RUNNING_SAFETY"
@@ -245,12 +245,13 @@ gitleaks:
     echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
     git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneGitleaks
     if [ $? -eq 0 ]; then
-        $(which gitleaks) --log=warn --report=results.json --repo-path=./code > /tmp/errorGitleaks
+        touch /tmp/results.json
+        $(which gitleaks) --log=warn --report=/tmp/results.json --repo-path=./code > /tmp/errorGitleaks
         if [ $? -eq 2 ]; then
             echo -n 'ERROR_RUNNING_GITLEAKS'
             cat /tmp/errorGitleaks
         else
-            jq -j -M -c . results.json
+            jq -j -M -c . /tmp/results.json
         fi
     else
         echo "ERROR_CLONING"

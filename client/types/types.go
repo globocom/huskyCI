@@ -25,6 +25,14 @@ type JSONPayload struct {
 	RepositoryBranch string `json:"repositoryBranch"`
 }
 
+// Target is the struct that represents HuskyCI API target
+type Target struct {
+	Label        string
+	Endpoint     string
+	TokenStorage string
+	Token        string
+}
+
 // Analysis is the struct that stores all data from analysis performed.
 type Analysis struct {
 	ID             bson.ObjectId  `bson:"_id,omitempty"`
