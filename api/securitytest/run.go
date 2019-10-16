@@ -3,7 +3,7 @@ package securitytest
 import (
 	"sync"
 
-	"github.com/globocom/huskyCI/api/db"
+	apiContext "github.com/globocom/huskyCI/api/context"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
 )
@@ -315,7 +315,7 @@ func getAllDefaultSecurityTests(typeOf, language string) ([]types.SecurityTest, 
 	if language != "" {
 		securityTestQuery = map[string]interface{}{"language": language, "default": true}
 	}
-	securityTests, err := db.FindAllDBSecurityTest(securityTestQuery)
+	securityTests, err := apiContext.APIConfiguration.DbInstance.FindAllDBSecurityTest(securityTestQuery)
 	if err != nil {
 		log.Error("getAllDefaultSecurityTests", "SECURITYTEST", 2009, err)
 		return securityTests, err

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/globocom/huskyCI/api/db"
+	apiContext "github.com/globocom/huskyCI/api/context"
 	huskydocker "github.com/globocom/huskyCI/api/dockers"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
@@ -56,7 +56,7 @@ func (scanInfo *SecTestScanInfo) New(RID, URL, branch, securityTestName string) 
 
 func (scanInfo *SecTestScanInfo) setSecurityTestContainer(securityTestName string) error {
 	securityTestQuery := map[string]interface{}{"name": securityTestName}
-	securityTest, err := db.FindOneDBSecurityTest(securityTestQuery)
+	securityTest, err := apiContext.APIConfiguration.DbInstance.FindOneDBSecurityTest(securityTestQuery)
 	if err != nil {
 		log.Error("createSecurityTestContainer", "SECURITYTEST", 2012, err)
 		return err

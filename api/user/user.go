@@ -15,7 +15,7 @@ import (
 	"strconv"
 
 	"github.com/globocom/huskyCI/api/auth"
-	"github.com/globocom/huskyCI/api/db"
+	apiContext "github.com/globocom/huskyCI/api/context"
 	"github.com/globocom/huskyCI/api/types"
 	"golang.org/x/crypto/pbkdf2"
 )
@@ -68,5 +68,5 @@ func InsertDefaultUser() error {
 		return hashFunction
 	})
 	newUser.Password = base64.StdEncoding.EncodeToString(hashedPass)
-	return db.InsertDBUser(newUser)
+	return apiContext.APIConfiguration.DbInstance.InsertDBUser(newUser)
 }

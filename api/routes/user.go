@@ -11,7 +11,7 @@ import (
 	"hash"
 
 	"github.com/globocom/huskyCI/api/auth"
-	"github.com/globocom/huskyCI/api/db"
+	apiContext "github.com/globocom/huskyCI/api/context"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
 	"github.com/labstack/echo"
@@ -47,7 +47,7 @@ func UpdateUser(c echo.Context) error {
 
 	// step 3: user exists?
 	userQuery := map[string]interface{}{"username": attemptUser.Username}
-	user, err := db.FindOneDBUser(userQuery)
+	user, err := apiContext.APIConfiguration.DbInstance.FindOneDBUser(userQuery)
 	if err != nil {
 		if err == mgo.ErrNotFound {
 			reply := map[string]interface{}{"success": false, "error": "user not found"}
@@ -91,7 +91,7 @@ func UpdateUser(c echo.Context) error {
 	}
 
 	// step 5.2: update user
-	if err := db.UpdateOneDBUser(userQuery, updatedUser); err != nil {
+	if err := apiContext.APIConfiguration.DbInstance.UpdateOneDBUser(userQuery, updatedUser); err != nil {
 		if err == mgo.ErrNotFound {
 			reply := map[string]interface{}{"success": false, "error": "user not found"}
 			return c.JSON(http.StatusNotFound, reply)
