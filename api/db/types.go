@@ -1,8 +1,10 @@
 package db
 
 import (
-	"github.com/globocom/huskyCI/api/types"
 	"time"
+
+	postgres "github.com/globocom/huskyCI/api/db/postgres"
+	"github.com/globocom/huskyCI/api/types"
 )
 
 // Requests defines all functions
@@ -33,10 +35,13 @@ type Requests interface {
 	UpdateOneDBAccessToken(mapParams map[string]interface{}, updatedAccessToken types.DBToken) error
 	GetMetricByType(metricType string, queryStringParams map[string][]string) (interface{}, error)
 }
+
 // MongoRequests implements Requests
 // for Mongo, a non-relational DB.
 type MongoRequests struct{}
 
 // PostgresRequests implements Requests
 // for Postgres, a relational DB.
-type PostgresRequests struct{}
+type PostgresRequests struct {
+	Psql postgres.SQLGen
+}
