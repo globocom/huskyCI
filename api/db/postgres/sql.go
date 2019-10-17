@@ -3,16 +3,27 @@ package db
 import (
 	"errors"
 	"log"
+	"time"
 )
 
 // Connect will call Postgres and establish
 // a new connection considering the pool of
 // connections configured in the enviroment.
-func (sqlConfig *SQLConfig) Connect() error {
-	if err := sqlConfig.Postgres.ConfigureDB(); err != nil {
+func (sqlConfig *SQLConfig) Connect(address string,
+	username string,
+	password string,
+	dbName string,
+	maxOpenConns int,
+	maxIdleConns int,
+	connLT time.Duration) error {
+	if err := sqlConfig.Postgres.ConfigureDB(
+		address,
+		username,
+		password,
+		dbName); err != nil {
 		return err
 	}
-	sqlConfig.Postgres.ConfigurePool()
+	sqlConfig.Postgres.ConfigurePool(maxOpenConns, maxIdleConns, connLT)
 	return nil
 }
 
