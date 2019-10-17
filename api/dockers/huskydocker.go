@@ -7,6 +7,7 @@ package dockers
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/globocom/huskyCI/api/log"
@@ -23,7 +24,7 @@ func DockerRun(fullContainerImage, cmd string, timeOutInSeconds int) (string, st
 
 	// step 2: pull image if it is not there yet
 	if !d.ImageIsLoaded(fullContainerImage) {
-		if err := pullImage(d, fullContainerImage); err != nil {
+		if err := PullImage(d, fullContainerImage); err != nil {
 			return "", "", err
 		}
 	}
@@ -64,25 +65,33 @@ func DockerRun(fullContainerImage, cmd string, timeOutInSeconds int) (string, st
 	return CID, cOutput, nil
 }
 
-func pullImage(d *Docker, image string) error {
-	canonicalURL := fmt.Sprintf("docker.io/%s", image)
-	timeout := time.After(15 * time.Minute)
-	retryTick := time.NewTicker(15 * time.Second)
+// PullImage pulls docker images. If there's an error it retries each 3 seconds only 3 times
+func PullImage(docker *Docker, canonicalImg string) error {
+	canonicalURL := fmt.Sprintf("docker.io/%s", canonicalImg)
+	retryTick := time.NewTicker(3 * time.Second)
+	retries := 3
+
+	splitted := strings.Split(canonicalImg, "/")
+	image := splitted[len(splitted)-1]
+
 	for {
 		select {
-		case <-timeout:
-			timeOutErr := errors.New("timeout")
-			log.Error("pullImage", "HUSKYDOCKER", 3013, timeOutErr)
-			return timeOutErr
 		case <-retryTick.C:
 			log.Info("pullImage", "DOCKERRUN", 31, image)
-			if d.ImageIsLoaded(image) {
-				log.Info("pullImage", "HUSKYDOCKER", 35, image)
-				return nil
-			}
-			if err := d.PullImage(canonicalURL); err != nil {
+			if err := docker.PullImage(canonicalURL); err != nil {
 				log.Error("pullImage", "HUSKYDOCKER", 3013, err)
 				return err
+			}
+			retries--
+			if retries == 0 {
+				err := errors.New("no left retries")
+				log.Error("pullImage", "HUSKYDOCKER", 3013, err)
+				return err
+			}
+		default:
+			if docker.ImageIsLoaded(image) || docker.ImageIsLoaded(canonicalImg) {
+				log.Info("pullImage", "HUSKYDOCKER", 35, image)
+				return nil
 			}
 		}
 	}
