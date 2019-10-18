@@ -154,7 +154,7 @@ func (spotbugsScan *SecTestScanInfo) prepareSpotBugsVulns() {
 		spotbugsVuln.Severity = "LOW"
 		spotbugsVuln.Confidence = "HIGH"
 
-		huskyCIspotbugsResults.LowVulns = append(huskyCIspotbugsResults.LowVulns, spotbugsVuln)
+		spotbugsScan.Vulnerabilities.LowVulns = append(huskyCIspotbugsResults.LowVulns, spotbugsVuln)
 		return
 	}
 

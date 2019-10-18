@@ -4,13 +4,11 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 #
-# This script will build every securityTest container based on all dockerfiles from huskyCI repository
+# This script will Copy files from /usr/share/maven/ref into ${MAVEN_CONFIG}
+# So the initial ~/.m2 is set with expected content.
 #
 set -o pipefail
 
-# Copy files from /usr/share/maven/ref into ${MAVEN_CONFIG}
-# So the initial ~/.m2 is set with expected content.
-# Don't override, as this is just a reference setup
 copy_reference_file() {
   local root="${1}"
   local f="${2%/}"
