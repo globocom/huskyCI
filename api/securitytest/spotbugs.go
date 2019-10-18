@@ -6,11 +6,18 @@ package securitytest
 
 import (
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
+)
+
+const (
+	mediumSeverityValue = 15
+	highSeverityValue   = 10
 )
 
 // SpotBugsOutput is the struct that holds all data from SpotBugs output.
@@ -64,6 +71,33 @@ func analyzeSpotBugs(spotbugsScan *SecTestScanInfo) error {
 	spotBugsOutput := SpotBugsOutput{}
 	spotbugsScan.FinalOutput = spotBugsOutput
 
+	// check if GRADLE failed running
+	errorGradleFound := strings.Contains(spotbugsScan.Container.COutput, "ERROR_RUNNING_GRADLE_BUILD")
+	if errorGradleFound {
+		spotbugsScan.ErrorFound = errors.New("error running gradle")
+		spotbugsScan.prepareSpotBugsVulns()
+		spotbugsScan.prepareContainerAfterScan()
+		return nil
+	}
+
+	// check if Maven failed running
+	errorMavenFound := strings.Contains(spotbugsScan.Container.COutput, "ERROR_RUNNING_MAVEN_BUILD")
+	if errorMavenFound {
+		spotbugsScan.ErrorFound = errors.New("error running maven")
+		spotbugsScan.prepareSpotBugsVulns()
+		spotbugsScan.prepareContainerAfterScan()
+		return nil
+	}
+
+	// check if unsuported java project was found
+	errorUnsuported := strings.Contains(spotbugsScan.Container.COutput, "ERROR_UNSUPPORTED_JAVA_PROJECT")
+	if errorUnsuported {
+		spotbugsScan.ErrorFound = errors.New("error unsuported java project")
+		spotbugsScan.prepareSpotBugsVulns()
+		spotbugsScan.prepareContainerAfterScan()
+		return nil
+	}
+
 	// nil cOutput states that no Issues were found.
 	if spotbugsScan.Container.COutput == "" {
 		spotbugsScan.prepareContainerAfterScan()
@@ -86,6 +120,7 @@ func analyzeSpotBugs(spotbugsScan *SecTestScanInfo) error {
 	spotbugsScan.prepareContainerAfterScan()
 	return nil
 }
+
 func parseXMLtoJSON(byteValue []byte) (SpotBugsOutput, error) {
 	var bugs SpotBugsOutput
 	if err := xml.Unmarshal(byteValue, &bugs); err != nil {
@@ -111,6 +146,18 @@ func (spotbugsScan *SecTestScanInfo) prepareSpotBugsVulns() {
 	huskyCIspotbugsResults := types.HuskyCISecurityTestOutput{}
 	spotbugsOutput = spotbugsScan.FinalOutput.(SpotBugsOutput)
 
+	if spotbugsScan.ErrorFound != nil {
+		spotbugsVuln := types.HuskyCIVulnerability{}
+		spotbugsVuln.Language = "Java"
+		spotbugsVuln.SecurityTool = "SpotBugs"
+		spotbugsVuln.Details = fmt.Sprintf("An error occured running huskyCI scan on your Java project: %s", spotbugsScan.ErrorFound.Error())
+		spotbugsVuln.Severity = "LOW"
+		spotbugsVuln.Confidence = "HIGH"
+
+		huskyCIspotbugsResults.LowVulns = append(huskyCIspotbugsResults.LowVulns, spotbugsVuln)
+		return
+	}
+
 	for i := 0; i < len(spotbugsOutput.SpotBugsIssue); i++ {
 		for j := 0; j < len(spotbugsOutput.SpotBugsIssue[i].SourceLine); j++ {
 			spotbugsVuln := types.HuskyCIVulnerability{}
@@ -118,9 +165,11 @@ func (spotbugsScan *SecTestScanInfo) prepareSpotBugsVulns() {
 			spotbugsVuln.SecurityTool = "SpotBugs"
 			spotbugsVuln.Type = spotbugsOutput.SpotBugsIssue[i].Abbreviation
 			spotbugsVuln.Details = spotbugsOutput.SpotBugsIssue[i].Type
+			startLine := spotbugsOutput.SpotBugsIssue[i].SourceLine[j].Start
+			endLine := spotbugsOutput.SpotBugsIssue[i].SourceLine[j].End
+			spotbugsVuln.Code = fmt.Sprintf("Code beetween Line %s and Line %s.", startLine, endLine)
+			spotbugsVuln.Line = startLine
 			spotbugsVuln.File = spotbugsOutput.SpotBugsIssue[i].SourceLine[j].SourcePath
-			spotbugsVuln.Code = spotbugsOutput.SpotBugsIssue[i].SourceLine[j].SourcePath
-			spotbugsVuln.Line = spotbugsOutput.SpotBugsIssue[i].SourceLine[j].Start
 
 			switch spotbugsOutput.SpotBugsIssue[i].Priority {
 			case "1":
@@ -131,12 +180,21 @@ func (spotbugsScan *SecTestScanInfo) prepareSpotBugsVulns() {
 				spotbugsVuln.Confidence = "LOW"
 			}
 
-			switch rank, _ := strconv.Atoi(spotbugsOutput.SpotBugsIssue[i].Rank); {
-			case rank < 10:
+			rank, err := strconv.Atoi(spotbugsOutput.SpotBugsIssue[i].Rank)
+			if err != nil {
+				log.Warning("analyzeSpotBugs", "SPOTBUGS", 1039, "exception while reading rank from a spotbugs issue", err)
+				continue
+			}
+
+			switch {
+			case rank < highSeverityValue:
+				spotbugsVuln.Severity = "HIGH"
 				huskyCIspotbugsResults.HighVulns = append(huskyCIspotbugsResults.HighVulns, spotbugsVuln)
-			case rank < 15:
+			case rank < mediumSeverityValue:
+				spotbugsVuln.Severity = "MEDIUM"
 				huskyCIspotbugsResults.MediumVulns = append(huskyCIspotbugsResults.MediumVulns, spotbugsVuln)
 			default:
+				spotbugsVuln.Severity = "LOW"
 				huskyCIspotbugsResults.LowVulns = append(huskyCIspotbugsResults.LowVulns, spotbugsVuln)
 			}
 		}

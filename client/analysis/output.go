@@ -385,6 +385,7 @@ func printSTDOUTOutputSpotBugs(issues []types.HuskyCIVulnerability) {
 		fmt.Println()
 		fmt.Printf("[HUSKYCI][!] Language: %s\n", issue.Language)
 		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
+		fmt.Printf("[HUSKYCI][!] Severity: %s\n", issue.Severity)
 		fmt.Printf("[HUSKYCI][!] Confidence: %s\n", issue.Confidence)
 		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
 		fmt.Printf("[HUSKYCI][!] File: %s\n", issue.File)

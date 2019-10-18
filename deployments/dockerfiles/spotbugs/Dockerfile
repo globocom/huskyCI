@@ -1,6 +1,8 @@
 FROM openjdk:8-jdk-alpine
 
-RUN apk add --no-cache curl tar bash wget unzip
+RUN apk update && apk upgrade \
+	&& apk add --no-cache curl tar bash wget unzip openssh-client \
+	&& apk add git
 
 ARG SPOTBUGS_VERSION=4.0.0-beta4
 ARG FINDSECBUGS_VERSION=1.9.0
@@ -24,7 +26,7 @@ RUN mkdir -p /usr/share/maven /usr/share/maven/ref \
   && rm -f spotbugs.zip \
   && mv spotbugs-${SPOTBUGS_VERSION} spotbugs \
   && wget -nc -O findsecbugs-plugin-${FINDSECBUGS_VERSION}.jar https://repo1.maven.org/maven2/com/h3xstream/findsecbugs/findsecbugs-plugin/${FINDSECBUGS_VERSION}/findsecbugs-plugin-${FINDSECBUGS_VERSION}.jar \
-  && echo $SPOTBUGS_VERSION > /opt/spotbugs/version
+  && echo -n $SPOTBUGS_VERSION > /opt/spotbugs/version
 
 ENV MAVEN_HOME /usr/share/maven
 ENV MAVEN_CONFIG "$USER_HOME_DIR/.m2"
