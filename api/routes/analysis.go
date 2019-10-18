@@ -44,7 +44,7 @@ func GetAnalysis(c echo.Context) error {
 		return err
 	}
 	analysisQuery := map[string]interface{}{"RID": RID}
-	analysisResult, err := apiContext.APIConfiguration.DbInstance.FindOneDBAnalysis(analysisQuery)
+	analysisResult, err := apiContext.APIConfiguration.DBInstance.FindOneDBAnalysis(analysisQuery)
 	if !tokenValidator.HasAuthorization(attemptToken, analysisResult.URL) {
 		log.Error("GetAnalysis", "ANALYSIS", 1027, RID)
 		reply := map[string]interface{}{"success": false, "error": "permission denied"}
@@ -91,11 +91,11 @@ func ReceiveRequest(c echo.Context) error {
 
 	// step-02: is this repository already in MongoDB?
 	repositoryQuery := map[string]interface{}{"repositoryURL": repository.URL}
-	_, err = apiContext.APIConfiguration.DbInstance.FindOneDBRepository(repositoryQuery)
+	_, err = apiContext.APIConfiguration.DBInstance.FindOneDBRepository(repositoryQuery)
 	if err == mgo.ErrNotFound {
 		// step-02-o1: repository not found! insert it into MongoDB
 		repository.CreatedAt = time.Now()
-		err = apiContext.APIConfiguration.DbInstance.InsertDBRepository(repository)
+		err = apiContext.APIConfiguration.DBInstance.InsertDBRepository(repository)
 		if err != nil {
 			log.Error("ReceiveRequest", "ANALYSIS", 1010, err)
 			reply := map[string]interface{}{"success": false, "error": "internal error"}
@@ -109,7 +109,7 @@ func ReceiveRequest(c echo.Context) error {
 	} else { // err == nil
 		// step-03: repository found! does it have a running status analysis?
 		analysisQuery := map[string]interface{}{"repositoryURL": repository.URL, "repositoryBranch": repository.Branch}
-		analysisResult, err := apiContext.APIConfiguration.DbInstance.FindOneDBAnalysis(analysisQuery)
+		analysisResult, err := apiContext.APIConfiguration.DBInstance.FindOneDBAnalysis(analysisQuery)
 		if err == mgo.ErrNotFound {
 			// nice! we can start this analysis!
 		} else if err != nil {

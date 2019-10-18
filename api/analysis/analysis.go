@@ -63,7 +63,7 @@ func registerNewAnalysis(RID string, repository types.Repository) error {
 		StartedAt: time.Now(),
 	}
 
-	if err := apiContext.APIConfiguration.DbInstance.InsertDBAnalysis(newAnalysis); err != nil {
+	if err := apiContext.APIConfiguration.DBInstance.InsertDBAnalysis(newAnalysis); err != nil {
 		log.Error("registerNewAnalysis", "ANALYSIS", 2011, err)
 		return err
 	}
@@ -92,7 +92,7 @@ func registerFinishedAnalysis(RID string, allScanResults *securitytest.RunAllInf
 			"finishedAt":     time.Now(),
 		},
 	}
-	if err := apiContext.APIConfiguration.DbInstance.UpdateOneDBAnalysisContainer(analysisQuery, updateAnalysisQuery); err != nil {
+	if err := apiContext.APIConfiguration.DBInstance.UpdateOneDBAnalysisContainer(analysisQuery, updateAnalysisQuery); err != nil {
 		log.Error("registerFinishedAnalysis", "ANALYSIS", 2011, err)
 		return err
 	}

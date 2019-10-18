@@ -446,7 +446,7 @@ var _ = Describe("Context", func() {
 						Default:          fakeCaller.expectedBoolFromConfig,
 						TimeOutInSeconds: fakeCaller.expectedIntFromConfig,
 					},
-					DbInstance: &db.MongoRequests{},
+					DBInstance: &db.MongoRequests{},
 				}
 				Expect(apiConfig).To(Equal(expectedConfig))
 				Expect(err).To(BeNil())

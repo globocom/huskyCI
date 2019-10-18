@@ -20,7 +20,7 @@ import (
 // GetCredsFromDB returns an user info given an username.
 func (pC *Pbkdf2Caller) GetCredsFromDB(username string) (types.User, error) {
 	searchParam := map[string]interface{}{"username": username}
-	return apiContext.APIConfiguration.DbInstance.FindOneDBUser(searchParam)
+	return apiContext.APIConfiguration.DBInstance.FindOneDBUser(searchParam)
 }
 
 // DecodeSaltValue decodes a salt and returns a string and an error.

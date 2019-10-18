@@ -43,8 +43,7 @@ type Database interface {
 // Connect connects to mongo and returns the session.
 func Connect(address, dbName, username, password string, poolLimit, port int, timeout time.Duration) error {
 
-	values := fmt.Sprintf("Mongo received vars: Address - %s\nDBName - %s\nUsername - %s\nPassword - %s\nPoolLimit - %d\nPort - %d \nTimeout - %v\n", address, dbName, username, password, poolLimit, port, timeout)
-	log.Info("Connect", "DB", 21, values)
+	log.Info("Connect", "DB", 21)
 	dbAddress := fmt.Sprintf("%s:%d", address, port)
 	dialInfo := &mgo.DialInfo{
 		Addrs:     []string{dbAddress},

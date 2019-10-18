@@ -39,19 +39,19 @@ func (tC *TCaller) GetTimeNow() time.Time {
 
 // StoreAccessToken stores a new access token into MongoDB.
 func (tC *TCaller) StoreAccessToken(accessToken types.DBToken) error {
-	return apiContext.APIConfiguration.DbInstance.InsertDBAccessToken(accessToken)
+	return apiContext.APIConfiguration.DBInstance.InsertDBAccessToken(accessToken)
 }
 
 // FindAccessToken gets an AccessToken based on an given ID.
 func (tC *TCaller) FindAccessToken(ID string) (types.DBToken, error) {
 	aTokenQuery := map[string]interface{}{"uuid": ID}
-	return apiContext.APIConfiguration.DbInstance.FindOneDBAccessToken(aTokenQuery)
+	return apiContext.APIConfiguration.DBInstance.FindOneDBAccessToken(aTokenQuery)
 }
 
 // FindRepoURL checks if a Access TOken is present based on a given URL.
 func (tC *TCaller) FindRepoURL(repositoryURL string) error {
 	repoQuery := map[string]interface{}{"repositoryURL": repositoryURL, "isValid": true}
-	_, err := apiContext.APIConfiguration.DbInstance.FindOneDBAccessToken(repoQuery)
+	_, err := apiContext.APIConfiguration.DBInstance.FindOneDBAccessToken(repoQuery)
 	return err
 }
 
@@ -74,5 +74,5 @@ func (tC *TCaller) DecodeToStringBase64(encodedVal string) (string, error) {
 // UpdateAccessToken updates an access Token in MongoDB based on its UUID.
 func (tC *TCaller) UpdateAccessToken(ID string, accesstoken types.DBToken) error {
 	aTokenQuery := map[string]interface{}{"uuid": ID}
-	return apiContext.APIConfiguration.DbInstance.UpdateOneDBAccessToken(aTokenQuery, accesstoken)
+	return apiContext.APIConfiguration.DBInstance.UpdateOneDBAccessToken(aTokenQuery, accesstoken)
 }

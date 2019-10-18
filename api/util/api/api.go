@@ -127,7 +127,7 @@ func (cH *CheckUtils) checkDockerHosts(configAPI *apiContext.APIConfig) error {
 }
 
 func (cH *CheckUtils) checkDB(configAPI *apiContext.APIConfig) error {
-	if err := configAPI.DbInstance.ConnectDB(
+	if err := configAPI.DBInstance.ConnectDB(
 		configAPI.DBConfig.Address,
 		configAPI.DBConfig.DatabaseName,
 		configAPI.DBConfig.Username,
@@ -160,7 +160,7 @@ func (cH *CheckUtils) checkEachSecurityTest(configAPI *apiContext.APIConfig) err
 func (cH *CheckUtils) checkDefaultUser(configAPI *apiContext.APIConfig) error {
 
 	defaultUserQuery := map[string]interface{}{"username": user.DefaultAPIUser}
-	_, err := configAPI.DbInstance.FindOneDBUser(defaultUserQuery)
+	_, err := configAPI.DBInstance.FindOneDBUser(defaultUserQuery)
 	if err != nil {
 		if err == mgo.ErrNotFound {
 			// user not found, add default user
@@ -202,7 +202,7 @@ func checkSecurityTest(securityTestName string, configAPI *apiContext.APIConfig)
 	}
 
 	securityTestQuery := map[string]interface{}{"name": securityTestName}
-	_, err := configAPI.DbInstance.UpsertOneDBSecurityTest(securityTestQuery, securityTestConfig)
+	_, err := configAPI.DBInstance.UpsertOneDBSecurityTest(securityTestQuery, securityTestConfig)
 	if err != nil {
 		return err
 	}
