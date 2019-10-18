@@ -40,8 +40,14 @@ type Requests interface {
 // for Mongo, a non-relational DB.
 type MongoRequests struct{}
 
+type Json interface {
+	Marshal(v interface{}) ([]byte, error)
+	Unmarshal(data []byte, v interface{}) error
+}
+
 // PostgresRequests implements Requests
 // for Postgres, a relational DB.
 type PostgresRequests struct {
-	Psql postgres.SQLGen
+	Psql        postgres.SQLGen
+	JsonHandler Json
 }

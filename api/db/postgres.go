@@ -1,7 +1,6 @@
 package db
 
 import (
-	"encoding/json"
 	"errors"
 	"time"
 
@@ -55,11 +54,11 @@ func (pR *PostgresRequests) FindOneDBRepository(
 	if len(values) != 1 {
 		return repositoryResponse, errors.New("Data returned in a not expected format")
 	}
-	jsonValues, err := json.Marshal(values[0])
+	jsonValues, err := pR.JsonHandler.Marshal(values[0])
 	if err != nil {
 		return repositoryResponse, err
 	}
-	if err := json.Unmarshal(jsonValues, &repositoryResponse); err != nil {
+	if err := pR.JsonHandler.Unmarshal(jsonValues, &repositoryResponse); err != nil {
 		return repositoryResponse, err
 	}
 	return repositoryResponse, nil

@@ -27,7 +27,7 @@ func (pHandler *PostgresHandler) ConfigureDB(
 			password,
 			address,
 			dbName)
-		db, dbErr = sql.Open("posgres", connStr)
+		db, dbErr = sql.Open("postgres", connStr)
 	})
 	return dbErr
 }
