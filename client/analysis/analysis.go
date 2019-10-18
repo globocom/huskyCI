@@ -144,18 +144,13 @@ func MonitorAnalysis(RID string) (types.Analysis, error) {
 }
 
 // PrintResults prints huskyCI output either in JSON or the standard output.
-func PrintResults(formatOutput string, analysis types.Analysis) error {
+func PrintResults(analysis types.Analysis) error {
 
 	prepareAllSummary(analysis)
-
-	if types.IsJSONoutput {
-		err := printJSONOutput()
-		if err != nil {
-			return err
-		}
-	} else {
-		printSTDOUTOutput(analysis)
+	err := generateSonarOutput()
+	if err != nil {
+		fmt.Printf("[HUSKYCI][X] Error saving json results: %s\n", err)
 	}
-
+	printSTDOUTOutput(analysis)
 	return nil
 }

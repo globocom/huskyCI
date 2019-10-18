@@ -54,11 +54,7 @@ func main() {
 	}
 
 	// step 3: print output based on os.Args(1) parameter received
-	formatOutput := ""
-	if len(os.Args) > 1 {
-		formatOutput = "JSON"
-	}
-	err = analysis.PrintResults(formatOutput, huskyAnalysis)
+	err = analysis.PrintResults(huskyAnalysis)
 	if err != nil {
 		fmt.Println("[HUSKYCI][ERROR] Printing output:", err)
 		os.Exit(1)

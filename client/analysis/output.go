@@ -7,20 +7,97 @@ package analysis
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
+
+	"github.com/globocom/huskyCI/client/util"
 
 	"github.com/globocom/huskyCI/client/types"
 )
 
 var outputJSON types.JSONOutput
 
-// printJSONOutput prints the analysis output in a JSON format
-func printJSONOutput() error {
-	jsonReady, err := json.Marshal(outputJSON)
+// generateSonarOutput prints the analysis output in a JSON format
+func generateSonarOutput() error {
+
+	var allVulns []types.HuskyCIVulnerability
+
+	// gosec
+	allVulns = append(allVulns, outputJSON.GoResults.HuskyCIGosecOutput.LowVulns...)
+	allVulns = append(allVulns, outputJSON.GoResults.HuskyCIGosecOutput.MediumVulns...)
+	allVulns = append(allVulns, outputJSON.GoResults.HuskyCIGosecOutput.HighVulns...)
+
+	// bandit
+	allVulns = append(allVulns, outputJSON.PythonResults.HuskyCIBanditOutput.NoSecVulns...)
+	allVulns = append(allVulns, outputJSON.PythonResults.HuskyCIBanditOutput.LowVulns...)
+	allVulns = append(allVulns, outputJSON.PythonResults.HuskyCIBanditOutput.MediumVulns...)
+	allVulns = append(allVulns, outputJSON.PythonResults.HuskyCIBanditOutput.HighVulns...)
+
+	// safety
+	allVulns = append(allVulns, outputJSON.PythonResults.HuskyCISafetyOutput.LowVulns...)
+	allVulns = append(allVulns, outputJSON.PythonResults.HuskyCISafetyOutput.MediumVulns...)
+	allVulns = append(allVulns, outputJSON.PythonResults.HuskyCISafetyOutput.HighVulns...)
+
+	// brakeman
+	allVulns = append(allVulns, outputJSON.RubyResults.HuskyCIBrakemanOutput.LowVulns...)
+	allVulns = append(allVulns, outputJSON.RubyResults.HuskyCIBrakemanOutput.MediumVulns...)
+	allVulns = append(allVulns, outputJSON.RubyResults.HuskyCIBrakemanOutput.HighVulns...)
+
+	// npmaudit
+	allVulns = append(allVulns, outputJSON.JavaScriptResults.HuskyCINpmAuditOutput.LowVulns...)
+	allVulns = append(allVulns, outputJSON.JavaScriptResults.HuskyCINpmAuditOutput.MediumVulns...)
+	allVulns = append(allVulns, outputJSON.JavaScriptResults.HuskyCINpmAuditOutput.HighVulns...)
+
+	// yarnaudit
+	allVulns = append(allVulns, outputJSON.JavaScriptResults.HuskyCIYarnAuditOutput.LowVulns...)
+	allVulns = append(allVulns, outputJSON.JavaScriptResults.HuskyCIYarnAuditOutput.MediumVulns...)
+	allVulns = append(allVulns, outputJSON.JavaScriptResults.HuskyCIYarnAuditOutput.HighVulns...)
+
+	// gitleaks
+	allVulns = append(allVulns, outputJSON.GenericResults.HuskyCIGitleaksOutput.LowVulns...)
+	allVulns = append(allVulns, outputJSON.GenericResults.HuskyCIGitleaksOutput.MediumVulns...)
+	allVulns = append(allVulns, outputJSON.GenericResults.HuskyCIGitleaksOutput.HighVulns...)
+
+	var sonarOutput types.HuskyCISonarOutput
+
+	for _, vuln := range allVulns {
+		var issue types.SonarIssue
+		issue.EngineID = "huskyCI"
+		issue.Type = "VULNERABILITY"
+		issue.RuleID = vuln.Language
+		switch strings.ToLower(vuln.Severity) {
+		case `low`:
+			issue.Severity = "MINOR"
+		case `medium`:
+			issue.Severity = "MAJOR"
+		case `high`:
+			issue.Severity = "BLOCKER"
+		default:
+			issue.Severity = "INFO"
+		}
+		issue.PrimaryLocation.FilePath = vuln.File
+		issue.PrimaryLocation.Message = vuln.Details
+		issue.PrimaryLocation.TextRange.StartLine = 0
+		lineNum, err := strconv.Atoi(vuln.Line)
+		if err != nil {
+			lineNum = 0
+		}
+		if lineNum != 0 && lineNum > 0 {
+			issue.PrimaryLocation.TextRange.StartLine = lineNum
+		}
+		sonarOutput.Issues = append(sonarOutput.Issues, issue)
+	}
+
+	sonarOutputString, err := json.Marshal(sonarOutput)
 	if err != nil {
 		return err
 	}
-	fmt.Println(string(jsonReady))
+
+	err = util.CreateSonarJSONFile(sonarOutputString)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

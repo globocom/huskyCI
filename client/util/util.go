@@ -9,6 +9,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"net/http"
+	"os"
 	"strings"
 )
 
@@ -83,4 +84,25 @@ func AdjustWarningMessage(warningRaw string) string {
 	}
 
 	return warningRaw
+}
+
+// CreateSonarJSONFile creates a JSON file with Sonarqube output
+func CreateSonarJSONFile(output []byte) error {
+	err := os.MkdirAll("./huskyCI/", 0750)
+	if err != nil {
+		return err
+	}
+
+	f, err := os.Create("./huskyCI/result.json")
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	_, err = f.Write(output)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
