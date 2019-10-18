@@ -10,7 +10,6 @@ import (
 	"net/http/httptest"
 	"os"
 
-	apiContext "github.com/globocom/huskyCI/api/context"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
 	"github.com/globocom/huskyCI/api/util"
@@ -162,15 +161,7 @@ Line4`
 
 	Describe("CheckValidInput", func() {
 		e := echo.New()
-
-		apiContext.APIConfiguration = &apiContext.APIConfig{
-			GraylogConfig: &apiContext.GraylogConfig{
-				DevelopmentEnv: true,
-				AppName:        "log_test",
-				Tag:            "log_test",
-			},
-		}
-		log.InitLog()
+		log.InitLog(true, "", "", "log_test", "log_test")
 
 		Context("When URL is already ok", func() {
 			repository := types.Repository{
