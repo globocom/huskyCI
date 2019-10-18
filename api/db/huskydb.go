@@ -5,14 +5,37 @@
 package db
 
 import (
+	"time"
+
 	mongoHuskyCI "github.com/globocom/huskyCI/api/db/mongo"
 	"github.com/globocom/huskyCI/api/types"
-	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
+// ConnectDB will call Connect function
+// and return a nil error if connection
+// with MongoDB was succeeded.
+func (mR *MongoRequests) ConnectDB(address string, dbName string,
+	username string,
+	password string,
+	timeout time.Duration,
+	poolLimit int,
+	port int,
+	maxOpenConns int,
+	maxIdleConns int,
+	connMaxLifetime time.Duration) error {
+	return mongoHuskyCI.Connect(
+		address,
+		dbName,
+		username,
+		password,
+		poolLimit,
+		port,
+		timeout)
+}
+
 // FindOneDBRepository checks if a given repository is present into RepositoryCollection.
-func FindOneDBRepository(mapParams map[string]interface{}) (types.Repository, error) {
+func (mR *MongoRequests) FindOneDBRepository(mapParams map[string]interface{}) (types.Repository, error) {
 	repositoryResponse := types.Repository{}
 	repositoryQuery := []bson.M{}
 	for k, v := range mapParams {
@@ -24,7 +47,7 @@ func FindOneDBRepository(mapParams map[string]interface{}) (types.Repository, er
 }
 
 // FindOneDBSecurityTest checks if a given securityTest is present into SecurityTestCollection.
-func FindOneDBSecurityTest(mapParams map[string]interface{}) (types.SecurityTest, error) {
+func (mR *MongoRequests) FindOneDBSecurityTest(mapParams map[string]interface{}) (types.SecurityTest, error) {
 	securityTestResponse := types.SecurityTest{}
 	securityTestQuery := []bson.M{}
 	for k, v := range mapParams {
@@ -36,7 +59,7 @@ func FindOneDBSecurityTest(mapParams map[string]interface{}) (types.SecurityTest
 }
 
 // FindOneDBAnalysis checks if a given analysis is present into AnalysisCollection.
-func FindOneDBAnalysis(mapParams map[string]interface{}) (types.Analysis, error) {
+func (mR *MongoRequests) FindOneDBAnalysis(mapParams map[string]interface{}) (types.Analysis, error) {
 	analysisResponse := types.Analysis{}
 	analysisQuery := []bson.M{}
 	for k, v := range mapParams {
@@ -49,7 +72,7 @@ func FindOneDBAnalysis(mapParams map[string]interface{}) (types.Analysis, error)
 }
 
 // FindOneDBUser checks if a given user is present into UserCollection.
-func FindOneDBUser(mapParams map[string]interface{}) (types.User, error) {
+func (mR *MongoRequests) FindOneDBUser(mapParams map[string]interface{}) (types.User, error) {
 	userResponse := types.User{}
 	userQuery := []bson.M{}
 	for k, v := range mapParams {
@@ -61,7 +84,7 @@ func FindOneDBUser(mapParams map[string]interface{}) (types.User, error) {
 }
 
 // FindOneDBAccessToken checks if a given accessToken exists in AccessTokenCollection.
-func FindOneDBAccessToken(mapParams map[string]interface{}) (types.DBToken, error) {
+func (mR *MongoRequests) FindOneDBAccessToken(mapParams map[string]interface{}) (types.DBToken, error) {
 	aTokenResponse := types.DBToken{}
 	aTokenQuery := []bson.M{}
 	for k, v := range mapParams {
@@ -73,7 +96,7 @@ func FindOneDBAccessToken(mapParams map[string]interface{}) (types.DBToken, erro
 }
 
 // FindAllDBRepository returns all Repository of a given query present into RepositoryCollection.
-func FindAllDBRepository(mapParams map[string]interface{}) ([]types.Repository, error) {
+func (mR *MongoRequests) FindAllDBRepository(mapParams map[string]interface{}) ([]types.Repository, error) {
 	repositoryQuery := []bson.M{}
 	for k, v := range mapParams {
 		repositoryQuery = append(repositoryQuery, bson.M{k: v})
@@ -85,7 +108,7 @@ func FindAllDBRepository(mapParams map[string]interface{}) ([]types.Repository, 
 }
 
 // FindAllDBSecurityTest returns all SecurityTests of a given query present into SecurityTestCollection.
-func FindAllDBSecurityTest(mapParams map[string]interface{}) ([]types.SecurityTest, error) {
+func (mR *MongoRequests) FindAllDBSecurityTest(mapParams map[string]interface{}) ([]types.SecurityTest, error) {
 	securityTestQuery := []bson.M{}
 	for k, v := range mapParams {
 		securityTestQuery = append(securityTestQuery, bson.M{k: v})
@@ -97,7 +120,7 @@ func FindAllDBSecurityTest(mapParams map[string]interface{}) ([]types.SecurityTe
 }
 
 // FindAllDBAnalysis returns all Analysis of a given query present into AnalysisCollection.
-func FindAllDBAnalysis(mapParams map[string]interface{}) ([]types.Analysis, error) {
+func (mR *MongoRequests) FindAllDBAnalysis(mapParams map[string]interface{}) ([]types.Analysis, error) {
 	analysisQuery := []bson.M{}
 	for k, v := range mapParams {
 		analysisQuery = append(analysisQuery, bson.M{k: v})
@@ -109,7 +132,7 @@ func FindAllDBAnalysis(mapParams map[string]interface{}) ([]types.Analysis, erro
 }
 
 // InsertDBRepository inserts a new repository into RepositoryCollection.
-func InsertDBRepository(repository types.Repository) error {
+func (mR *MongoRequests) InsertDBRepository(repository types.Repository) error {
 	newRepository := bson.M{
 		"repositoryURL": repository.URL,
 		"createdAt":     repository.CreatedAt,
@@ -119,7 +142,7 @@ func InsertDBRepository(repository types.Repository) error {
 }
 
 // InsertDBSecurityTest inserts a new securityTest into SecurityTestCollection.
-func InsertDBSecurityTest(securityTest types.SecurityTest) error {
+func (mR *MongoRequests) InsertDBSecurityTest(securityTest types.SecurityTest) error {
 	newSecurityTest := bson.M{
 		"name":           securityTest.Name,
 		"image":          securityTest.Image,
@@ -134,7 +157,7 @@ func InsertDBSecurityTest(securityTest types.SecurityTest) error {
 }
 
 // InsertDBAnalysis inserts a new analysis into AnalysisCollection.
-func InsertDBAnalysis(analysis types.Analysis) error {
+func (mR *MongoRequests) InsertDBAnalysis(analysis types.Analysis) error {
 	newAnalysis := bson.M{
 		"RID":              analysis.RID,
 		"repositoryURL":    analysis.URL,
@@ -149,7 +172,7 @@ func InsertDBAnalysis(analysis types.Analysis) error {
 }
 
 // InsertDBUser inserts a new user into UserCollection.
-func InsertDBUser(user types.User) error {
+func (mR *MongoRequests) InsertDBUser(user types.User) error {
 	newUser := bson.M{
 		"username":     user.Username,
 		"password":     user.Password,
@@ -163,7 +186,7 @@ func InsertDBUser(user types.User) error {
 }
 
 // InsertDBAccessToken inserts a new access into AccessTokenCollection.
-func InsertDBAccessToken(accessToken types.DBToken) error {
+func (mR *MongoRequests) InsertDBAccessToken(accessToken types.DBToken) error {
 	newAccessToken := bson.M{
 		"huskytoken":    accessToken.HuskyToken,
 		"repositoryURL": accessToken.URL,
@@ -177,7 +200,7 @@ func InsertDBAccessToken(accessToken types.DBToken) error {
 }
 
 // UpdateOneDBRepository checks if a given repository is present into RepositoryCollection and update it.
-func UpdateOneDBRepository(mapParams, updateQuery map[string]interface{}) error {
+func (mR *MongoRequests) UpdateOneDBRepository(mapParams, updateQuery map[string]interface{}) error {
 	repositoryQuery := []bson.M{}
 	for k, v := range mapParams {
 		repositoryQuery = append(repositoryQuery, bson.M{k: v})
@@ -188,7 +211,7 @@ func UpdateOneDBRepository(mapParams, updateQuery map[string]interface{}) error 
 }
 
 // UpsertOneDBSecurityTest checks if a given securityTest is present into SecurityTestCollection and update it.
-func UpsertOneDBSecurityTest(mapParams map[string]interface{}, updatedSecurityTest types.SecurityTest) (*mgo.ChangeInfo, error) {
+func (mR *MongoRequests) UpsertOneDBSecurityTest(mapParams map[string]interface{}, updatedSecurityTest types.SecurityTest) (interface{}, error) {
 	securityTestQuery := []bson.M{}
 	for k, v := range mapParams {
 		securityTestQuery = append(securityTestQuery, bson.M{k: v})
@@ -199,7 +222,7 @@ func UpsertOneDBSecurityTest(mapParams map[string]interface{}, updatedSecurityTe
 }
 
 // UpdateOneDBAnalysis checks if a given analysis is present into AnalysisCollection and update it.
-func UpdateOneDBAnalysis(mapParams map[string]interface{}, updatedAnalysis types.Analysis) error {
+func (mR *MongoRequests) UpdateOneDBAnalysis(mapParams map[string]interface{}, updatedAnalysis types.Analysis) error {
 	analysisQuery := []bson.M{}
 	for k, v := range mapParams {
 		analysisQuery = append(analysisQuery, bson.M{k: v})
@@ -210,7 +233,7 @@ func UpdateOneDBAnalysis(mapParams map[string]interface{}, updatedAnalysis types
 }
 
 // UpdateOneDBUser checks if a given user is present into UserCollection and update it.
-func UpdateOneDBUser(mapParams map[string]interface{}, updatedUser types.User) error {
+func (mR *MongoRequests) UpdateOneDBUser(mapParams map[string]interface{}, updatedUser types.User) error {
 	userQuery := []bson.M{}
 	for k, v := range mapParams {
 		userQuery = append(userQuery, bson.M{k: v})
@@ -221,7 +244,7 @@ func UpdateOneDBUser(mapParams map[string]interface{}, updatedUser types.User) e
 }
 
 // UpdateOneDBAnalysisContainer checks if a given analysis is present into AnalysisCollection and update the container associated in it.
-func UpdateOneDBAnalysisContainer(mapParams, updateQuery map[string]interface{}) error {
+func (mR *MongoRequests) UpdateOneDBAnalysisContainer(mapParams, updateQuery map[string]interface{}) error {
 	analysisQuery := []bson.M{}
 	for k, v := range mapParams {
 		analysisQuery = append(analysisQuery, bson.M{k: v})
@@ -232,7 +255,7 @@ func UpdateOneDBAnalysisContainer(mapParams, updateQuery map[string]interface{})
 }
 
 // UpdateOneDBAccessToken checks if a given access token is present into AccessTokenCollection and update it.
-func UpdateOneDBAccessToken(mapParams map[string]interface{}, updatedAccessToken types.DBToken) error {
+func (mR *MongoRequests) UpdateOneDBAccessToken(mapParams map[string]interface{}, updatedAccessToken types.DBToken) error {
 	aTokenQuery := []bson.M{}
 	for k, v := range mapParams {
 		aTokenQuery = append(aTokenQuery, bson.M{k: v})

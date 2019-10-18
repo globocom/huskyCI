@@ -15,13 +15,16 @@ import (
 )
 
 var statsQueryStringParams = map[string][]string{
-	"language":   []string{"time_range"},
-	"container":  []string{"time_range"},
-	"analysis":   []string{"time_range"},
-	"repository": []string{"time_range"},
-	"author":     []string{"time_range"},
-	"severity":   []string{"time_range"},
+	"language":        []string{"time_range"},
+	"container":       []string{"time_range"},
+	"analysis":        []string{"time_range"},
+	"repository":      []string{"time_range"},
+	"author":          []string{"time_range"},
+	"severity":        []string{"time_range"},
+	"historyanalysis": []string{"time_range"},
 }
+
+const aggHour = 1000 * 60 * 60
 
 var statsQueryBase = map[string][]bson.M{
 	"language":  generateSimpleAggr("codes", "language", "codes.language"),
@@ -164,17 +167,109 @@ var statsQueryBase = map[string][]bson.M{
 			},
 		},
 	},
+	"historyanalysis": []bson.M{
+		bson.M{
+			"$project": bson.M{
+				"result": bson.M{
+					"$cond": bson.M{
+						"if": bson.M{
+							"$eq": []string{
+								"$result",
+								"warning",
+							},
+						},
+						"then": "passed",
+						"else": bson.M{
+							"$cond": bson.M{
+								"if": bson.M{
+									"$eq": []string{
+										"$result",
+										"error",
+									},
+								},
+								"then": "failed",
+								"else": "$result",
+							},
+						},
+					},
+				},
+				"finishedAt": 1,
+			},
+		},
+		bson.M{
+			"$addFields": bson.M{
+				"dateNumber": bson.M{
+					"$toLong": "$finishedAt",
+				},
+			},
+		},
+		bson.M{
+			"$addFields": bson.M{
+				"dateMod": bson.M{
+					"$mod": []interface{}{
+						"$dateNumber",
+						aggHour,
+					},
+				},
+			},
+		},
+		bson.M{
+			"$addFields": bson.M{
+				"aggDate": bson.M{
+					"$toDate": bson.M{
+						"$subtract": []string{
+							"$dateNumber",
+							"$dateMod",
+						},
+					},
+				},
+			},
+		},
+		bson.M{
+			"$group": bson.M{
+				"_id": bson.M{
+					"date":   "$aggDate",
+					"result": "$result",
+				},
+				"count": bson.M{
+					"$sum": 1,
+				},
+			},
+		},
+		bson.M{
+			"$group": bson.M{
+				"_id": "$_id.date",
+				"results": bson.M{
+					"$push": bson.M{
+						"result": "$_id.result",
+						"count":  "$count",
+					},
+				},
+				"total": bson.M{
+					"$sum": "$count",
+				},
+			},
+		},
+		bson.M{
+			"$sort": bson.M{
+				"_id": -1,
+			},
+		},
+		bson.M{
+			"$project": bson.M{
+				"date":    "$_id",
+				"_id":     0,
+				"total":   1,
+				"results": "$results",
+			},
+		},
+	},
 }
 
-var aggrTimeFilterStage = map[string][]bson.M{
-	"today":      generateTimeFilterStage(0, 0),
-	"yesterday":  generateTimeFilterStage(-1, -1),
-	"last7days":  generateTimeFilterStage(-6, 0),
-	"last30days": generateTimeFilterStage(-29, 0),
-}
+var validAggrTimeFilterStages = []string{"today", "yesterday", "last7days", "last30days"}
 
 // GetMetricByType returns data about the metric received
-func GetMetricByType(metricType string, queryStringParams map[string][]string) (interface{}, error) {
+func (mR *MongoRequests) GetMetricByType(metricType string, queryStringParams map[string][]string) (interface{}, error) {
 	if !validMetric(metricType) {
 		return nil, errors.New("invalid metric type")
 	}
@@ -190,11 +285,28 @@ func GetMetricByType(metricType string, queryStringParams map[string][]string) (
 		switch param {
 		case "time_range":
 			value := values[len(values)-1]
-			query = append(aggrTimeFilterStage[value], query...)
+			aggrTimeFilterStage := getTimeFilterStage(value)
+			if aggrTimeFilterStage != nil {
+				query = append(aggrTimeFilterStage, query...)
+			}
 		}
 	}
-
 	return mongoHuskyCI.Conn.Aggregation(query, mongoHuskyCI.AnalysisCollection)
+}
+
+func getTimeFilterStage(timeRange string) []bson.M {
+	switch timeRange {
+	case "today":
+		return generateTimeFilterStage(0, 0)
+	case "yesterday":
+		return generateTimeFilterStage(-1, -1)
+	case "last7days":
+		return generateTimeFilterStage(-6, 0)
+	case "last30days":
+		return generateTimeFilterStage(-29, 0)
+	default:
+		return nil
+	}
 }
 
 // generateSimpleAggr generates an aggregation that counts each field group.
@@ -241,7 +353,7 @@ func generateTimeFilterStage(rangeInitDays, rangeEndDays int) []bson.M {
 
 // validTimeRange returns if a user inputted type is valid
 func validTimeRange(timeRange string) bool {
-	for tRange := range aggrTimeFilterStage {
+	for _, tRange := range validAggrTimeFilterStages {
 		if timeRange == tRange {
 			return true
 		}

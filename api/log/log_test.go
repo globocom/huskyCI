@@ -20,7 +20,7 @@ func TestInitLog(t *testing.T) {
 		},
 	}
 
-	log.InitLog()
+	log.InitLog(true, "", "", "log_test", "log_test")
 
 	if log.Logger == nil {
 		t.Error("expected logger to be initialized, but it wasn't")

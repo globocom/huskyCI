@@ -5,6 +5,7 @@ GO ?= go
 GOROOT ?= $(shell $(GO) env GOROOT)
 GOPATH ?= $(shell $(GO) env GOPATH)
 GOBIN ?= $(GOPATH)/bin
+GOCILINT ?= $(GOBIN)/golangci-lint
 GOLINT ?= $(GOBIN)/golint
 GOSEC ?= $(GOBIN)/gosec
 GINKGO ?= $(GOBIN)/ginkgo
@@ -37,6 +38,14 @@ build-client:
 build-client-linux:
 	cd client/cmd && GOOS=linux GOARCH=amd64 $(GO) build -mod vendor -o "$(HUSKYCICLIENTBIN)" && mv "$(HUSKYCICLIENTBIN)" ../..
 
+## Builds CLI to the executable file huskyci-client
+build-cli:
+	cd cli && $(GO) build -o "$(HUSKYCICLIENTBIN)" main.go
+
+## Builds CLI to the executable file huskyci-client
+build-cli-linux:
+	cd cli && GOOS=linux GOARCH=amd64 $(GO) build -o "$(HUSKYCICLIENTBIN)" main.go
+
 ## Builds all securityTest containers locally with the tag latest
 build-containers:
 	chmod +x deployments/scripts/build-containers.sh
@@ -48,9 +57,7 @@ check-deps:
 	$(GO) mod vendor
 
 ## Runs a security static analysis using Gosec
-check-sec:
-	$(GO) get -u github.com/securego/gosec/cmd/gosec
-	$(GOSEC) ./... 2> /dev/null
+check-sec: get-gosec-deps gosec
 
 ## Checks .env file from huskyCI
 check-env:
@@ -86,9 +93,17 @@ generate-passwords:
 	chmod +x deployments/scripts/generate-env.sh
 	./deployments/scripts/generate-env.sh
 
+## Gets all gosec dependencies
+get-gosec-deps:
+	$(GO) get -u github.com/securego/gosec/cmd/gosec
+
+## Gets all link dependencies
+get-lint-deps:
+	$(GO) get -u github.com/golangci/golangci-lint/cmd/golangci-lint
+	$(GO) get -u golang.org/x/lint/golint
+
 ## Gets all go test dependencies
 get-test-deps:
-	$(GO) get -u golang.org/x/lint/golint
 	$(GO) get -u github.com/onsi/ginkgo/ginkgo
 	$(GO) get -u github.com/onsi/gomega/...
 	$(GO) get -u github.com/mattn/goveralls
@@ -96,6 +111,18 @@ get-test-deps:
 ## Runs ginkgo
 ginkgo:
 	$(GINKGO) -r -keepGoing
+
+## Runs go lint
+golint:
+	$(GOLINT) $(shell $(GO) list ./...)
+
+## Runs Golangci-lint
+golangci-lint:
+	$(GOCILINT) run
+
+## Runs gosec
+gosec:
+	$(GOSEC) ./... 2> /dev/null
 
 ## Prints help message
 help:
@@ -114,14 +141,26 @@ help:
 ## Installs a development environment using docker-compose
 install: create-certs compose generate-passwords generate-local-token
 
-## Runs lint
-lint:
-	$(GOLINT) $(shell $(GO) list ./...)
+## Runs all huskyCI lint
+lint: get-lint-deps golint golangci-lint
 
 ## Push securityTest containers to hub.docker
 push-containers:
 	chmod +x deployments/scripts/push-containers.sh
 	./deployments/scripts/push-containers.sh
+
+## Restarts only huskyCI_API container
+restart-huskyci-api:
+	chmod +x deployments/scripts/restart-huskyci-api.sh
+	./deployments/scripts/restart-huskyci-api.sh
+
+## Runs huskyci-client
+run-cli: build-cli
+	cd cli && ./"$(HUSKYCICLIENTBIN)" run
+
+## Run huskyci-client compiling it in Linux arch
+run-cli-linux: build-cli-linux
+	cd cli && ./"$(HUSKYCICLIENTBIN)" run
 
 ## Runs huskyci-client
 run-client: build-client
@@ -140,7 +179,7 @@ run-client-linux-json: build-client-linux
 	./"$(HUSKYCICLIENTBIN)" JSON
 
 ## Perfoms all make tests
-test: get-test-deps lint ginkgo coverage
+test: get-test-deps ginkgo coverage
 
 ## Builds and push securityTest containers with the latest tags
 update-containers: build-containers push-containers

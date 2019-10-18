@@ -6,8 +6,6 @@ import (
 	"os"
 
 	apiContext "github.com/globocom/huskyCI/api/context"
-	"github.com/globocom/huskyCI/api/db"
-	mongoHuskyCI "github.com/globocom/huskyCI/api/db/mongo"
 	docker "github.com/globocom/huskyCI/api/dockers"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
@@ -30,8 +28,8 @@ func (hU HuskyUtils) CheckHuskyRequirements(configAPI *apiContext.APIConfig) err
 	}
 	log.Info("CheckHuskyRequirements", "API-UTIL", 13)
 
-	// check if MongoDB is acessible and credentials received are working.
-	if err := hU.CheckHandler.checkMongoDB(); err != nil {
+	// check if DB is acessible and credentials received are working.
+	if err := hU.CheckHandler.checkDB(configAPI); err != nil {
 		return err
 	}
 	log.Info("CheckHuskyRequirements", "API-UTIL", 14)
@@ -62,10 +60,10 @@ func (cH *CheckUtils) checkEnvVars() error {
 		// "HUSKYCI_LOGGING_GRAYLOG_DEV", (optional)
 
 		// Database:
-		"HUSKYCI_DATABASE_MONGO_ADDR",
-		"HUSKYCI_DATABASE_MONGO_DBNAME",
-		"HUSKYCI_DATABASE_MONGO_DBUSERNAME",
-		"HUSKYCI_DATABASE_MONGO_DBPASSWORD",
+		"HUSKYCI_DATABASE_DB_ADDR",
+		"HUSKYCI_DATABASE_DB_NAME",
+		"HUSKYCI_DATABASE_DB_USERNAME",
+		"HUSKYCI_DATABASE_DB_PASSWORD",
 		// "HUSKYCI_DATABASE_MONGO_PORT", (optional)
 		// "HUSKYCI_DATABASE_MONGO_TIMEOUT", (optional)
 		// "HUSKYCI_DATABASE_MONGO_POOL_LIMIT", (optional)
@@ -128,10 +126,20 @@ func (cH *CheckUtils) checkDockerHosts(configAPI *apiContext.APIConfig) error {
 	return docker.HealthCheckDockerAPI()
 }
 
-func (cH *CheckUtils) checkMongoDB() error {
-	if err := mongoHuskyCI.Connect(); err != nil {
-		mongoError := fmt.Sprintf("Check MongoDB: %s", err)
-		return errors.New(mongoError)
+func (cH *CheckUtils) checkDB(configAPI *apiContext.APIConfig) error {
+	if err := configAPI.DBInstance.ConnectDB(
+		configAPI.DBConfig.Address,
+		configAPI.DBConfig.DatabaseName,
+		configAPI.DBConfig.Username,
+		configAPI.DBConfig.Password,
+		configAPI.DBConfig.Timeout,
+		configAPI.DBConfig.PoolLimit,
+		configAPI.DBConfig.Port,
+		configAPI.DBConfig.MaxOpenConns,
+		configAPI.DBConfig.MaxIdleConns,
+		configAPI.DBConfig.ConnMaxLifetime); err != nil {
+		dbError := fmt.Sprintf("Check DB: %s", err)
+		return errors.New(dbError)
 	}
 	return nil
 }
@@ -152,7 +160,7 @@ func (cH *CheckUtils) checkEachSecurityTest(configAPI *apiContext.APIConfig) err
 func (cH *CheckUtils) checkDefaultUser(configAPI *apiContext.APIConfig) error {
 
 	defaultUserQuery := map[string]interface{}{"username": user.DefaultAPIUser}
-	_, err := db.FindOneDBUser(defaultUserQuery)
+	_, err := configAPI.DBInstance.FindOneDBUser(defaultUserQuery)
 	if err != nil {
 		if err == mgo.ErrNotFound {
 			// user not found, add default user
@@ -168,7 +176,7 @@ func (cH *CheckUtils) checkDefaultUser(configAPI *apiContext.APIConfig) error {
 
 func checkSecurityTest(securityTestName string, configAPI *apiContext.APIConfig) error {
 
-	securityTestConfig := types.SecurityTest{}
+	var securityTestConfig types.SecurityTest
 
 	switch securityTestName {
 	case "enry":
@@ -196,7 +204,7 @@ func checkSecurityTest(securityTestName string, configAPI *apiContext.APIConfig)
 	}
 
 	securityTestQuery := map[string]interface{}{"name": securityTestName}
-	_, err := db.UpsertOneDBSecurityTest(securityTestQuery, securityTestConfig)
+	_, err := configAPI.DBInstance.UpsertOneDBSecurityTest(securityTestQuery, securityTestConfig)
 	if err != nil {
 		return err
 	}

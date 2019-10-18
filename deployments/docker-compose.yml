@@ -20,10 +20,10 @@ services:
         environment:
             GOPATH: /go/
             # required envs
-            HUSKYCI_DATABASE_MONGO_ADDR: mongodb
-            HUSKYCI_DATABASE_MONGO_DBNAME: huskyCIDB
-            HUSKYCI_DATABASE_MONGO_DBUSERNAME: huskyCIUser
-            HUSKYCI_DATABASE_MONGO_DBPASSWORD: huskyCIPassword
+            HUSKYCI_DATABASE_DB_ADDR: mongodb
+            HUSKYCI_DATABASE_DB_NAME: huskyCIDB
+            HUSKYCI_DATABASE_DB_USERNAME: huskyCIUser
+            HUSKYCI_DATABASE_DB_PASSWORD: huskyCIPassword
             HUSKYCI_API_DEFAULT_USERNAME: huskyCIUser
             HUSKYCI_API_DEFAULT_PASSWORD: huskyCIPassword
             HUSKYCI_API_DEFAULT_ITERATIONS: 100000

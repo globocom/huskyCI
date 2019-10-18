@@ -28,7 +28,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	log.InitLog()
+	log.InitLog(
+		configAPI.GraylogConfig.DevelopmentEnv,
+		configAPI.GraylogConfig.Address,
+		configAPI.GraylogConfig.Protocol,
+		configAPI.GraylogConfig.AppName,
+		configAPI.GraylogConfig.Tag)
 	log.Info("main", "SERVER", 11)
 
 	checkHandler := &apiUtil.CheckUtils{}

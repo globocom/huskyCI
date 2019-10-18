@@ -8,7 +8,6 @@ import (
 	"log"
 
 	"github.com/globocom/glbgelf"
-	apiContext "github.com/globocom/huskyCI/api/context"
 )
 
 // Logger implements the logger interface.
@@ -22,15 +21,8 @@ type logger interface {
 }
 
 // InitLog starts glbgelf logging.
-func InitLog() {
-	graylogConfig := apiContext.APIConfiguration.GraylogConfig
-	isDev := graylogConfig.DevelopmentEnv
-	graylogAddr := graylogConfig.Address
-	gralogProto := graylogConfig.Protocol
-	appName := graylogConfig.AppName
-	tag := graylogConfig.Tag
-	glbgelf.InitLogger(graylogAddr, appName, tag, isDev, gralogProto)
-
+func InitLog(developmentEnv bool, address, protocol, appName, tag string) {
+	glbgelf.InitLogger(address, appName, tag, developmentEnv, protocol)
 	Logger = glbgelf.Logger
 }
 

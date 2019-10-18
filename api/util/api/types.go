@@ -8,7 +8,7 @@ import (
 type CheckInterface interface {
 	checkEnvVars() error
 	checkDockerHosts(configAPI *apiContext.APIConfig) error
-	checkMongoDB() error
+	checkDB(configAPI *apiContext.APIConfig) error
 	checkEachSecurityTest(configAPI *apiContext.APIConfig) error
 	checkDefaultUser(configAPI *apiContext.APIConfig) error
 }
@@ -38,7 +38,7 @@ func (fC *FakeCheck) checkDockerHosts(configAPI *apiContext.APIConfig) error {
 	return fC.DockerHostsError
 }
 
-func (fC *FakeCheck) checkMongoDB() error {
+func (fC *FakeCheck) checkDB(configAPI *apiContext.APIConfig) error {
 	return fC.MongoDBError
 }
 
