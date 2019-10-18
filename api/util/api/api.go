@@ -83,7 +83,6 @@ func (cH *CheckUtils) checkEnvVars() error {
 		// "HUSKYCI_DOCKERAPI_CERT_KEY_VALUE", (optional)
 		// "HUSKYCI_DOCKERAPI_API_TLS_CERT_VALUE", (optional)
 		// "HUSKYCI_DOCKERAPI_API_TLS_KEY_VALUE", (optional)
-		// "HUSKYCI_DOCKERAPI_CERT_CA", (optional)
 		// "HUSKYCI_DOCKERAPI_CERT_CA_VALUE", (optional)
 		// "HUSKYCI_DOCKERAPI_PORT", (optional)
 		// "HUSKYCI_DOCKERAPI_TLS_VERIFY", (optional)
