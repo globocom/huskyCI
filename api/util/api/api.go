@@ -145,7 +145,7 @@ func (cH *CheckUtils) checkDB(configAPI *apiContext.APIConfig) error {
 }
 
 func (cH *CheckUtils) checkEachSecurityTest(configAPI *apiContext.APIConfig) error {
-	securityTests := []string{"enry", "gitauthors", "gosec", "brakeman", "bandit", "npmaudit", "yarnaudit", "safety", "gitleaks"}
+	securityTests := []string{"enry", "gitauthors", "gosec", "brakeman", "bandit", "npmaudit", "yarnaudit", "spotbugs", "gitleaks", "safety"}
 	for _, securityTest := range securityTests {
 		if err := checkSecurityTest(securityTest, configAPI); err != nil {
 			errMsg := fmt.Sprintf("%s %s", securityTest, err)
@@ -193,10 +193,12 @@ func checkSecurityTest(securityTestName string, configAPI *apiContext.APIConfig)
 		securityTestConfig = *configAPI.NpmAuditSecurityTest
 	case "yarnaudit":
 		securityTestConfig = *configAPI.YarnAuditSecurityTest
-	case "safety":
-		securityTestConfig = *configAPI.SafetySecurityTest
+	case "spotbugs":
+		securityTestConfig = *configAPI.SpotBugsSecurityTest
 	case "gitleaks":
 		securityTestConfig = *configAPI.GitleaksSecurityTest
+	case "safety":
+		securityTestConfig = *configAPI.SafetySecurityTest
 	default:
 		return errors.New("securityTest name not defined")
 	}
