@@ -269,7 +269,7 @@ var statsQueryBase = map[string][]bson.M{
 var validAggrTimeFilterStages = []string{"today", "yesterday", "last7days", "last30days"}
 
 // GetMetricByType returns data about the metric received
-func GetMetricByType(metricType string, queryStringParams map[string][]string) (interface{}, error) {
+func (mR *MongoRequests) GetMetricByType(metricType string, queryStringParams map[string][]string) (interface{}, error) {
 	if !validMetric(metricType) {
 		return nil, errors.New("invalid metric type")
 	}

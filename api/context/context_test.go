@@ -8,6 +8,7 @@ import (
 	"time"
 
 	. "github.com/globocom/huskyCI/api/context"
+	"github.com/globocom/huskyCI/api/db"
 	"github.com/globocom/huskyCI/api/types"
 )
 
@@ -124,7 +125,7 @@ var _ = Describe("Context", func() {
 			})
 		})
 	})
-	Describe("GetMongoPort", func() {
+	Describe("GetDBPort", func() {
 		Context("When ConvertStrToInt returns an error", func() {
 			It("Should return 27017 port", func() {
 				fakeCaller := FakeCaller{
@@ -134,7 +135,7 @@ var _ = Describe("Context", func() {
 				config := DefaultConfig{
 					Caller: &fakeCaller,
 				}
-				Expect(config.GetMongoPort()).To(Equal(27017))
+				Expect(config.GetDBPort()).To(Equal(27017))
 			})
 		})
 		Context("When ConvertStrToInt returns an error", func() {
@@ -146,11 +147,11 @@ var _ = Describe("Context", func() {
 				config := DefaultConfig{
 					Caller: &fakeCaller,
 				}
-				Expect(config.GetMongoPort()).To(Equal(fakeCaller.expectedIntegerValue))
+				Expect(config.GetDBPort()).To(Equal(fakeCaller.expectedIntegerValue))
 			})
 		})
 	})
-	Describe("GetMongoTimeout", func() {
+	Describe("GetDBTimeout", func() {
 		Context("When ConvertStrToInt returns an error", func() {
 			It("Should return 60s of duration", func() {
 				fakeCaller := FakeCaller{
@@ -160,7 +161,7 @@ var _ = Describe("Context", func() {
 				config := DefaultConfig{
 					Caller: &fakeCaller,
 				}
-				Expect(config.GetMongoTimeout()).To(Equal(time.Duration(60) * time.Second))
+				Expect(config.GetDBTimeout()).To(Equal(time.Duration(60) * time.Second))
 			})
 		})
 		Context("When ConvertStrToInt returns a valid timeout", func() {
@@ -172,11 +173,11 @@ var _ = Describe("Context", func() {
 				config := DefaultConfig{
 					Caller: &fakeCaller,
 				}
-				Expect(config.GetMongoTimeout()).To(Equal(time.Duration(fakeCaller.expectedIntegerValue) * time.Second))
+				Expect(config.GetDBTimeout()).To(Equal(time.Duration(fakeCaller.expectedIntegerValue) * time.Second))
 			})
 		})
 	})
-	Describe("GetMongoPoolLimit", func() {
+	Describe("GetDBPoolLimit", func() {
 		Context("When ConvertStr returns an error", func() {
 			It("Should return a pool of connections with a size 1000", func() {
 				fakeCaller := FakeCaller{
@@ -186,7 +187,7 @@ var _ = Describe("Context", func() {
 				config := DefaultConfig{
 					Caller: &fakeCaller,
 				}
-				Expect(config.GetMongoPoolLimit()).To(Equal(1000))
+				Expect(config.GetDBPoolLimit()).To(Equal(1000))
 			})
 		})
 		Context("When ConvertStr returns an negative value", func() {
@@ -198,7 +199,7 @@ var _ = Describe("Context", func() {
 				config := DefaultConfig{
 					Caller: &fakeCaller,
 				}
-				Expect(config.GetMongoPoolLimit()).To(Equal(1000))
+				Expect(config.GetDBPoolLimit()).To(Equal(1000))
 			})
 		})
 		Context("When ConvertStr returns a valid value", func() {
@@ -210,7 +211,7 @@ var _ = Describe("Context", func() {
 				config := DefaultConfig{
 					Caller: &fakeCaller,
 				}
-				Expect(config.GetMongoPoolLimit()).To(Equal(fakeCaller.expectedIntegerValue))
+				Expect(config.GetDBPoolLimit()).To(Equal(fakeCaller.expectedIntegerValue))
 			})
 		})
 	})
@@ -304,8 +305,8 @@ var _ = Describe("Context", func() {
 				Expect(err).To(Equal(fakeCaller.expectedSetConfigFileError))
 			})
 		})
-		Context("When SetConfigFile returns an error", func() {
-			It("Should return the expected error", func() {
+		Context("When SetConfigFile returns a nil error", func() {
+			It("Should return the expected struct and a nil error", func() {
 				fakeCaller := FakeCaller{
 					expectedIntegerValue:         1234,
 					expectedEnvVar:               "1",
@@ -333,14 +334,17 @@ var _ = Describe("Context", func() {
 						Tag:            fakeCaller.expectedEnvVar,
 						DevelopmentEnv: true,
 					},
-					MongoDBConfig: &MongoConfig{
-						Address:      "1:1234",
-						DatabaseName: fakeCaller.expectedEnvVar,
-						Username:     fakeCaller.expectedEnvVar,
-						Password:     fakeCaller.expectedEnvVar,
-						Port:         fakeCaller.expectedIntegerValue,
-						Timeout:      time.Duration(fakeCaller.expectedIntegerValue) * time.Second,
-						PoolLimit:    fakeCaller.expectedIntegerValue,
+					DBConfig: &DBConfig{
+						Address:         fakeCaller.expectedEnvVar,
+						DatabaseName:    fakeCaller.expectedEnvVar,
+						Username:        fakeCaller.expectedEnvVar,
+						Password:        fakeCaller.expectedEnvVar,
+						Port:            fakeCaller.expectedIntegerValue,
+						Timeout:         time.Duration(fakeCaller.expectedIntegerValue) * time.Second,
+						PoolLimit:       fakeCaller.expectedIntegerValue,
+						MaxOpenConns:    fakeCaller.expectedIntegerValue,
+						MaxIdleConns:    fakeCaller.expectedIntegerValue,
+						ConnMaxLifetime: time.Duration(fakeCaller.expectedIntegerValue) * time.Hour,
 					},
 					DockerHostsConfig: &DockerHostsConfig{
 						Address:              "1",
@@ -442,6 +446,7 @@ var _ = Describe("Context", func() {
 						Default:          fakeCaller.expectedBoolFromConfig,
 						TimeOutInSeconds: fakeCaller.expectedIntFromConfig,
 					},
+					DBInstance: &db.MongoRequests{},
 				}
 				Expect(apiConfig).To(Equal(expectedConfig))
 				Expect(err).To(BeNil())

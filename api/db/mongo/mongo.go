@@ -5,9 +5,9 @@
 package db
 
 import (
+	"fmt"
 	"time"
 
-	config "github.com/globocom/huskyCI/api/context"
 	"github.com/globocom/huskyCI/api/log"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -41,18 +41,18 @@ type Database interface {
 }
 
 // Connect connects to mongo and returns the session.
-func Connect() error {
+func Connect(address, dbName, username, password string, poolLimit, port int, timeout time.Duration) error {
 
 	log.Info("Connect", "DB", 21)
-	mongoConfig := config.APIConfiguration.MongoDBConfig
+	dbAddress := fmt.Sprintf("%s:%d", address, port)
 	dialInfo := &mgo.DialInfo{
-		Addrs:     []string{mongoConfig.Address},
-		Timeout:   mongoConfig.Timeout,
+		Addrs:     []string{dbAddress},
+		Timeout:   timeout,
 		FailFast:  true,
-		Database:  mongoConfig.DatabaseName,
-		Username:  mongoConfig.Username,
-		Password:  mongoConfig.Password,
-		PoolLimit: mongoConfig.PoolLimit,
+		Database:  dbName,
+		Username:  username,
+		Password:  password,
+		PoolLimit: poolLimit,
 	}
 	session, err := mgo.DialWithInfo(dialInfo)
 

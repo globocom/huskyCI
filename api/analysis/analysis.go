@@ -7,7 +7,7 @@ package analysis
 import (
 	"time"
 
-	"github.com/globocom/huskyCI/api/db"
+	apiContext "github.com/globocom/huskyCI/api/context"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/securitytest"
 	"github.com/globocom/huskyCI/api/types"
@@ -63,7 +63,7 @@ func registerNewAnalysis(RID string, repository types.Repository) error {
 		StartedAt: time.Now(),
 	}
 
-	if err := db.InsertDBAnalysis(newAnalysis); err != nil {
+	if err := apiContext.APIConfiguration.DBInstance.InsertDBAnalysis(newAnalysis); err != nil {
 		log.Error("registerNewAnalysis", "ANALYSIS", 2011, err)
 		return err
 	}
@@ -92,7 +92,7 @@ func registerFinishedAnalysis(RID string, allScanResults *securitytest.RunAllInf
 			"finishedAt":     time.Now(),
 		},
 	}
-	if err := db.UpdateOneDBAnalysisContainer(analysisQuery, updateAnalysisQuery); err != nil {
+	if err := apiContext.APIConfiguration.DBInstance.UpdateOneDBAnalysisContainer(analysisQuery, updateAnalysisQuery); err != nil {
 		log.Error("registerFinishedAnalysis", "ANALYSIS", 2011, err)
 		return err
 	}

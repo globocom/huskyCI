@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/globocom/huskyCI/api/db"
+	apiContext "github.com/globocom/huskyCI/api/context"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/labstack/echo"
 )
@@ -17,7 +17,7 @@ import (
 func GetMetric(c echo.Context) error {
 	metricType := strings.ToLower(c.Param("metric_type"))
 	queryParams := c.QueryParams()
-	result, err := db.GetMetricByType(metricType, queryParams)
+	result, err := apiContext.APIConfiguration.DBInstance.GetMetricByType(metricType, queryParams)
 	if err != nil {
 		httpStatus, reply := checkError(err, metricType)
 		return c.JSON(httpStatus, reply)

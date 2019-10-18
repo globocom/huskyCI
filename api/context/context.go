@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/globocom/huskyCI/api/db"
 	"github.com/globocom/huskyCI/api/types"
 )
 
@@ -26,15 +27,18 @@ func init() {
 	}
 }
 
-// MongoConfig represents MongoDB configuration.
-type MongoConfig struct {
-	Address      string
-	DatabaseName string
-	Username     string
-	Password     string
-	Port         int
-	Timeout      time.Duration
-	PoolLimit    int
+// DBConfig represents DB configuration.
+type DBConfig struct {
+	Address         string
+	DatabaseName    string
+	Username        string
+	Password        string
+	Port            int
+	Timeout         time.Duration
+	PoolLimit       int
+	MaxOpenConns    int
+	MaxIdleConns    int
+	ConnMaxLifetime time.Duration
 }
 
 // DockerHostsConfig represents Docker Hosts configuration.
@@ -67,7 +71,7 @@ type APIConfig struct {
 	UseTLS                 bool
 	GitPrivateSSHKey       string
 	GraylogConfig          *GraylogConfig
-	MongoDBConfig          *MongoConfig
+	DBConfig               *DBConfig
 	DockerHostsConfig      *DockerHostsConfig
 	EnrySecurityTest       *types.SecurityTest
 	GitAuthorsSecurityTest *types.SecurityTest
@@ -78,6 +82,7 @@ type APIConfig struct {
 	YarnAuditSecurityTest  *types.SecurityTest
 	GitleaksSecurityTest   *types.SecurityTest
 	SafetySecurityTest     *types.SecurityTest
+	DBInstance             db.Requests
 }
 
 // DefaultConfig is the struct that stores the caller for testing.
@@ -108,7 +113,7 @@ func (dF DefaultConfig) SetOnceConfig() {
 			UseTLS:                 dF.GetAPIUseTLS(),
 			GitPrivateSSHKey:       dF.getGitPrivateSSHKey(),
 			GraylogConfig:          dF.getGraylogConfig(),
-			MongoDBConfig:          dF.getMongoConfig(),
+			DBConfig:               dF.getDBConfig(),
 			DockerHostsConfig:      dF.getDockerHostsConfig(),
 			EnrySecurityTest:       dF.getSecurityTestConfig("enry"),
 			GitAuthorsSecurityTest: dF.getSecurityTestConfig("gitauthors"),
@@ -119,6 +124,7 @@ func (dF DefaultConfig) SetOnceConfig() {
 			YarnAuditSecurityTest:  dF.getSecurityTestConfig("yarnaudit"),
 			SafetySecurityTest:     dF.getSecurityTestConfig("safety"),
 			GitleaksSecurityTest:   dF.getSecurityTestConfig("gitleaks"),
+			DBInstance:             dF.GetDB(),
 		}
 	})
 }
@@ -188,53 +194,90 @@ func (dF DefaultConfig) GetGraylogIsDev() bool {
 	return true
 }
 
-func (dF DefaultConfig) getMongoConfig() *MongoConfig {
-	mongoHost := dF.Caller.GetEnvironmentVariable("HUSKYCI_DATABASE_MONGO_ADDR")
-	mongoPort := dF.GetMongoPort()
-	mongoAddress := fmt.Sprintf("%s:%d", mongoHost, mongoPort)
-	return &MongoConfig{
-		Address:      mongoAddress,
-		DatabaseName: dF.Caller.GetEnvironmentVariable("HUSKYCI_DATABASE_MONGO_DBNAME"),
-		Username:     dF.Caller.GetEnvironmentVariable("HUSKYCI_DATABASE_MONGO_DBUSERNAME"),
-		Password:     dF.Caller.GetEnvironmentVariable("HUSKYCI_DATABASE_MONGO_DBPASSWORD"),
-		Port:         mongoPort,
-		Timeout:      dF.GetMongoTimeout(),
-		PoolLimit:    dF.GetMongoPoolLimit(),
+func (dF DefaultConfig) getDBConfig() *DBConfig {
+	return &DBConfig{
+		Address:         dF.Caller.GetEnvironmentVariable("HUSKYCI_DATABASE_DB_ADDR"),
+		DatabaseName:    dF.Caller.GetEnvironmentVariable("HUSKYCI_DATABASE_DB_NAME"),
+		Username:        dF.Caller.GetEnvironmentVariable("HUSKYCI_DATABASE_DB_USERNAME"),
+		Password:        dF.Caller.GetEnvironmentVariable("HUSKYCI_DATABASE_DB_PASSWORD"),
+		Port:            dF.GetDBPort(),
+		Timeout:         dF.GetDBTimeout(),
+		PoolLimit:       dF.GetDBPoolLimit(),
+		MaxOpenConns:    dF.GetMaxOpenConns(),
+		MaxIdleConns:    dF.GetMaxIdleConns(),
+		ConnMaxLifetime: dF.GetConnMaxLifetime(),
 	}
 }
 
-//GetMongoPort returns the port where MongoDB
+// GetMaxOpenConns returns the maximum number
+// of DB opened connections. It depends on an env
+// called HUSKYCI_DATABASE_DB_MAX_OPEN_CONNS.
+func (dF DefaultConfig) GetMaxOpenConns() int {
+	maxOpenConns, err := dF.Caller.ConvertStrToInt(
+		dF.Caller.GetEnvironmentVariable("HUSKYCI_DATABASE_DB_MAX_OPEN_CONNS"))
+	if err != nil {
+		return 1
+	}
+	return maxOpenConns
+}
+
+// GetMaxIdleConns returns the maximum number
+// of DB idle connections. It depends on an env
+// called HUSKYCI_DATABASE_DB_MAX_IDLE_CONNS.
+func (dF DefaultConfig) GetMaxIdleConns() int {
+	maxIdleConns, err := dF.Caller.ConvertStrToInt(
+		dF.Caller.GetEnvironmentVariable("HUSKYCI_DATABASE_DB_MAX_IDLE_CONNS"))
+	if err != nil {
+		return 1
+	}
+	return maxIdleConns
+}
+
+// GetConnMaxLifetime returns the maximum duration
+// of a DB connection. It depends on an env
+// called HUSKYCI_DATABASE_DB_CONN_MAXLIFETIME.
+func (dF DefaultConfig) GetConnMaxLifetime() time.Duration {
+	connMaxLifetime, err := dF.Caller.ConvertStrToInt(
+		dF.Caller.GetEnvironmentVariable("HUSKYCI_DATABASE_DB_CONN_MAXLIFETIME"))
+	if err != nil {
+		return time.Hour
+	}
+
+	return time.Hour * time.Duration(connMaxLifetime)
+}
+
+//GetDBPort returns the port where DB
 // will be listening to. It depends on an env
-// called HUSKYCI_DATABASE_MONGO_PORT.
-func (dF DefaultConfig) GetMongoPort() int {
-	mongoPort, err := dF.Caller.ConvertStrToInt(dF.Caller.GetEnvironmentVariable("HUSKYCI_DATABASE_MONGO_PORT"))
+// called HUSKYCI_DATABASE_DB_PORT.
+func (dF DefaultConfig) GetDBPort() int {
+	dbPort, err := dF.Caller.ConvertStrToInt(dF.Caller.GetEnvironmentVariable("HUSKYCI_DATABASE_DB_PORT"))
 	if err != nil {
 		return 27017
 	}
-	return mongoPort
+	return dbPort
 }
 
-// GetMongoTimeout returns a time.Duration for
-// duration of a connection with MongoDB. This
-// depends on HUSKYCI_DATABASE_MONGO_TIMEOUT.
-func (dF DefaultConfig) GetMongoTimeout() time.Duration {
-	mongoTimeout, err := dF.Caller.ConvertStrToInt(dF.Caller.GetEnvironmentVariable("HUSKYCI_DATABASE_MONGO_TIMEOUT"))
+// GetDBTimeout returns a time.Duration for
+// duration of a connection with DB. This
+// depends on HUSKYCI_DATABASE_DB_TIMEOUT.
+func (dF DefaultConfig) GetDBTimeout() time.Duration {
+	dbTimeout, err := dF.Caller.ConvertStrToInt(dF.Caller.GetEnvironmentVariable("HUSKYCI_DATABASE_DB_TIMEOUT"))
 	if err != nil {
 		return dF.Caller.GetTimeDurationInSeconds(60)
 	}
-	return dF.Caller.GetTimeDurationInSeconds(mongoTimeout)
+	return dF.Caller.GetTimeDurationInSeconds(dbTimeout)
 }
 
-// GetMongoPoolLimit returns an integer with
+// GetDBPoolLimit returns an integer with
 // the limit of pool of connections opened with
-// MongoDB. This depends on an enviroment var
-// called HUSKYCI_DATABASE_MONGO_POOL_LIMIT.
-func (dF DefaultConfig) GetMongoPoolLimit() int {
-	mongoPoolLimit, err := dF.Caller.ConvertStrToInt(dF.Caller.GetEnvironmentVariable("HUSKYCI_DATABASE_MONGO_POOL_LIMIT"))
-	if err != nil || mongoPoolLimit <= 0 {
+// DB. This depends on an enviroment var
+// called HUSKYCI_DATABASE_DB_POOL_LIMIT.
+func (dF DefaultConfig) GetDBPoolLimit() int {
+	dbPoolLimit, err := dF.Caller.ConvertStrToInt(dF.Caller.GetEnvironmentVariable("HUSKYCI_DATABASE_DB_POOL_LIMIT"))
+	if err != nil || dbPoolLimit <= 0 {
 		return 1000
 	}
-	return mongoPoolLimit
+	return dbPoolLimit
 }
 
 func (dF DefaultConfig) getDockerHostsConfig() *DockerHostsConfig {
@@ -303,4 +346,16 @@ func (dF DefaultConfig) GetMaxContainersAllowed() int {
 		return 50
 	}
 	return maxContainersAllowed
+}
+
+// GetDB returns a Requests implementation based on the
+// on the type configured on HUSKYCI_DATABASE_TYPE env var.
+// The default returns a MongoRequests that implements mongo
+// queries.
+func (dF DefaultConfig) GetDB() db.Requests {
+	dB := dF.Caller.GetEnvironmentVariable("HUSKYCI_DATABASE_TYPE")
+	if strings.EqualFold(dB, "postgres") {
+		return nil
+	}
+	return &db.MongoRequests{}
 }
