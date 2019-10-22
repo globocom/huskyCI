@@ -8,7 +8,6 @@ import (
 	"bufio"
 	"crypto/tls"
 	"crypto/x509"
-	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -88,13 +87,13 @@ func AdjustWarningMessage(warningRaw string) string {
 }
 
 // CreateFile creates a file with contents of output and name of fileName
-func CreateFile(output []byte, fileName string) error {
-	err := os.MkdirAll("./huskyCI/", 0750)
+func CreateFile(output []byte, filePath, fileName string) error {
+	err := os.MkdirAll(filePath, 0750)
 	if err != nil {
 		return err
 	}
 
-	f, err := os.Create(fmt.Sprintf("./huskyCI/%s", fileName))
+	f, err := os.Create(filePath + fileName)
 	if err != nil {
 		return err
 	}
