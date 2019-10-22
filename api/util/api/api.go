@@ -83,7 +83,6 @@ func (cH *CheckUtils) checkEnvVars() error {
 		// "HUSKYCI_DOCKERAPI_CERT_KEY_VALUE", (optional)
 		// "HUSKYCI_DOCKERAPI_API_TLS_CERT_VALUE", (optional)
 		// "HUSKYCI_DOCKERAPI_API_TLS_KEY_VALUE", (optional)
-		// "HUSKYCI_DOCKERAPI_CERT_CA", (optional)
 		// "HUSKYCI_DOCKERAPI_CERT_CA_VALUE", (optional)
 		// "HUSKYCI_DOCKERAPI_PORT", (optional)
 		// "HUSKYCI_DOCKERAPI_TLS_VERIFY", (optional)
@@ -145,7 +144,7 @@ func (cH *CheckUtils) checkDB(configAPI *apiContext.APIConfig) error {
 }
 
 func (cH *CheckUtils) checkEachSecurityTest(configAPI *apiContext.APIConfig) error {
-	securityTests := []string{"enry", "gitauthors", "gosec", "brakeman", "bandit", "npmaudit", "yarnaudit", "safety", "gitleaks"}
+	securityTests := []string{"enry", "gitauthors", "gosec", "brakeman", "bandit", "npmaudit", "yarnaudit", "spotbugs", "gitleaks", "safety"}
 	for _, securityTest := range securityTests {
 		if err := checkSecurityTest(securityTest, configAPI); err != nil {
 			errMsg := fmt.Sprintf("%s %s", securityTest, err)
@@ -193,10 +192,12 @@ func checkSecurityTest(securityTestName string, configAPI *apiContext.APIConfig)
 		securityTestConfig = *configAPI.NpmAuditSecurityTest
 	case "yarnaudit":
 		securityTestConfig = *configAPI.YarnAuditSecurityTest
-	case "safety":
-		securityTestConfig = *configAPI.SafetySecurityTest
+	case "spotbugs":
+		securityTestConfig = *configAPI.SpotBugsSecurityTest
 	case "gitleaks":
 		securityTestConfig = *configAPI.GitleaksSecurityTest
+	case "safety":
+		securityTestConfig = *configAPI.SafetySecurityTest
 	default:
 		return errors.New("securityTest name not defined")
 	}

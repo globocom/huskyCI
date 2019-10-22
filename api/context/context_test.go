@@ -446,6 +446,16 @@ var _ = Describe("Context", func() {
 						Default:          fakeCaller.expectedBoolFromConfig,
 						TimeOutInSeconds: fakeCaller.expectedIntFromConfig,
 					},
+					SpotBugsSecurityTest: &types.SecurityTest{
+						Name:             fakeCaller.expectedStringFromConfig,
+						Image:            fakeCaller.expectedStringFromConfig,
+						ImageTag:         fakeCaller.expectedStringFromConfig,
+						Cmd:              fakeCaller.expectedStringFromConfig,
+						Type:             fakeCaller.expectedStringFromConfig,
+						Language:         fakeCaller.expectedStringFromConfig,
+						Default:          fakeCaller.expectedBoolFromConfig,
+						TimeOutInSeconds: fakeCaller.expectedIntFromConfig,
+					},
 					DBInstance: &db.MongoRequests{},
 				}
 				Expect(apiConfig).To(Equal(expectedConfig))

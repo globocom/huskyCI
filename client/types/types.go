@@ -61,6 +61,7 @@ type HuskyCIResults struct {
 	PythonResults     PythonResults     `bson:"pythonresults,omitempty" json:"pythonresults,omitempty"`
 	JavaScriptResults JavaScriptResults `bson:"javascriptresults,omitempty" json:"javascriptresults,omitempty"`
 	RubyResults       RubyResults       `bson:"rubyresults,omitempty" json:"rubyresults,omitempty"`
+	JavaResults       JavaResults       `bson:"javaresults,omitempty" json:"javaresults,omitempty"`
 	GenericResults    GenericResults    `bson:"genericresults,omitempty" json:"genericresults,omitempty"`
 }
 
@@ -110,6 +111,7 @@ type JSONOutput struct {
 	PythonResults     PythonResults     `json:"pythonresults,omitempty"`
 	JavaScriptResults JavaScriptResults `json:"javascriptresults,omitempty"`
 	RubyResults       RubyResults       `json:"rubyresults,omitempty"`
+	JavaResults       JavaResults       `json:"javaresults,omitempty"`
 	GenericResults    GenericResults    `json:"genericresults,omitempty"`
 	Summary           Summary           `json:"summary,omitempty"`
 }
@@ -129,6 +131,11 @@ type PythonResults struct {
 type JavaScriptResults struct {
 	HuskyCINpmAuditOutput  HuskyCISecurityTestOutput `bson:"npmauditoutput,omitempty" json:"npmauditoutput,omitempty"`
 	HuskyCIYarnAuditOutput HuskyCISecurityTestOutput `bson:"yarnauditoutput,omitempty" json:"yarnauditoutput,omitempty"`
+}
+
+// JavaResults represents all Java security tests results.
+type JavaResults struct {
+	HuskyCISpotBugsOutput HuskyCISecurityTestOutput `bson:"spotbugsoutput,omitempty" json:"spotbugsoutput,omitempty"`
 }
 
 // RubyResults represents all Ruby security tests results.
@@ -160,6 +167,7 @@ type Summary struct {
 	NpmAuditSummary  HuskyCISummary `json:"npmauditsummary,omitempty"`
 	YarnAuditSummary HuskyCISummary `json:"yarnauditsummary,omitempty"`
 	BrakemanSummary  HuskyCISummary `json:"brakemansummary,omitempty"`
+	SpotBugsSummary  HuskyCISummary `json:"spotbugssummary,omitempty"`
 	GitleaksSummary  HuskyCISummary `json:"gitleakssummary,omitempty"`
 	TotalSummary     HuskyCISummary `json:"totalsummary,omitempty"`
 }
@@ -172,35 +180,4 @@ type HuskyCISummary struct {
 	LowVuln    int  `json:"lowvuln,omitempty"`
 	MediumVuln int  `json:"mediumvuln,omitempty"`
 	HighVuln   int  `json:"highvuln,omitempty"`
-}
-
-// HuskyCISonarOutput is the struct that holds the Sonar output
-type HuskyCISonarOutput struct {
-	Issues []SonarIssue `json:"issues"`
-}
-
-// SonarIssue is the struct that holds a single Sonar issue
-type SonarIssue struct {
-	EngineID           string          `json:"engineId"`
-	RuleID             string          `json:"ruleId"`
-	PrimaryLocation    SonarLocation   `json:"primaryLocation"`
-	Type               string          `json:"type"`
-	Severity           string          `json:"severity"`
-	EffortMinutes      int             `json:"effortMinutes,omitempty"`
-	SecondaryLocations []SonarLocation `json:"secondaryLocations,omitempty"`
-}
-
-// SonarLocation is the struct that holds a vulnerability location within code
-type SonarLocation struct {
-	Message   string         `json:"message"`
-	FilePath  string         `json:"filePath"`
-	TextRange SonarTextRange `json:"textRange"`
-}
-
-// SonarTextRange is the struct that holds addtional location fields
-type SonarTextRange struct {
-	StartLine   int `json:"startLine"`
-	EndLine     int `json:"endLine,omitempty"`
-	StartColumn int `json:"startColumn,omitempty"`
-	EndColumn   int `json:"endColumn,omitempty"`
 }

@@ -8,6 +8,7 @@ import (
 	"bufio"
 	"crypto/tls"
 	"crypto/x509"
+	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -86,14 +87,14 @@ func AdjustWarningMessage(warningRaw string) string {
 	return warningRaw
 }
 
-// CreateSonarJSONFile creates a JSON file with Sonarqube output
-func CreateSonarJSONFile(output []byte) error {
+// CreateFile creates a file with contents of output and name of fileName
+func CreateFile(output []byte, fileName string) error {
 	err := os.MkdirAll("./huskyCI/", 0750)
 	if err != nil {
 		return err
 	}
 
-	f, err := os.Create("./huskyCI/result.json")
+	f, err := os.Create(fmt.Sprintf("./huskyCI/%s", fileName))
 	if err != nil {
 		return err
 	}
