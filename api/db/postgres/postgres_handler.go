@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sync"
 	"time"
+
 	_ "github.com/lib/pq" // Defining postgres plugin
 )
 

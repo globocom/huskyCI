@@ -56,7 +56,7 @@ func (scanInfo *SecTestScanInfo) New(RID, URL, branch, securityTestName string) 
 
 func (scanInfo *SecTestScanInfo) setSecurityTestContainer(securityTestName string) error {
 	securityTestQuery := map[string]interface{}{"name": securityTestName}
-	securityTest, err := apiContext.APIConfiguration.DbInstance.FindOneDBSecurityTest(securityTestQuery)
+	securityTest, err := apiContext.APIConfiguration.DBInstance.FindOneDBSecurityTest(securityTestQuery)
 	if err != nil {
 		log.Error("createSecurityTestContainer", "SECURITYTEST", 2012, err)
 		return err

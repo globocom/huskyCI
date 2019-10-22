@@ -5,10 +5,16 @@
 package util_test
 
 import (
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
 	"os"
 
+	"github.com/globocom/huskyCI/api/log"
+	"github.com/globocom/huskyCI/api/types"
 	"github.com/globocom/huskyCI/api/util"
 
+	"github.com/labstack/echo"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -124,6 +130,86 @@ Line4`
 		Context("When rawSliceString is empty", func() {
 			It("Should return an empty slice of string.", func() {
 				Expect(util.GetAllLinesButLast("")).To(Equal([]string{}))
+			})
+		})
+	})
+
+	Describe("CheckMaliciousRID", func() {
+		e := echo.New()
+
+		Context("When RID is valid", func() {
+			It("Should pass with no error", func() {
+				w := httptest.NewRecorder()
+				c := e.NewContext(httptest.NewRequest(http.MethodGet, "/foo", nil), w)
+				Expect(util.CheckMaliciousRID("*", c)).To(BeNil())
+			})
+		})
+		Context("When RID is invalid", func() {
+			It("Should response with invalid RID", func() {
+				w := httptest.NewRecorder()
+				c := e.NewContext(httptest.NewRequest(http.MethodGet, "/foo", nil), w)
+				Expect(util.CheckMaliciousRID("*", c)).To(BeNil())
+
+				resp := w.Result()
+				Expect(resp.StatusCode).To(Equal(http.StatusBadRequest))
+				Expect(ioutil.ReadAll(resp.Body)).To(
+					MatchJSON(`{"success": false, "error": "invalid RID"}`),
+				)
+			})
+		})
+	})
+
+	Describe("CheckValidInput", func() {
+		e := echo.New()
+		log.InitLog(true, "", "", "log_test", "log_test")
+
+		Context("When URL is already ok", func() {
+			repository := types.Repository{
+				URL:    "https://github.com/globocom/secDevLabs.git",
+				Branch: "branch",
+			}
+
+			c := e.NewContext(nil, nil)
+			It("Should return the same URL", func() {
+				Expect(util.CheckValidInput(repository, c)).To(Equal(repository.URL))
+			})
+		})
+
+		Context("When URL is invalid", func() {
+			It("Should response with invalid repository URL", func() {
+				repository := types.Repository{
+					URL:    "http://globo.com",
+					Branch: "branch",
+				}
+
+				w := httptest.NewRecorder()
+				c := e.NewContext(httptest.NewRequest(http.MethodGet, "/foo", nil), w)
+
+				Expect(util.CheckValidInput(repository, c)).To(HaveLen(0))
+
+				resp := w.Result()
+				Expect(resp.StatusCode).To(Equal(http.StatusBadRequest))
+				Expect(ioutil.ReadAll(resp.Body)).To(
+					MatchJSON(`{"success": false, "error": "invalid repository URL"}`),
+				)
+			})
+
+			It("Should response with invalid branch", func() {
+				repository := types.Repository{
+					URL:    "https://github.com/globocom/secDevLabs.git",
+					Branch: " [bra nch] ",
+				}
+
+				w := httptest.NewRecorder()
+				c := e.NewContext(httptest.NewRequest(http.MethodGet, "/foo", nil), w)
+
+				Expect(util.CheckValidInput(repository, c)).To(Equal(repository.URL))
+
+				resp := w.Result()
+				Expect(resp.StatusCode).To(Equal(http.StatusBadRequest))
+				Expect(ioutil.ReadAll(resp.Body)).To(
+					MatchJSON(`{"success": false, "error": "invalid repository branch"}`),
+				)
 			})
 		})
 	})

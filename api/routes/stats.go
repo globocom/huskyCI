@@ -17,7 +17,7 @@ import (
 func GetMetric(c echo.Context) error {
 	metricType := strings.ToLower(c.Param("metric_type"))
 	queryParams := c.QueryParams()
-	result, err := apiContext.APIConfiguration.DbInstance.GetMetricByType(metricType, queryParams)
+	result, err := apiContext.APIConfiguration.DBInstance.GetMetricByType(metricType, queryParams)
 	if err != nil {
 		httpStatus, reply := checkError(err, metricType)
 		return c.JSON(httpStatus, reply)

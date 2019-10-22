@@ -82,7 +82,7 @@ type APIConfig struct {
 	YarnAuditSecurityTest  *types.SecurityTest
 	GitleaksSecurityTest   *types.SecurityTest
 	SafetySecurityTest     *types.SecurityTest
-	DbInstance             db.Requests
+	DBInstance             db.Requests
 }
 
 // DefaultConfig is the struct that stores the caller for testing.
@@ -124,7 +124,7 @@ func (dF DefaultConfig) SetOnceConfig() {
 			YarnAuditSecurityTest:  dF.getSecurityTestConfig("yarnaudit"),
 			SafetySecurityTest:     dF.getSecurityTestConfig("safety"),
 			GitleaksSecurityTest:   dF.getSecurityTestConfig("gitleaks"),
-			DbInstance:             dF.GetDB(),
+			DBInstance:             dF.GetDB(),
 		}
 	})
 }
@@ -195,14 +195,12 @@ func (dF DefaultConfig) GetGraylogIsDev() bool {
 }
 
 func (dF DefaultConfig) getDBConfig() *DBConfig {
-	dbHost := dF.Caller.GetEnvironmentVariable("HUSKYCI_DATABASE_DB_ADDR")
-	dbPort := dF.GetDBPort()
 	return &DBConfig{
-		Address:         dbHost,
+		Address:         dF.Caller.GetEnvironmentVariable("HUSKYCI_DATABASE_DB_ADDR"),
 		DatabaseName:    dF.Caller.GetEnvironmentVariable("HUSKYCI_DATABASE_DB_NAME"),
 		Username:        dF.Caller.GetEnvironmentVariable("HUSKYCI_DATABASE_DB_USERNAME"),
 		Password:        dF.Caller.GetEnvironmentVariable("HUSKYCI_DATABASE_DB_PASSWORD"),
-		Port:            dbPort,
+		Port:            dF.GetDBPort(),
 		Timeout:         dF.GetDBTimeout(),
 		PoolLimit:       dF.GetDBPoolLimit(),
 		MaxOpenConns:    dF.GetMaxOpenConns(),
@@ -358,7 +356,6 @@ func (dF DefaultConfig) GetDB() db.Requests {
 	dB := dF.Caller.GetEnvironmentVariable("HUSKYCI_DATABASE_TYPE")
 	if strings.EqualFold(dB, "postgres") {
 		return nil
-		// return &db.PostgresRequests{}
 	}
 	return &db.MongoRequests{}
 }

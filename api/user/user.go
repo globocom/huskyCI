@@ -68,5 +68,5 @@ func InsertDefaultUser() error {
 		return hashFunction
 	})
 	newUser.Password = base64.StdEncoding.EncodeToString(hashedPass)
-	return apiContext.APIConfiguration.DbInstance.InsertDBUser(newUser)
+	return apiContext.APIConfiguration.DBInstance.InsertDBUser(newUser)
 }

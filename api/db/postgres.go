@@ -63,3 +63,41 @@ func (pR *PostgresRequests) FindOneDBRepository(
 	}
 	return repositoryResponse, nil
 }
+
+func (pR *PostgresRequests) FindOneDBSecurityTest(
+	mapParams map[string]interface{}) (types.SecurityTest, error) {
+	securityResponse := types.SecurityTest{}
+	securityTest, ok := mapParams["name"]
+	if !ok {
+		return securityResponse, errors.New("Could not find securityTest name field")
+	}
+	myQuery := `SELECT 
+					name,
+					image,
+					imageTag,
+					cmd,
+					type,
+					language,
+					default,
+					timeOutSeconds
+				FROM
+					securityTest
+				WHERE
+					name = $1`
+
+	values, err := pR.Psql.GetValuesFromDB(myQuery, securityTest)
+	if err != nil {
+		return securityResponse, err
+	}
+	if len(values) != 1 {
+		return securityResponse, errors.New("Data returned in a not expected format")
+	}
+	jsonValues, err := pR.JsonHandler.Marshal(values[0])
+	if err != nil {
+		return securityResponse, err
+	}
+	if err := pR.JsonHandler.Unmarshal(jsonValues, &securityResponse); err != nil {
+		return securityResponse, err
+	}
+	return securityResponse, nil
+}

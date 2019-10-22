@@ -315,7 +315,7 @@ func getAllDefaultSecurityTests(typeOf, language string) ([]types.SecurityTest, 
 	if language != "" {
 		securityTestQuery = map[string]interface{}{"language": language, "default": true}
 	}
-	securityTests, err := apiContext.APIConfiguration.DbInstance.FindAllDBSecurityTest(securityTestQuery)
+	securityTests, err := apiContext.APIConfiguration.DBInstance.FindAllDBSecurityTest(securityTestQuery)
 	if err != nil {
 		log.Error("getAllDefaultSecurityTests", "SECURITYTEST", 2009, err)
 		return securityTests, err

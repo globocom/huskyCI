@@ -266,12 +266,7 @@ var statsQueryBase = map[string][]bson.M{
 	},
 }
 
-var aggrTimeFilterStage = map[string][]bson.M{
-	"today":      generateTimeFilterStage(0, 0),
-	"yesterday":  generateTimeFilterStage(-1, -1),
-	"last7days":  generateTimeFilterStage(-6, 0),
-	"last30days": generateTimeFilterStage(-29, 0),
-}
+var validAggrTimeFilterStages = []string{"today", "yesterday", "last7days", "last30days"}
 
 // GetMetricByType returns data about the metric received
 func (mR *MongoRequests) GetMetricByType(metricType string, queryStringParams map[string][]string) (interface{}, error) {
@@ -290,10 +285,28 @@ func (mR *MongoRequests) GetMetricByType(metricType string, queryStringParams ma
 		switch param {
 		case "time_range":
 			value := values[len(values)-1]
-			query = append(aggrTimeFilterStage[value], query...)
+			aggrTimeFilterStage := getTimeFilterStage(value)
+			if aggrTimeFilterStage != nil {
+				query = append(aggrTimeFilterStage, query...)
+			}
 		}
 	}
 	return mongoHuskyCI.Conn.Aggregation(query, mongoHuskyCI.AnalysisCollection)
+}
+
+func getTimeFilterStage(timeRange string) []bson.M {
+	switch timeRange {
+	case "today":
+		return generateTimeFilterStage(0, 0)
+	case "yesterday":
+		return generateTimeFilterStage(-1, -1)
+	case "last7days":
+		return generateTimeFilterStage(-6, 0)
+	case "last30days":
+		return generateTimeFilterStage(-29, 0)
+	default:
+		return nil
+	}
 }
 
 // generateSimpleAggr generates an aggregation that counts each field group.
@@ -340,7 +353,7 @@ func generateTimeFilterStage(rangeInitDays, rangeEndDays int) []bson.M {
 
 // validTimeRange returns if a user inputted type is valid
 func validTimeRange(timeRange string) bool {
-	for tRange := range aggrTimeFilterStage {
+	for _, tRange := range validAggrTimeFilterStages {
 		if timeRange == tRange {
 			return true
 		}
