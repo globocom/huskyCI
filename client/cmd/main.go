@@ -67,7 +67,9 @@ func main() {
 	}
 
 	// step 3.5: integration with SonarQube
-	err = sonarqube.GenerateOutputFile(huskyAnalysis)
+	outputPath := "./huskyCI/"
+	outputFileName := "sonarqube.json"
+	err = sonarqube.GenerateOutputFile(huskyAnalysis, outputPath, outputFileName)
 	if err != nil {
 		fmt.Println("[HUSKYCI][ERROR] Could not create SonarQube integration file: ", err)
 	}
