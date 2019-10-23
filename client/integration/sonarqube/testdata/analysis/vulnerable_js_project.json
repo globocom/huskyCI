@@ -1,0 +1,215 @@
+{
+    "_id" : "5db06b16fdd8358b1c4583ce",
+    "status" : "finished",
+    "result" : "failed",
+    "containers" : [ 
+        {
+            "CID" : "6f171e67abf11dc745d6e9da284c9dbad098ea263a89a1d42613b0f4ad3c8067",
+            "securityTest" : {
+                "_id" : "5db06089fdd8358b1c4576ff",
+                "name" : "gitauthors",
+                "image" : "huskyci/gitauthors",
+                "imageTag" : "2.18.1",
+                "cmd" : "mkdir -p ~/.ssh &&\necho 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&\nchmod 600 ~/.ssh/huskyci_id_rsa &&\necho \"IdentityFile ~/.ssh/huskyci_id_rsa\" >> /etc/ssh/ssh_config &&\necho \"StrictHostKeyChecking no\" >> /etc/ssh/ssh_config &&\ngit clone %GIT_REPO% code --quiet 2> /tmp/errorGitCloneEnry\ncd code\ngit checkout %GIT_BRANCH% --quiet\nif [ $? -eq 0 ]; then\n  for i in $(git log origin/master.. --pretty=\"%ae\" | sort -u); do\n    jsonMiddle=\"\\\"$i\\\",$jsonMiddle\"\n  done\n  length=${#jsonMiddle}\n  endindex=$(expr $length - 1)\n  authors=\"${jsonMiddle:0:$endindex}\"\n  echo \"{\\\"authors\\\":[$authors]}\"\nelse\n  echo \"ERROR_CLONING\"\n  cat /tmp/errorGitCloneEnry\nfi\n",
+                "type" : "Generic",
+                "language" : "",
+                "default" : true,
+                "timeOutSeconds" : 60
+            },
+            "cStatus" : "finished",
+            "cOutput" : "{\"authors\":[\"daniel.carlier@hotmail.com\"]}\r\n",
+            "cResult" : "passed",
+            "cInfo" : "No issues found.",
+            "startedAt" : "2019-10-23T12:00:46.527-03:00",
+            "finishedAt" : "2019-10-23T12:00:54.800-03:00"
+        }, 
+        {
+            "CID" : "77943116021b46203d0fa515ce047fd6ef91fe2de184cfc6237a12d6fcbbf2af",
+            "securityTest" : {
+                "_id" : "5db06089fdd8358b1c457707",
+                "name" : "npmaudit",
+                "image" : "huskyci/npmaudit",
+                "imageTag" : "6.10.3",
+                "cmd" : "mkdir -p ~/.ssh &&\necho 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&\nchmod 600 ~/.ssh/huskyci_id_rsa &&\necho \"IdentityFile ~/.ssh/huskyci_id_rsa\" >> /etc/ssh/ssh_config &&\necho \"StrictHostKeyChecking no\" >> /etc/ssh/ssh_config &&\ngit clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneNpmAudit\nif [ $? -eq 0 ]; then\n  cd code\n  if [ -f package-lock.json ]; then\n    npm audit --only=prod --json > /tmp/results.json 2> /tmp/errorNpmaudit\n    jq -j -M -c . /tmp/results.json\n  else\n    echo 'ERROR_PACKAGE_LOCK_NOT_FOUND'\n  fi\nelse\n  echo \"ERROR_CLONING\"\n  cat /tmp/errorGitCloneNpmAudit\nfi\n",
+                "type" : "Language",
+                "language" : "JavaScript",
+                "default" : true,
+                "timeOutSeconds" : 360
+            },
+            "cStatus" : "finished",
+            "cOutput" : "{\"actions\":[{\"isMajor\":false,\"action\":\"install\",\"resolves\":[{\"id\":28,\"path\":\"express>qs\",\"dev\":false,\"optional\":false,\"bundled\":false},{\"id\":29,\"path\":\"express>qs\",\"dev\":false,\"optional\":false,\"bundled\":false},{\"id\":32,\"path\":\"express>send\",\"dev\":false,\"optional\":false,\"bundled\":false},{\"id\":32,\"path\":\"express>serve-static>send\",\"dev\":false,\"optional\":false,\"bundled\":false},{\"id\":35,\"path\":\"express>serve-static\",\"dev\":false,\"optional\":false,\"bundled\":false},{\"id\":56,\"path\":\"express>send\",\"dev\":false,\"optional\":false,\"bundled\":false},{\"id\":56,\"path\":\"express>serve-static>send\",\"dev\":false,\"optional\":false,\"bundled\":false},{\"id\":106,\"path\":\"express>accepts>negotiator\",\"dev\":false,\"optional\":false,\"bundled\":false},{\"id\":134,\"path\":\"express>cookie-signature\",\"dev\":false,\"optional\":false,\"bundled\":false},{\"id\":526,\"path\":\"express>fresh\",\"dev\":false,\"optional\":false,\"bundled\":false},{\"id\":526,\"path\":\"express>send>fresh\",\"dev\":false,\"optional\":false,\"bundled\":false},{\"id\":526,\"path\":\"express>serve-static>send>fresh\",\"dev\":false,\"optional\":false,\"bundled\":false},{\"id\":534,\"path\":\"express>debug\",\"dev\":false,\"optional\":false,\"bundled\":false},{\"id\":535,\"path\":\"express>accepts>mime\",\"dev\":false,\"optional\":false,\"bundled\":false},{\"id\":535,\"path\":\"express>send>mime\",\"dev\":false,\"optional\":false,\"bundled\":false},{\"id\":535,\"path\":\"express>serve-static>send>mime\",\"dev\":false,\"optional\":false,\"bundled\":false},{\"id\":535,\"path\":\"express>type-is>mime\",\"dev\":false,\"optional\":false,\"bundled\":false}],\"module\":\"express\",\"target\":\"4.17.1\"},{\"action\":\"update\",\"resolves\":[{\"id\":8,\"path\":\"express\",\"dev\":false,\"optional\":false,\"bundled\":false}],\"module\":\"express\",\"target\":\"4.17.1\",\"depth\":1},{\"action\":\"update\",\"resolves\":[{\"id\":534,\"path\":\"express>send>debug\",\"dev\":false,\"optional\":false,\"bundled\":false},{\"id\":534,\"path\":\"express>serve-static>send>debug\",\"dev\":false,\"optional\":false,\"bundled\":false}],\"module\":\"debug\",\"target\":\"4.1.1\",\"depth\":4}],\"advisories\":{\"8\":{\"findings\":[{\"version\":\"4.0.0\",\"paths\":[\"express\"]}],\"id\":8,\"created\":\"2015-10-17T19:41:46.382Z\",\"updated\":\"2018-02-22T21:55:47.925Z\",\"deleted\":null,\"title\":\"No Charset in Content-Type Header\",\"found_by\":{\"name\":\"Paweł Hałdrzyński\"},\"reported_by\":{\"name\":\"Paweł Hałdrzyński\"},\"module_name\":\"express\",\"cves\":[\"CVE-2014-6393\"],\"vulnerable_versions\":\"<3.11 || >= 4 <4.5\",\"patched_versions\":\">=3.11 <4 || >=4.5\",\"overview\":\"Vulnerable versions of express do not specify a charset field in the content-type header while displaying 400 level response messages. The lack of enforcing user's browser to set correct charset, could be leveraged by an attacker to perform a cross-site scripting attack, using non-standard encodings, like UTF-7.\",\"recommendation\":\"For express 3.x, update express to version 3.11 or later.\\nFor express 4.x, update express to version 4.5 or later. \",\"references\":\"\",\"access\":\"public\",\"severity\":\"moderate\",\"cwe\":\"CWE-79\",\"metadata\":{\"module_type\":\"Network.Library\",\"exploitability\":2,\"affected_components\":\"\"},\"url\":\"https://npmjs.com/advisories/8\"},\"28\":{\"findings\":[{\"version\":\"0.6.6\",\"paths\":[\"express>qs\"]}],\"id\":28,\"created\":\"2015-10-17T19:41:46.382Z\",\"updated\":\"2018-02-23T23:02:07.693Z\",\"deleted\":null,\"title\":\"Denial-of-Service Extended Event Loop Blocking\",\"found_by\":{\"name\":\"Tom Steele\"},\"reported_by\":{\"name\":\"Tom Steele\"},\"module_name\":\"qs\",\"cves\":[\"CVE-2014-10064\"],\"vulnerable_versions\":\"<1.0.0\",\"patched_versions\":\">= 1.x\",\"overview\":\"Versions prior to 1.0.0 of `qs` are affected by a denial of service vulnerability that results from excessive recursion in parsing a deeply nested JSON string.\\n\\n\",\"recommendation\":\"Update to version 1.0.0 or later\",\"references\":\"\",\"access\":\"public\",\"severity\":\"high\",\"cwe\":\"CWE-730\",\"metadata\":{\"module_type\":\"Multi.Library\",\"exploitability\":8,\"affected_components\":\"\"},\"url\":\"https://npmjs.com/advisories/28\"},\"29\":{\"findings\":[{\"version\":\"0.6.6\",\"paths\":[\"express>qs\"]}],\"id\":29,\"created\":\"2015-10-17T19:41:46.382Z\",\"updated\":\"2018-02-23T23:02:15.367Z\",\"deleted\":null,\"title\":\"Denial-of-Service Memory Exhaustion\",\"found_by\":{\"name\":\"Dustin Shiver\"},\"reported_by\":{\"name\":\"Dustin Shiver\"},\"module_name\":\"qs\",\"cves\":[\"CVE-2014-7191\"],\"vulnerable_versions\":\"<1.0.0\",\"patched_versions\":\">= 1.x\",\"overview\":\"Versions prior to 1.0 of `qs` are affected by a denial of service condition. This condition is triggered by parsing a crafted string that deserializes into very large sparse arrays, resulting in the process running out of memory and eventually crashing.\",\"recommendation\":\"Update to version 1.0.0 or later.\",\"references\":\"- https://github.com/visionmedia/node-querystring/issues/104\",\"access\":\"public\",\"severity\":\"high\",\"cwe\":\"CWE-730\",\"metadata\":{\"module_type\":\"Multi.Library\",\"exploitability\":9,\"affected_components\":\"\"},\"url\":\"https://npmjs.com/advisories/29\"},\"32\":{\"findings\":[{\"version\":\"0.2.0\",\"paths\":[\"express>send\"]},{\"version\":\"0.1.4\",\"paths\":[\"express>serve-static>send\"]}],\"id\":32,\"created\":\"2015-10-17T19:41:46.382Z\",\"updated\":\"2019-06-24T14:44:59.313Z\",\"deleted\":null,\"title\":\"Directory Traversal\",\"found_by\":{\"name\":\"Ilya Kantor\"},\"reported_by\":{\"name\":\"Ilya Kantor\"},\"module_name\":\"send\",\"cves\":[\"CVE-2014-6394\"],\"vulnerable_versions\":\"< 0.8.4\",\"patched_versions\":\">= 0.8.4\",\"overview\":\"Versions 0.8.3 and earlier of `send` are affected by a directory traversal vulnerability. When relying on the root option to restrict file access it may be possible for an application consumer to escape out of the restricted directory and access files in a similarly named directory. \\n\\nFor example, `static(_dirname + '/public')` would allow access to `_dirname + '/public-restricted'`.\",\"recommendation\":\"Update to version 0.8.4 or later.\",\"references\":\"- [PR #59](https://github.com/visionmedia/send/pull/59)\\n- [Commit #9c6ca9b](https://github.com/visionmedia/send/commit/9c6ca9b2c0b880afd3ff91ce0d211213c5fa5f9a)\",\"access\":\"public\",\"severity\":\"low\",\"cwe\":\"CWE-22\",\"metadata\":{\"module_type\":\"Network.Application\",\"exploitability\":3,\"affected_components\":\"\"},\"url\":\"https://npmjs.com/advisories/32\"},\"35\":{\"findings\":[{\"version\":\"1.0.1\",\"paths\":[\"express>serve-static\"]}],\"id\":35,\"created\":\"2015-10-17T19:41:46.382Z\",\"updated\":\"2018-02-23T23:38:12.068Z\",\"deleted\":null,\"title\":\"Open Redirect\",\"found_by\":{\"name\":\"Pierre-Élie Fauché\"},\"reported_by\":{\"name\":\"Pierre-Élie Fauché\"},\"module_name\":\"serve-static\",\"cves\":[\"CVE-2015-1164\"],\"vulnerable_versions\":\"<1.6.5 || >=1.7.0 <1.7.2\",\"patched_versions\":\"~1.6.5 || >=1.7.2\",\"overview\":\"Versions of `serve-static` prior to 1.6.5 ( or 1.7.x prior to 1.7.2 ) are affected by an open redirect vulnerability on some browsers when configured to mount at the root directory.\\n\\n\\n## Proof of Concept\\n\\nA link to `http://example.com//www.google.com/%2e%2e` will redirect to `//www.google.com/%2e%2e`\\n\\nSome browsers will interpret this as `http://www.google.com/%2e%2e`, resulting in an external redirect.\",\"recommendation\":\"Version 1.7.x: Update to version 1.7.2 or later.\\nVersion 1.6.x: Update to version 1.6.5 or later.\\n\",\"references\":\"[Issue #26](https://github.com/expressjs/serve-static/issues/26)\\n\",\"access\":\"public\",\"severity\":\"low\",\"cwe\":\"CWE-601\",\"metadata\":{\"module_type\":\"Network.Application\",\"exploitability\":1,\"affected_components\":\"\"},\"url\":\"https://npmjs.com/advisories/35\"},\"56\":{\"findings\":[{\"version\":\"0.2.0\",\"paths\":[\"express>send\"]},{\"version\":\"0.1.4\",\"paths\":[\"express>serve-static>send\"]}],\"id\":56,\"created\":\"2015-11-03T07:12:20.676Z\",\"updated\":\"2019-06-24T15:14:48.902Z\",\"deleted\":null,\"title\":\"Root Path Disclosure\",\"found_by\":{\"name\":\"Dinis Cruz\"},\"reported_by\":{\"name\":\"Dinis Cruz\"},\"module_name\":\"send\",\"cves\":[\"CVE-2015-8859\"],\"vulnerable_versions\":\"<0.11.1\",\"patched_versions\":\">=0.11.1\",\"overview\":\"Versions of `send` prior to 0.11.2 are affected by an information leakage vulnerability which may allow an attacker to enumerate paths on the server filesystem.\\n\",\"recommendation\":\"Update to version 0.11.1 or later.\",\"references\":\"- [PR #70](https://github.com/pillarjs/send/pull/70)\\n- [Express Changelog - 2015/01/20](https://github.com/expressjs/serve-static/blob/master/HISTORY.md#181--2015-01-20)\",\"access\":\"public\",\"severity\":\"low\",\"cwe\":\"CWE-934\",\"metadata\":{\"module_type\":\"Network.Application\",\"exploitability\":3,\"affected_components\":\"\"},\"url\":\"https://npmjs.com/advisories/56\"},\"106\":{\"findings\":[{\"version\":\"0.3.0\",\"paths\":[\"express>accepts>negotiator\"]}],\"id\":106,\"created\":\"2016-05-04T16:34:12.000Z\",\"updated\":\"2018-04-17T12:58:40.142Z\",\"deleted\":null,\"title\":\"Regular Expression Denial of Service\",\"found_by\":{\"name\":\"Adam Baldwin\"},\"reported_by\":{\"name\":\"Adam Baldwin\"},\"module_name\":\"negotiator\",\"cves\":[\"CVE-2016-10539\"],\"vulnerable_versions\":\"<= 0.6.0\",\"patched_versions\":\">= 0.6.1\",\"overview\":\"Affected versions of `negotiator` are vulnerable to regular expression denial of service attacks, which trigger upon parsing a specially crafted `Accept-Language` header value.\\n\\n\",\"recommendation\":\"Update to version 0.6.1 or later.\",\"references\":\"\",\"access\":\"public\",\"severity\":\"high\",\"cwe\":\"CWE-400\",\"metadata\":{\"module_type\":\"Network.Library\",\"exploitability\":6,\"affected_components\":\"Internal::Code::Function::acceptsLanguages()\"},\"url\":\"https://npmjs.com/advisories/106\"},\"134\":{\"findings\":[{\"version\":\"1.0.3\",\"paths\":[\"express>cookie-signature\"]}],\"id\":134,\"created\":\"2016-07-27T00:24:38.000Z\",\"updated\":\"2019-06-24T15:01:42.203Z\",\"deleted\":null,\"title\":\"Timing Attack\",\"found_by\":{\"name\":\"unknown\"},\"reported_by\":{\"name\":\"unknown\"},\"module_name\":\"cookie-signature\",\"cves\":[\"CVE-2016-1000236\"],\"vulnerable_versions\":\"<=1.0.5\",\"patched_versions\":\">=1.0.6\",\"overview\":\"Affected versions of `cookie-signature` are vulnerable to timing attacks as a result of using a fail-early comparison instead of a constant-time comparison. \\n\\nTiming attacks remove the exponential increase in entropy gained from increased secret length, by providing per-character feedback on the correctness of a guess via miniscule timing differences.\\n\\nUnder favorable network conditions, an attacker can exploit this to guess the secret in no more than `charset*length` guesses, instead of `charset^length` guesses required were the timing attack not present. \\n\",\"recommendation\":\"Update to 1.0.6 or later.\",\"references\":\"- [Commit #3979108](https://github.com/tj/node-cookie-signature/commit/39791081692e9e14aa62855369e1c7f80fbfd50e)\",\"access\":\"public\",\"severity\":\"moderate\",\"cwe\":\"CWE-208\",\"metadata\":{\"module_type\":\"Multi.Library\",\"exploitability\":2,\"affected_components\":\"\"},\"url\":\"https://npmjs.com/advisories/134\"},\"526\":{\"findings\":[{\"version\":\"0.2.2\",\"paths\":[\"express>fresh\",\"express>send>fresh\"]},{\"version\":\"0.2.0\",\"paths\":[\"express>serve-static>send>fresh\"]}],\"id\":526,\"created\":\"2017-09-08T20:23:54.164Z\",\"updated\":\"2018-04-09T00:15:21.807Z\",\"deleted\":null,\"title\":\"Regular Expression Denial of Service\",\"found_by\":{\"name\":\"Cristian-Alexandru Staicu\"},\"reported_by\":{\"name\":\"Cristian-Alexandru Staicu\"},\"module_name\":\"fresh\",\"cves\":[\"CVE-2017-16119\"],\"vulnerable_versions\":\"< 0.5.2\",\"patched_versions\":\">= 0.5.2\",\"overview\":\"Affected versions of `fresh` are vulnerable to regular expression denial of service when parsing specially crafted user input.\",\"recommendation\":\"Update to version 0.5.2 or later.\",\"references\":\"\",\"access\":\"public\",\"severity\":\"high\",\"cwe\":\"CWE-400\",\"metadata\":{\"module_type\":\"Multi.Library\",\"exploitability\":5,\"affected_components\":\"\"},\"url\":\"https://npmjs.com/advisories/526\"},\"534\":{\"findings\":[{\"version\":\"0.8.1\",\"paths\":[\"express>debug\",\"express>send>debug\",\"express>serve-static>send>debug\"]}],\"id\":534,\"created\":\"2017-09-25T18:55:55.956Z\",\"updated\":\"2018-05-16T19:37:43.686Z\",\"deleted\":null,\"title\":\"Regular Expression Denial of Service\",\"found_by\":{\"name\":\"Cristian-Alexandru Staicu\"},\"reported_by\":{\"name\":\"Cristian-Alexandru Staicu\"},\"module_name\":\"debug\",\"cves\":[\"CVE-2017-16137\"],\"vulnerable_versions\":\"<= 2.6.8 || >= 3.0.0 <= 3.0.1\",\"patched_versions\":\">= 2.6.9 < 3.0.0 || >= 3.1.0\",\"overview\":\"Affected versions of `debug` are vulnerable to regular expression denial of service when untrusted user input is passed into the `o` formatter. \\n\\nAs it takes 50,000 characters to block the event loop for 2 seconds, this issue is a low severity issue.\",\"recommendation\":\"Version 2.x.x: Update to version 2.6.9 or later.\\nVersion 3.x.x: Update to version 3.1.0 or later.\\n\",\"references\":\"- [Issue #501](https://github.com/visionmedia/debug/issues/501)\\n- [PR #504](https://github.com/visionmedia/debug/pull/504)\",\"access\":\"public\",\"severity\":\"low\",\"cwe\":\"CWE-400\",\"metadata\":{\"module_type\":\"\",\"exploitability\":5,\"affected_components\":\"\"},\"url\":\"https://npmjs.com/advisories/534\"},\"535\":{\"findings\":[{\"version\":\"1.2.11\",\"paths\":[\"express>accepts>mime\",\"express>send>mime\",\"express>serve-static>send>mime\",\"express>type-is>mime\"]}],\"id\":535,\"created\":\"2017-09-25T19:02:28.152Z\",\"updated\":\"2018-04-09T00:38:22.785Z\",\"deleted\":null,\"title\":\"Regular Expression Denial of Service\",\"found_by\":{\"name\":\"Cristian-Alexandru Staicu\"},\"reported_by\":{\"name\":\"Cristian-Alexandru Staicu\"},\"module_name\":\"mime\",\"cves\":[\"CVE-2017-16138\"],\"vulnerable_versions\":\"< 1.4.1 || > 2.0.0 < 2.0.3\",\"patched_versions\":\">= 1.4.1 < 2.0.0 || >= 2.0.3\",\"overview\":\"Affected versions of `mime` are vulnerable to regular expression denial of service when a mime lookup is performed on untrusted user input.\",\"recommendation\":\"Update to version 2.0.3 or later.\",\"references\":\"[Issue #167](https://github.com/broofa/node-mime/issues/167)\",\"access\":\"public\",\"severity\":\"moderate\",\"cwe\":\"CWE-400\",\"metadata\":{\"module_type\":\"Multi.Library\",\"exploitability\":4,\"affected_components\":\"\"},\"url\":\"https://npmjs.com/advisories/535\"}},\"muted\":[],\"metadata\":{\"vulnerabilities\":{\"info\":0,\"low\":8,\"moderate\":6,\"high\":6,\"critical\":0},\"dependencies\":30,\"devDependencies\":0,\"optionalDependencies\":0,\"totalDependencies\":30},\"runId\":\"386414b9-82ce-4ea1-bfb1-2290122f6d69\"}",
+            "cResult" : "failed",
+            "cInfo" : "Issues found.",
+            "startedAt" : "2019-10-23T12:00:46.539-03:00",
+            "finishedAt" : "2019-10-23T12:01:55.736-03:00"
+        }, 
+        {
+            "CID" : "267ad56b36790c82be5ef6b5f4f6d601d0f1ae91daa19652df9d4258e80692b7",
+            "securityTest" : {
+                "_id" : "5db06089fdd8358b1c457709",
+                "name" : "yarnaudit",
+                "image" : "huskyci/yarnaudit",
+                "imageTag" : "1.17.3",
+                "cmd" : "mkdir -p ~/.ssh &&\necho 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&\nchmod 600 ~/.ssh/huskyci_id_rsa &&\necho \"IdentityFile ~/.ssh/huskyci_id_rsa\" >> /etc/ssh/ssh_config &&\necho \"StrictHostKeyChecking no\" >> /etc/ssh/ssh_config &&\ngit clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneYarnAudit\nif [ $? -eq 0 ]; then\n    cd code\n    pathLock=$(dirname \"$(find . -name 'yarn.lock' | grep -v vendor)\")\n    if [ $? -eq 0 ]; then\n        cd $pathLock\n        yarn audit --json > /tmp/results.json 2> /tmp/errorYarnAudit\n        if [ ! -s /tmp/errorYarnAudit ]; then\n            jq -c -M -j --slurp '{advisories: (. | map(select(.type == \"auditAdvisory\") | .data.advisory)), metadata: (. | map(select(.type == \"auditSummary\") | .data) | add)}' /tmp/results.json > /tmp/output.json\n            cat /tmp/output.json\n        else\n            echo -n 'ERROR_RUNNING_YARN_AUDIT'\n            cat /tmp/errorYarnAudit\n        fi\n    else\n        echo 'ERROR_YARN_LOCK_NOT_FOUND'\n    fi\nelse\n    echo \"ERROR_CLONING\"\n    cat /tmp/errorGitCloneYarnAudit\nfi\n",
+                "type" : "Language",
+                "language" : "JavaScript",
+                "default" : true,
+                "timeOutSeconds" : 360
+            },
+            "cStatus" : "finished",
+            "cOutput" : "{\"advisories\":[],\"metadata\":{\"vulnerabilities\":{\"info\":0,\"low\":0,\"moderate\":0,\"high\":0,\"critical\":0},\"dependencies\":126,\"devDependencies\":0,\"optionalDependencies\":0,\"totalDependencies\":126}}",
+            "cResult" : "passed",
+            "cInfo" : "No issues found.",
+            "startedAt" : "2019-10-23T12:00:46.537-03:00",
+            "finishedAt" : "2019-10-23T12:01:56.512-03:00"
+        }, 
+        {
+            "CID" : "21d2d11bfef050c0e3745f73a3c97f60ca221c543b0814ca5f1958ecea173c74",
+            "securityTest" : {
+                "_id" : "5db06089fdd8358b1c45770d",
+                "name" : "gitleaks",
+                "image" : "huskyci/gitleaks",
+                "imageTag" : "2.1.0",
+                "cmd" : "mkdir -p ~/.ssh &&\necho 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&\nchmod 600 ~/.ssh/huskyci_id_rsa &&\necho \"IdentityFile ~/.ssh/huskyci_id_rsa\" >> /etc/ssh/ssh_config &&\necho \"StrictHostKeyChecking no\" >> /etc/ssh/ssh_config &&\ngit clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneGitleaks\nif [ $? -eq 0 ]; then\n    touch /tmp/results.json\n    $(which gitleaks) --log=warn --report=/tmp/results.json --repo-path=./code > /tmp/errorGitleaks\n    if [ $? -eq 2 ]; then\n        echo -n 'ERROR_RUNNING_GITLEAKS'\n        cat /tmp/errorGitleaks\n    else\n        jq -j -M -c . /tmp/results.json\n    fi\nelse\n    echo \"ERROR_CLONING\"\n    cat /tmp/errorGitCloneGitleaks\nfi\n",
+                "type" : "Generic",
+                "language" : "",
+                "default" : true,
+                "timeOutSeconds" : 360
+            },
+            "cStatus" : "finished",
+            "cOutput" : "[{\"line\":\"//     [mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"commit\":\"e4996315cfda1b3f5c9ea3bbd1cd698d92ab2159\",\"offender\":\"mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"Delete huskyCI files \",\"author\":\"Daniel Carlier\",\"email\":\"daniel.carlier@hotmail.com\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2019-08-21T14:14:36-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"commit\":\"e4996315cfda1b3f5c9ea3bbd1cd698d92ab2159\",\"offender\":\"mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"Delete huskyCI files \",\"author\":\"Daniel Carlier\",\"email\":\"daniel.carlier@hotmail.com\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2019-08-21T14:14:36-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     [mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"commit\":\"f50c6e86e4b5a17490bff714f133a06da5a02209\",\"offender\":\"mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"Merge pull request #67 from rafaveira3/feature/add-dep  [FEAT] Add a dependency management (dep) into Husky\",\"author\":\"Rafael dos Santos\",\"email\":\"rafaveira3@gmail.com\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2018-08-29T11:01:30-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"commit\":\"f50c6e86e4b5a17490bff714f133a06da5a02209\",\"offender\":\"mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"Merge pull request #67 from rafaveira3/feature/add-dep  [FEAT] Add a dependency management (dep) into Husky\",\"author\":\"Rafael dos Santos\",\"email\":\"rafaveira3@gmail.com\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2018-08-29T11:01:30-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     [mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"commit\":\"82317c3bd565e162f2b88bdf7169aa4f63419272\",\"offender\":\"mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"[FEAT] Add vendor folder using dep  Closing issue #50 \",\"author\":\"Rafael dos Santos\",\"email\":\"rafaveira3@gmail.com\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2018-08-29T10:57:36-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"commit\":\"82317c3bd565e162f2b88bdf7169aa4f63419272\",\"offender\":\"mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"[FEAT] Add vendor folder using dep  Closing issue #50 \",\"author\":\"Rafael dos Santos\",\"email\":\"rafaveira3@gmail.com\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2018-08-29T10:57:36-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     [mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"commit\":\"3165401ec6694e20ff9297158985a18052e27de2\",\"offender\":\"mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"Merge branch 'master' into client-auth \",\"author\":\"Vicente C. Fiebig\",\"email\":\"vicente.fiebig@corp.globo.com\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2018-11-08T10:35:23-02:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"commit\":\"3165401ec6694e20ff9297158985a18052e27de2\",\"offender\":\"mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"Merge branch 'master' into client-auth \",\"author\":\"Vicente C. Fiebig\",\"email\":\"vicente.fiebig@corp.globo.com\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2018-11-08T10:35:23-02:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     [mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"commit\":\"3477ac6aabd99f31c2a6620103dd349dd21195b5\",\"offender\":\"mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"Merge branch 'master' of github.com:globocom/huskyci into add-to-client \",\"author\":\"Rafael dos Santos\",\"email\":\"rafaveira3@gmail.com\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2019-03-07T14:41:38-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"commit\":\"3477ac6aabd99f31c2a6620103dd349dd21195b5\",\"offender\":\"mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"Merge branch 'master' of github.com:globocom/huskyci into add-to-client \",\"author\":\"Rafael dos Santos\",\"email\":\"rafaveira3@gmail.com\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2019-03-07T14:41:38-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     [mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"commit\":\"68b23a95a884107681f3f2d47852d8e33f83332f\",\"offender\":\"mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"[REFACT] Inserir dependências removidas \",\"author\":\"carlosljr\",\"email\":\"carlosjunior@id.uff.br\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2019-07-23T17:28:02-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"commit\":\"68b23a95a884107681f3f2d47852d8e33f83332f\",\"offender\":\"mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"[REFACT] Inserir dependências removidas \",\"author\":\"carlosljr\",\"email\":\"carlosjunior@id.uff.br\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2019-07-23T17:28:02-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     [mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"commit\":\"62b22ec1b73107a660f77118fd2f3d2b8fb61d7f\",\"offender\":\"mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"[REFACT] Atualizar Gopkg.lock \",\"author\":\"carlosljr\",\"email\":\"carlosjunior@id.uff.br\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2019-07-23T17:25:50-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"commit\":\"62b22ec1b73107a660f77118fd2f3d2b8fb61d7f\",\"offender\":\"mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"[REFACT] Atualizar Gopkg.lock \",\"author\":\"carlosljr\",\"email\":\"carlosjunior@id.uff.br\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2019-07-23T17:25:50-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"}]",
+            "cResult" : "passed",
+            "cInfo" : "No issues found.",
+            "startedAt" : "2019-10-23T12:00:46.534-03:00",
+            "finishedAt" : "2019-10-23T12:04:47.367-03:00"
+        }
+    ],
+    "startedAt" : "2019-10-23T12:00:38.958-03:00",
+    "RID" : "dbxPNbqs5UhqwDC6X61AcpYSWOyR8goR",
+    "repositoryURL" : "https://github.com/globocom/huskyCI.git",
+    "repositoryBranch" : "vulns-JavaScript",
+    "codes" : [ 
+        {
+            "language" : "JavaScript",
+            "files" : [ 
+                "app.js"
+            ]
+        }
+    ],
+    "commitAuthors" : [ 
+        "daniel.carlier@hotmail.com"
+    ],
+    "errorFound" : "",
+    "finishedAt" : "2019-10-23T12:04:47.367-03:00",
+    "huskyciresults" : {
+        "javascriptresults" : {
+            "npmauditoutput" : {
+                "lowvulns" : [ 
+                    {
+                        "language" : "JavaScript",
+                        "securitytool" : "NpmAudit",
+                        "severity" : "low",
+                        "code" : "send",
+                        "details" : "Versions of `send` prior to 0.11.2 are affected by an information leakage vulnerability which may allow an attacker to enumerate paths on the server filesystem.\n",
+                        "vulnerablebelow" : "<0.11.1",
+                        "version" : "0.1.4"
+                    }, 
+                    {
+                        "language" : "JavaScript",
+                        "securitytool" : "NpmAudit",
+                        "severity" : "low",
+                        "code" : "debug",
+                        "details" : "Affected versions of `debug` are vulnerable to regular expression denial of service when untrusted user input is passed into the `o` formatter. \n\nAs it takes 50,000 characters to block the event loop for 2 seconds, this issue is a low severity issue.",
+                        "vulnerablebelow" : "<= 2.6.8 || >= 3.0.0 <= 3.0.1",
+                        "version" : "0.8.1"
+                    }, 
+                    {
+                        "language" : "JavaScript",
+                        "securitytool" : "NpmAudit",
+                        "severity" : "low",
+                        "code" : "send",
+                        "details" : "Versions 0.8.3 and earlier of `send` are affected by a directory traversal vulnerability. When relying on the root option to restrict file access it may be possible for an application consumer to escape out of the restricted directory and access files in a similarly named directory. \n\nFor example, `static(_dirname + '/public')` would allow access to `_dirname + '/public-restricted'`.",
+                        "vulnerablebelow" : "< 0.8.4",
+                        "version" : "0.1.4"
+                    }, 
+                    {
+                        "language" : "JavaScript",
+                        "securitytool" : "NpmAudit",
+                        "severity" : "low",
+                        "code" : "serve-static",
+                        "details" : "Versions of `serve-static` prior to 1.6.5 ( or 1.7.x prior to 1.7.2 ) are affected by an open redirect vulnerability on some browsers when configured to mount at the root directory.\n\n\n## Proof of Concept\n\nA link to `http://example.com//www.google.com/%2e%2e` will redirect to `//www.google.com/%2e%2e`\n\nSome browsers will interpret this as `http://www.google.com/%2e%2e`, resulting in an external redirect.",
+                        "vulnerablebelow" : "<1.6.5 || >=1.7.0 <1.7.2",
+                        "version" : "1.0.1"
+                    }
+                ],
+                "mediumvulns" : [ 
+                    {
+                        "language" : "JavaScript",
+                        "securitytool" : "NpmAudit",
+                        "severity" : "medium",
+                        "code" : "mime",
+                        "details" : "Affected versions of `mime` are vulnerable to regular expression denial of service when a mime lookup is performed on untrusted user input.",
+                        "vulnerablebelow" : "< 1.4.1 || > 2.0.0 < 2.0.3",
+                        "version" : "1.2.11"
+                    }, 
+                    {
+                        "language" : "JavaScript",
+                        "securitytool" : "NpmAudit",
+                        "severity" : "medium",
+                        "code" : "cookie-signature",
+                        "details" : "Affected versions of `cookie-signature` are vulnerable to timing attacks as a result of using a fail-early comparison instead of a constant-time comparison. \n\nTiming attacks remove the exponential increase in entropy gained from increased secret length, by providing per-character feedback on the correctness of a guess via miniscule timing differences.\n\nUnder favorable network conditions, an attacker can exploit this to guess the secret in no more than `charset*length` guesses, instead of `charset^length` guesses required were the timing attack not present. \n",
+                        "vulnerablebelow" : "<=1.0.5",
+                        "version" : "1.0.3"
+                    }, 
+                    {
+                        "language" : "JavaScript",
+                        "securitytool" : "NpmAudit",
+                        "severity" : "medium",
+                        "code" : "express",
+                        "details" : "Vulnerable versions of express do not specify a charset field in the content-type header while displaying 400 level response messages. The lack of enforcing user's browser to set correct charset, could be leveraged by an attacker to perform a cross-site scripting attack, using non-standard encodings, like UTF-7.",
+                        "vulnerablebelow" : "<3.11 || >= 4 <4.5",
+                        "version" : "4.0.0"
+                    }
+                ],
+                "highvulns" : [ 
+                    {
+                        "language" : "JavaScript",
+                        "securitytool" : "NpmAudit",
+                        "severity" : "high",
+                        "code" : "negotiator",
+                        "details" : "Affected versions of `negotiator` are vulnerable to regular expression denial of service attacks, which trigger upon parsing a specially crafted `Accept-Language` header value.\n\n",
+                        "vulnerablebelow" : "<= 0.6.0",
+                        "version" : "0.3.0"
+                    }, 
+                    {
+                        "language" : "JavaScript",
+                        "securitytool" : "NpmAudit",
+                        "severity" : "high",
+                        "code" : "fresh",
+                        "details" : "Affected versions of `fresh` are vulnerable to regular expression denial of service when parsing specially crafted user input.",
+                        "vulnerablebelow" : "< 0.5.2",
+                        "version" : "0.2.0"
+                    }, 
+                    {
+                        "language" : "JavaScript",
+                        "securitytool" : "NpmAudit",
+                        "severity" : "high",
+                        "code" : "qs",
+                        "details" : "Versions prior to 1.0.0 of `qs` are affected by a denial of service vulnerability that results from excessive recursion in parsing a deeply nested JSON string.\n\n",
+                        "vulnerablebelow" : "<1.0.0",
+                        "version" : "0.6.6"
+                    }, 
+                    {
+                        "language" : "JavaScript",
+                        "securitytool" : "NpmAudit",
+                        "severity" : "high",
+                        "code" : "qs",
+                        "details" : "Versions prior to 1.0 of `qs` are affected by a denial of service condition. This condition is triggered by parsing a crafted string that deserializes into very large sparse arrays, resulting in the process running out of memory and eventually crashing.",
+                        "vulnerablebelow" : "<1.0.0",
+                        "version" : "0.6.6"
+                    }
+                ]
+            }
+        }
+    }
+}

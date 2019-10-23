@@ -14,7 +14,7 @@ import (
 )
 
 // GenerateOutputFile prints the analysis output in a JSON format
-func GenerateOutputFile(analysis types.Analysis) error {
+func GenerateOutputFile(analysis types.Analysis, outputPath, outputFileName string) error {
 
 	var allVulns []types.HuskyCIVulnerability
 
@@ -88,13 +88,11 @@ func GenerateOutputFile(analysis types.Analysis) error {
 		}
 		sonarOutput.Issues = append(sonarOutput.Issues, issue)
 	}
-
 	sonarOutputString, err := json.Marshal(sonarOutput)
 	if err != nil {
 		return err
 	}
-
-	err = util.CreateFile(sonarOutputString, "sonarqube.json")
+	err = util.CreateFile(sonarOutputString, outputPath, outputFileName)
 	if err != nil {
 		return err
 	}
