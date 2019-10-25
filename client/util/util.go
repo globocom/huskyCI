@@ -10,6 +10,7 @@ import (
 	"crypto/x509"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -93,7 +94,7 @@ func CreateFile(output []byte, filePath, fileName string) error {
 		return err
 	}
 
-	f, err := os.Create(filePath + fileName)
+	f, err := os.Create(filepath.Join(filePath, fileName))
 	if err != nil {
 		return err
 	}
