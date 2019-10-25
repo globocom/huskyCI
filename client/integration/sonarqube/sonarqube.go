@@ -6,12 +6,21 @@ package sonarqube
 
 import (
 	"encoding/json"
+	"path/filepath"
 	"strconv"
 	"strings"
 
 	"github.com/globocom/huskyCI/client/types"
 	"github.com/globocom/huskyCI/client/util"
 )
+
+const goContainerBasePath = `/go/src/code/`
+const placeholderFileName = "huskyCI_Placeholder_File"
+const placeholderFileText = `
+Placeholder file indicating that no file were associated with this vulnerability.
+This usually means that the vulnerability is related to a missing file
+or is not associated to any specific file, i.e.: outdated dependency versions.
+`
 
 // GenerateOutputFile prints the analysis output in a JSON format
 func GenerateOutputFile(analysis types.Analysis, outputPath, outputFileName string) error {
@@ -65,7 +74,7 @@ func GenerateOutputFile(analysis types.Analysis, outputPath, outputFileName stri
 		var issue SonarIssue
 		issue.EngineID = "huskyCI"
 		issue.Type = "VULNERABILITY"
-		issue.RuleID = vuln.Language
+		issue.RuleID = vuln.Language + " - " + vuln.SecurityTool
 		switch strings.ToLower(vuln.Severity) {
 		case `low`:
 			issue.Severity = "MINOR"
@@ -76,14 +85,28 @@ func GenerateOutputFile(analysis types.Analysis, outputPath, outputFileName stri
 		default:
 			issue.Severity = "INFO"
 		}
-		issue.PrimaryLocation.FilePath = vuln.File
+		if vuln.File == "" {
+			err := util.CreateFile([]byte(placeholderFileText), outputPath, placeholderFileName)
+			if err != nil {
+				return err
+			}
+			issue.PrimaryLocation.FilePath = filepath.Join(outputPath, placeholderFileName)
+		} else {
+			var filePath string
+			if vuln.Language == "Go" {
+				filePath = strings.Replace(vuln.File, goContainerBasePath, "", 1)
+			} else {
+				filePath = vuln.File
+			}
+			issue.PrimaryLocation.FilePath = filePath
+		}
 		issue.PrimaryLocation.Message = vuln.Details
-		issue.PrimaryLocation.TextRange.StartLine = 0
+		issue.PrimaryLocation.TextRange.StartLine = 1
 		lineNum, err := strconv.Atoi(vuln.Line)
 		if err != nil {
-			lineNum = 0
+			lineNum = 1
 		}
-		if lineNum != 0 && lineNum > 0 {
+		if lineNum != 1 && lineNum > 0 {
 			issue.PrimaryLocation.TextRange.StartLine = lineNum
 		}
 		sonarOutput.Issues = append(sonarOutput.Issues, issue)
