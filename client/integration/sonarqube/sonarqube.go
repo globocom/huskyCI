@@ -17,9 +17,9 @@ import (
 const goContainerBasePath = `/go/src/code/`
 const placeholderFileName = "huskyCI_Placeholder_File"
 const placeholderFileText = `
-Placeholder file indicating that no file were associated with this vulnerability.
+Placeholder file indicating that no file was associated with this vulnerability.
 This usually means that the vulnerability is related to a missing file
-or is not associated to any specific file, i.e.: outdated dependency versions.
+or is not associated with any specific file, i.e.: vulnerable dependency versions.
 `
 
 // GenerateOutputFile prints the analysis output in a JSON format
