@@ -144,7 +144,7 @@ func MonitorAnalysis(RID string) (types.Analysis, error) {
 }
 
 // PrintResults prints huskyCI output either in JSON or the standard output.
-func PrintResults(formatOutput string, analysis types.Analysis) error {
+func PrintResults(analysis types.Analysis) error {
 
 	prepareAllSummary(analysis)
 

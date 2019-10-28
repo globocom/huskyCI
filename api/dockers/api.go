@@ -32,11 +32,14 @@ type CreateContainerPayload struct {
 	Cmd   []string `json:"Cmd"`
 }
 
+const logActionNew = "NewDocker"
+const logInfoAPI = "DOCKERAPI"
+
 // NewDocker returns a new docker.
 func NewDocker() (*Docker, error) {
 	configAPI, err := context.DefaultConf.GetAPIConfig()
 	if err != nil {
-		log.Error("NewDocker", "DOCKERAPI", 3026, err)
+		log.Error(logActionNew, logInfoAPI, 3026, err)
 		return nil, err
 	}
 	dockerHost := fmt.Sprintf("https://%s", configAPI.DockerHostsConfig.Host)
@@ -44,26 +47,26 @@ func NewDocker() (*Docker, error) {
 	// env vars needed by docker/docker library to create a NewEnvClient:
 	err = os.Setenv("DOCKER_HOST", dockerHost)
 	if err != nil {
-		log.Error("NewDocker", "DOCKERAPI", 3001, err)
+		log.Error(logActionNew, logInfoAPI, 3001, err)
 		return nil, err
 	}
 
 	err = os.Setenv("DOCKER_CERT_PATH", configAPI.DockerHostsConfig.PathCertificate)
 	if err != nil {
-		log.Error("NewDocker", "DOCKERAPI", 3019, err)
+		log.Error(logActionNew, logInfoAPI, 3019, err)
 		return nil, err
 	}
 
 	tlsVerify := strconv.Itoa(configAPI.DockerHostsConfig.TLSVerify)
 	err = os.Setenv("DOCKER_TLS_VERIFY", tlsVerify)
 	if err != nil {
-		log.Error("NewDocker", "DOCKERAPI", 3020, err)
+		log.Error(logActionNew, logInfoAPI, 3020, err)
 		return nil, err
 	}
 
 	client, err := client.NewEnvClient()
 	if err != nil {
-		log.Error("NewDocker", "DOCKERAPI", 3002, err)
+		log.Error(logActionNew, logInfoAPI, 3002, err)
 		return nil, err
 	}
 	docker := &Docker{
@@ -82,7 +85,7 @@ func (d Docker) CreateContainer(image, cmd string) (string, error) {
 	}, nil, nil, "")
 
 	if err != nil {
-		log.Error("CreateContainer", "DOCKERAPI", 3005, err)
+		log.Error("CreateContainer", logInfoAPI, 3005, err)
 		return "", err
 	}
 	return resp.ID, nil
@@ -111,7 +114,7 @@ func (d Docker) StopContainer() error {
 	ctx := goContext.Background()
 	err := d.client.ContainerStop(ctx, d.CID, nil)
 	if err != nil {
-		log.Error("StopContainer", "DOCKERAPI", 3022, err)
+		log.Error("StopContainer", logInfoAPI, 3022, err)
 	}
 	return err
 }
@@ -121,7 +124,7 @@ func (d Docker) RemoveContainer() error {
 	ctx := goContext.Background()
 	err := d.client.ContainerRemove(ctx, d.CID, dockerTypes.ContainerRemoveOptions{})
 	if err != nil {
-		log.Error("RemoveContainer", "DOCKERAPI", 3023, err)
+		log.Error("RemoveContainer", logInfoAPI, 3023, err)
 	}
 	return err
 }
@@ -140,7 +143,7 @@ func (d Docker) ListStoppedContainers() ([]Docker, error) {
 
 	containerList, err := d.client.ContainerList(ctx, options)
 	if err != nil {
-		log.Error("ListContainer", "DOCKERAPI", 3021, err)
+		log.Error("ListContainer", logInfoAPI, 3021, err)
 		return nil, err
 	}
 
@@ -182,13 +185,13 @@ func (d Docker) ReadOutput() (string, error) {
 	ctx := goContext.Background()
 	out, err := d.client.ContainerLogs(ctx, d.CID, dockerTypes.ContainerLogsOptions{ShowStdout: true})
 	if err != nil {
-		log.Error("ReadOutput", "DOCKERAPI", 3006, err)
+		log.Error("ReadOutput", logInfoAPI, 3006, err)
 		return "", nil
 	}
 
 	body, err := ioutil.ReadAll(out)
 	if err != nil {
-		log.Error("ReadOutput", "DOCKERAPI", 3007, err)
+		log.Error("ReadOutput", logInfoAPI, 3007, err)
 		return "", err
 	}
 	return string(body), err
@@ -199,13 +202,13 @@ func (d Docker) ReadOutputStderr() (string, error) {
 	ctx := goContext.Background()
 	out, err := d.client.ContainerLogs(ctx, d.CID, dockerTypes.ContainerLogsOptions{ShowStderr: true})
 	if err != nil {
-		log.Error("ReadOutputStderr", "DOCKERAPI", 3006, err)
+		log.Error("ReadOutputStderr", logInfoAPI, 3006, err)
 		return "", nil
 	}
 
 	body, err := ioutil.ReadAll(out)
 	if err != nil {
-		log.Error("ReadOutputStderr", "DOCKERAPI", 3008, err)
+		log.Error("ReadOutputStderr", logInfoAPI, 3008, err)
 		return "", err
 	}
 	return string(body), err
@@ -216,7 +219,7 @@ func (d Docker) PullImage(image string) error {
 	ctx := goContext.Background()
 	_, err := d.client.ImagePull(ctx, image, dockerTypes.ImagePullOptions{})
 	if err != nil {
-		log.Error("PullImage", "DOCKERAPI", 3009, err)
+		log.Error("PullImage", logInfoAPI, 3009, err)
 	}
 	return err
 }
@@ -230,7 +233,7 @@ func (d Docker) ImageIsLoaded(image string) bool {
 	ctx := goContext.Background()
 	result, err := d.client.ImageList(ctx, options)
 	if err != nil {
-		log.Error("ImageIsLoaded", "DOCKERAPI", 3010, err)
+		log.Error("ImageIsLoaded", logInfoAPI, 3010, err)
 		panic(err)
 	}
 
@@ -253,7 +256,7 @@ func (d Docker) RemoveImage(imageID string) ([]dockerTypes.ImageDelete, error) {
 func HealthCheckDockerAPI() error {
 	d, err := NewDocker()
 	if err != nil {
-		log.Error("HealthCheckDockerAPI", "DOCKERAPI", 3011, err)
+		log.Error("HealthCheckDockerAPI", logInfoAPI, 3011, err)
 		return err
 	}
 
