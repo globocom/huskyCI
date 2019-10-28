@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/globocom/huskyCI/client/integration/sonarqube"
+
 	"github.com/globocom/huskyCI/client/analysis"
 	"github.com/globocom/huskyCI/client/config"
 	"github.com/globocom/huskyCI/client/types"
@@ -61,6 +63,14 @@ func main() {
 	if err != nil {
 		fmt.Println("[HUSKYCI][ERROR] Printing output:", err)
 		os.Exit(1)
+	}
+
+	// step 3.5: integration with SonarQube
+	outputPath := "./huskyCI/"
+	outputFileName := "sonarqube.json"
+	err = sonarqube.GenerateOutputFile(huskyAnalysis, outputPath, outputFileName)
+	if err != nil {
+		fmt.Println("[HUSKYCI][ERROR] Could not create SonarQube integration file: ", err)
 	}
 
 	// step 4: block developer CI if vulnerabilities were found

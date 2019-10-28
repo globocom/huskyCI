@@ -9,6 +9,8 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -83,4 +85,25 @@ func AdjustWarningMessage(warningRaw string) string {
 	}
 
 	return warningRaw
+}
+
+// CreateFile creates a file with contents of output and name of fileName
+func CreateFile(output []byte, filePath, fileName string) error {
+	err := os.MkdirAll(filePath, 0750)
+	if err != nil {
+		return err
+	}
+
+	f, err := os.Create(filepath.Join(filePath, fileName))
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	_, err = f.Write(output)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

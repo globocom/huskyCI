@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/globocom/huskyCI/client/integration/sonarqube"
+
 	"github.com/globocom/huskyCI/cli/client"
 	"github.com/globocom/huskyCI/cli/config"
 	"github.com/globocom/huskyCI/client/types"
@@ -65,6 +67,14 @@ var runCmd = &cobra.Command{
 		} else {
 			fmt.Printf("[HUSKYCI][*] Some HIGH/MEDIUM issues were found :(\n")
 		}
+
+		outputPath := "./huskyCI/"
+		outputFileName := "sonarqube.json"
+		err = sonarqube.GenerateOutputFile(analysisResult, outputPath, outputFileName)
+		if err != nil {
+			fmt.Println("[HUSKYCI][ERROR] Could not create SonarQube integration file: ", err)
+		}
+
 		return nil
 	},
 }
