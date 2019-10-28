@@ -35,6 +35,10 @@ func init() {
 	}
 }
 
+const logActionReceiveRequest = "ReceiveRequest"
+const logActionGetAnalysis = "GetAnalysis"
+const logInfoAnalysis = "ANALYSIS"
+
 // GetAnalysis returns the status of a given analysis given a RID.
 func GetAnalysis(c echo.Context) error {
 
@@ -46,17 +50,17 @@ func GetAnalysis(c echo.Context) error {
 	analysisQuery := map[string]interface{}{"RID": RID}
 	analysisResult, err := apiContext.APIConfiguration.DBInstance.FindOneDBAnalysis(analysisQuery)
 	if !tokenValidator.HasAuthorization(attemptToken, analysisResult.URL) {
-		log.Error("GetAnalysis", "ANALYSIS", 1027, RID)
+		log.Error(logActionGetAnalysis, logInfoAnalysis, 1027, RID)
 		reply := map[string]interface{}{"success": false, "error": "permission denied"}
 		return c.JSON(http.StatusUnauthorized, reply)
 	}
 	if err != nil {
 		if err == mgo.ErrNotFound {
-			log.Warning("GetAnalysis", "ANALYSIS", 106, RID)
+			log.Warning(logActionGetAnalysis, logInfoAnalysis, 106, RID)
 			reply := map[string]interface{}{"success": false, "error": "analysis not found"}
 			return c.JSON(http.StatusNotFound, reply)
 		}
-		log.Error("GetAnalysis", "ANALYSIS", 1020, err)
+		log.Error(logActionGetAnalysis, logInfoAnalysis, 1020, err)
 		reply := map[string]interface{}{"success": false, "error": "internal error"}
 		return c.JSON(http.StatusInternalServerError, reply)
 	}
@@ -73,12 +77,12 @@ func ReceiveRequest(c echo.Context) error {
 	repository := types.Repository{}
 	err := c.Bind(&repository)
 	if err != nil {
-		log.Error("ReceiveRequest", "ANALYSIS", 1015, err)
+		log.Error(logActionReceiveRequest, logInfoAnalysis, 1015, err)
 		reply := map[string]interface{}{"success": false, "error": "invalid repository JSON"}
 		return c.JSON(http.StatusBadRequest, reply)
 	}
 	if !tokenValidator.HasAuthorization(attemptToken, repository.URL) {
-		log.Error("ReceivedRequest", "ANALYSIS", 1027, RID)
+		log.Error("ReceivedRequest", logInfoAnalysis, 1027, RID)
 		reply := map[string]interface{}{"success": false, "error": "permission denied"}
 		return c.JSON(http.StatusUnauthorized, reply)
 	}
@@ -97,13 +101,13 @@ func ReceiveRequest(c echo.Context) error {
 		repository.CreatedAt = time.Now()
 		err = apiContext.APIConfiguration.DBInstance.InsertDBRepository(repository)
 		if err != nil {
-			log.Error("ReceiveRequest", "ANALYSIS", 1010, err)
+			log.Error(logActionReceiveRequest, logInfoAnalysis, 1010, err)
 			reply := map[string]interface{}{"success": false, "error": "internal error"}
 			return c.JSON(http.StatusInternalServerError, reply)
 		}
 	} else if err != nil {
 		// step-02-o2: another error searching for repositoryQuery
-		log.Error("ReceiveRequest", "ANALYSIS", 1013, err)
+		log.Error(logActionReceiveRequest, logInfoAnalysis, 1013, err)
 		reply := map[string]interface{}{"success": false, "error": "internal error"}
 		return c.JSON(http.StatusInternalServerError, reply)
 	} else { // err == nil
@@ -114,13 +118,13 @@ func ReceiveRequest(c echo.Context) error {
 			// nice! we can start this analysis!
 		} else if err != nil {
 			// step-03-err: another error searching for analysisQuery
-			log.Error("ReceiveRequest", "ANALYSIS", 1009, err)
+			log.Error(logActionReceiveRequest, logInfoAnalysis, 1009, err)
 			reply := map[string]interface{}{"success": false, "error": "internal error"}
 			return c.JSON(http.StatusInternalServerError, reply)
 		} else { // err == nil
 			// step 03-a: Ops, this analysis is already running!
 			if analysisResult.Status == "running" {
-				log.Warning("ReceiveRequest", "ANALYSIS", 104, analysisResult.URL)
+				log.Warning(logActionReceiveRequest, logInfoAnalysis, 104, analysisResult.URL)
 				reply := map[string]interface{}{"success": false, "error": "an analysis is already in place for this URL and branch"}
 				return c.JSON(http.StatusConflict, reply)
 			}
@@ -128,7 +132,7 @@ func ReceiveRequest(c echo.Context) error {
 	}
 
 	// step 04: lets start this analysis!
-	log.Info("ReceiveRequest", "ANALYSIS", 16, repository.Branch, repository.URL)
+	log.Info(logActionReceiveRequest, logInfoAnalysis, 16, repository.Branch, repository.URL)
 	go analysis.StartAnalysis(RID, repository)
 	reply := map[string]interface{}{"success": true, "error": ""}
 	return c.JSON(http.StatusCreated, reply)

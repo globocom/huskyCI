@@ -18,10 +18,8 @@ func main() {
 	types.FoundVuln = false
 	types.IsJSONoutput = false
 
-	if len(os.Args) > 1 {
-		if os.Args[1] == "JSON" {
-			types.IsJSONoutput = true
-		}
+	if len(os.Args) > 1 && os.Args[1] == "JSON" {
+		types.IsJSONoutput = true
 	}
 
 	// step 0: check and set huskyci-client configuration
@@ -54,11 +52,12 @@ func main() {
 	}
 
 	// step 3: print output based on os.Args(1) parameter received
-	formatOutput := ""
+	types.IsJSONoutput = false
 	if len(os.Args) > 1 {
-		formatOutput = "JSON"
+		types.IsJSONoutput = true
 	}
-	err = analysis.PrintResults(formatOutput, huskyAnalysis)
+
+	err = analysis.PrintResults(huskyAnalysis)
 	if err != nil {
 		fmt.Println("[HUSKYCI][ERROR] Printing output:", err)
 		os.Exit(1)
@@ -79,10 +78,8 @@ func main() {
 		os.Exit(0)
 	}
 
-	if types.FoundVuln {
-		if !types.IsJSONoutput {
-			fmt.Printf("[HUSKYCI][*] Some HIGH/MEDIUM issues were found :(\n")
-		}
+	if types.FoundVuln && !types.IsJSONoutput {
+		fmt.Printf("[HUSKYCI][*] Some HIGH/MEDIUM issues were found :(\n")
 	}
 
 	os.Exit(1)

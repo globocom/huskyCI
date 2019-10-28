@@ -14,14 +14,16 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+const timeRangeQS = "time_range"
+
 var statsQueryStringParams = map[string][]string{
-	"language":        []string{"time_range"},
-	"container":       []string{"time_range"},
-	"analysis":        []string{"time_range"},
-	"repository":      []string{"time_range"},
-	"author":          []string{"time_range"},
-	"severity":        []string{"time_range"},
-	"historyanalysis": []string{"time_range"},
+	"language":        []string{timeRangeQS},
+	"container":       []string{timeRangeQS},
+	"analysis":        []string{timeRangeQS},
+	"repository":      []string{timeRangeQS},
+	"author":          []string{timeRangeQS},
+	"severity":        []string{timeRangeQS},
+	"historyanalysis": []string{timeRangeQS},
 }
 
 const aggHour = 1000 * 60 * 60
@@ -283,7 +285,7 @@ func (mR *MongoRequests) GetMetricByType(metricType string, queryStringParams ma
 
 	for param, values := range validParams {
 		switch param {
-		case "time_range":
+		case timeRangeQS:
 			value := values[len(values)-1]
 			aggrTimeFilterStage := getTimeFilterStage(value)
 			if aggrTimeFilterStage != nil {
@@ -375,7 +377,7 @@ func validMetric(metricType string) bool {
 func validateParams(params map[string][]string) error {
 	for param, values := range params {
 		switch param {
-		case "time_range":
+		case timeRangeQS:
 			value := values[len(values)-1]
 			if !validTimeRange(value) {
 				return errors.New("invalid time_range query string param")
