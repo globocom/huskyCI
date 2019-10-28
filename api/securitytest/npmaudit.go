@@ -109,19 +109,13 @@ func (npmAuditScan *SecTestScanInfo) prepareNpmAuditVulns() {
 		}
 
 		switch issue.Severity {
-		case "info":
-			npmauditVuln.Severity = "low"
-			huskyCInpmauditResults.LowVulns = append(huskyCInpmauditResults.LowVulns, npmauditVuln)
-		case "low":
+		case "info", "low":
 			npmauditVuln.Severity = "low"
 			huskyCInpmauditResults.LowVulns = append(huskyCInpmauditResults.LowVulns, npmauditVuln)
 		case "moderate":
 			npmauditVuln.Severity = "medium"
 			huskyCInpmauditResults.MediumVulns = append(huskyCInpmauditResults.MediumVulns, npmauditVuln)
-		case "high":
-			npmauditVuln.Severity = "high"
-			huskyCInpmauditResults.HighVulns = append(huskyCInpmauditResults.HighVulns, npmauditVuln)
-		case "critical":
+		case "high", "critical":
 			npmauditVuln.Severity = "high"
 			huskyCInpmauditResults.HighVulns = append(huskyCInpmauditResults.HighVulns, npmauditVuln)
 		}

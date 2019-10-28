@@ -32,20 +32,19 @@ func GetCurrentTarget() (*types.Target, error) {
 				return nil, fmt.Errorf("You need to configure a target using target-add command")
 			}
 
-			if target["current"] != nil {
-				// format output for activated target
-				if target["current"].(bool) {
-					currentTarget.Label = k
-					currentTarget.Endpoint = target["endpoint"].(string)
+			// format output for activated target
+			if target["current"] != nil && target["current"].(bool) {
+				currentTarget.Label = k
+				currentTarget.Endpoint = target["endpoint"].(string)
 
-					// check token storage
-					if target["token-storage"] == nil {
-						fmt.Printf("Token storage is not set. You can set it using the -s flag at 'huskyci login' command\n")
-						currentTarget.TokenStorage = ""
-					} else {
-						currentTarget.TokenStorage = target["token-storage"].(string)
-					}
+				// check token storage
+				if target["token-storage"] == nil {
+					fmt.Printf("Token storage is not set. You can set it using the -s flag at 'huskyci login' command\n")
+					currentTarget.TokenStorage = ""
+				} else {
+					currentTarget.TokenStorage = target["token-storage"].(string)
 				}
+
 			}
 		}
 
