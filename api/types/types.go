@@ -154,10 +154,10 @@ type AccessToken struct {
 // for a repository URL
 type DBToken struct {
 	ID         bson.ObjectId `bson:"_id,omitempty"`
-	HuskyToken string        `bson:"huskytoken"`
-	URL        string        `bson:"repositoryURL"`
-	IsValid    bool          `bson:"isValid"`
-	CreatedAt  time.Time     `bson:"createdAt"`
-	Salt       string        `bson:"salt"`
-	UUID       string        `bson:"uuid"`
+	HuskyToken string        `bson:"huskytoken" json:"huskytoken"`
+	URL        string        `bson:"repositoryURL" json:"repositoryURL"`
+	IsValid    bool          `bson:"isValid" json:"isValid"`
+	CreatedAt  time.Time     `bson:"createdAt" json:"createdAt"`
+	Salt       string        `bson:"salt" json:"salt"`
+	UUID       string        `bson:"uuid" json:"uuid"`
 }
