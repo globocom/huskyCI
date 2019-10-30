@@ -17,6 +17,8 @@ type FakeRetriever struct {
 	expectedAnalysis      types.Analysis
 	expectedUser          types.User
 	expectedDBToken       types.DBToken
+	expectedWriteError    error
+	expectedNumberRows    int64
 }
 
 func (fR *FakeRetriever) Connect(
@@ -55,7 +57,7 @@ func (fR *FakeRetriever) RetrieveFromDB(
 }
 
 func (fR *FakeRetriever) WriteInDB(query string, args ...interface{}) (int64, error) {
-	return int64(0), nil
+	return fR.expectedNumberRows, fR.expectedWriteError
 }
 
 var _ = Describe("Postgres", func() {
@@ -430,6 +432,68 @@ var _ = Describe("Postgres", func() {
 					map[string]interface{}{"teste": "teste"})
 				Expect(repos).To(Equal(expectedAnalysisArray))
 				Expect(err).To(BeNil())
+			})
+		})
+	})
+	Describe("InsertDBRepository", func() {
+		Context("When Repository is set with a nil URL", func() {
+			It("Should return the expected error", func() {
+				postgres := PostgresRequests{}
+				expectedError := errors.New("Empty repository URL")
+				Expect(postgres.InsertDBRepository(types.Repository{})).To(Equal(expectedError))
+			})
+		})
+		Context("When WriteInDB returns an error", func() {
+			It("Should return the same error", func() {
+				fakeRetriever := FakeRetriever{
+					expectedWriteError: errors.New("Failed to write data in DB"),
+				}
+				postgres := PostgresRequests{
+					DataRetriever: &fakeRetriever,
+				}
+				repository := types.Repository{
+					URL:       "teste",
+					CreatedAt: time.Now(),
+				}
+				Expect(
+					postgres.InsertDBRepository(repository)).To(
+					Equal(fakeRetriever.expectedWriteError))
+			})
+		})
+		Context("When WriteInDB returns zero rows affected", func() {
+			It("Should return the expected error", func() {
+				fakeRetriever := FakeRetriever{
+					expectedWriteError: nil,
+					expectedNumberRows: 0,
+				}
+				postgres := PostgresRequests{
+					DataRetriever: &fakeRetriever,
+				}
+				repository := types.Repository{
+					URL:       "teste",
+					CreatedAt: time.Now(),
+				}
+				Expect(
+					postgres.InsertDBRepository(repository)).To(
+					Equal(errors.New("No data was inserted")))
+			})
+		})
+		Context("When WriteInDB returns a number of rows affected", func() {
+			It("Should return a nil error", func() {
+				fakeRetriever := FakeRetriever{
+					expectedWriteError: nil,
+					expectedNumberRows: 1,
+				}
+				postgres := PostgresRequests{
+					DataRetriever: &fakeRetriever,
+				}
+				repository := types.Repository{
+					URL:       "teste",
+					CreatedAt: time.Now(),
+				}
+				Expect(
+					postgres.InsertDBRepository(repository)).To(
+					BeNil())
 			})
 		})
 	})
