@@ -2,6 +2,8 @@ package db
 
 import (
 	"errors"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/globocom/huskyCI/api/types"
@@ -18,25 +20,22 @@ func (pR *PostgresRequests) ConnectDB(
 	maxOpenConns int,
 	maxIdleConns int,
 	connMaxLifetime time.Duration) error {
-	if err := pR.Psql.Connect(
+	return pR.DataRetriever.Connect(
 		address,
 		username,
 		password,
 		dbName,
 		maxOpenConns,
 		maxIdleConns,
-		connMaxLifetime); err != nil {
-		return err
-	}
-	return nil
+		connMaxLifetime)
 }
 
 func (pR *PostgresRequests) FindOneDBRepository(
 	mapParams map[string]interface{}) (types.Repository, error) {
-	repositoryResponse := types.Repository{}
+	repositoryResponse := []types.Repository{}
 	repository, ok := mapParams["repositoryURL"]
 	if !ok {
-		return repositoryResponse, errors.New("Could not find repository URL")
+		return types.Repository{}, errors.New("Could not find repository URL")
 	}
 	myQuery := `SELECT 
 					repositoryURL,
@@ -47,31 +46,20 @@ func (pR *PostgresRequests) FindOneDBRepository(
 				WHERE
 					repositoryURL = $1`
 
-	values, err := pR.Psql.GetValuesFromDB(myQuery, repository)
-	if err != nil {
-		return repositoryResponse, err
+	if err := pR.DataRetriever.RetrieveFromDB(myQuery, &repositoryResponse, repository); err != nil {
+		return types.Repository{}, err
 	}
-	if len(values) != 1 {
-		return repositoryResponse, errors.New("Data returned in a not expected format")
-	}
-	jsonValues, err := pR.JsonHandler.Marshal(values[0])
-	if err != nil {
-		return repositoryResponse, err
-	}
-	if err := pR.JsonHandler.Unmarshal(jsonValues, &repositoryResponse); err != nil {
-		return repositoryResponse, err
-	}
-	return repositoryResponse, nil
+	return repositoryResponse[0], nil
 }
 
 func (pR *PostgresRequests) FindOneDBSecurityTest(
 	mapParams map[string]interface{}) (types.SecurityTest, error) {
-	securityResponse := types.SecurityTest{}
+	securityResponse := []types.SecurityTest{}
 	securityTest, ok := mapParams["name"]
 	if !ok {
-		return securityResponse, errors.New("Could not find securityTest name field")
+		return types.SecurityTest{}, errors.New("Could not find securityTest name field")
 	}
-	myQuery := `SELECT 
+	myQuery := `SELECT
 					name,
 					image,
 					imageTag,
@@ -84,20 +72,379 @@ func (pR *PostgresRequests) FindOneDBSecurityTest(
 					securityTest
 				WHERE
 					name = $1`
+	if err := pR.DataRetriever.RetrieveFromDB(myQuery, &securityResponse, securityTest); err != nil {
+		return types.SecurityTest{}, err
+	}
+	return securityResponse[0], nil
+}
 
-	values, err := pR.Psql.GetValuesFromDB(myQuery, securityTest)
-	if err != nil {
-		return securityResponse, err
+func (pR *PostgresRequests) FindOneDBAnalysis(
+	mapParams map[string]interface{}) (types.Analysis, error) {
+	analysisResponse := []types.Analysis{}
+	analysis, ok := mapParams["RID"]
+	if !ok {
+		return types.Analysis{}, errors.New("Could not find RID field")
 	}
-	if len(values) != 1 {
-		return securityResponse, errors.New("Data returned in a not expected format")
+	myQuery := `SELECT
+					RID,
+					repositoryURL,
+					repositoryBranch,
+					commitAuthors,
+					status,
+					result,
+					errorFound,
+					containers,
+					startedAt,
+					finishedAt,
+					codes,
+					huskyciresults
+				FROM
+					analysis
+				WHERE
+					RID = $1`
+
+	if err := pR.DataRetriever.RetrieveFromDB(myQuery, &analysisResponse, analysis); err != nil {
+		return types.Analysis{}, err
 	}
-	jsonValues, err := pR.JsonHandler.Marshal(values[0])
-	if err != nil {
-		return securityResponse, err
+	return analysisResponse[0], nil
+}
+
+func (pR *PostgresRequests) FindOneDBUser(
+	mapParams map[string]interface{}) (types.User, error) {
+	userResponse := []types.User{}
+	user, ok := mapParams["username"]
+	if !ok {
+		return types.User{}, errors.New("Could not find user in DB")
 	}
-	if err := pR.JsonHandler.Unmarshal(jsonValues, &securityResponse); err != nil {
+	myQuery := `SELECT
+					username,
+					password,
+					salt,
+					interations,
+					keylen,
+					hashfunction
+				FROM
+					user
+				WHERE
+					username = $1`
+
+	if err := pR.DataRetriever.RetrieveFromDB(myQuery, &userResponse, user); err != nil {
+		return types.User{}, err
+	}
+	return userResponse[0], nil
+}
+
+func (pR *PostgresRequests) FindOneDBAccessToken(
+	mapParams map[string]interface{}) (types.DBToken, error) {
+	tokenResponse := []types.DBToken{}
+	token, ok := mapParams["uuid"]
+	if !ok {
+		return types.DBToken{}, errors.New("Could not find uuid parameter")
+	}
+	myQuery := `SELECT
+					huskytoken,
+					repositoryURL,
+					isValid,
+					createdAt,
+					salt,
+					uuid
+				FROM
+					accessToken
+				WHERE
+					uuid = $1`
+	if err := pR.DataRetriever.RetrieveFromDB(myQuery, &tokenResponse, token); err != nil {
+		return types.DBToken{}, err
+	}
+	return tokenResponse[0], nil
+}
+
+func (pR *PostgresRequests) FindAllDBRepository(
+	mapParams map[string]interface{}) ([]types.Repository, error) {
+	repositoryResponse := []types.Repository{}
+	query, params := ConfigureQuery(`SELECT * FROM repository`, mapParams)
+	if err := pR.DataRetriever.RetrieveFromDB(query, &repositoryResponse, params); err != nil {
+		return repositoryResponse, err
+	}
+	return repositoryResponse, nil
+}
+
+func (pR *PostgresRequests) FindAllDBSecurityTest(
+	mapParams map[string]interface{}) ([]types.SecurityTest, error) {
+	securityResponse := []types.SecurityTest{}
+	query, params := ConfigureQuery(`SELECT * FROM securityTest`, mapParams)
+	if err := pR.DataRetriever.RetrieveFromDB(query, &securityResponse, params); err != nil {
 		return securityResponse, err
 	}
 	return securityResponse, nil
+}
+
+func (pR *PostgresRequests) FindAllDBAnalysis(
+	mapParams map[string]interface{}) ([]types.Analysis, error) {
+	analysisResponse := []types.Analysis{}
+	query, params := ConfigureQuery(`SELECT * FROM analysis`, mapParams)
+	if err := pR.DataRetriever.RetrieveFromDB(query, &analysisResponse, params); err != nil {
+		return analysisResponse, err
+	}
+	return analysisResponse, nil
+}
+
+func (pR *PostgresRequests) InsertDBRepository(repository types.Repository) error {
+	if repository.URL == "" {
+		return errors.New("Empty repository URL")
+	}
+	repositoryMap := map[string]interface{}{
+		"repositoryURL": repository.URL,
+		"createdAt":     repository.CreatedAt,
+	}
+	finalQuery, values := ConfigureInsertQuery(
+		`INSERT into repository`, repositoryMap)
+	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
+	if err != nil {
+		return err
+	}
+	if rowsAff == int64(0) {
+		return errors.New("No data was inserted")
+	}
+	return nil
+}
+
+func (pR *PostgresRequests) InsertDBSecurityTest(securityTest types.SecurityTest) error {
+	securityMap := map[string]interface{}{
+		"name":           securityTest.Name,
+		"image":          securityTest.Image,
+		"cmd":            securityTest.Cmd,
+		"language":       securityTest.Language,
+		"type":           securityTest.Type,
+		"default":        securityTest.Default,
+		"timeOutSeconds": securityTest.TimeOutInSeconds,
+	}
+	finalQuery, values := ConfigureInsertQuery(
+		`INSERT into securityTest`, securityMap)
+	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
+	if err != nil {
+		return err
+	}
+	if rowsAff == int64(0) {
+		return errors.New("No data was inserted")
+	}
+	return nil
+}
+
+func (pR *PostgresRequests) InsertDBAnalysis(analysis types.Analysis) error {
+	analysisMap := map[string]interface{}{
+		"RID":              analysis.RID,
+		"repositoryURL":    analysis.URL,
+		"repositoryBranch": analysis.Branch,
+		"status":           analysis.Status,
+		"result":           analysis.Result,
+		"containers":       analysis.Containers,
+		"startedAt":        analysis.StartedAt,
+	}
+	finalQuery, values := ConfigureInsertQuery(
+		`INSERT into analysis`, analysisMap)
+	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
+	if err != nil {
+		return err
+	}
+	if rowsAff == int64(0) {
+		return errors.New("No data was inserted")
+	}
+	return nil
+}
+
+func (pR *PostgresRequests) InsertDBUser(user types.User) error {
+	userMap := map[string]interface{}{
+		"username":     user.Username,
+		"password":     user.Password,
+		"salt":         user.Salt,
+		"iterations":   user.Iterations,
+		"keylen":       user.KeyLen,
+		"hashfunction": user.HashFunction,
+	}
+	finalQuery, values := ConfigureInsertQuery(
+		`INSERT into user`, userMap)
+	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
+	if err != nil {
+		return err
+	}
+	if rowsAff == int64(0) {
+		return errors.New("No data was inserted")
+	}
+	return nil
+}
+
+func (pR *PostgresRequests) InsertDBAccessToken(accessToken types.DBToken) error {
+	accessTokenMap := map[string]interface{}{
+		"huskytoken":    accessToken.HuskyToken,
+		"repositoryURL": accessToken.URL,
+		"isValid":       accessToken.IsValid,
+		"createdAt":     accessToken.CreatedAt,
+		"salt":          accessToken.Salt,
+		"uuid":          accessToken.UUID,
+	}
+	finalQuery, values := ConfigureInsertQuery(
+		`INSERT into accessToken`, accessTokenMap)
+	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
+	if err != nil {
+		return err
+	}
+	if rowsAff == int64(0) {
+		return errors.New("No data was inserted")
+	}
+	return nil
+}
+
+func (pR *PostgresRequests) UpdateOneDBRepository(
+	mapParams, updateQuery map[string]interface{}) error {
+	finalQuery, values := ConfigureUpdateQuery(
+		`UPDATE repository`, mapParams, updateQuery)
+	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
+	if err != nil {
+		return err
+	}
+	if rowsAff == int64(0) {
+		return errors.New("No data was updated")
+	}
+	return nil
+}
+
+func (pR *PostgresRequests) UpdateOneDBAnalysis(
+	mapParams map[string]interface{}, updatedAnalysis map[string]interface{}) error {
+	finalQuery, values := ConfigureUpdateQuery(
+		`UPDATE analysis`, mapParams, updatedAnalysis)
+	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
+	if err != nil {
+		return err
+	}
+	if rowsAff == int64(0) {
+		return errors.New("No data was updated")
+	}
+	return nil
+}
+
+func (pR *PostgresRequests) UpdateOneDBUser(
+	mapParams map[string]interface{}, updatedUser types.User) error {
+	updatedUserMap := map[string]interface{}{
+		"username":     updatedUser.Username,
+		"password":     updatedUser.Password,
+		"salt":         updatedUser.Salt,
+		"iterations":   updatedUser.Iterations,
+		"keylen":       updatedUser.KeyLen,
+		"hashfunction": updatedUser.HashFunction,
+	}
+	finalQuery, values := ConfigureUpdateQuery(
+		`UPDATE user`, mapParams, updatedUserMap)
+	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
+	if err != nil {
+		return err
+	}
+	if rowsAff == int64(0) {
+		return errors.New("No data was updated")
+	}
+	return nil
+}
+
+func (pR *PostgresRequests) UpdateOneDBAnalysisContainer(
+	mapParams, updateQuery map[string]interface{}) error {
+	finalQuery, values := ConfigureUpdateQuery(
+		`UPDATE analysis`, mapParams, updateQuery)
+	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
+	if err != nil {
+		return err
+	}
+	if rowsAff == int64(0) {
+		return errors.New("No data was updated")
+	}
+	return nil
+}
+
+func (pR *PostgresRequests) UpdateOneDBAccessToken(
+	mapParams map[string]interface{}, updatedAccessToken types.DBToken) error {
+	updatedAccessTokenMap := map[string]interface{}{
+		"huskytoken":    updatedAccessToken.HuskyToken,
+		"repositoryURL": updatedAccessToken.URL,
+		"isValid":       updatedAccessToken.IsValid,
+		"createdAt":     updatedAccessToken.CreatedAt,
+		"salt":          updatedAccessToken.Salt,
+		"uuid":          updatedAccessToken.UUID,
+	}
+	finalQuery, values := ConfigureUpdateQuery(
+		`UPDATE accessToken`, mapParams, updatedAccessTokenMap)
+	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
+	if err != nil {
+		return err
+	}
+	if rowsAff == int64(0) {
+		return errors.New("No data was updated")
+	}
+	return nil
+}
+
+func (pR *PostgresRequests) GetMetricByType(
+	metricType string, queryStringParams map[string][]string) (interface{}, error) {
+	// TODO: Need to know how to generate the same statistics
+	// as on Mongo
+	return nil, nil
+}
+
+func ConfigureUpdateQuery(
+	query string, searchValues, newValues map[string]interface{}) (string, []interface{}) {
+	valuesQuery := `SET`
+	searchQuery := `WHERE`
+	values := make([]interface{}, 0)
+	i := 1
+	for k, v := range searchValues {
+		if strings.Contains(searchQuery, "=") {
+			searchQuery = fmt.Sprintf("%s AND", searchQuery)
+		}
+		searchQuery = fmt.Sprintf("%s %s = $%d", searchQuery, k, i)
+		i += 1
+		values = append(values, v)
+	}
+	for k, v := range newValues {
+		if strings.Contains(valuesQuery, "=") {
+			valuesQuery = fmt.Sprintf("%s,", valuesQuery)
+		}
+		valuesQuery = fmt.Sprintf("%s %s = $%d", valuesQuery, k, i)
+		i += 1
+		values = append(values, v)
+	}
+	return fmt.Sprintf("%s %s %s", query, valuesQuery, searchQuery), values
+}
+
+func ConfigureInsertQuery(query string, params map[string]interface{}) (string, []interface{}) {
+	values := make([]interface{}, 0)
+	i := 1
+	argsQuery := `(`
+	valuesQuery := `VALUES (`
+	for k, v := range params {
+		if i == len(params) {
+			argsQuery = fmt.Sprintf("%s%s)", argsQuery, k)
+			valuesQuery = fmt.Sprintf("%s$%d)", valuesQuery, i)
+		} else {
+			argsQuery = fmt.Sprintf("%s%s, ", argsQuery, k)
+			valuesQuery = fmt.Sprintf("%s$%d, ", valuesQuery, i)
+		}
+		values = append(values, v)
+		i += 1
+	}
+	query = fmt.Sprintf("%s %s %s", query, argsQuery, valuesQuery)
+	return query, values
+}
+
+func ConfigureQuery(query string, params map[string]interface{}) (string, []interface{}) {
+	if len(params) != 0 {
+		query = fmt.Sprintf("%s WHERE", query)
+	}
+	values := make([]interface{}, 0)
+	i := 1
+	for k, v := range params {
+		if strings.Contains(query, "=") {
+			query = fmt.Sprintf("%s AND", query)
+		}
+		query = fmt.Sprintf("%s %s = $%d", query, k, i)
+		values = append(values, v)
+		i += 1
+	}
+	return query, values
 }

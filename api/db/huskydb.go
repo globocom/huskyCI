@@ -222,7 +222,7 @@ func (mR *MongoRequests) UpsertOneDBSecurityTest(mapParams map[string]interface{
 }
 
 // UpdateOneDBAnalysis checks if a given analysis is present into AnalysisCollection and update it.
-func (mR *MongoRequests) UpdateOneDBAnalysis(mapParams map[string]interface{}, updatedAnalysis types.Analysis) error {
+func (mR *MongoRequests) UpdateOneDBAnalysis(mapParams map[string]interface{}, updatedAnalysis map[string]interface{}) error {
 	analysisQuery := []bson.M{}
 	for k, v := range mapParams {
 		analysisQuery = append(analysisQuery, bson.M{k: v})
