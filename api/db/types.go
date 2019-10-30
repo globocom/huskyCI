@@ -29,7 +29,7 @@ type Requests interface {
 	InsertDBAccessToken(accessToken types.DBToken) error
 	UpdateOneDBRepository(mapParams, updateQuery map[string]interface{}) error
 	UpsertOneDBSecurityTest(mapParams map[string]interface{}, updatedSecurityTest types.SecurityTest) (interface{}, error)
-	UpdateOneDBAnalysis(mapParams map[string]interface{}, updatedAnalysis types.Analysis) error
+	UpdateOneDBAnalysis(mapParams map[string]interface{}, updatedAnalysis map[string]interface{}) error
 	UpdateOneDBUser(mapParams map[string]interface{}, updatedUser types.User) error
 	UpdateOneDBAnalysisContainer(mapParams, updateQuery map[string]interface{}) error
 	UpdateOneDBAccessToken(mapParams map[string]interface{}, updatedAccessToken types.DBToken) error
@@ -45,9 +45,19 @@ type Json interface {
 	Unmarshal(data []byte, v interface{}) error
 }
 
+type DataGenerator interface {
+	Connect(address string, username string, password string, dbName string, maxOpenConns int, maxIdleConns int, connLT time.Duration) error
+	RetrieveFromDB(query string, response interface{}, params ...interface{}) error
+	WriteInDB(query string, args ...interface{}) (int64, error)
+}
+
+type SqlJsonRetrieve struct {
+	Psql        postgres.SQLGen
+	JsonHandler Json
+}
+
 // PostgresRequests implements Requests
 // for Postgres, a relational DB.
 type PostgresRequests struct {
-	Psql        postgres.SQLGen
-	JsonHandler Json
+	DataRetriever DataGenerator
 }
