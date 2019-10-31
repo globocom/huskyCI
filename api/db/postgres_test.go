@@ -19,6 +19,7 @@ type FakeRetriever struct {
 	expectedDBToken       types.DBToken
 	expectedWriteError    error
 	expectedNumberRows    int64
+	expectedConnectError  error
 }
 
 func (fR *FakeRetriever) Connect(
@@ -29,7 +30,7 @@ func (fR *FakeRetriever) Connect(
 	maxOpenConns int,
 	maxIdleConns int,
 	connMaxLifetime time.Duration) error {
-	return nil
+	return fR.expectedConnectError
 }
 
 func (fR *FakeRetriever) RetrieveFromDB(
@@ -61,6 +62,62 @@ func (fR *FakeRetriever) WriteInDB(query string, args ...interface{}) (int64, er
 }
 
 var _ = Describe("Postgres", func() {
+
+	var (
+		securityTest types.SecurityTest
+		repository   types.Repository
+		analysis     types.Analysis
+		user         types.User
+		accessToken  types.DBToken
+		validParams  map[string]interface{}
+		validUpdate  map[string]interface{}
+	)
+
+	BeforeEach(func() {
+		securityTest = types.SecurityTest{
+			Name:  "teste",
+			Image: "teste",
+			Cmd:   "teste",
+		}
+		repository = types.Repository{
+			URL:       "teste",
+			CreatedAt: time.Now(),
+		}
+		analysis = types.Analysis{
+			RID:    "teste",
+			URL:    "teste",
+			Branch: "teste",
+			Status: "teste",
+		}
+		user = types.User{
+			Username: "teste",
+			Password: "teste",
+			Salt:     "teste",
+		}
+		accessToken = types.DBToken{
+			HuskyToken: "teste",
+			URL:        "teste",
+			IsValid:    true,
+		}
+		validParams = map[string]interface{}{"id": "teste"}
+		validUpdate = map[string]interface{}{"changeField": "changeValue"}
+	})
+
+	Describe("ConnectDB", func() {
+		Context("When Connect returns an error", func() {
+			It("Should return the same error", func() {
+				fakeRetriever := FakeRetriever{
+					expectedConnectError: errors.New("Failed to connect to DB"),
+				}
+				postgres := PostgresRequests{
+					DataRetriever: &fakeRetriever,
+				}
+				Expect(postgres.ConnectDB("", "", "", "", time.Second, 0, 0, 0, 0, time.Second)).To(
+					Equal(fakeRetriever.expectedConnectError))
+			})
+		})
+	})
+
 	Describe("FindOneDBRepository", func() {
 		Context("When key map verification returns false", func() {
 			It("Should return an empty Repository with the expected error", func() {
@@ -439,7 +496,7 @@ var _ = Describe("Postgres", func() {
 		Context("When Repository is set with a nil URL", func() {
 			It("Should return the expected error", func() {
 				postgres := PostgresRequests{}
-				expectedError := errors.New("Empty repository URL")
+				expectedError := errors.New("Empty repository data")
 				Expect(postgres.InsertDBRepository(types.Repository{})).To(Equal(expectedError))
 			})
 		})
@@ -450,10 +507,6 @@ var _ = Describe("Postgres", func() {
 				}
 				postgres := PostgresRequests{
 					DataRetriever: &fakeRetriever,
-				}
-				repository := types.Repository{
-					URL:       "teste",
-					CreatedAt: time.Now(),
 				}
 				Expect(
 					postgres.InsertDBRepository(repository)).To(
@@ -469,10 +522,6 @@ var _ = Describe("Postgres", func() {
 				postgres := PostgresRequests{
 					DataRetriever: &fakeRetriever,
 				}
-				repository := types.Repository{
-					URL:       "teste",
-					CreatedAt: time.Now(),
-				}
 				Expect(
 					postgres.InsertDBRepository(repository)).To(
 					Equal(errors.New("No data was inserted")))
@@ -487,16 +536,500 @@ var _ = Describe("Postgres", func() {
 				postgres := PostgresRequests{
 					DataRetriever: &fakeRetriever,
 				}
-				repository := types.Repository{
-					URL:       "teste",
-					CreatedAt: time.Now(),
-				}
 				Expect(
 					postgres.InsertDBRepository(repository)).To(
 					BeNil())
 			})
 		})
 	})
+	Describe("InsertDBSecurityTest", func() {
+		Context("When an empty SecurityTest is passed as an argument", func() {
+			It("Should return the expected error", func() {
+				postgres := PostgresRequests{}
+				Expect(
+					postgres.InsertDBSecurityTest(types.SecurityTest{})).To(
+					Equal(errors.New("Empty SecurityTest data")))
+			})
+		})
+		Context("When WriteInDB returns an error", func() {
+			It("Should return the same error", func() {
+				fakeRetriever := FakeRetriever{
+					expectedWriteError: errors.New("Failed to write data in DB"),
+				}
+				postgres := PostgresRequests{
+					DataRetriever: &fakeRetriever,
+				}
+				Expect(
+					postgres.InsertDBSecurityTest(securityTest)).To(
+					Equal(fakeRetriever.expectedWriteError))
+			})
+		})
+		Context("When WriteInDB returns 0 rows affected", func() {
+			It("Should return the expected error", func() {
+				fakeRetriever := FakeRetriever{
+					expectedWriteError: nil,
+					expectedNumberRows: 0,
+				}
+				postgres := PostgresRequests{
+					DataRetriever: &fakeRetriever,
+				}
+				Expect(postgres.InsertDBSecurityTest(securityTest)).To(
+					Equal(errors.New("No data was inserted")))
+			})
+		})
+		Context("When WriteInDB returns some rows affected", func() {
+			It("Should return a nil error", func() {
+				fakeRetriever := FakeRetriever{
+					expectedWriteError: nil,
+					expectedNumberRows: 1,
+				}
+				postgres := PostgresRequests{
+					DataRetriever: &fakeRetriever,
+				}
+				Expect(postgres.InsertDBSecurityTest(securityTest)).To(BeNil())
+			})
+		})
+	})
+	Describe("InsertDBAnalysis", func() {
+		Context("When an empty Analysis is passed as an argument", func() {
+			It("Should return the expected error", func() {
+				postgres := PostgresRequests{}
+				Expect(
+					postgres.InsertDBAnalysis(types.Analysis{})).To(
+					Equal(errors.New("Empty Analysis data")))
+			})
+		})
+		Context("When WriteInDB returns an error", func() {
+			It("Should return the same error", func() {
+				fakeRetriever := FakeRetriever{
+					expectedWriteError: errors.New("Failed to write data in DB"),
+				}
+				postgres := PostgresRequests{
+					DataRetriever: &fakeRetriever,
+				}
+				Expect(
+					postgres.InsertDBAnalysis(analysis)).To(
+					Equal(fakeRetriever.expectedWriteError))
+			})
+		})
+		Context("When WriteInDB returns 0 rows affected", func() {
+			It("Should return the expected error", func() {
+				fakeRetriever := FakeRetriever{
+					expectedWriteError: nil,
+					expectedNumberRows: 0,
+				}
+				postgres := PostgresRequests{
+					DataRetriever: &fakeRetriever,
+				}
+				Expect(postgres.InsertDBAnalysis(analysis)).To(
+					Equal(errors.New("No data was inserted")))
+			})
+		})
+		Context("When WriteInDB returns some rows affected", func() {
+			It("Should return a nil error", func() {
+				fakeRetriever := FakeRetriever{
+					expectedWriteError: nil,
+					expectedNumberRows: 1,
+				}
+				postgres := PostgresRequests{
+					DataRetriever: &fakeRetriever,
+				}
+				Expect(postgres.InsertDBAnalysis(analysis)).To(BeNil())
+			})
+		})
+	})
+
+	Describe("InsertDBUser", func() {
+		Context("When an empty User is passed as an argument", func() {
+			It("Should return the expected error", func() {
+				postgres := PostgresRequests{}
+				Expect(
+					postgres.InsertDBUser(types.User{})).To(
+					Equal(errors.New("Empty User data")))
+			})
+		})
+		Context("When WriteInDB returns an error", func() {
+			It("Should return the same error", func() {
+				fakeRetriever := FakeRetriever{
+					expectedWriteError: errors.New("Failed to write data in DB"),
+				}
+				postgres := PostgresRequests{
+					DataRetriever: &fakeRetriever,
+				}
+				Expect(
+					postgres.InsertDBUser(user)).To(
+					Equal(fakeRetriever.expectedWriteError))
+			})
+		})
+		Context("When WriteInDB returns 0 rows affected", func() {
+			It("Should return the expected error", func() {
+				fakeRetriever := FakeRetriever{
+					expectedWriteError: nil,
+					expectedNumberRows: 0,
+				}
+				postgres := PostgresRequests{
+					DataRetriever: &fakeRetriever,
+				}
+				Expect(postgres.InsertDBUser(user)).To(
+					Equal(errors.New("No data was inserted")))
+			})
+		})
+		Context("When WriteInDB returns some rows affected", func() {
+			It("Should return a nil error", func() {
+				fakeRetriever := FakeRetriever{
+					expectedWriteError: nil,
+					expectedNumberRows: 1,
+				}
+				postgres := PostgresRequests{
+					DataRetriever: &fakeRetriever,
+				}
+				Expect(postgres.InsertDBUser(user)).To(BeNil())
+			})
+		})
+	})
+
+	Describe("InsertDBAccessToken", func() {
+		Context("When an empty DBToken is passed as an argument", func() {
+			It("Should return the expected error", func() {
+				postgres := PostgresRequests{}
+				Expect(
+					postgres.InsertDBAccessToken(types.DBToken{})).To(
+					Equal(errors.New("Empty DBToken data")))
+			})
+		})
+		Context("When WriteInDB returns an error", func() {
+			It("Should return the same error", func() {
+				fakeRetriever := FakeRetriever{
+					expectedWriteError: errors.New("Failed to write data in DB"),
+				}
+				postgres := PostgresRequests{
+					DataRetriever: &fakeRetriever,
+				}
+				Expect(
+					postgres.InsertDBAccessToken(accessToken)).To(
+					Equal(fakeRetriever.expectedWriteError))
+			})
+		})
+		Context("When WriteInDB returns 0 rows affected", func() {
+			It("Should return the expected error", func() {
+				fakeRetriever := FakeRetriever{
+					expectedWriteError: nil,
+					expectedNumberRows: 0,
+				}
+				postgres := PostgresRequests{
+					DataRetriever: &fakeRetriever,
+				}
+				Expect(postgres.InsertDBAccessToken(accessToken)).To(
+					Equal(errors.New("No data was inserted")))
+			})
+		})
+		Context("When WriteInDB returns some rows affected", func() {
+			It("Should return a nil error", func() {
+				fakeRetriever := FakeRetriever{
+					expectedWriteError: nil,
+					expectedNumberRows: 1,
+				}
+				postgres := PostgresRequests{
+					DataRetriever: &fakeRetriever,
+				}
+				Expect(postgres.InsertDBAccessToken(accessToken)).To(BeNil())
+			})
+		})
+	})
+
+	Describe("UpdateOneDBRepository", func() {
+		Context("When an empty updateQuery is passed as argument", func() {
+			It("Should return the expected error", func() {
+				postgres := PostgresRequests{}
+				mapParams := map[string]interface{}{}
+				updateQuery := map[string]interface{}{}
+				Expect(postgres.UpdateOneDBRepository(mapParams, updateQuery)).To(
+					Equal(errors.New("Empty fields to be updated")))
+			})
+		})
+		Context("When an empty mapParams is passed as argument", func() {
+			It("Should return the expected error for empty mapParams", func() {
+				postgres := PostgresRequests{}
+				mapParams := map[string]interface{}{}
+				updateQuery := map[string]interface{}{"teste": "update"}
+				Expect(postgres.UpdateOneDBRepository(mapParams, updateQuery)).To(
+					Equal(errors.New("Empty fields to search")))
+			})
+		})
+		Context("When WriteInDB returns an error", func() {
+			It("Should return the same error", func() {
+				fakeRetriever := FakeRetriever{
+					expectedWriteError: errors.New("Failed to write in DB"),
+				}
+				postgres := PostgresRequests{
+					DataRetriever: &fakeRetriever,
+				}
+				Expect(postgres.UpdateOneDBRepository(validParams, validUpdate)).To(
+					Equal(fakeRetriever.expectedWriteError))
+			})
+		})
+		Context("When WriteInDB returns 0 rows affected", func() {
+			It("Should return the expected error", func() {
+				fakeRetriever := FakeRetriever{
+					expectedWriteError: nil,
+					expectedNumberRows: 0,
+				}
+				postgres := PostgresRequests{
+					DataRetriever: &fakeRetriever,
+				}
+				Expect(postgres.UpdateOneDBRepository(validParams, validUpdate)).To(
+					Equal(errors.New("No data was updated")))
+			})
+		})
+		Context("When WriteInDB returns a number of rows affected", func() {
+			It("Should return a nil error", func() {
+				fakeRetriever := FakeRetriever{
+					expectedWriteError: nil,
+					expectedNumberRows: 1,
+				}
+				postgres := PostgresRequests{
+					DataRetriever: &fakeRetriever,
+				}
+				Expect(postgres.UpdateOneDBRepository(validParams, validUpdate)).To(
+					BeNil())
+			})
+		})
+	})
+
+	Describe("UpdateOneDBAnalysis", func() {
+		Context("When an empty updateQuery is passed as argument", func() {
+			It("Should return the expected error", func() {
+				postgres := PostgresRequests{}
+				mapParams := map[string]interface{}{}
+				updateQuery := map[string]interface{}{}
+				Expect(postgres.UpdateOneDBAnalysis(mapParams, updateQuery)).To(
+					Equal(errors.New("Empty fields to be updated")))
+			})
+		})
+		Context("When an empty mapParams is passed as argument", func() {
+			It("Should return the expected error for empty mapParams", func() {
+				postgres := PostgresRequests{}
+				mapParams := map[string]interface{}{}
+				updateQuery := map[string]interface{}{"teste": "update"}
+				Expect(postgres.UpdateOneDBAnalysis(mapParams, updateQuery)).To(
+					Equal(errors.New("Empty fields to search")))
+			})
+		})
+		Context("When WriteInDB returns an error", func() {
+			It("Should return the same error", func() {
+				fakeRetriever := FakeRetriever{
+					expectedWriteError: errors.New("Failed to write in DB"),
+				}
+				postgres := PostgresRequests{
+					DataRetriever: &fakeRetriever,
+				}
+				Expect(postgres.UpdateOneDBAnalysis(validParams, validUpdate)).To(
+					Equal(fakeRetriever.expectedWriteError))
+			})
+		})
+		Context("When WriteInDB returns 0 rows affected", func() {
+			It("Should return the expected error", func() {
+				fakeRetriever := FakeRetriever{
+					expectedWriteError: nil,
+					expectedNumberRows: 0,
+				}
+				postgres := PostgresRequests{
+					DataRetriever: &fakeRetriever,
+				}
+				Expect(postgres.UpdateOneDBAnalysis(validParams, validUpdate)).To(
+					Equal(errors.New("No data was updated")))
+			})
+		})
+		Context("When WriteInDB returns a number of rows affected", func() {
+			It("Should return a nil error", func() {
+				fakeRetriever := FakeRetriever{
+					expectedWriteError: nil,
+					expectedNumberRows: 1,
+				}
+				postgres := PostgresRequests{
+					DataRetriever: &fakeRetriever,
+				}
+				Expect(postgres.UpdateOneDBAnalysis(validParams, validUpdate)).To(
+					BeNil())
+			})
+		})
+	})
+
+	Describe("UpdateOneDBUser", func() {
+		Context("When an empty updateUser is passed as argument", func() {
+			It("Should return the expected error", func() {
+				postgres := PostgresRequests{}
+				mapParams := map[string]interface{}{}
+				updateUser := types.User{}
+				Expect(postgres.UpdateOneDBUser(mapParams, updateUser)).To(
+					Equal(errors.New("Empty fields to be updated")))
+			})
+		})
+		Context("When an empty mapParams is passed as argument", func() {
+			It("Should return the expected error for empty mapParams", func() {
+				postgres := PostgresRequests{}
+				mapParams := map[string]interface{}{}
+				Expect(postgres.UpdateOneDBUser(mapParams, user)).To(
+					Equal(errors.New("Empty fields to search")))
+			})
+		})
+		Context("When WriteInDB returns an error", func() {
+			It("Should return the same error", func() {
+				fakeRetriever := FakeRetriever{
+					expectedWriteError: errors.New("Failed to write in DB"),
+				}
+				postgres := PostgresRequests{
+					DataRetriever: &fakeRetriever,
+				}
+				Expect(postgres.UpdateOneDBUser(validParams, user)).To(
+					Equal(fakeRetriever.expectedWriteError))
+			})
+		})
+		Context("When WriteInDB returns 0 rows affected", func() {
+			It("Should return the expected error", func() {
+				fakeRetriever := FakeRetriever{
+					expectedWriteError: nil,
+					expectedNumberRows: 0,
+				}
+				postgres := PostgresRequests{
+					DataRetriever: &fakeRetriever,
+				}
+				Expect(postgres.UpdateOneDBUser(validParams, user)).To(
+					Equal(errors.New("No data was updated")))
+			})
+		})
+		Context("When WriteInDB returns a number of rows affected", func() {
+			It("Should return a nil error", func() {
+				fakeRetriever := FakeRetriever{
+					expectedWriteError: nil,
+					expectedNumberRows: 1,
+				}
+				postgres := PostgresRequests{
+					DataRetriever: &fakeRetriever,
+				}
+				Expect(postgres.UpdateOneDBUser(validParams, user)).To(
+					BeNil())
+			})
+		})
+	})
+
+	Describe("UpdateOneDBAnalysisContainer", func() {
+		Context("When an empty updateQuery is passed as argument", func() {
+			It("Should return the expected error", func() {
+				postgres := PostgresRequests{}
+				mapParams := map[string]interface{}{}
+				updateQuery := map[string]interface{}{}
+				Expect(postgres.UpdateOneDBAnalysisContainer(mapParams, updateQuery)).To(
+					Equal(errors.New("Empty fields to be updated")))
+			})
+		})
+		Context("When an empty mapParams is passed as argument", func() {
+			It("Should return the expected error for empty mapParams", func() {
+				postgres := PostgresRequests{}
+				mapParams := map[string]interface{}{}
+				updateQuery := map[string]interface{}{"teste": "update"}
+				Expect(postgres.UpdateOneDBAnalysisContainer(mapParams, updateQuery)).To(
+					Equal(errors.New("Empty fields to search")))
+			})
+		})
+		Context("When WriteInDB returns an error", func() {
+			It("Should return the same error", func() {
+				fakeRetriever := FakeRetriever{
+					expectedWriteError: errors.New("Failed to write in DB"),
+				}
+				postgres := PostgresRequests{
+					DataRetriever: &fakeRetriever,
+				}
+				Expect(postgres.UpdateOneDBAnalysisContainer(validParams, validUpdate)).To(
+					Equal(fakeRetriever.expectedWriteError))
+			})
+		})
+		Context("When WriteInDB returns 0 rows affected", func() {
+			It("Should return the expected error", func() {
+				fakeRetriever := FakeRetriever{
+					expectedWriteError: nil,
+					expectedNumberRows: 0,
+				}
+				postgres := PostgresRequests{
+					DataRetriever: &fakeRetriever,
+				}
+				Expect(postgres.UpdateOneDBAnalysisContainer(validParams, validUpdate)).To(
+					Equal(errors.New("No data was updated")))
+			})
+		})
+		Context("When WriteInDB returns a number of rows affected", func() {
+			It("Should return a nil error", func() {
+				fakeRetriever := FakeRetriever{
+					expectedWriteError: nil,
+					expectedNumberRows: 1,
+				}
+				postgres := PostgresRequests{
+					DataRetriever: &fakeRetriever,
+				}
+				Expect(postgres.UpdateOneDBAnalysisContainer(validParams, validUpdate)).To(
+					BeNil())
+			})
+		})
+	})
+
+	Describe("UpdateOneDBAccessToken", func() {
+		Context("When an empty updatedAccessToken is passed as argument", func() {
+			It("Should return the expected error", func() {
+				postgres := PostgresRequests{}
+				mapParams := map[string]interface{}{}
+				updatedAccessToken := types.DBToken{}
+				Expect(postgres.UpdateOneDBAccessToken(mapParams, updatedAccessToken)).To(
+					Equal(errors.New("Empty fields to be updated")))
+			})
+		})
+		Context("When an empty mapParams is passed as argument", func() {
+			It("Should return the expected error for empty mapParams", func() {
+				postgres := PostgresRequests{}
+				mapParams := map[string]interface{}{}
+				Expect(postgres.UpdateOneDBAccessToken(mapParams, accessToken)).To(
+					Equal(errors.New("Empty fields to search")))
+			})
+		})
+		Context("When WriteInDB returns an error", func() {
+			It("Should return the same error", func() {
+				fakeRetriever := FakeRetriever{
+					expectedWriteError: errors.New("Failed to write in DB"),
+				}
+				postgres := PostgresRequests{
+					DataRetriever: &fakeRetriever,
+				}
+				Expect(postgres.UpdateOneDBAccessToken(validParams, accessToken)).To(
+					Equal(fakeRetriever.expectedWriteError))
+			})
+		})
+		Context("When WriteInDB returns 0 rows affected", func() {
+			It("Should return the expected error", func() {
+				fakeRetriever := FakeRetriever{
+					expectedWriteError: nil,
+					expectedNumberRows: 0,
+				}
+				postgres := PostgresRequests{
+					DataRetriever: &fakeRetriever,
+				}
+				Expect(postgres.UpdateOneDBAccessToken(validParams, accessToken)).To(
+					Equal(errors.New("No data was updated")))
+			})
+		})
+		Context("When WriteInDB returns a number of rows affected", func() {
+			It("Should return a nil error", func() {
+				fakeRetriever := FakeRetriever{
+					expectedWriteError: nil,
+					expectedNumberRows: 1,
+				}
+				postgres := PostgresRequests{
+					DataRetriever: &fakeRetriever,
+				}
+				Expect(postgres.UpdateOneDBAccessToken(validParams, accessToken)).To(
+					BeNil())
+			})
+		})
+	})
+
 	Describe("ConfigureInsertQuery", func() {
 		Context("When an Insert query is passed with some params", func() {
 			It("Should return the expected query with the params to be inserted", func() {
