@@ -36,22 +36,22 @@ func (fR *FakeRetriever) Connect(
 func (fR *FakeRetriever) RetrieveFromDB(
 	query string, response interface{}, params ...interface{}) error {
 	if fR.expectedRetrieveError == nil {
-		switch response.(type) {
+		switch r := response.(type) {
 		case *[]types.Repository:
-			newV := response.(*[]types.Repository)
-			(*newV) = append((*newV), fR.expectedRepository)
+			// newV := response.(*[]types.Repository)
+			(*r) = append((*r), fR.expectedRepository)
 		case *[]types.SecurityTest:
-			newV := response.(*[]types.SecurityTest)
-			(*newV) = append((*newV), fR.expectedSecurityTest)
+			// newV := response.(*[]types.SecurityTest)
+			(*r) = append((*r), fR.expectedSecurityTest)
 		case *[]types.Analysis:
-			newV := response.(*[]types.Analysis)
-			(*newV) = append((*newV), fR.expectedAnalysis)
+			// newV := response.(*[]types.Analysis)
+			(*r) = append((*r), fR.expectedAnalysis)
 		case *[]types.User:
-			newV := response.(*[]types.User)
-			(*newV) = append((*newV), fR.expectedUser)
+			// newV := response.(*[]types.User)
+			(*r) = append((*r), fR.expectedUser)
 		case *[]types.DBToken:
-			newV := response.(*[]types.DBToken)
-			(*newV) = append((*newV), fR.expectedDBToken)
+			// newV := response.(*[]types.DBToken)
+			(*r) = append((*r), fR.expectedDBToken)
 		}
 	}
 	return fR.expectedRetrieveError

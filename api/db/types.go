@@ -40,20 +40,27 @@ type Requests interface {
 // for Mongo, a non-relational DB.
 type MongoRequests struct{}
 
-type Json interface {
+// JSON interface defines the functions that will threat data
+// to be transformed to JSON or a JSON that will be mapped in
+// a struct.
+type JSON interface {
 	Marshal(v interface{}) ([]byte, error)
 	Unmarshal(data []byte, v interface{}) error
 }
 
+// DataGenerator defines the functions that will interact directly
+// with DB functions. It abstracts the database functions
 type DataGenerator interface {
 	Connect(address string, username string, password string, dbName string, maxOpenConns int, maxIdleConns int, connLT time.Duration) error
 	RetrieveFromDB(query string, response interface{}, params ...interface{}) error
 	WriteInDB(query string, args ...interface{}) (int64, error)
 }
 
-type SqlJsonRetrieve struct {
+// SQLJSONRetrieve implements DataGenerator that will interact with
+// the Postgres functions. This struct will DB data in JSON format.
+type SQLJSONRetrieve struct {
 	Psql        postgres.SQLGen
-	JsonHandler Json
+	JSONHandler JSON
 }
 
 // PostgresRequests implements Requests

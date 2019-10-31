@@ -9,6 +9,9 @@ import (
 	"github.com/globocom/huskyCI/api/types"
 )
 
+// ConnectDB will call Connect function
+// and try to establish a connection with
+// Postgres.
 func (pR *PostgresRequests) ConnectDB(
 	address string,
 	dbName string,
@@ -30,6 +33,7 @@ func (pR *PostgresRequests) ConnectDB(
 		connMaxLifetime)
 }
 
+// FindOneDBRepository checks if a given repository is present into repository table.
 func (pR *PostgresRequests) FindOneDBRepository(
 	mapParams map[string]interface{}) (types.Repository, error) {
 	repositoryResponse := []types.Repository{}
@@ -52,6 +56,7 @@ func (pR *PostgresRequests) FindOneDBRepository(
 	return repositoryResponse[0], nil
 }
 
+// FindOneDBSecurityTest checks if a given securityTest is present into securityTest table.
 func (pR *PostgresRequests) FindOneDBSecurityTest(
 	mapParams map[string]interface{}) (types.SecurityTest, error) {
 	securityResponse := []types.SecurityTest{}
@@ -78,6 +83,7 @@ func (pR *PostgresRequests) FindOneDBSecurityTest(
 	return securityResponse[0], nil
 }
 
+// FindOneDBAnalysis checks if a given analysis is present into analysis table.
 func (pR *PostgresRequests) FindOneDBAnalysis(
 	mapParams map[string]interface{}) (types.Analysis, error) {
 	analysisResponse := []types.Analysis{}
@@ -109,6 +115,7 @@ func (pR *PostgresRequests) FindOneDBAnalysis(
 	return analysisResponse[0], nil
 }
 
+// FindOneDBUser checks if a given user is present into user table.
 func (pR *PostgresRequests) FindOneDBUser(
 	mapParams map[string]interface{}) (types.User, error) {
 	userResponse := []types.User{}
@@ -134,6 +141,7 @@ func (pR *PostgresRequests) FindOneDBUser(
 	return userResponse[0], nil
 }
 
+// FindOneDBAccessToken checks if a given accessToken exists in accessToken table.
 func (pR *PostgresRequests) FindOneDBAccessToken(
 	mapParams map[string]interface{}) (types.DBToken, error) {
 	tokenResponse := []types.DBToken{}
@@ -158,6 +166,7 @@ func (pR *PostgresRequests) FindOneDBAccessToken(
 	return tokenResponse[0], nil
 }
 
+// FindAllDBRepository returns all Repository of a given query present into repository table.
 func (pR *PostgresRequests) FindAllDBRepository(
 	mapParams map[string]interface{}) ([]types.Repository, error) {
 	repositoryResponse := []types.Repository{}
@@ -168,6 +177,8 @@ func (pR *PostgresRequests) FindAllDBRepository(
 	return repositoryResponse, nil
 }
 
+// FindAllDBSecurityTest returns all SecurityTests of a given query present 
+// into security Test table.
 func (pR *PostgresRequests) FindAllDBSecurityTest(
 	mapParams map[string]interface{}) ([]types.SecurityTest, error) {
 	securityResponse := []types.SecurityTest{}
@@ -178,6 +189,7 @@ func (pR *PostgresRequests) FindAllDBSecurityTest(
 	return securityResponse, nil
 }
 
+// FindAllDBAnalysis returns all Analysis of a given query present into analysis table.
 func (pR *PostgresRequests) FindAllDBAnalysis(
 	mapParams map[string]interface{}) ([]types.Analysis, error) {
 	analysisResponse := []types.Analysis{}
@@ -188,6 +200,7 @@ func (pR *PostgresRequests) FindAllDBAnalysis(
 	return analysisResponse, nil
 }
 
+// InsertDBRepository inserts a new repository into repository table.
 func (pR *PostgresRequests) InsertDBRepository(repository types.Repository) error {
 	if (types.Repository{}) == repository {
 		return errors.New("Empty repository data")
@@ -208,6 +221,7 @@ func (pR *PostgresRequests) InsertDBRepository(repository types.Repository) erro
 	return nil
 }
 
+// InsertDBSecurityTest inserts a new securityTest into securityTest table.
 func (pR *PostgresRequests) InsertDBSecurityTest(securityTest types.SecurityTest) error {
 	if (types.SecurityTest{}) == securityTest {
 		return errors.New("Empty SecurityTest data")
@@ -233,6 +247,7 @@ func (pR *PostgresRequests) InsertDBSecurityTest(securityTest types.SecurityTest
 	return nil
 }
 
+// InsertDBAnalysis inserts a new analysis into analysis table.
 func (pR *PostgresRequests) InsertDBAnalysis(analysis types.Analysis) error {
 	if analysis.URL == "" {
 		return errors.New("Empty Analysis data")
@@ -258,6 +273,7 @@ func (pR *PostgresRequests) InsertDBAnalysis(analysis types.Analysis) error {
 	return nil
 }
 
+// InsertDBUser inserts a new user into user table.
 func (pR *PostgresRequests) InsertDBUser(user types.User) error {
 	if (types.User{}) == user {
 		return errors.New("Empty User data")
@@ -282,6 +298,7 @@ func (pR *PostgresRequests) InsertDBUser(user types.User) error {
 	return nil
 }
 
+// InsertDBAccessToken inserts a new access into accessToken table.
 func (pR *PostgresRequests) InsertDBAccessToken(accessToken types.DBToken) error {
 	if (types.DBToken{}) == accessToken {
 		return errors.New("Empty DBToken data")
@@ -306,6 +323,9 @@ func (pR *PostgresRequests) InsertDBAccessToken(accessToken types.DBToken) error
 	return nil
 }
 
+
+// UpdateOneDBRepository checks if a given repository is present into repository table
+// and update it.
 func (pR *PostgresRequests) UpdateOneDBRepository(
 	mapParams, updateQuery map[string]interface{}) error {
 	if len(updateQuery) == 0 {
@@ -326,6 +346,7 @@ func (pR *PostgresRequests) UpdateOneDBRepository(
 	return nil
 }
 
+// UpdateOneDBAnalysis checks if a given analysis is present into analysis table and update it.
 func (pR *PostgresRequests) UpdateOneDBAnalysis(
 	mapParams map[string]interface{}, updatedAnalysis map[string]interface{}) error {
 	if len(updatedAnalysis) == 0 {
@@ -346,6 +367,7 @@ func (pR *PostgresRequests) UpdateOneDBAnalysis(
 	return nil
 }
 
+// UpdateOneDBUser checks if a given user is present into user table and update it.
 func (pR *PostgresRequests) UpdateOneDBUser(
 	mapParams map[string]interface{}, updatedUser types.User) error {
 	if (types.User{}) == updatedUser {
@@ -374,6 +396,8 @@ func (pR *PostgresRequests) UpdateOneDBUser(
 	return nil
 }
 
+// UpdateOneDBAnalysisContainer checks if a given analysis is present into analysis table
+// and update the container associated in it.
 func (pR *PostgresRequests) UpdateOneDBAnalysisContainer(
 	mapParams, updateQuery map[string]interface{}) error {
 	if len(updateQuery) == 0 {
@@ -394,6 +418,7 @@ func (pR *PostgresRequests) UpdateOneDBAnalysisContainer(
 	return nil
 }
 
+// UpdateOneDBAccessToken checks if a given access token is present into accessToken and update it.
 func (pR *PostgresRequests) UpdateOneDBAccessToken(
 	mapParams map[string]interface{}, updatedAccessToken types.DBToken) error {
 	if (types.DBToken{}) == updatedAccessToken {
@@ -422,6 +447,7 @@ func (pR *PostgresRequests) UpdateOneDBAccessToken(
 	return nil
 }
 
+// GetMetricByType returns data about the metric received
 func (pR *PostgresRequests) GetMetricByType(
 	metricType string, queryStringParams map[string][]string) (interface{}, error) {
 	// TODO: Need to know how to generate the same statistics
@@ -429,6 +455,8 @@ func (pR *PostgresRequests) GetMetricByType(
 	return nil, nil
 }
 
+// ConfigureUpdateQuery will receive a partial update query and mount the final query with
+// all data to be set and the search parameters related to the row to be changed.
 func ConfigureUpdateQuery(
 	query string, searchValues, newValues map[string]interface{}) (string, []interface{}) {
 	valuesQuery := ""
@@ -443,7 +471,7 @@ func ConfigureUpdateQuery(
 			searchQuery = fmt.Sprintf("%s AND", searchQuery)
 		}
 		searchQuery = fmt.Sprintf("%s %s = $%d", searchQuery, k, i)
-		i += 1
+		i++
 		values = append(values, v)
 	}
 	for k, v := range newValues {
@@ -454,7 +482,7 @@ func ConfigureUpdateQuery(
 			valuesQuery = fmt.Sprintf("%s,", valuesQuery)
 		}
 		valuesQuery = fmt.Sprintf("%s %s = $%d", valuesQuery, k, i)
-		i += 1
+		i++
 		values = append(values, v)
 	}
 	if valuesQuery != "" {
@@ -466,6 +494,8 @@ func ConfigureUpdateQuery(
 	return query, values
 }
 
+// ConfigureInsertQuery will receive a partial query and mount the final query with all data
+// to be inserted in the table with its related fields.
 func ConfigureInsertQuery(query string, params map[string]interface{}) (string, []interface{}) {
 	values := make([]interface{}, 0)
 	i := 1
@@ -480,12 +510,14 @@ func ConfigureInsertQuery(query string, params map[string]interface{}) (string, 
 			valuesQuery = fmt.Sprintf("%s$%d, ", valuesQuery, i)
 		}
 		values = append(values, v)
-		i += 1
+		i++
 	}
 	query = fmt.Sprintf("%s %s %s", query, argsQuery, valuesQuery)
 	return query, values
 }
 
+// ConfigureQuery will receive a partial search query and will mount the final query with the
+// search if it exists.
 func ConfigureQuery(query string, params map[string]interface{}) (string, []interface{}) {
 	if len(params) != 0 {
 		query = fmt.Sprintf("%s WHERE", query)
@@ -498,7 +530,7 @@ func ConfigureQuery(query string, params map[string]interface{}) (string, []inte
 		}
 		query = fmt.Sprintf("%s %s = $%d", query, k, i)
 		values = append(values, v)
-		i += 1
+		i++
 	}
 	return query, values
 }
