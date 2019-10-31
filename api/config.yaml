@@ -302,7 +302,7 @@ gitleaks:
     git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneGitleaks
     if [ $? -eq 0 ]; then
         touch /tmp/results.json
-        $(which gitleaks) --log=warn --report=/tmp/results.json --repo-path=./code > /tmp/errorGitleaks
+        $(which gitleaks) --log=warn --report=/tmp/results.json --repo-path=./code --repo-config > /tmp/errorGitleaks
         if [ $? -eq 2 ]; then
             echo -n 'ERROR_RUNNING_GITLEAKS'
             cat /tmp/errorGitleaks
