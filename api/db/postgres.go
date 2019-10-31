@@ -189,8 +189,8 @@ func (pR *PostgresRequests) FindAllDBAnalysis(
 }
 
 func (pR *PostgresRequests) InsertDBRepository(repository types.Repository) error {
-	if repository.URL == "" {
-		return errors.New("Empty repository URL")
+	if (types.Repository{}) == repository {
+		return errors.New("Empty repository data")
 	}
 	repositoryMap := map[string]interface{}{
 		"repositoryURL": repository.URL,
@@ -209,6 +209,9 @@ func (pR *PostgresRequests) InsertDBRepository(repository types.Repository) erro
 }
 
 func (pR *PostgresRequests) InsertDBSecurityTest(securityTest types.SecurityTest) error {
+	if (types.SecurityTest{}) == securityTest {
+		return errors.New("Empty SecurityTest data")
+	}
 	securityMap := map[string]interface{}{
 		"name":           securityTest.Name,
 		"image":          securityTest.Image,
@@ -231,6 +234,9 @@ func (pR *PostgresRequests) InsertDBSecurityTest(securityTest types.SecurityTest
 }
 
 func (pR *PostgresRequests) InsertDBAnalysis(analysis types.Analysis) error {
+	if analysis.URL == "" {
+		return errors.New("Empty Analysis data")
+	}
 	analysisMap := map[string]interface{}{
 		"RID":              analysis.RID,
 		"repositoryURL":    analysis.URL,
@@ -253,6 +259,9 @@ func (pR *PostgresRequests) InsertDBAnalysis(analysis types.Analysis) error {
 }
 
 func (pR *PostgresRequests) InsertDBUser(user types.User) error {
+	if (types.User{}) == user {
+		return errors.New("Empty User data")
+	}
 	userMap := map[string]interface{}{
 		"username":     user.Username,
 		"password":     user.Password,
@@ -274,6 +283,9 @@ func (pR *PostgresRequests) InsertDBUser(user types.User) error {
 }
 
 func (pR *PostgresRequests) InsertDBAccessToken(accessToken types.DBToken) error {
+	if (types.DBToken{}) == accessToken {
+		return errors.New("Empty DBToken data")
+	}
 	accessTokenMap := map[string]interface{}{
 		"huskytoken":    accessToken.HuskyToken,
 		"repositoryURL": accessToken.URL,
@@ -296,6 +308,12 @@ func (pR *PostgresRequests) InsertDBAccessToken(accessToken types.DBToken) error
 
 func (pR *PostgresRequests) UpdateOneDBRepository(
 	mapParams, updateQuery map[string]interface{}) error {
+	if len(updateQuery) == 0 {
+		return errors.New("Empty fields to be updated")
+	}
+	if len(mapParams) == 0 {
+		return errors.New("Empty fields to search")
+	}
 	finalQuery, values := ConfigureUpdateQuery(
 		`UPDATE repository`, mapParams, updateQuery)
 	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
@@ -310,6 +328,12 @@ func (pR *PostgresRequests) UpdateOneDBRepository(
 
 func (pR *PostgresRequests) UpdateOneDBAnalysis(
 	mapParams map[string]interface{}, updatedAnalysis map[string]interface{}) error {
+	if len(updatedAnalysis) == 0 {
+		return errors.New("Empty fields to be updated")
+	}
+	if len(mapParams) == 0 {
+		return errors.New("Empty fields to search")
+	}
 	finalQuery, values := ConfigureUpdateQuery(
 		`UPDATE analysis`, mapParams, updatedAnalysis)
 	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
@@ -324,6 +348,12 @@ func (pR *PostgresRequests) UpdateOneDBAnalysis(
 
 func (pR *PostgresRequests) UpdateOneDBUser(
 	mapParams map[string]interface{}, updatedUser types.User) error {
+	if (types.User{}) == updatedUser {
+		return errors.New("Empty fields to be updated")
+	}
+	if len(mapParams) == 0 {
+		return errors.New("Empty fields to search")
+	}
 	updatedUserMap := map[string]interface{}{
 		"username":     updatedUser.Username,
 		"password":     updatedUser.Password,
@@ -346,6 +376,12 @@ func (pR *PostgresRequests) UpdateOneDBUser(
 
 func (pR *PostgresRequests) UpdateOneDBAnalysisContainer(
 	mapParams, updateQuery map[string]interface{}) error {
+	if len(updateQuery) == 0 {
+		return errors.New("Empty fields to be updated")
+	}
+	if len(mapParams) == 0 {
+		return errors.New("Empty fields to search")
+	}
 	finalQuery, values := ConfigureUpdateQuery(
 		`UPDATE analysis`, mapParams, updateQuery)
 	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
@@ -360,6 +396,12 @@ func (pR *PostgresRequests) UpdateOneDBAnalysisContainer(
 
 func (pR *PostgresRequests) UpdateOneDBAccessToken(
 	mapParams map[string]interface{}, updatedAccessToken types.DBToken) error {
+	if (types.DBToken{}) == updatedAccessToken {
+		return errors.New("Empty fields to be updated")
+	}
+	if len(mapParams) == 0 {
+		return errors.New("Empty fields to search")
+	}
 	updatedAccessTokenMap := map[string]interface{}{
 		"huskytoken":    updatedAccessToken.HuskyToken,
 		"repositoryURL": updatedAccessToken.URL,
@@ -389,11 +431,14 @@ func (pR *PostgresRequests) GetMetricByType(
 
 func ConfigureUpdateQuery(
 	query string, searchValues, newValues map[string]interface{}) (string, []interface{}) {
-	valuesQuery := `SET`
-	searchQuery := `WHERE`
+	valuesQuery := ""
+	searchQuery := ""
 	values := make([]interface{}, 0)
 	i := 1
 	for k, v := range searchValues {
+		if !strings.Contains(searchQuery, "WHERE") {
+			searchQuery = `WHERE`
+		}
 		if strings.Contains(searchQuery, "=") {
 			searchQuery = fmt.Sprintf("%s AND", searchQuery)
 		}
@@ -402,6 +447,9 @@ func ConfigureUpdateQuery(
 		values = append(values, v)
 	}
 	for k, v := range newValues {
+		if !strings.Contains(valuesQuery, "SET") {
+			valuesQuery = `SET`
+		}
 		if strings.Contains(valuesQuery, "=") {
 			valuesQuery = fmt.Sprintf("%s,", valuesQuery)
 		}
@@ -409,7 +457,13 @@ func ConfigureUpdateQuery(
 		i += 1
 		values = append(values, v)
 	}
-	return fmt.Sprintf("%s %s %s", query, valuesQuery, searchQuery), values
+	if valuesQuery != "" {
+		query = fmt.Sprintf("%s %s", query, valuesQuery)
+	}
+	if searchQuery != "" {
+		query = fmt.Sprintf("%s %s", query, searchQuery)
+	}
+	return query, values
 }
 
 func ConfigureInsertQuery(query string, params map[string]interface{}) (string, []interface{}) {
