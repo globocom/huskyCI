@@ -345,6 +345,8 @@ func (pR *PostgresRequests) UpdateOneDBRepository(
 	return nil
 }
 
+// UpsertOneDBSecurityTest checks if a given securityTest is present into securityTest
+// and update it. If not, it will insert a new entry.
 func (pR *PostgresRequests) UpsertOneDBSecurityTest(
 	mapParams map[string]interface{}, updatedSecurityTest types.SecurityTest) (interface{}, error) {
 	if (types.SecurityTest{}) == updatedSecurityTest {
@@ -376,14 +378,18 @@ func (pR *PostgresRequests) UpsertOneDBSecurityTest(
 	return rowsAff, nil
 }
 
+// ConfigureUpsertQuery will receive a partial query and mount the final query 
+// CONFLICT statement so it will allow Postgres make an Upsert in the entry
+// based on the conflicted columns passed in this statement. An UPDATE query is build
+// with the related values to be updated in case of a conflict.
 func ConfigureUpsertQuery(
 	query string, searchValues, newValues map[string]interface{}) (string, []interface{}) {
 	insertQuery, values := ConfigureInsertQuery(query, newValues)
 	conflictQuery := ""
 	i := 1
-	for k, _ := range searchValues {
+	for k := range searchValues {
 		if !strings.Contains(conflictQuery, "CONFLICT") {
-			conflictQuery = fmt.Sprintf("%s", `ON CONFLICT (`)
+			conflictQuery = `ON CONFLICT (`
 		}
 		if i == len(searchValues) {
 			conflictQuery = fmt.Sprintf("%s%s)", conflictQuery, k)
@@ -393,7 +399,7 @@ func ConfigureUpsertQuery(
 		i++
 	}
 	updateQuery := ""
-	for k, _ := range newValues {
+	for k := range newValues {
 		if !strings.Contains(updateQuery, "UPDATE") {
 			updateQuery = `DO UPDATE SET`
 		}
