@@ -1,0 +1,161 @@
+{
+    "_id" : "5db068f7fdd8358b1c45812b",
+    "RID" : "rbezHm5hnMUZ1BVxSNoWjbYft3xpRF0p",
+    "repositoryURL" : "https://github.com/globocom/huskyCI.git",
+    "repositoryBranch" : "vulns-Ruby",
+    "status" : "finished",
+    "result" : "failed",
+    "containers" : [ 
+        {
+            "CID" : "74db8409d507d1a182dcd678a3ff6b0ad205976e3a9bbbd20e0432e24c4f026a",
+            "securityTest" : {
+                "_id" : "5db06089fdd8358b1c4576ff",
+                "name" : "gitauthors",
+                "image" : "huskyci/gitauthors",
+                "imageTag" : "2.18.1",
+                "cmd" : "mkdir -p ~/.ssh &&\necho 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&\nchmod 600 ~/.ssh/huskyci_id_rsa &&\necho \"IdentityFile ~/.ssh/huskyci_id_rsa\" >> /etc/ssh/ssh_config &&\necho \"StrictHostKeyChecking no\" >> /etc/ssh/ssh_config &&\ngit clone %GIT_REPO% code --quiet 2> /tmp/errorGitCloneEnry\ncd code\ngit checkout %GIT_BRANCH% --quiet\nif [ $? -eq 0 ]; then\n  for i in $(git log origin/master.. --pretty=\"%ae\" | sort -u); do\n    jsonMiddle=\"\\\"$i\\\",$jsonMiddle\"\n  done\n  length=${#jsonMiddle}\n  endindex=$(expr $length - 1)\n  authors=\"${jsonMiddle:0:$endindex}\"\n  echo \"{\\\"authors\\\":[$authors]}\"\nelse\n  echo \"ERROR_CLONING\"\n  cat /tmp/errorGitCloneEnry\nfi\n",
+                "type" : "Generic",
+                "language" : "",
+                "default" : true,
+                "timeOutSeconds" : 60
+            },
+            "cStatus" : "finished",
+            "cOutput" : "{\"authors\":[\"rafaveira3@gmail.com\",\"daniel.carlier@hotmail.com\"]}\r\n",
+            "cResult" : "passed",
+            "cInfo" : "No issues found.",
+            "startedAt" : "2019-10-23T11:51:52.960-03:00",
+            "finishedAt" : "2019-10-23T11:52:00.938-03:00"
+        }, 
+        {
+            "CID" : "3c2805a2fd61fff9e50d048f47cd89eb630aacd977a82ec2b7e65c468e7ac7d9",
+            "securityTest" : {
+                "_id" : "5db06089fdd8358b1c457703",
+                "name" : "brakeman",
+                "image" : "huskyci/brakeman",
+                "imageTag" : "4.6.1",
+                "cmd" : "mkdir -p ~/.ssh &&\necho 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&\nchmod 600 ~/.ssh/huskyci_id_rsa &&\necho \"IdentityFile ~/.ssh/huskyci_id_rsa\" >> /etc/ssh/ssh_config &&\necho \"StrictHostKeyChecking no\" >> /etc/ssh/ssh_config &&\ngit clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneBrakeman\nif [ $? -eq 0 ]; then\n  if [ -d /code/app ]; then\n    brakeman -q -o results.json /code\n    jq -j -M -c . results.json\n  else\n    mv code app\n    brakeman -q -o results.json .\n    jq -j -M -c . results.json\n  fi\nelse\n  echo \"ERROR_CLONING\"\n  cat /tmp/errorGitCloneBrakeman\nfi\n",
+                "type" : "Language",
+                "language" : "Ruby",
+                "default" : true,
+                "timeOutSeconds" : 360
+            },
+            "cStatus" : "finished",
+            "cOutput" : "{\"scan_info\":{\"app_path\":\"/code\",\"rails_version\":\"6.0.0\",\"security_warnings\":1,\"start_time\":\"2019-10-23 14:52:45 +0000\",\"end_time\":\"2019-10-23 14:52:45 +0000\",\"duration\":0.1221625,\"checks_performed\":[\"BasicAuth\",\"BasicAuthTimingAttack\",\"ContentTag\",\"CookieSerialization\",\"CreateWith\",\"CrossSiteScripting\",\"DefaultRoutes\",\"Deserialize\",\"DetailedExceptions\",\"DigestDoS\",\"DynamicFinders\",\"EscapeFunction\",\"Evaluation\",\"Execute\",\"FileAccess\",\"FileDisclosure\",\"FilterSkipping\",\"ForgerySetting\",\"HeaderDoS\",\"I18nXSS\",\"JRubyXML\",\"JSONEncoding\",\"JSONParsing\",\"LinkTo\",\"LinkToHref\",\"MailTo\",\"MassAssignment\",\"MimeTypeDoS\",\"ModelAttrAccessible\",\"ModelAttributes\",\"ModelSerialize\",\"NestedAttributes\",\"NestedAttributesBypass\",\"NumberToCurrency\",\"PermitAttributes\",\"QuoteTableName\",\"Redirect\",\"RegexDoS\",\"Render\",\"RenderDoS\",\"RenderInline\",\"ResponseSplitting\",\"RouteDoS\",\"SQL\",\"SQLCVEs\",\"SSLVerify\",\"SafeBufferManipulation\",\"SanitizeMethods\",\"SelectTag\",\"SelectVulnerability\",\"Send\",\"SendFile\",\"SessionManipulation\",\"SessionSettings\",\"SimpleFormat\",\"SingleQuotes\",\"SkipBeforeFilter\",\"SprocketsPathTraversal\",\"StripTags\",\"SymbolDoSCVE\",\"TranslateBug\",\"UnsafeReflection\",\"ValidationRegex\",\"WithoutProtection\",\"XMLDoS\",\"YAMLParsing\"],\"number_of_controllers\":1,\"number_of_models\":1,\"number_of_templates\":2,\"ruby_version\":\"2.4.9\",\"brakeman_version\":\"4.6.1\"},\"warnings\":[{\"warning_type\":\"Command Injection\",\"warning_code\":14,\"fingerprint\":\"b4725bb3764a3b1e792e2a48804c55e4ed8903f38fbc20b3247317d9a0be65cb\",\"check_name\":\"Execute\",\"message\":\"Possible command injection\",\"file\":\"app/controllers/application_controller.rb\",\"line\":4,\"link\":\"https://brakemanscanner.org/docs/warning_types/command_injection/\",\"code\":\"system(\\\"ls #{options}\\\")\",\"render_path\":null,\"location\":{\"type\":\"method\",\"class\":\"ApplicationController\",\"method\":\"test\"},\"user_input\":\"options\",\"confidence\":\"Medium\"}],\"ignored_warnings\":[],\"errors\":[],\"obsolete\":[]}",
+            "cResult" : "failed",
+            "cInfo" : "Issues found.",
+            "startedAt" : "2019-10-23T11:51:52.978-03:00",
+            "finishedAt" : "2019-10-23T11:52:46.536-03:00"
+        }, 
+        {
+            "CID" : "e2e68244a6cfcb7b1e24bc772051a02e6f569260214a57958e7dfe5137319363",
+            "securityTest" : {
+                "_id" : "5db06089fdd8358b1c45770d",
+                "name" : "gitleaks",
+                "image" : "huskyci/gitleaks",
+                "imageTag" : "2.1.0",
+                "cmd" : "mkdir -p ~/.ssh &&\necho 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&\nchmod 600 ~/.ssh/huskyci_id_rsa &&\necho \"IdentityFile ~/.ssh/huskyci_id_rsa\" >> /etc/ssh/ssh_config &&\necho \"StrictHostKeyChecking no\" >> /etc/ssh/ssh_config &&\ngit clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneGitleaks\nif [ $? -eq 0 ]; then\n    touch /tmp/results.json\n    $(which gitleaks) --log=warn --report=/tmp/results.json --repo-path=./code > /tmp/errorGitleaks\n    if [ $? -eq 2 ]; then\n        echo -n 'ERROR_RUNNING_GITLEAKS'\n        cat /tmp/errorGitleaks\n    else\n        jq -j -M -c . /tmp/results.json\n    fi\nelse\n    echo \"ERROR_CLONING\"\n    cat /tmp/errorGitCloneGitleaks\nfi\n",
+                "type" : "Generic",
+                "language" : "",
+                "default" : true,
+                "timeOutSeconds" : 360
+            },
+            "cStatus" : "finished",
+            "cOutput" : "[{\"line\":\"//     [mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"commit\":\"014ab973a01529035c98eaa89ccdf1ed01c58f79\",\"offender\":\"mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"add Golang vulns branch for POC \",\"author\":\"Rafael dos Santos\",\"email\":\"rafaveira3@gmail.com\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2019-08-15T12:48:06-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"commit\":\"014ab973a01529035c98eaa89ccdf1ed01c58f79\",\"offender\":\"mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"add Golang vulns branch for POC \",\"author\":\"Rafael dos Santos\",\"email\":\"rafaveira3@gmail.com\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2019-08-15T12:48:06-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     [mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"commit\":\"f50c6e86e4b5a17490bff714f133a06da5a02209\",\"offender\":\"mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"Merge pull request #67 from rafaveira3/feature/add-dep  [FEAT] Add a dependency management (dep) into Husky\",\"author\":\"Rafael dos Santos\",\"email\":\"rafaveira3@gmail.com\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2018-08-29T11:01:30-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"commit\":\"f50c6e86e4b5a17490bff714f133a06da5a02209\",\"offender\":\"mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"Merge pull request #67 from rafaveira3/feature/add-dep  [FEAT] Add a dependency management (dep) into Husky\",\"author\":\"Rafael dos Santos\",\"email\":\"rafaveira3@gmail.com\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2018-08-29T11:01:30-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     [mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"commit\":\"82317c3bd565e162f2b88bdf7169aa4f63419272\",\"offender\":\"mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"[FEAT] Add vendor folder using dep  Closing issue #50 \",\"author\":\"Rafael dos Santos\",\"email\":\"rafaveira3@gmail.com\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2018-08-29T10:57:36-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"commit\":\"82317c3bd565e162f2b88bdf7169aa4f63419272\",\"offender\":\"mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"[FEAT] Add vendor folder using dep  Closing issue #50 \",\"author\":\"Rafael dos Santos\",\"email\":\"rafaveira3@gmail.com\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2018-08-29T10:57:36-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     [mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"commit\":\"3165401ec6694e20ff9297158985a18052e27de2\",\"offender\":\"mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"Merge branch 'master' into client-auth \",\"author\":\"Vicente C. Fiebig\",\"email\":\"vicente.fiebig@corp.globo.com\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2018-11-08T10:35:23-02:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"commit\":\"3165401ec6694e20ff9297158985a18052e27de2\",\"offender\":\"mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"Merge branch 'master' into client-auth \",\"author\":\"Vicente C. Fiebig\",\"email\":\"vicente.fiebig@corp.globo.com\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2018-11-08T10:35:23-02:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     [mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"commit\":\"3477ac6aabd99f31c2a6620103dd349dd21195b5\",\"offender\":\"mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"Merge branch 'master' of github.com:globocom/huskyci into add-to-client \",\"author\":\"Rafael dos Santos\",\"email\":\"rafaveira3@gmail.com\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2019-03-07T14:41:38-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"commit\":\"3477ac6aabd99f31c2a6620103dd349dd21195b5\",\"offender\":\"mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"Merge branch 'master' of github.com:globocom/huskyci into add-to-client \",\"author\":\"Rafael dos Santos\",\"email\":\"rafaveira3@gmail.com\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2019-03-07T14:41:38-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     [mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"commit\":\"68b23a95a884107681f3f2d47852d8e33f83332f\",\"offender\":\"mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"[REFACT] Inserir dependências removidas \",\"author\":\"carlosljr\",\"email\":\"carlosjunior@id.uff.br\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2019-07-23T17:28:02-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"commit\":\"68b23a95a884107681f3f2d47852d8e33f83332f\",\"offender\":\"mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"[REFACT] Inserir dependências removidas \",\"author\":\"carlosljr\",\"email\":\"carlosjunior@id.uff.br\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2019-07-23T17:28:02-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     [mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"commit\":\"62b22ec1b73107a660f77118fd2f3d2b8fb61d7f\",\"offender\":\"mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"[REFACT] Atualizar Gopkg.lock \",\"author\":\"carlosljr\",\"email\":\"carlosjunior@id.uff.br\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2019-07-23T17:25:50-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"commit\":\"62b22ec1b73107a660f77118fd2f3d2b8fb61d7f\",\"offender\":\"mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"[REFACT] Atualizar Gopkg.lock \",\"author\":\"carlosljr\",\"email\":\"carlosjunior@id.uff.br\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2019-07-23T17:25:50-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"}]",
+            "cResult" : "passed",
+            "cInfo" : "No issues found.",
+            "startedAt" : "2019-10-23T11:51:52.973-03:00",
+            "finishedAt" : "2019-10-23T11:55:51.313-03:00"
+        }
+    ],
+    "startedAt" : "2019-10-23T11:51:35.984-03:00",
+    "codes" : [ 
+        {
+            "language" : "HTML",
+            "files" : [ 
+                "public/404.html", 
+                "public/422.html", 
+                "public/500.html"
+            ]
+        }, 
+        {
+            "language" : "HTML+ERB",
+            "files" : [ 
+                "app/views/layouts/application.html.erb", 
+                "app/views/layouts/mailer.html.erb", 
+                "app/views/layouts/mailer.text.erb"
+            ]
+        }, 
+        {
+            "language" : "Ruby",
+            "files" : [ 
+                "Gemfile", 
+                "Gemfile.lock", 
+                "Rakefile", 
+                "app/channels/application_cable/channel.rb", 
+                "app/channels/application_cable/connection.rb", 
+                "app/controllers/application_controller.rb", 
+                "app/helpers/application_helper.rb", 
+                "app/jobs/application_job.rb", 
+                "app/mailers/application_mailer.rb", 
+                "app/models/application_record.rb", 
+                "bin/rails", 
+                "bin/rake", 
+                "bin/setup", 
+                "bin/yarn", 
+                "config/application.rb", 
+                "config/boot.rb", 
+                "config/environment.rb", 
+                "config/environments/development.rb", 
+                "config/environments/production.rb", 
+                "config/environments/test.rb", 
+                "config/initializers/application_controller_renderer.rb", 
+                "config/initializers/assets.rb", 
+                "config/initializers/backtrace_silencers.rb", 
+                "config/initializers/content_security_policy.rb", 
+                "config/initializers/cookies_serializer.rb", 
+                "config/initializers/filter_parameter_logging.rb", 
+                "config/initializers/inflections.rb", 
+                "config/initializers/mime_types.rb", 
+                "config/initializers/wrap_parameters.rb", 
+                "config/puma.rb", 
+                "config/routes.rb", 
+                "config/spring.rb", 
+                "config.ru", 
+                "db/seeds.rb", 
+                "test/application_system_test_case.rb", 
+                "test/channels/application_cable/connection_test.rb", 
+                "test/test_helper.rb"
+            ]
+        }, 
+        {
+            "language" : "CSS",
+            "files" : [ 
+                "app/assets/stylesheets/application.css"
+            ]
+        }
+    ],
+    "commitAuthors" : [ 
+        "rafaveira3@gmail.com", 
+        "daniel.carlier@hotmail.com"
+    ],
+    "errorFound" : "",
+    "finishedAt" : "2019-10-23T11:55:51.313-03:00",
+    "huskyciresults" : {
+        "rubyresults" : {
+            "brakemanoutput" : {
+                "mediumvulns" : [ 
+                    {
+                        "language" : "Ruby",
+                        "securitytool" : "Brakeman",
+                        "confidence" : "Medium",
+                        "file" : "app/controllers/application_controller.rb",
+                        "line" : "4",
+                        "code" : "system(\"ls #{options}\")",
+                        "details" : "https://brakemanscanner.org/docs/warning_types/command_injection/Possible command injection",
+                        "type" : "Command Injection"
+                    }
+                ]
+            }
+        }
+    }
+}

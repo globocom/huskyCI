@@ -13,6 +13,9 @@ import (
 	mgo "gopkg.in/mgo.v2"
 )
 
+const logActionCheckReqs = "CheckHuskyRequirements"
+const logInfoAPIUtil = "API-UTIL"
+
 // CheckHuskyRequirements checks for all requirements needed before starting huskyCI.
 func (hU HuskyUtils) CheckHuskyRequirements(configAPI *apiContext.APIConfig) error {
 
@@ -20,31 +23,31 @@ func (hU HuskyUtils) CheckHuskyRequirements(configAPI *apiContext.APIConfig) err
 	if err := hU.CheckHandler.checkEnvVars(); err != nil {
 		return err
 	}
-	log.Info("CheckHuskyRequirements", "API-UTIL", 12)
+	log.Info(logActionCheckReqs, logInfoAPIUtil, 12)
 
 	// check if all docker hosts are up and running docker API.
 	if err := hU.CheckHandler.checkDockerHosts(configAPI); err != nil {
 		return err
 	}
-	log.Info("CheckHuskyRequirements", "API-UTIL", 13)
+	log.Info(logActionCheckReqs, logInfoAPIUtil, 13)
 
 	// check if DB is acessible and credentials received are working.
 	if err := hU.CheckHandler.checkDB(configAPI); err != nil {
 		return err
 	}
-	log.Info("CheckHuskyRequirements", "API-UTIL", 14)
+	log.Info(logActionCheckReqs, logInfoAPIUtil, 14)
 
 	// check if default securityTests are set into MongoDB.
 	if err := hU.CheckHandler.checkEachSecurityTest(configAPI); err != nil {
 		return err
 	}
-	log.Info("CheckHuskyRequirements", "API-UTIL", 15)
+	log.Info(logActionCheckReqs, logInfoAPIUtil, 15)
 
 	// check if default user is set into MongoDB.
 	if err := hU.CheckHandler.checkDefaultUser(configAPI); err != nil {
 		return err
 	}
-	log.Info("CheckHuskyRequirements", "API-UTIL", 20)
+	log.Info(logActionCheckReqs, logInfoAPIUtil, 20)
 
 	return nil
 }
@@ -83,7 +86,6 @@ func (cH *CheckUtils) checkEnvVars() error {
 		// "HUSKYCI_DOCKERAPI_CERT_KEY_VALUE", (optional)
 		// "HUSKYCI_DOCKERAPI_API_TLS_CERT_VALUE", (optional)
 		// "HUSKYCI_DOCKERAPI_API_TLS_KEY_VALUE", (optional)
-		// "HUSKYCI_DOCKERAPI_CERT_CA", (optional)
 		// "HUSKYCI_DOCKERAPI_CERT_CA_VALUE", (optional)
 		// "HUSKYCI_DOCKERAPI_PORT", (optional)
 		// "HUSKYCI_DOCKERAPI_TLS_VERIFY", (optional)
@@ -145,14 +147,14 @@ func (cH *CheckUtils) checkDB(configAPI *apiContext.APIConfig) error {
 }
 
 func (cH *CheckUtils) checkEachSecurityTest(configAPI *apiContext.APIConfig) error {
-	securityTests := []string{"enry", "gitauthors", "gosec", "brakeman", "bandit", "npmaudit", "yarnaudit", "safety", "gitleaks"}
+	securityTests := []string{"enry", "gitauthors", "gosec", "brakeman", "bandit", "npmaudit", "yarnaudit", "spotbugs", "gitleaks", "safety"}
 	for _, securityTest := range securityTests {
 		if err := checkSecurityTest(securityTest, configAPI); err != nil {
 			errMsg := fmt.Sprintf("%s %s", securityTest, err)
-			log.Error("checkEachSecurityTest", "API-UTIL", 1023, errMsg)
+			log.Error("checkEachSecurityTest", logInfoAPIUtil, 1023, errMsg)
 			return err
 		}
-		log.Info("checkEachSecurityTest", "API-UTIL", 19, securityTest)
+		log.Info("checkEachSecurityTest", logInfoAPIUtil, 19, securityTest)
 	}
 	return nil
 }
@@ -193,10 +195,12 @@ func checkSecurityTest(securityTestName string, configAPI *apiContext.APIConfig)
 		securityTestConfig = *configAPI.NpmAuditSecurityTest
 	case "yarnaudit":
 		securityTestConfig = *configAPI.YarnAuditSecurityTest
-	case "safety":
-		securityTestConfig = *configAPI.SafetySecurityTest
+	case "spotbugs":
+		securityTestConfig = *configAPI.SpotBugsSecurityTest
 	case "gitleaks":
 		securityTestConfig = *configAPI.GitleaksSecurityTest
+	case "safety":
+		securityTestConfig = *configAPI.SafetySecurityTest
 	default:
 		return errors.New("securityTest name not defined")
 	}
@@ -210,80 +214,116 @@ func checkSecurityTest(securityTestName string, configAPI *apiContext.APIConfig)
 }
 
 func createAPIKeys() error {
+	err := createAPICert()
+	if err != nil {
+		return err
+	}
+
+	err = createAPIKey()
+	if err != nil {
+		return err
+	}
+
+	err = createAPITLSCert()
+	if err != nil {
+		return err
+	}
+
+	err = createAPITLSKey()
+	if err != nil {
+		return err
+	}
+
+	err = createAPICA()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func createAPICert() error {
 	certValue, check := os.LookupEnv("HUSKYCI_DOCKERAPI_CERT_FILE_VALUE")
 	if check {
 		f, err := os.OpenFile("/home/application/current/api/cert.pem", os.O_WRONLY|os.O_CREATE, 0600)
 		if err != nil {
 			return err
 		}
+		defer f.Close()
 
 		_, err = f.WriteString(certValue)
 		if err != nil {
 			return err
 		}
 
-		defer f.Close()
 	}
+	return nil
+}
 
+func createAPIKey() error {
 	certKeyValue, check := os.LookupEnv("HUSKYCI_DOCKERAPI_CERT_KEY_VALUE")
 	if check {
 		f, err := os.OpenFile("/home/application/current/api/key.pem", os.O_WRONLY|os.O_CREATE, 0600)
 		if err != nil {
 			return err
 		}
+		defer f.Close()
 
 		_, err = f.WriteString(certKeyValue)
 		if err != nil {
 			return err
 		}
-
-		defer f.Close()
 	}
+	return nil
+}
 
+func createAPITLSCert() error {
 	apiCertValue, check := os.LookupEnv("HUSKYCI_DOCKERAPI_API_TLS_CERT_VALUE")
 	if check {
 		f, err := os.OpenFile("/home/application/current/api/api-tls-cert.pem", os.O_WRONLY|os.O_CREATE, 0600)
 		if err != nil {
 			return err
 		}
+		defer f.Close()
 
 		_, err = f.WriteString(apiCertValue)
 		if err != nil {
 			return err
 		}
-
-		defer f.Close()
 	}
+	return nil
+}
 
+func createAPITLSKey() error {
 	apiKeyValue, check := os.LookupEnv("HUSKYCI_DOCKERAPI_API_TLS_KEY_VALUE")
 	if check {
 		f, err := os.OpenFile("/home/application/current/api/api-tls-key.pem", os.O_WRONLY|os.O_CREATE, 0600)
 		if err != nil {
 			return err
 		}
+		defer f.Close()
 
 		_, err = f.WriteString(apiKeyValue)
 		if err != nil {
 			return err
 		}
-
-		defer f.Close()
 	}
+	return nil
+}
 
+func createAPICA() error {
 	caValue, check := os.LookupEnv("HUSKYCI_DOCKERAPI_CERT_CA_VALUE")
 	if check {
 		f, err := os.OpenFile("/home/application/current/api/ca.pem", os.O_WRONLY|os.O_CREATE, 0600)
 		if err != nil {
 			return err
 		}
+		defer f.Close()
 
 		_, err = f.WriteString(caValue)
 		if err != nil {
 			return err
 		}
-
-		defer f.Close()
 	}
-
 	return nil
 }

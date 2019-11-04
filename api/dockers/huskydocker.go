@@ -12,6 +12,10 @@ import (
 	"github.com/globocom/huskyCI/api/log"
 )
 
+const logActionRun = "DockerRun"
+const logInfoHuskyDocker = "HUSKYDOCKER"
+const logActionPull = "pullImage"
+
 // DockerRun starts a new container and returns its output and an error.
 func DockerRun(fullContainerImage, cmd string, timeOutInSeconds int) (string, string, error) {
 
@@ -37,14 +41,14 @@ func DockerRun(fullContainerImage, cmd string, timeOutInSeconds int) (string, st
 
 	// step 4: start container
 	if err := d.StartContainer(); err != nil {
-		log.Error("DockerRun", "HUSKYDOCKER", 3015, err)
+		log.Error(logActionRun, logInfoHuskyDocker, 3015, err)
 		return "", "", err
 	}
-	log.Info("DockerRun", "HUSKYDOCKER", 32, fullContainerImage, d.CID)
+	log.Info(logActionRun, logInfoHuskyDocker, 32, fullContainerImage, d.CID)
 
 	// step 5: wait container finish
 	if err := d.WaitContainer(timeOutInSeconds); err != nil {
-		log.Error("DockerRun", "HUSKYDOCKER", 3016, err)
+		log.Error(logActionRun, logInfoHuskyDocker, 3016, err)
 		return "", "", err
 	}
 
@@ -53,11 +57,11 @@ func DockerRun(fullContainerImage, cmd string, timeOutInSeconds int) (string, st
 	if err != nil {
 		return "", "", err
 	}
-	log.Info("DockerRun", "HUSKYDOCKER", 34, fullContainerImage, d.CID)
+	log.Info(logActionRun, logInfoHuskyDocker, 34, fullContainerImage, d.CID)
 
 	// step 7: remove container from docker API
 	if err := d.RemoveContainer(); err != nil {
-		log.Error("DockerRun", "HUSKYDOCKER", 3027, err)
+		log.Error(logActionRun, logInfoHuskyDocker, 3027, err)
 		return "", "", err
 	}
 
@@ -72,16 +76,16 @@ func pullImage(d *Docker, image string) error {
 		select {
 		case <-timeout:
 			timeOutErr := errors.New("timeout")
-			log.Error("pullImage", "HUSKYDOCKER", 3013, timeOutErr)
+			log.Error(logActionPull, logInfoHuskyDocker, 3013, timeOutErr)
 			return timeOutErr
 		case <-retryTick.C:
-			log.Info("pullImage", "DOCKERRUN", 31, image)
+			log.Info(logActionPull, logInfoHuskyDocker, 31, image)
 			if d.ImageIsLoaded(image) {
-				log.Info("pullImage", "HUSKYDOCKER", 35, image)
+				log.Info(logActionPull, logInfoHuskyDocker, 35, image)
 				return nil
 			}
 			if err := d.PullImage(canonicalURL); err != nil {
-				log.Error("pullImage", "HUSKYDOCKER", 3013, err)
+				log.Error(logActionPull, logInfoHuskyDocker, 3013, err)
 				return err
 			}
 		}

@@ -1,0 +1,1 @@
+{"issues":[{"engineId":"huskyCI","ruleId":"Ruby - Brakeman","primaryLocation":{"message":"https://brakemanscanner.org/docs/warning_types/command_injection/Possible command injection","filePath":"app/controllers/application_controller.rb","textRange":{"startLine":4}},"type":"VULNERABILITY","severity":"INFO"}]}
