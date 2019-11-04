@@ -56,6 +56,10 @@ type DataGenerator interface {
 	WriteInDB(query string, args ...interface{}) (int64, error)
 }
 
+// JSONCaller implements JSON interface calling functions
+// from encoding/json package.
+type JSONCaller struct{}
+
 // SQLJSONRetrieve implements DataGenerator that will interact with
 // the Postgres functions. This struct will DB data in JSON format.
 type SQLJSONRetrieve struct {
