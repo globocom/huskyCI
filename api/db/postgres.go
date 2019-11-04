@@ -523,7 +523,7 @@ func (pR *PostgresRequests) GetMetricByType(
 	metricType string, queryStringParams map[string][]string) (interface{}, error) {
 	// TODO: Need to know how to generate the same statistics
 	// as on Mongo
-	return nil, nil
+	return nil, errors.New("Function not supported")
 }
 
 // ConfigureUpdateQuery will receive a partial update query and mount the final query with
