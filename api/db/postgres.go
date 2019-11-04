@@ -177,7 +177,7 @@ func (pR *PostgresRequests) FindAllDBRepository(
 	return repositoryResponse, nil
 }
 
-// FindAllDBSecurityTest returns all SecurityTests of a given query present 
+// FindAllDBSecurityTest returns all SecurityTests of a given query present
 // into security Test table.
 func (pR *PostgresRequests) FindAllDBSecurityTest(
 	mapParams map[string]interface{}) ([]types.SecurityTest, error) {
@@ -323,7 +323,6 @@ func (pR *PostgresRequests) InsertDBAccessToken(accessToken types.DBToken) error
 	return nil
 }
 
-
 // UpdateOneDBRepository checks if a given repository is present into repository table
 // and update it.
 func (pR *PostgresRequests) UpdateOneDBRepository(
@@ -344,6 +343,72 @@ func (pR *PostgresRequests) UpdateOneDBRepository(
 		return errors.New("No data was updated")
 	}
 	return nil
+}
+
+func (pR *PostgresRequests) UpsertOneDBSecurityTest(
+	mapParams map[string]interface{}, updatedSecurityTest types.SecurityTest) (interface{}, error) {
+	if (types.SecurityTest{}) == updatedSecurityTest {
+		return nil, errors.New("Empty fields to be updated")
+	}
+	if len(mapParams) == 0 {
+		return nil, errors.New("Empty fields to search")
+	}
+	updatedSecurityMap := map[string]interface{}{
+		"name":           updatedSecurityTest.Name,
+		"image":          updatedSecurityTest.Image,
+		"imageTag":       updatedSecurityTest.ImageTag,
+		"cmd":            updatedSecurityTest.Cmd,
+		"type":           updatedSecurityTest.Type,
+		"language":       updatedSecurityTest.Language,
+		"default":        updatedSecurityTest.Default,
+		"timeOutSeconds": updatedSecurityTest.TimeOutInSeconds,
+	}
+	// TODO
+	finalQuery, values := ConfigureUpsertQuery(
+		`INSERT into securityTest`, mapParams, updatedSecurityMap)
+	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
+	if err != nil {
+		return nil, err
+	}
+	if rowsAff == int64(0) {
+		return nil, errors.New("No data was updated")
+	}
+	return rowsAff, nil
+}
+
+func ConfigureUpsertQuery(
+	query string, searchValues, newValues map[string]interface{}) (string, []interface{}) {
+	insertQuery, values := ConfigureInsertQuery(query, newValues)
+	conflictQuery := ""
+	i := 1
+	for k, _ := range searchValues {
+		if !strings.Contains(conflictQuery, "CONFLICT") {
+			conflictQuery = fmt.Sprintf("%s", `ON CONFLICT (`)
+		}
+		if i == len(searchValues) {
+			conflictQuery = fmt.Sprintf("%s%s)", conflictQuery, k)
+		} else {
+			conflictQuery = fmt.Sprintf("%s%s, ", conflictQuery, k)
+		}
+		i++
+	}
+	updateQuery := ""
+	for k, _ := range newValues {
+		if !strings.Contains(updateQuery, "UPDATE") {
+			updateQuery = `DO UPDATE SET`
+		}
+		if strings.Contains(updateQuery, "=") {
+			updateQuery = fmt.Sprintf("%s,", updateQuery)
+		}
+		updateQuery = fmt.Sprintf("%s %s = EXCLUDED.%s", updateQuery, k, k)
+	}
+	if conflictQuery != "" {
+		insertQuery = fmt.Sprintf("%s %s", insertQuery, conflictQuery)
+	}
+	if updateQuery != "" {
+		insertQuery = fmt.Sprintf("%s %s", insertQuery, updateQuery)
+	}
+	return insertQuery, values
 }
 
 // UpdateOneDBAnalysis checks if a given analysis is present into analysis table and update it.

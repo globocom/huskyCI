@@ -1029,7 +1029,67 @@ var _ = Describe("Postgres", func() {
 			})
 		})
 	})
-
+	Describe("UpsertOneDBSecurityTest", func() {
+		Context("When an empty SecurityTest is passed", func() {
+			It("Should return the expected error and a nil interface", func() {
+				params := map[string]interface{}{}
+				postgres := PostgresRequests{}
+				status, err := postgres.UpsertOneDBSecurityTest(params, types.SecurityTest{})
+				Expect(err).To(Equal(errors.New("Empty fields to be updated")))
+				Expect(status).To(BeNil())
+			})
+		})
+		Context("When an empty mapParams is passed", func() {
+			It("Should return the expected error", func() {
+				params := map[string]interface{}{}
+				postgres := PostgresRequests{}
+				status, err := postgres.UpsertOneDBSecurityTest(params, securityTest)
+				Expect(err).To(Equal(errors.New("Empty fields to search")))
+				Expect(status).To(BeNil())
+			})
+		})
+		Context("When DataRetriever returns an error", func() {
+			It("Should return the same error with a nil interface", func() {
+				fakeRetriever := FakeRetriever{
+					expectedWriteError: errors.New("Failed to write in DB"),
+				}
+				postgres := PostgresRequests{
+					DataRetriever: &fakeRetriever,
+				}
+				status, err := postgres.UpsertOneDBSecurityTest(validParams, securityTest)
+				Expect(err).To(Equal(fakeRetriever.expectedWriteError))
+				Expect(status).To(BeNil())
+			})
+		})
+		Context("When DataRetriever returns 0 rows affected", func() {
+			It("Should return the expected error with a nil interface", func() {
+				fakeRetriever := FakeRetriever{
+					expectedWriteError: nil,
+					expectedNumberRows: 0,
+				}
+				postgres := PostgresRequests{
+					DataRetriever: &fakeRetriever,
+				}
+				status, err := postgres.UpsertOneDBSecurityTest(validParams, securityTest)
+				Expect(err).To(Equal(errors.New("No data was updated")))
+				Expect(status).To(BeNil())
+			})
+		})
+		Context("When DataRetriever returns a valid number of rows affected", func() {
+			It("Should return a nil error and the number of rows affected", func() {
+				fakeRetriever := FakeRetriever{
+					expectedWriteError: nil,
+					expectedNumberRows: 1,
+				}
+				postgres := PostgresRequests{
+					DataRetriever: &fakeRetriever,
+				}
+				status, err := postgres.UpsertOneDBSecurityTest(validParams, securityTest)
+				Expect(err).To(BeNil())
+				Expect(status).To(Equal(int64(1)))
+			})
+		})
+	})
 	Describe("ConfigureInsertQuery", func() {
 		Context("When an Insert query is passed with some params", func() {
 			It("Should return the expected query with the params to be inserted", func() {
@@ -1110,6 +1170,20 @@ var _ = Describe("Postgres", func() {
 						Expect(values).To(Equal(expectedValues))
 					}
 				}
+			})
+		})
+	})
+	Describe("ConfigureUpsertQuery", func() {
+		Context("When a Insert query is passed with one existed param and one new value", func() {
+			It("Should return the expected query with the expected values", func() {
+				query := `INSERT into test`
+				newValues := map[string]interface{}{"value1": "teste1"}
+				columnsConflict := map[string]interface{}{"unique": "existed"}
+				expectedQuery := `INSERT into test (value1) VALUES ($1) ON CONFLICT (unique) DO UPDATE SET value1 = EXCLUDED.value1`
+				expectedValues := []interface{}{"teste1"}
+				finalQuery, values := ConfigureUpsertQuery(query, columnsConflict, newValues)
+				Expect(finalQuery).To(Equal(expectedQuery))
+				Expect(values).To(Equal(expectedValues))
 			})
 		})
 	})
