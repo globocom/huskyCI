@@ -14,6 +14,9 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+const logActionStart = "StartAnalysis"
+const logInfoAnalysis = "ANALYSIS"
+
 // StartAnalysis starts the analysis given a RID and a repository.
 func StartAnalysis(RID string, repository types.Repository) {
 
@@ -21,7 +24,7 @@ func StartAnalysis(RID string, repository types.Repository) {
 	if err := registerNewAnalysis(RID, repository); err != nil {
 		return
 	}
-	log.Info("StartAnalysis", "ANALYSIS", 101, RID)
+	log.Info(logActionStart, logInfoAnalysis, 101, RID)
 
 	// step 2: run enry as huskyCI initial step
 	enryScan := securitytest.SecTestScanInfo{}
@@ -31,12 +34,12 @@ func StartAnalysis(RID string, repository types.Repository) {
 	defer func() {
 		err := registerFinishedAnalysis(RID, &allScansResults)
 		if err != nil {
-			log.Error("StartAnalysis", "ANALYSIS", 2011, err)
+			log.Error(logActionStart, logInfoAnalysis, 2011, err)
 		}
 	}()
 
 	if err := enryScan.New(RID, repository.URL, repository.Branch, enryScan.SecurityTestName); err != nil {
-		log.Error("StartAnalysis", "ANALYSIS", 2011, err)
+		log.Error(logActionStart, logInfoAnalysis, 2011, err)
 		return
 	}
 	if err := enryScan.Start(); err != nil {
@@ -50,7 +53,7 @@ func StartAnalysis(RID string, repository types.Repository) {
 		return
 	}
 
-	log.Info("StartAnalysis", "ANALYSIS", 102, RID)
+	log.Info("StartAnalysis", logInfoAnalysis, 102, RID)
 }
 
 func registerNewAnalysis(RID string, repository types.Repository) error {
@@ -64,11 +67,11 @@ func registerNewAnalysis(RID string, repository types.Repository) error {
 	}
 
 	if err := apiContext.APIConfiguration.DBInstance.InsertDBAnalysis(newAnalysis); err != nil {
-		log.Error("registerNewAnalysis", "ANALYSIS", 2011, err)
+		log.Error("registerNewAnalysis", logInfoAnalysis, 2011, err)
 		return err
 	}
 
-	// log.Info("registerNewAnalysis", "ANALYSIS", 2012
+	// log.Info("registerNewAnalysis", logInfoAnalysis, 2012
 	return nil
 }
 
@@ -93,7 +96,7 @@ func registerFinishedAnalysis(RID string, allScanResults *securitytest.RunAllInf
 		},
 	}
 	if err := apiContext.APIConfiguration.DBInstance.UpdateOneDBAnalysisContainer(analysisQuery, updateAnalysisQuery); err != nil {
-		log.Error("registerFinishedAnalysis", "ANALYSIS", 2011, err)
+		log.Error("registerFinishedAnalysis", logInfoAnalysis, 2011, err)
 		return err
 	}
 	return nil

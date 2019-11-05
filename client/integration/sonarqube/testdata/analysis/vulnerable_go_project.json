@@ -1,0 +1,135 @@
+{
+    "_id" : "5daf584448dc45035a6b21ef",
+    "containers" : [ 
+        {
+            "CID" : "f9a687219ff13f134d5b3207451c335de7434dbccc65f27440f4bcfbb2bfa5a1",
+            "securityTest" : {
+                "_id" : "5daf570548dc45035a6b206a",
+                "name" : "gitauthors",
+                "image" : "huskyci/gitauthors",
+                "imageTag" : "2.18.1",
+                "cmd" : "mkdir -p ~/.ssh &&\necho 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&\nchmod 600 ~/.ssh/huskyci_id_rsa &&\necho \"IdentityFile ~/.ssh/huskyci_id_rsa\" >> /etc/ssh/ssh_config &&\necho \"StrictHostKeyChecking no\" >> /etc/ssh/ssh_config &&\ngit clone %GIT_REPO% code --quiet 2> /tmp/errorGitCloneEnry\ncd code\ngit checkout %GIT_BRANCH% --quiet\nif [ $? -eq 0 ]; then\n  for i in $(git log origin/master.. --pretty=\"%ae\" | sort -u); do\n    jsonMiddle=\"\\\"$i\\\",$jsonMiddle\"\n  done\n  length=${#jsonMiddle}\n  endindex=$(expr $length - 1)\n  authors=\"${jsonMiddle:0:$endindex}\"\n  echo \"{\\\"authors\\\":[$authors]}\"\nelse\n  echo \"ERROR_CLONING\"\n  cat /tmp/errorGitCloneEnry\nfi\n",
+                "type" : "Generic",
+                "language" : "",
+                "default" : true,
+                "timeOutSeconds" : 60
+            },
+            "cStatus" : "finished",
+            "cOutput" : "{\"authors\":[\"rafaveira3@gmail.com\",\"daniel.carlier@hotmail.com\"]}\r\n",
+            "cResult" : "passed",
+            "cInfo" : "No issues found.",
+            "startedAt" : "2019-10-22T16:28:40.771-03:00",
+            "finishedAt" : "2019-10-22T16:29:21.063-03:00"
+        }, 
+        {
+            "CID" : "fce3e08cb7cae1c38b4ba42fa94d20490d0ab7351b9829f592f9655091d067d5",
+            "securityTest" : {
+                "_id" : "5daf570548dc45035a6b206c",
+                "name" : "gosec",
+                "image" : "huskyci/gosec",
+                "imageTag" : "2.0.0",
+                "cmd" : "mkdir -p ~/.ssh &&\necho 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&\nchmod 600 ~/.ssh/huskyci_id_rsa &&\necho \"IdentityFile ~/.ssh/huskyci_id_rsa\" >> /etc/ssh/ssh_config &&\necho \"StrictHostKeyChecking no\" >> /etc/ssh/ssh_config &&\ncd src\ngit clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneGosec\nif [ $? -eq 0 ]; then\n  cd code\n  touch results.json\n  $(which gosec) -quiet -fmt=json -log=log.txt -out=results.json ./... 2> /dev/null\n  jq -j -M -c . results.json\nelse\n  echo \"ERROR_CLONING\"\n  cat /tmp/errorGitCloneGosec\nfi\n",
+                "type" : "Language",
+                "language" : "Go",
+                "default" : true,
+                "timeOutSeconds" : 360
+            },
+            "cStatus" : "finished",
+            "cOutput" : "{\"Golang errors\":{\"/go/src/code/api/server.go\":[{\"line\":20,\"column\":42,\"error\":\"Healthcheck not declared by package routes\"}]},\"Issues\":[{\"severity\":\"MEDIUM\",\"confidence\":\"HIGH\",\"rule_id\":\"G501\",\"details\":\"Blacklisted import crypto/md5: weak cryptographic primitive\",\"file\":\"/go/src/code/api/util/util.go\",\"code\":\"\\\"crypto/md5\\\"\",\"line\":\"4\"},{\"severity\":\"MEDIUM\",\"confidence\":\"HIGH\",\"rule_id\":\"G401\",\"details\":\"Use of weak cryptographic primitive\",\"file\":\"/go/src/code/api/util/util.go\",\"code\":\"md5.New()\",\"line\":\"23\"},{\"severity\":\"LOW\",\"confidence\":\"HIGH\",\"rule_id\":\"G104\",\"details\":\"Errors unhandled.\",\"file\":\"/go/src/code/api/util/util.go\",\"code\":\"io.WriteString(h, s)\",\"line\":\"24\"}],\"Stats\":{\"files\":3,\"lines\":68,\"nosec\":0,\"found\":3}}",
+            "cResult" : "failed",
+            "cInfo" : "Issues found.",
+            "startedAt" : "2019-10-22T16:28:40.778-03:00",
+            "finishedAt" : "2019-10-22T16:31:57.233-03:00"
+        }, 
+        {
+            "CID" : "dce7fd2f9a7690be7a0075faef9957765ca5170ea3712881a04b34165837176e",
+            "securityTest" : {
+                "_id" : "5daf570548dc45035a6b2078",
+                "name" : "gitleaks",
+                "image" : "huskyci/gitleaks",
+                "imageTag" : "2.1.0",
+                "cmd" : "mkdir -p ~/.ssh &&\necho 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&\nchmod 600 ~/.ssh/huskyci_id_rsa &&\necho \"IdentityFile ~/.ssh/huskyci_id_rsa\" >> /etc/ssh/ssh_config &&\necho \"StrictHostKeyChecking no\" >> /etc/ssh/ssh_config &&\ngit clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneGitleaks\nif [ $? -eq 0 ]; then\n    touch /tmp/results.json\n    $(which gitleaks) --log=warn --report=/tmp/results.json --repo-path=./code > /tmp/errorGitleaks\n    if [ $? -eq 2 ]; then\n        echo -n 'ERROR_RUNNING_GITLEAKS'\n        cat /tmp/errorGitleaks\n    else\n        jq -j -M -c . /tmp/results.json\n    fi\nelse\n    echo \"ERROR_CLONING\"\n    cat /tmp/errorGitCloneGitleaks\nfi\n",
+                "type" : "Generic",
+                "language" : "",
+                "default" : true,
+                "timeOutSeconds" : 360
+            },
+            "cStatus" : "finished",
+            "cOutput" : "[{\"line\":\"//     [mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"commit\":\"014ab973a01529035c98eaa89ccdf1ed01c58f79\",\"offender\":\"mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"add Golang vulns branch for POC \",\"author\":\"Rafael dos Santos\",\"email\":\"rafaveira3@gmail.com\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2019-08-15T12:48:06-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"commit\":\"014ab973a01529035c98eaa89ccdf1ed01c58f79\",\"offender\":\"mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"add Golang vulns branch for POC \",\"author\":\"Rafael dos Santos\",\"email\":\"rafaveira3@gmail.com\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2019-08-15T12:48:06-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     [mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"commit\":\"f50c6e86e4b5a17490bff714f133a06da5a02209\",\"offender\":\"mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"Merge pull request #67 from rafaveira3/feature/add-dep  [FEAT] Add a dependency management (dep) into Husky\",\"author\":\"Rafael dos Santos\",\"email\":\"rafaveira3@gmail.com\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2018-08-29T11:01:30-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"commit\":\"f50c6e86e4b5a17490bff714f133a06da5a02209\",\"offender\":\"mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"Merge pull request #67 from rafaveira3/feature/add-dep  [FEAT] Add a dependency management (dep) into Husky\",\"author\":\"Rafael dos Santos\",\"email\":\"rafaveira3@gmail.com\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2018-08-29T11:01:30-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     [mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"commit\":\"82317c3bd565e162f2b88bdf7169aa4f63419272\",\"offender\":\"mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"[FEAT] Add vendor folder using dep  Closing issue #50 \",\"author\":\"Rafael dos Santos\",\"email\":\"rafaveira3@gmail.com\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2018-08-29T10:57:36-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"commit\":\"82317c3bd565e162f2b88bdf7169aa4f63419272\",\"offender\":\"mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"[FEAT] Add vendor folder using dep  Closing issue #50 \",\"author\":\"Rafael dos Santos\",\"email\":\"rafaveira3@gmail.com\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2018-08-29T10:57:36-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     [mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"commit\":\"3165401ec6694e20ff9297158985a18052e27de2\",\"offender\":\"mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"Merge branch 'master' into client-auth \",\"author\":\"Vicente C. Fiebig\",\"email\":\"vicente.fiebig@corp.globo.com\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2018-11-08T10:35:23-02:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"commit\":\"3165401ec6694e20ff9297158985a18052e27de2\",\"offender\":\"mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"Merge branch 'master' into client-auth \",\"author\":\"Vicente C. Fiebig\",\"email\":\"vicente.fiebig@corp.globo.com\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2018-11-08T10:35:23-02:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     [mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"commit\":\"3477ac6aabd99f31c2a6620103dd349dd21195b5\",\"offender\":\"mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"Merge branch 'master' of github.com:globocom/huskyci into add-to-client \",\"author\":\"Rafael dos Santos\",\"email\":\"rafaveira3@gmail.com\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2019-03-07T14:41:38-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"commit\":\"3477ac6aabd99f31c2a6620103dd349dd21195b5\",\"offender\":\"mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"Merge branch 'master' of github.com:globocom/huskyci into add-to-client \",\"author\":\"Rafael dos Santos\",\"email\":\"rafaveira3@gmail.com\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2019-03-07T14:41:38-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     [mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"commit\":\"68b23a95a884107681f3f2d47852d8e33f83332f\",\"offender\":\"mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"[REFACT] Inserir dependências removidas \",\"author\":\"carlosljr\",\"email\":\"carlosjunior@id.uff.br\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2019-07-23T17:28:02-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"commit\":\"68b23a95a884107681f3f2d47852d8e33f83332f\",\"offender\":\"mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"[REFACT] Inserir dependências removidas \",\"author\":\"carlosljr\",\"email\":\"carlosjunior@id.uff.br\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2019-07-23T17:28:02-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     [mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"commit\":\"62b22ec1b73107a660f77118fd2f3d2b8fb61d7f\",\"offender\":\"mongodb://][user:pass@]host1[:port1][,host2[:port2],...][/database][?options]\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"[REFACT] Atualizar Gopkg.lock \",\"author\":\"carlosljr\",\"email\":\"carlosjunior@id.uff.br\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2019-07-23T17:25:50-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"},{\"line\":\"//     mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"commit\":\"62b22ec1b73107a660f77118fd2f3d2b8fb61d7f\",\"offender\":\"mongodb://myuser:mypass@localhost:40001,otherhost:40001/mydb\",\"rule\":\"Password in URL\",\"info\":\"[a-zA-Z]{3,10}:\\\\/\\\\/[^\\\\/\\\\s:@]{3,20}:[^\\\\/\\\\s:@]{3,20}@.{1,100}\\\\/?.? regex match\",\"commitMsg\":\"[REFACT] Atualizar Gopkg.lock \",\"author\":\"carlosljr\",\"email\":\"carlosjunior@id.uff.br\",\"file\":\"vendor/gopkg.in/mgo.v2/session.go\",\"repo\":\".\",\"date\":\"2019-07-23T17:25:50-03:00\",\"tags\":\"key, URL, generic\",\"severity\":\"\"}]",
+            "cResult" : "passed",
+            "cInfo" : "No issues found.",
+            "startedAt" : "2019-10-22T16:28:40.773-03:00",
+            "finishedAt" : "2019-10-22T16:33:01.923-03:00"
+        }
+    ],
+    "startedAt" : "2019-10-22T16:28:04.313-03:00",
+    "RID" : "B7udjHcl04UJRWa91yJVNFH11YRKaTKz",
+    "repositoryURL" : "https://github.com/globocom/huskyCI.git",
+    "repositoryBranch" : "vulns-Golang",
+    "status" : "finished",
+    "result" : "failed",
+    "codes" : [ 
+        {
+            "language" : "Makefile",
+            "files" : [ 
+                "Makefile"
+            ]
+        }, 
+        {
+            "language" : "Go",
+            "files" : [ 
+                "api/routes/healthcheck.go", 
+                "api/server.go", 
+                "api/util/util.go", 
+                "api/util/util_suite_test.go", 
+                "api/util/util_test.go"
+            ]
+        }
+    ],
+    "commitAuthors" : [ 
+        "rafaveira3@gmail.com", 
+        "daniel.carlier@hotmail.com"
+    ],
+    "errorFound" : "",
+    "finishedAt" : "2019-10-22T16:33:01.923-03:00",
+    "huskyciresults" : {
+        "goresults" : {
+            "gosecoutput" : {
+                "lowvulns" : [ 
+                    {
+                        "language" : "Go",
+                        "securitytool" : "GoSec",
+                        "severity" : "LOW",
+                        "confidence" : "HIGH",
+                        "file" : "/go/src/code/api/util/util.go",
+                        "line" : "24",
+                        "code" : "io.WriteString(h, s)",
+                        "details" : "Errors unhandled."
+                    }
+                ],
+                "mediumvulns" : [ 
+                    {
+                        "language" : "Go",
+                        "securitytool" : "GoSec",
+                        "severity" : "MEDIUM",
+                        "confidence" : "HIGH",
+                        "file" : "/go/src/code/api/util/util.go",
+                        "line" : "4",
+                        "code" : "\"crypto/md5\"",
+                        "details" : "Blacklisted import crypto/md5: weak cryptographic primitive"
+                    }, 
+                    {
+                        "language" : "Go",
+                        "securitytool" : "GoSec",
+                        "severity" : "MEDIUM",
+                        "confidence" : "HIGH",
+                        "file" : "/go/src/code/api/util/util.go",
+                        "line" : "23",
+                        "code" : "md5.New()",
+                        "details" : "Use of weak cryptographic primitive"
+                    }
+                ]
+            }
+        }
+    }
+}

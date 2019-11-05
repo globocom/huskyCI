@@ -30,6 +30,10 @@ type DB struct {
 	Session *mgo.Session
 }
 
+const logActionConnect = "Connect"
+const logActionReconnect = "autoReconnect"
+const logInfoMongo = "DB"
+
 // Database is the interface's database.
 type Database interface {
 	Insert(obj interface{}, collection string) error
@@ -43,7 +47,7 @@ type Database interface {
 // Connect connects to mongo and returns the session.
 func Connect(address, dbName, username, password string, poolLimit, port int, timeout time.Duration) error {
 
-	log.Info("Connect", "DB", 21)
+	log.Info(logActionConnect, logInfoMongo, 21)
 	dbAddress := fmt.Sprintf("%s:%d", address, port)
 	dialInfo := &mgo.DialInfo{
 		Addrs:     []string{dbAddress},
@@ -57,13 +61,13 @@ func Connect(address, dbName, username, password string, poolLimit, port int, ti
 	session, err := mgo.DialWithInfo(dialInfo)
 
 	if err != nil {
-		log.Error("Connect", "DB", 2001, err)
+		log.Error(logActionConnect, logInfoMongo, 2001, err)
 		return err
 	}
 	session.SetSafe(&mgo.Safe{WMode: "majority"})
 
 	if err := session.Ping(); err != nil {
-		log.Error("Connect", "DB", 2002, err)
+		log.Error(logActionConnect, logInfoMongo, 2002, err)
 		return err
 	}
 
@@ -75,18 +79,18 @@ func Connect(address, dbName, username, password string, poolLimit, port int, ti
 
 // autoReconnect checks mongo's connection each second and, if an error is found, reconect to it.
 func autoReconnect() {
-	log.Info("autoReconnect", "DB", 22)
+	log.Info(logActionReconnect, logInfoMongo, 22)
 	var err error
 	for {
 		err = Conn.Session.Ping()
 		if err != nil {
-			log.Error("autoReconnect", "DB", 2003, err)
+			log.Error(logActionReconnect, logInfoMongo, 2003, err)
 			Conn.Session.Refresh()
 			err = Conn.Session.Ping()
 			if err == nil {
-				log.Info("autoReconnect", "DB", 23)
+				log.Info(logActionReconnect, logInfoMongo, 23)
 			} else {
-				log.Error("autoReconnect", "DB", 2004, err)
+				log.Error(logActionReconnect, logInfoMongo, 2004, err)
 			}
 		}
 		time.Sleep(time.Second * 1)

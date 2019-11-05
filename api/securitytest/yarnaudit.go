@@ -131,12 +131,7 @@ func (yarnAuditScan *SecTestScanInfo) prepareYarnAuditVulns() {
 		}
 
 		switch issue.Severity {
-		case "info":
-			yarnauditVuln.Severity = "low"
-			if !vulnListContains(huskyCIyarnauditResults.LowVulns, yarnauditVuln) {
-				huskyCIyarnauditResults.LowVulns = append(huskyCIyarnauditResults.LowVulns, yarnauditVuln)
-			}
-		case "low":
+		case "info", "low":
 			yarnauditVuln.Severity = "low"
 			if !vulnListContains(huskyCIyarnauditResults.LowVulns, yarnauditVuln) {
 				huskyCIyarnauditResults.LowVulns = append(huskyCIyarnauditResults.LowVulns, yarnauditVuln)
@@ -146,12 +141,7 @@ func (yarnAuditScan *SecTestScanInfo) prepareYarnAuditVulns() {
 			if !vulnListContains(huskyCIyarnauditResults.MediumVulns, yarnauditVuln) {
 				huskyCIyarnauditResults.MediumVulns = append(huskyCIyarnauditResults.MediumVulns, yarnauditVuln)
 			}
-		case "high":
-			yarnauditVuln.Severity = "high"
-			if !vulnListContains(huskyCIyarnauditResults.HighVulns, yarnauditVuln) {
-				huskyCIyarnauditResults.HighVulns = append(huskyCIyarnauditResults.HighVulns, yarnauditVuln)
-			}
-		case "critical":
+		case "high", "critical":
 			yarnauditVuln.Severity = "high"
 			if !vulnListContains(huskyCIyarnauditResults.HighVulns, yarnauditVuln) {
 				huskyCIyarnauditResults.HighVulns = append(huskyCIyarnauditResults.HighVulns, yarnauditVuln)

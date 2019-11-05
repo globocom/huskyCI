@@ -31,8 +31,8 @@ require (
 	github.com/mattn/goveralls v0.0.3 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/nightlyone/lockfile v0.0.0-20180618180623-0ad87eef1443 // indirect
-	github.com/onsi/ginkgo v1.10.2
 	github.com/onsi/gomega v1.7.1
+	github.com/onsi/ginkgo v1.10.3
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
 	github.com/pelletier/go-toml v1.5.0 // indirect
 	github.com/sdboyer/constext v0.0.0-20170321163424-836a14457353 // indirect
@@ -48,8 +48,8 @@ require (
 	golang.org/x/lint v0.0.0-20190930215403-16217165b5de // indirect
 	golang.org/x/net v0.0.0-20191014212845-da9a3fd4c582
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e // indirect
-	golang.org/x/sys v0.0.0-20191010194322-b09406accb47 // indirect
-	golang.org/x/tools v0.0.0-20191015211201-9c6d90b5a7d0 // indirect
+	golang.org/x/sys v0.0.0-20191018095205-727590c5006e // indirect
+	golang.org/x/tools v0.0.0-20191018000036-341939e08647 // indirect
 	gopkg.in/Graylog2/go-gelf.v2 v2.0.0-20180326133423-4dbb9d721348 // indirect
 	gopkg.in/fsnotify/fsnotify.v1 v1.4.7 // indirect
 	gopkg.in/mgo.v2 v2.0.0-20180705113604-9856a29383ce

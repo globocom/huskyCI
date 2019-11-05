@@ -28,6 +28,9 @@ const (
 	KeyFile = "api/api-tls-key.pem"
 )
 
+const logInfoAnalysis = "ANALYSIS"
+const logActionReceiveRequest = "ReceiveRequest"
+
 // HandleCmd will extract %GIT_REPO%, %GIT_BRANCH% and %INTERNAL_DEP_URL% from cmd and replace it with the proper repository URL.
 func HandleCmd(repositoryURL, repositoryBranch, cmd string) string {
 	if repositoryURL != "" && repositoryBranch != "" && cmd != "" {
@@ -103,11 +106,11 @@ func CheckValidInput(repository types.Repository, c echo.Context) (string, error
 	sanitiziedURL, err := CheckMaliciousRepoURL(repository.URL)
 	if err != nil {
 		if sanitiziedURL == "" {
-			log.Error("ReceiveRequest", "ANALYSIS", 1016, repository.URL)
+			log.Error(logActionReceiveRequest, logInfoAnalysis, 1016, repository.URL)
 			reply := map[string]interface{}{"success": false, "error": "invalid repository URL"}
 			return "", c.JSON(http.StatusBadRequest, reply)
 		}
-		log.Error("ReceiveRequest", "ANALYSIS", 1008, "Repository URL regexp ", err)
+		log.Error(logActionReceiveRequest, logInfoAnalysis, 1008, "Repository URL regexp ", err)
 		reply := map[string]interface{}{"success": false, "error": "internal error"}
 		return "", c.JSON(http.StatusInternalServerError, reply)
 	}
@@ -139,12 +142,12 @@ func CheckMaliciousRepoBranch(repositoryBranch string, c echo.Context) error {
 	regexpBranch := `^[a-zA-Z0-9_\/.-]*$`
 	valid, err := regexp.MatchString(regexpBranch, repositoryBranch)
 	if err != nil {
-		log.Error("ReceiveRequest", "ANALYSIS", 1008, "Repository Branch regexp ", err)
+		log.Error(logActionReceiveRequest, logInfoAnalysis, 1008, "Repository Branch regexp ", err)
 		reply := map[string]interface{}{"success": false, "error": "internal error"}
 		return c.JSON(http.StatusInternalServerError, reply)
 	}
 	if !valid {
-		log.Error("ReceiveRequest", "ANALYSIS", 1017, repositoryBranch)
+		log.Error(logActionReceiveRequest, logInfoAnalysis, 1017, repositoryBranch)
 		reply := map[string]interface{}{"success": false, "error": "invalid repository branch"}
 		return c.JSON(http.StatusBadRequest, reply)
 	}
@@ -156,12 +159,12 @@ func CheckMaliciousRID(RID string, c echo.Context) error {
 	regexpRID := `^[-a-zA-Z0-9]*$`
 	valid, err := regexp.MatchString(regexpRID, RID)
 	if err != nil {
-		log.Error("GetAnalysis", "ANALYSIS", 1008, "RID regexp ", err)
+		log.Error("GetAnalysis", logInfoAnalysis, 1008, "RID regexp ", err)
 		reply := map[string]interface{}{"success": false, "error": "internal error"}
 		return c.JSON(http.StatusInternalServerError, reply)
 	}
 	if !valid {
-		log.Warning("GetAnalysis", "ANALYSIS", 107, RID)
+		log.Warning("GetAnalysis", logInfoAnalysis, 107, RID)
 		reply := map[string]interface{}{"success": false, "error": "invalid RID"}
 		return c.JSON(http.StatusBadRequest, reply)
 	}
