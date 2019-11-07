@@ -34,7 +34,7 @@ func (fR *FakeRetriever) Connect(
 }
 
 func (fR *FakeRetriever) RetrieveFromDB(
-	query string, response interface{}, params ...interface{}) error {
+	query string, response interface{}, arrayColumns []string, params ...interface{}) error {
 	if fR.expectedRetrieveError == nil {
 		switch r := response.(type) {
 		case *[]types.Repository:

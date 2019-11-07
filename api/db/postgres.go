@@ -50,7 +50,8 @@ func (pR *PostgresRequests) FindOneDBRepository(
 				WHERE
 					repositoryURL = $1`
 
-	if err := pR.DataRetriever.RetrieveFromDB(myQuery, &repositoryResponse, repository); err != nil {
+	if err := pR.DataRetriever.RetrieveFromDB(
+		myQuery, &repositoryResponse, []string{}, repository); err != nil {
 		return types.Repository{}, err
 	}
 	return repositoryResponse[0], nil
@@ -77,7 +78,8 @@ func (pR *PostgresRequests) FindOneDBSecurityTest(
 					securityTest
 				WHERE
 					name = $1`
-	if err := pR.DataRetriever.RetrieveFromDB(myQuery, &securityResponse, securityTest); err != nil {
+	if err := pR.DataRetriever.RetrieveFromDB(
+		myQuery, &securityResponse, []string{}, securityTest); err != nil {
 		return types.SecurityTest{}, err
 	}
 	return securityResponse[0], nil
@@ -92,24 +94,25 @@ func (pR *PostgresRequests) FindOneDBAnalysis(
 		return types.Analysis{}, errors.New("Could not find RID field")
 	}
 	myQuery := `SELECT
-					RID,
-					repositoryURL,
-					repositoryBranch,
-					commitAuthors,
-					status,
-					result,
-					errorFound,
-					containers,
-					startedAt,
-					finishedAt,
-					codes,
-					huskyciresults
+					"RID",
+					"repositoryURL",
+					"repositoryBranch",
+					"commitAuthors",
+					"status",
+					"result",
+					"errorFound",
+					"containers",
+					"startedAt",
+					"finishedAt",
+					"codes",
+					"huskyciresults"
 				FROM
 					analysis
 				WHERE
 					RID = $1`
 
-	if err := pR.DataRetriever.RetrieveFromDB(myQuery, &analysisResponse, analysis); err != nil {
+	if err := pR.DataRetriever.RetrieveFromDB(
+		myQuery, &analysisResponse, []string{"commitAuthors"}, analysis); err != nil {
 		return types.Analysis{}, err
 	}
 	return analysisResponse[0], nil
@@ -135,7 +138,8 @@ func (pR *PostgresRequests) FindOneDBUser(
 				WHERE
 					username = $1`
 
-	if err := pR.DataRetriever.RetrieveFromDB(myQuery, &userResponse, user); err != nil {
+	if err := pR.DataRetriever.RetrieveFromDB(
+		myQuery, &userResponse, []string{}, user); err != nil {
 		return types.User{}, err
 	}
 	return userResponse[0], nil
@@ -160,7 +164,8 @@ func (pR *PostgresRequests) FindOneDBAccessToken(
 					accessToken
 				WHERE
 					uuid = $1`
-	if err := pR.DataRetriever.RetrieveFromDB(myQuery, &tokenResponse, token); err != nil {
+	if err := pR.DataRetriever.RetrieveFromDB(
+		myQuery, &tokenResponse, []string{}, token); err != nil {
 		return types.DBToken{}, err
 	}
 	return tokenResponse[0], nil
@@ -171,7 +176,8 @@ func (pR *PostgresRequests) FindAllDBRepository(
 	mapParams map[string]interface{}) ([]types.Repository, error) {
 	repositoryResponse := []types.Repository{}
 	query, params := ConfigureQuery(`SELECT * FROM repository`, mapParams)
-	if err := pR.DataRetriever.RetrieveFromDB(query, &repositoryResponse, params); err != nil {
+	if err := pR.DataRetriever.RetrieveFromDB(
+		query, &repositoryResponse, []string{}, params); err != nil {
 		return repositoryResponse, err
 	}
 	return repositoryResponse, nil
@@ -183,7 +189,8 @@ func (pR *PostgresRequests) FindAllDBSecurityTest(
 	mapParams map[string]interface{}) ([]types.SecurityTest, error) {
 	securityResponse := []types.SecurityTest{}
 	query, params := ConfigureQuery(`SELECT * FROM securityTest`, mapParams)
-	if err := pR.DataRetriever.RetrieveFromDB(query, &securityResponse, params); err != nil {
+	if err := pR.DataRetriever.RetrieveFromDB(
+		query, &securityResponse, []string{}, params); err != nil {
 		return securityResponse, err
 	}
 	return securityResponse, nil
@@ -194,7 +201,8 @@ func (pR *PostgresRequests) FindAllDBAnalysis(
 	mapParams map[string]interface{}) ([]types.Analysis, error) {
 	analysisResponse := []types.Analysis{}
 	query, params := ConfigureQuery(`SELECT * FROM analysis`, mapParams)
-	if err := pR.DataRetriever.RetrieveFromDB(query, &analysisResponse, params); err != nil {
+	if err := pR.DataRetriever.RetrieveFromDB(
+		query, &analysisResponse, []string{}, params); err != nil {
 		return analysisResponse, err
 	}
 	return analysisResponse, nil
@@ -378,7 +386,7 @@ func (pR *PostgresRequests) UpsertOneDBSecurityTest(
 	return rowsAff, nil
 }
 
-// ConfigureUpsertQuery will receive a partial query and mount the final query 
+// ConfigureUpsertQuery will receive a partial query and mount the final query
 // CONFLICT statement so it will allow Postgres make an Upsert in the entry
 // based on the conflicted columns passed in this statement. An UPDATE query is build
 // with the related values to be updated in case of a conflict.

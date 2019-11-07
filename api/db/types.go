@@ -52,7 +52,7 @@ type JSON interface {
 // with DB functions. It abstracts the database functions
 type DataGenerator interface {
 	Connect(address string, username string, password string, dbName string, maxOpenConns int, maxIdleConns int, connLT time.Duration) error
-	RetrieveFromDB(query string, response interface{}, params ...interface{}) error
+	RetrieveFromDB(query string, response interface{}, arrayColumns []string, params ...interface{}) error
 	WriteInDB(query string, args ...interface{}) (int64, error)
 }
 
