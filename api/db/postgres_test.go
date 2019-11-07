@@ -355,12 +355,12 @@ var _ = Describe("Postgres", func() {
 				params := map[string]interface{}{"teste1": "myTest", "teste2": 1}
 				query, vals := ConfigureQuery(`SELECT * FROM test`, params)
 				if _, ok := vals[0].(string); ok {
-					expectedQuery := `SELECT * FROM test WHERE teste1 = $1 AND teste2 = $2`
+					expectedQuery := `SELECT * FROM test WHERE "teste1" = $1 AND "teste2" = $2`
 					expectedVals := []interface{}{"myTest", 1}
 					Expect(query).To(Equal(expectedQuery))
 					Expect(vals).To(Equal(expectedVals))
 				} else {
-					expectedQuery := `SELECT * FROM test WHERE teste2 = $1 AND teste1 = $2`
+					expectedQuery := `SELECT * FROM test WHERE "teste2" = $1 AND "teste1" = $2`
 					expectedVals := []interface{}{1, "myTest"}
 					Expect(query).To(Equal(expectedQuery))
 					Expect(vals).To(Equal(expectedVals))
@@ -369,7 +369,7 @@ var _ = Describe("Postgres", func() {
 		})
 		Context("When a query is passed with only one parameter", func() {
 			It("Should return the expected final query with just one argument", func() {
-				expectedQuery := `SELECT * FROM test WHERE teste1 = $1`
+				expectedQuery := `SELECT * FROM test WHERE "teste1" = $1`
 				expectedVals := []interface{}{"myTest"}
 				params := map[string]interface{}{"teste1": "myTest"}
 				query, vals := ConfigureQuery(`SELECT * FROM test`, params)
@@ -1100,12 +1100,12 @@ var _ = Describe("Postgres", func() {
 				}
 				finalQuery, values := ConfigureInsertQuery(query, params)
 				if _, ok := values[0].(string); ok {
-					expectedQuery := `INSERT into test (test1, test2) VALUES ($1, $2)`
+					expectedQuery := `INSERT into test ("test1", "test2") VALUES ($1, $2)`
 					expectedValues := []interface{}{"value1", 3}
 					Expect(finalQuery).To(Equal(expectedQuery))
 					Expect(values).To(Equal(expectedValues))
 				} else {
-					expectedQuery := `INSERT into test (test2, test1) VALUES ($1, $2)`
+					expectedQuery := `INSERT into test ("test2", "test1") VALUES ($1, $2)`
 					expectedValues := []interface{}{3, "value1"}
 					Expect(finalQuery).To(Equal(expectedQuery))
 					Expect(values).To(Equal(expectedValues))
@@ -1118,7 +1118,7 @@ var _ = Describe("Postgres", func() {
 				params := map[string]interface{}{
 					"test1": "value1",
 				}
-				expectedQuery := `INSERT into test (test1) VALUES ($1)`
+				expectedQuery := `INSERT into test ("test1") VALUES ($1)`
 				expectedValues := []interface{}{"value1"}
 				finalQuery, values := ConfigureInsertQuery(query, params)
 				Expect(finalQuery).To(Equal(expectedQuery))
@@ -1132,7 +1132,7 @@ var _ = Describe("Postgres", func() {
 				query := `UPDATE test`
 				searchValues := map[string]interface{}{"id": 1}
 				newValues := map[string]interface{}{"teste1": "newVal"}
-				expectedQuery := `UPDATE test SET teste1 = $2 WHERE id = $1`
+				expectedQuery := `UPDATE test SET "teste1" = $2 WHERE "id" = $1`
 				expectedValues := []interface{}{1, "newVal"}
 				finalQuery, values := ConfigureUpdateQuery(query, searchValues, newValues)
 				Expect(finalQuery).To(Equal(expectedQuery))
@@ -1147,24 +1147,24 @@ var _ = Describe("Postgres", func() {
 				finalQuery, values := ConfigureUpdateQuery(query, searchValues, newValues)
 				if _, ok := values[2].(string); ok {
 					if values[0].(int) == 1 {
-						expectedQuery := `UPDATE test SET teste1 = $3, teste2 = $4 WHERE id = $1 AND id2 = $2`
+						expectedQuery := `UPDATE test SET "teste1" = $3, "teste2" = $4 WHERE "id" = $1 AND "id2" = $2`
 						expectedValues := []interface{}{1, 2, "newVal", 3}
 						Expect(finalQuery).To(Equal(expectedQuery))
 						Expect(values).To(Equal(expectedValues))
 					} else {
-						expectedQuery := `UPDATE test SET teste1 = $3, teste2 = $4 WHERE id2 = $1 AND id = $2`
+						expectedQuery := `UPDATE test SET "teste1" = $3, "teste2" = $4 WHERE "id2" = $1 AND "id" = $2`
 						expectedValues := []interface{}{2, 1, "newVal", 3}
 						Expect(finalQuery).To(Equal(expectedQuery))
 						Expect(values).To(Equal(expectedValues))
 					}
 				} else {
 					if values[0].(int) == 1 {
-						expectedQuery := `UPDATE test SET teste2 = $3, teste1 = $4 WHERE id = $1 AND id2 = $2`
+						expectedQuery := `UPDATE test SET "teste2" = $3, "teste1" = $4 WHERE "id" = $1 AND "id2" = $2`
 						expectedValues := []interface{}{1, 2, 3, "newVal"}
 						Expect(finalQuery).To(Equal(expectedQuery))
 						Expect(values).To(Equal(expectedValues))
 					} else {
-						expectedQuery := `UPDATE test SET teste2 = $3, teste1 = $4 WHERE id2 = $1 AND id = $2`
+						expectedQuery := `UPDATE test SET "teste2" = $3, "teste1" = $4 WHERE "id2" = $1 AND "id" = $2`
 						expectedValues := []interface{}{2, 1, 3, "newVal"}
 						Expect(finalQuery).To(Equal(expectedQuery))
 						Expect(values).To(Equal(expectedValues))
@@ -1179,7 +1179,7 @@ var _ = Describe("Postgres", func() {
 				query := `INSERT into test`
 				newValues := map[string]interface{}{"value1": "teste1"}
 				columnsConflict := map[string]interface{}{"unique": "existed"}
-				expectedQuery := `INSERT into test (value1) VALUES ($1) ON CONFLICT (unique) DO UPDATE SET value1 = EXCLUDED.value1`
+				expectedQuery := `INSERT into test ("value1") VALUES ($1) ON CONFLICT ("unique") DO UPDATE SET "value1" = EXCLUDED."value1"`
 				expectedValues := []interface{}{"teste1"}
 				finalQuery, values := ConfigureUpsertQuery(query, columnsConflict, newValues)
 				Expect(finalQuery).To(Equal(expectedQuery))

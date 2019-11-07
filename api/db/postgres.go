@@ -42,13 +42,13 @@ func (pR *PostgresRequests) FindOneDBRepository(
 		return types.Repository{}, errors.New("Could not find repository URL")
 	}
 	myQuery := `SELECT 
-					repositoryURL,
-					repositoryBranch,
-					createdAt
+					"repositoryURL",
+					"repositoryBranch",
+					"createdAt"
 				FROM
 					repository
 				WHERE
-					repositoryURL = $1`
+					"repositoryURL" = $1`
 
 	if err := pR.DataRetriever.RetrieveFromDB(
 		myQuery, &repositoryResponse, []string{}, repository); err != nil {
@@ -68,14 +68,14 @@ func (pR *PostgresRequests) FindOneDBSecurityTest(
 	myQuery := `SELECT
 					name,
 					image,
-					imageTag,
+					"imageTag",
 					cmd,
 					type,
 					language,
 					default,
-					timeOutSeconds
+					"timeOutSeconds"
 				FROM
-					securityTest
+					"securityTest"
 				WHERE
 					name = $1`
 	if err := pR.DataRetriever.RetrieveFromDB(
@@ -155,13 +155,13 @@ func (pR *PostgresRequests) FindOneDBAccessToken(
 	}
 	myQuery := `SELECT
 					huskytoken,
-					repositoryURL,
-					isValid,
-					createdAt,
+					"repositoryURL",
+					"isValid",
+					"createdAt",
 					salt,
 					uuid
 				FROM
-					accessToken
+					"accessToken"
 				WHERE
 					uuid = $1`
 	if err := pR.DataRetriever.RetrieveFromDB(
@@ -244,7 +244,7 @@ func (pR *PostgresRequests) InsertDBSecurityTest(securityTest types.SecurityTest
 		"timeOutSeconds": securityTest.TimeOutInSeconds,
 	}
 	finalQuery, values := ConfigureInsertQuery(
-		`INSERT into securityTest`, securityMap)
+		`INSERT into "securityTest"`, securityMap)
 	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
 	if err != nil {
 		return err
@@ -320,7 +320,7 @@ func (pR *PostgresRequests) InsertDBAccessToken(accessToken types.DBToken) error
 		"uuid":          accessToken.UUID,
 	}
 	finalQuery, values := ConfigureInsertQuery(
-		`INSERT into accessToken`, accessTokenMap)
+		`INSERT into "accessToken"`, accessTokenMap)
 	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
 	if err != nil {
 		return err
@@ -375,7 +375,7 @@ func (pR *PostgresRequests) UpsertOneDBSecurityTest(
 	}
 	// TODO
 	finalQuery, values := ConfigureUpsertQuery(
-		`INSERT into securityTest`, mapParams, updatedSecurityMap)
+		`INSERT into "securityTest"`, mapParams, updatedSecurityMap)
 	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
 	if err != nil {
 		return nil, err
@@ -400,9 +400,9 @@ func ConfigureUpsertQuery(
 			conflictQuery = `ON CONFLICT (`
 		}
 		if i == len(searchValues) {
-			conflictQuery = fmt.Sprintf("%s%s)", conflictQuery, k)
+			conflictQuery = fmt.Sprintf(`%s"%s")`, conflictQuery, k)
 		} else {
-			conflictQuery = fmt.Sprintf("%s%s, ", conflictQuery, k)
+			conflictQuery = fmt.Sprintf(`%s"%s", `, conflictQuery, k)
 		}
 		i++
 	}
@@ -414,13 +414,13 @@ func ConfigureUpsertQuery(
 		if strings.Contains(updateQuery, "=") {
 			updateQuery = fmt.Sprintf("%s,", updateQuery)
 		}
-		updateQuery = fmt.Sprintf("%s %s = EXCLUDED.%s", updateQuery, k, k)
+		updateQuery = fmt.Sprintf(`%s "%s" = EXCLUDED."%s"`, updateQuery, k, k)
 	}
 	if conflictQuery != "" {
-		insertQuery = fmt.Sprintf("%s %s", insertQuery, conflictQuery)
+		insertQuery = fmt.Sprintf(`%s %s`, insertQuery, conflictQuery)
 	}
 	if updateQuery != "" {
-		insertQuery = fmt.Sprintf("%s %s", insertQuery, updateQuery)
+		insertQuery = fmt.Sprintf(`%s %s`, insertQuery, updateQuery)
 	}
 	return insertQuery, values
 }
@@ -549,7 +549,7 @@ func ConfigureUpdateQuery(
 		if strings.Contains(searchQuery, "=") {
 			searchQuery = fmt.Sprintf("%s AND", searchQuery)
 		}
-		searchQuery = fmt.Sprintf("%s %s = $%d", searchQuery, k, i)
+		searchQuery = fmt.Sprintf(`%s "%s" = $%d`, searchQuery, k, i)
 		i++
 		values = append(values, v)
 	}
@@ -560,7 +560,7 @@ func ConfigureUpdateQuery(
 		if strings.Contains(valuesQuery, "=") {
 			valuesQuery = fmt.Sprintf("%s,", valuesQuery)
 		}
-		valuesQuery = fmt.Sprintf("%s %s = $%d", valuesQuery, k, i)
+		valuesQuery = fmt.Sprintf(`%s "%s" = $%d`, valuesQuery, k, i)
 		i++
 		values = append(values, v)
 	}
@@ -582,10 +582,10 @@ func ConfigureInsertQuery(query string, params map[string]interface{}) (string, 
 	valuesQuery := `VALUES (`
 	for k, v := range params {
 		if i == len(params) {
-			argsQuery = fmt.Sprintf("%s%s)", argsQuery, k)
+			argsQuery = fmt.Sprintf(`%s"%s")`, argsQuery, k)
 			valuesQuery = fmt.Sprintf("%s$%d)", valuesQuery, i)
 		} else {
-			argsQuery = fmt.Sprintf("%s%s, ", argsQuery, k)
+			argsQuery = fmt.Sprintf(`%s"%s", `, argsQuery, k)
 			valuesQuery = fmt.Sprintf("%s$%d, ", valuesQuery, i)
 		}
 		values = append(values, v)
@@ -607,7 +607,7 @@ func ConfigureQuery(query string, params map[string]interface{}) (string, []inte
 		if strings.Contains(query, "=") {
 			query = fmt.Sprintf("%s AND", query)
 		}
-		query = fmt.Sprintf("%s %s = $%d", query, k, i)
+		query = fmt.Sprintf(`%s "%s" = $%d`, query, k, i)
 		values = append(values, v)
 		i++
 	}
