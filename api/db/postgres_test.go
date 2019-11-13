@@ -20,6 +20,7 @@ type FakeRetriever struct {
 	expectedWriteError    error
 	expectedNumberRows    int64
 	expectedConnectError  error
+	expectedPqArray       interface{}
 }
 
 func (fR *FakeRetriever) Connect(
@@ -61,6 +62,23 @@ func (fR *FakeRetriever) WriteInDB(query string, args ...interface{}) (int64, er
 	return fR.expectedNumberRows, fR.expectedWriteError
 }
 
+func (fR *FakeRetriever) PqArray(values []string) interface{} {
+	return fR.expectedPqArray
+}
+
+type FakeJson struct {
+	expectedMarshalData  []byte
+	expectedMarshalError error
+}
+
+func (fJ *FakeJson) Marshal(v interface{}) ([]byte, error) {
+	return fJ.expectedMarshalData, fJ.expectedMarshalError
+}
+
+func (fJ *FakeJson) Unmarshal(data []byte, v interface{}) error {
+	return nil
+}
+
 var _ = Describe("Postgres", func() {
 
 	var (
@@ -100,7 +118,8 @@ var _ = Describe("Postgres", func() {
 			IsValid:    true,
 		}
 		validParams = map[string]interface{}{"id": "teste"}
-		validUpdate = map[string]interface{}{"changeField": "changeValue"}
+		validUpdate = map[string]interface{}{"changeField": "changeValue",
+			"containers": []types.Container{}}
 	})
 
 	Describe("ConnectDB", func() {
@@ -599,13 +618,31 @@ var _ = Describe("Postgres", func() {
 					Equal(errors.New("Empty Analysis data")))
 			})
 		})
+		Context("When ConfigureAnalysisData returns an error", func() {
+			It("Should return the same error", func() {
+				fakeJson := FakeJson{
+					expectedMarshalData:  nil,
+					expectedMarshalError: errors.New("Failed trying to Marshal data"),
+				}
+				postgres := PostgresRequests{
+					JSONHandler: &fakeJson,
+				}
+				Expect(
+					postgres.InsertDBAnalysis(analysis)).To(
+					Equal(fakeJson.expectedMarshalError))
+			})
+		})
 		Context("When WriteInDB returns an error", func() {
 			It("Should return the same error", func() {
 				fakeRetriever := FakeRetriever{
 					expectedWriteError: errors.New("Failed to write data in DB"),
 				}
+				fakeJson := FakeJson{
+					expectedMarshalData: nil,
+				}
 				postgres := PostgresRequests{
 					DataRetriever: &fakeRetriever,
+					JSONHandler:   &fakeJson,
 				}
 				Expect(
 					postgres.InsertDBAnalysis(analysis)).To(
@@ -618,8 +655,12 @@ var _ = Describe("Postgres", func() {
 					expectedWriteError: nil,
 					expectedNumberRows: 0,
 				}
+				fakeJson := FakeJson{
+					expectedMarshalData: nil,
+				}
 				postgres := PostgresRequests{
 					DataRetriever: &fakeRetriever,
+					JSONHandler:   &fakeJson,
 				}
 				Expect(postgres.InsertDBAnalysis(analysis)).To(
 					Equal(errors.New("No data was inserted")))
@@ -631,8 +672,12 @@ var _ = Describe("Postgres", func() {
 					expectedWriteError: nil,
 					expectedNumberRows: 1,
 				}
+				fakeJson := FakeJson{
+					expectedMarshalData: nil,
+				}
 				postgres := PostgresRequests{
 					DataRetriever: &fakeRetriever,
+					JSONHandler:   &fakeJson,
 				}
 				Expect(postgres.InsertDBAnalysis(analysis)).To(BeNil())
 			})
@@ -815,13 +860,29 @@ var _ = Describe("Postgres", func() {
 					Equal(errors.New("Empty fields to search")))
 			})
 		})
+		Context("When ConfigureAnalysisData returns an error", func() {
+			It("Should return the same error", func() {
+				fakeJson := FakeJson{
+					expectedMarshalError: errors.New("Failed to Marshal data"),
+				}
+				postgres := PostgresRequests{
+					JSONHandler: &fakeJson,
+				}
+				Expect(postgres.UpdateOneDBAnalysis(validParams, validUpdate)).To(
+					Equal(fakeJson.expectedMarshalError))
+			})
+		})
 		Context("When WriteInDB returns an error", func() {
 			It("Should return the same error", func() {
+				fakeJson := FakeJson{
+					expectedMarshalError: nil,
+				}
 				fakeRetriever := FakeRetriever{
 					expectedWriteError: errors.New("Failed to write in DB"),
 				}
 				postgres := PostgresRequests{
 					DataRetriever: &fakeRetriever,
+					JSONHandler:   &fakeJson,
 				}
 				Expect(postgres.UpdateOneDBAnalysis(validParams, validUpdate)).To(
 					Equal(fakeRetriever.expectedWriteError))
@@ -829,12 +890,16 @@ var _ = Describe("Postgres", func() {
 		})
 		Context("When WriteInDB returns 0 rows affected", func() {
 			It("Should return the expected error", func() {
+				fakeJson := FakeJson{
+					expectedMarshalError: nil,
+				}
 				fakeRetriever := FakeRetriever{
 					expectedWriteError: nil,
 					expectedNumberRows: 0,
 				}
 				postgres := PostgresRequests{
 					DataRetriever: &fakeRetriever,
+					JSONHandler:   &fakeJson,
 				}
 				Expect(postgres.UpdateOneDBAnalysis(validParams, validUpdate)).To(
 					Equal(errors.New("No data was updated")))
@@ -842,12 +907,16 @@ var _ = Describe("Postgres", func() {
 		})
 		Context("When WriteInDB returns a number of rows affected", func() {
 			It("Should return a nil error", func() {
+				fakeJson := FakeJson{
+					expectedMarshalError: nil,
+				}
 				fakeRetriever := FakeRetriever{
 					expectedWriteError: nil,
 					expectedNumberRows: 1,
 				}
 				postgres := PostgresRequests{
 					DataRetriever: &fakeRetriever,
+					JSONHandler:   &fakeJson,
 				}
 				Expect(postgres.UpdateOneDBAnalysis(validParams, validUpdate)).To(
 					BeNil())
@@ -932,13 +1001,29 @@ var _ = Describe("Postgres", func() {
 					Equal(errors.New("Empty fields to search")))
 			})
 		})
+		Context("When ConfigureAnalysisData returns an error", func() {
+			It("Should return the same error", func() {
+				fakeJson := FakeJson{
+					expectedMarshalError: errors.New("Failed trying to Marshal data"),
+				}
+				postgres := PostgresRequests{
+					JSONHandler: &fakeJson,
+				}
+				Expect(postgres.UpdateOneDBAnalysisContainer(validParams, validUpdate)).To(
+					Equal(fakeJson.expectedMarshalError))
+			})
+		})
 		Context("When WriteInDB returns an error", func() {
 			It("Should return the same error", func() {
+				fakeJson := FakeJson{
+					expectedMarshalError: nil,
+				}
 				fakeRetriever := FakeRetriever{
 					expectedWriteError: errors.New("Failed to write in DB"),
 				}
 				postgres := PostgresRequests{
 					DataRetriever: &fakeRetriever,
+					JSONHandler:   &fakeJson,
 				}
 				Expect(postgres.UpdateOneDBAnalysisContainer(validParams, validUpdate)).To(
 					Equal(fakeRetriever.expectedWriteError))
@@ -946,12 +1031,16 @@ var _ = Describe("Postgres", func() {
 		})
 		Context("When WriteInDB returns 0 rows affected", func() {
 			It("Should return the expected error", func() {
+				fakeJson := FakeJson{
+					expectedMarshalError: nil,
+				}
 				fakeRetriever := FakeRetriever{
 					expectedWriteError: nil,
 					expectedNumberRows: 0,
 				}
 				postgres := PostgresRequests{
 					DataRetriever: &fakeRetriever,
+					JSONHandler:   &fakeJson,
 				}
 				Expect(postgres.UpdateOneDBAnalysisContainer(validParams, validUpdate)).To(
 					Equal(errors.New("No data was updated")))
@@ -959,12 +1048,16 @@ var _ = Describe("Postgres", func() {
 		})
 		Context("When WriteInDB returns a number of rows affected", func() {
 			It("Should return a nil error", func() {
+				fakeJson := FakeJson{
+					expectedMarshalError: nil,
+				}
 				fakeRetriever := FakeRetriever{
 					expectedWriteError: nil,
 					expectedNumberRows: 1,
 				}
 				postgres := PostgresRequests{
 					DataRetriever: &fakeRetriever,
+					JSONHandler:   &fakeJson,
 				}
 				Expect(postgres.UpdateOneDBAnalysisContainer(validParams, validUpdate)).To(
 					BeNil())
@@ -1184,6 +1277,106 @@ var _ = Describe("Postgres", func() {
 				finalQuery, values := ConfigureUpsertQuery(query, columnsConflict, newValues)
 				Expect(finalQuery).To(Equal(expectedQuery))
 				Expect(values).To(Equal(expectedValues))
+			})
+		})
+	})
+	Describe("ConfigureAnalysisData", func() {
+		Context("When updatedAnalysis has containers and Marshal function returns an error", func() {
+			It("Should return the same error and the map variable passed in the argument", func() {
+				myCommits := []string{"author1", "author2"}
+				updatedAnalysis := map[string]interface{}{
+					"commitAuthors": myCommits,
+					"containers":    []types.Container{},
+				}
+				fakeJson := FakeJson{
+					expectedMarshalError: errors.New("Failed trying to Marshal data"),
+				}
+				fakeRetriever := FakeRetriever{
+					expectedPqArray: myCommits,
+				}
+				postgres := PostgresRequests{
+					JSONHandler:   &fakeJson,
+					DataRetriever: &fakeRetriever,
+				}
+				newUpdatedData, err := postgres.ConfigureAnalysisData(updatedAnalysis)
+				Expect(err).To(Equal(fakeJson.expectedMarshalError))
+				Expect(newUpdatedData).To(Equal(updatedAnalysis))
+			})
+		})
+		Context("When updatedAnalysis has huskyciresults and Marshal function returns an error ", func() {
+			It("Should return the same error and the map variable passed in the argument", func() {
+				myCommits := []string{"author1", "author2"}
+				updatedAnalysis := map[string]interface{}{
+					"commitAuthors":  myCommits,
+					"huskyciresults": types.HuskyCIResults{},
+				}
+				fakeJson := FakeJson{
+					expectedMarshalError: errors.New("Failed trying to Marshal data"),
+				}
+				fakeRetriever := FakeRetriever{
+					expectedPqArray: myCommits,
+				}
+				postgres := PostgresRequests{
+					JSONHandler:   &fakeJson,
+					DataRetriever: &fakeRetriever,
+				}
+				newUpdatedData, err := postgres.ConfigureAnalysisData(updatedAnalysis)
+				Expect(err).To(Equal(fakeJson.expectedMarshalError))
+				Expect(newUpdatedData).To(Equal(updatedAnalysis))
+			})
+		})
+		Context("When updatedAnalysis has codes and Marshal function returns an error ", func() {
+			It("Should return the same error and the map variable passed in the argument", func() {
+				myCommits := []string{"author1", "author2"}
+				updatedAnalysis := map[string]interface{}{
+					"commitAuthors": myCommits,
+					"codes":         []types.Code{},
+				}
+				fakeJson := FakeJson{
+					expectedMarshalError: errors.New("Failed trying to Marshal data"),
+				}
+				fakeRetriever := FakeRetriever{
+					expectedPqArray: myCommits,
+				}
+				postgres := PostgresRequests{
+					JSONHandler:   &fakeJson,
+					DataRetriever: &fakeRetriever,
+				}
+				newUpdatedData, err := postgres.ConfigureAnalysisData(updatedAnalysis)
+				Expect(err).To(Equal(fakeJson.expectedMarshalError))
+				Expect(newUpdatedData).To(Equal(updatedAnalysis))
+			})
+		})
+		Context("When updatedAnalysis has all expected data with valid JSON returned in Marshal", func() {
+			It("Should return an nil error and the map variable passed in the argument", func() {
+				myCommits := []string{"author1", "author2"}
+				marshalData := []byte("ok")
+				updatedAnalysis := map[string]interface{}{
+					"commitAuthors":  myCommits,
+					"codes":          []types.Code{},
+					"containers":     []types.Container{},
+					"huskyciresults": types.HuskyCIResults{},
+				}
+				expectedAnalysis := map[string]interface{}{
+					"commitAuthors":  myCommits,
+					"codes":          marshalData,
+					"containers":     marshalData,
+					"huskyciresults": marshalData,
+				}
+				fakeJson := FakeJson{
+					expectedMarshalError: nil,
+					expectedMarshalData:  marshalData,
+				}
+				fakeRetriever := FakeRetriever{
+					expectedPqArray: myCommits,
+				}
+				postgres := PostgresRequests{
+					JSONHandler:   &fakeJson,
+					DataRetriever: &fakeRetriever,
+				}
+				newUpdatedData, err := postgres.ConfigureAnalysisData(updatedAnalysis)
+				Expect(err).To(BeNil())
+				Expect(newUpdatedData).To(Equal(expectedAnalysis))
 			})
 		})
 	})

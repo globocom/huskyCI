@@ -269,6 +269,10 @@ func (pR *PostgresRequests) InsertDBAnalysis(analysis types.Analysis) error {
 		"containers":       analysis.Containers,
 		"startedAt":        analysis.StartedAt,
 	}
+	analysisMap, err := pR.ConfigureAnalysisData(analysisMap)
+	if err != nil {
+		return err
+	}
 	finalQuery, values := ConfigureInsertQuery(
 		`INSERT into analysis`, analysisMap)
 	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
@@ -373,7 +377,6 @@ func (pR *PostgresRequests) UpsertOneDBSecurityTest(
 		"default":        updatedSecurityTest.Default,
 		"timeOutSeconds": updatedSecurityTest.TimeOutInSeconds,
 	}
-	// TODO
 	finalQuery, values := ConfigureUpsertQuery(
 		`INSERT into "securityTest"`, mapParams, updatedSecurityMap)
 	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
@@ -434,6 +437,12 @@ func (pR *PostgresRequests) UpdateOneDBAnalysis(
 	if len(mapParams) == 0 {
 		return errors.New("Empty fields to search")
 	}
+	// Convert commitAuthors to a valid type for psql
+	// understand that it is an array.
+	updatedAnalysis, err := pR.ConfigureAnalysisData(updatedAnalysis)
+	if err != nil {
+		return err
+	}
 	finalQuery, values := ConfigureUpdateQuery(
 		`UPDATE analysis`, mapParams, updatedAnalysis)
 	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
@@ -485,6 +494,10 @@ func (pR *PostgresRequests) UpdateOneDBAnalysisContainer(
 	if len(mapParams) == 0 {
 		return errors.New("Empty fields to search")
 	}
+	updateQuery, err := pR.ConfigureAnalysisData(updateQuery)
+	if err != nil {
+		return err
+	}
 	finalQuery, values := ConfigureUpdateQuery(
 		`UPDATE analysis`, mapParams, updateQuery)
 	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
@@ -515,7 +528,7 @@ func (pR *PostgresRequests) UpdateOneDBAccessToken(
 		"uuid":          updatedAccessToken.UUID,
 	}
 	finalQuery, values := ConfigureUpdateQuery(
-		`UPDATE accessToken`, mapParams, updatedAccessTokenMap)
+		`UPDATE "accessToken"`, mapParams, updatedAccessTokenMap)
 	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
 	if err != nil {
 		return err
@@ -612,4 +625,33 @@ func ConfigureQuery(query string, params map[string]interface{}) (string, []inte
 		i++
 	}
 	return query, values
+}
+
+func (pR *PostgresRequests) ConfigureAnalysisData(
+	updatedAnalysis map[string]interface{}) (map[string]interface{}, error) {
+	if authors, ok := updatedAnalysis["commitAuthors"].([]string); ok {
+		updatedAnalysis["commitAuthors"] = pR.DataRetriever.PqArray(authors)
+	}
+	if containers, ok := updatedAnalysis["containers"].([]types.Container); ok {
+		containerJson, err := pR.JSONHandler.Marshal(containers)
+		if err != nil {
+			return updatedAnalysis, err
+		}
+		updatedAnalysis["containers"] = containerJson
+	}
+	if huskyciresults, ok := updatedAnalysis["huskyciresults"].(types.HuskyCIResults); ok {
+		huskyJson, err := pR.JSONHandler.Marshal(huskyciresults)
+		if err != nil {
+			return updatedAnalysis, err
+		}
+		updatedAnalysis["huskyciresults"] = huskyJson
+	}
+	if myCodes, ok := updatedAnalysis["codes"].([]types.Code); ok {
+		codeJson, err := pR.JSONHandler.Marshal(myCodes)
+		if err != nil {
+			return updatedAnalysis, err
+		}
+		updatedAnalysis["codes"] = codeJson
+	}
+	return updatedAnalysis, nil
 }

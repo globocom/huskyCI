@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/lib/pq"
 )
 
 // ConvertStringToSlice parses the output string from the array type.
@@ -104,4 +106,11 @@ func (sR *SQLJSONRetrieve) RetrieveFromDB(
 // updated are passed in args variable.
 func (sR *SQLJSONRetrieve) WriteInDB(query string, args ...interface{}) (int64, error) {
 	return sR.Psql.WriteInDB(query, args)
+}
+
+// PqArray will get the array passed as argument and return
+// an interface with the right format to store an array in
+// Postgres.
+func (sR *SQLJSONRetrieve) PqArray(values []string) interface{} {
+	return pq.Array(values)
 }

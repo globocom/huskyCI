@@ -54,6 +54,7 @@ type DataGenerator interface {
 	Connect(address string, username string, password string, dbName string, maxOpenConns int, maxIdleConns int, connLT time.Duration) error
 	RetrieveFromDB(query string, response interface{}, arrayColumns []string, params ...interface{}) error
 	WriteInDB(query string, args ...interface{}) (int64, error)
+	PqArray(values []string) interface{}
 }
 
 // JSONCaller implements JSON interface calling functions
@@ -71,4 +72,5 @@ type SQLJSONRetrieve struct {
 // for Postgres, a relational DB.
 type PostgresRequests struct {
 	DataRetriever DataGenerator
+	JSONHandler   JSON
 }
