@@ -84,16 +84,14 @@ func registerFinishedAnalysis(RID string, allScanResults *securitytest.RunAllInf
 		errorString = ""
 	}
 	updateAnalysisQuery := bson.M{
-		"$set": bson.M{
-			"status":         allScanResults.Status,
-			"commitAuthors":  allScanResults.CommitAuthors,
-			"result":         allScanResults.FinalResult,
-			"containers":     allScanResults.Containers,
-			"huskyciresults": allScanResults.HuskyCIResults,
-			"codes":          allScanResults.Codes,
-			"errorFound":     errorString,
-			"finishedAt":     time.Now(),
-		},
+		"status":         allScanResults.Status,
+		"commitAuthors":  allScanResults.CommitAuthors,
+		"result":         allScanResults.FinalResult,
+		"containers":     allScanResults.Containers,
+		"huskyciresults": allScanResults.HuskyCIResults,
+		"codes":          allScanResults.Codes,
+		"errorFound":     errorString,
+		"finishedAt":     time.Now(),
 	}
 
 	if err := apiContext.APIConfiguration.DBInstance.UpdateOneDBAnalysisContainer(analysisQuery, updateAnalysisQuery); err != nil {
