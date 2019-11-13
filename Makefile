@@ -5,7 +5,7 @@ GO ?= go
 GOROOT ?= $(shell $(GO) env GOROOT)
 GOPATH ?= $(shell $(GO) env GOPATH)
 GOBIN ?= $(GOPATH)/bin
-GOCILINT ?= golangci-lint
+GOCILINT ?= ./bin/golangci-lint
 GOLINT ?= $(GOBIN)/golint
 GOSEC ?= $(GOBIN)/gosec
 GINKGO ?= $(GOBIN)/ginkgo
@@ -99,7 +99,7 @@ get-gosec-deps:
 
 ## Gets all link dependencies
 get-lint-deps:
-	curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s v1.21.0
+# 	curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s v1.21.0
 	$(GO) get -u golang.org/x/lint/golint
 
 ## Gets all go test dependencies
