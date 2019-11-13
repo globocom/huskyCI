@@ -83,6 +83,20 @@ services:
           - "8080:80"
         networks:
             - huskyCI_net
+
+    postgres:
+        container_name: huskyCI_Postgres
+        environment:
+            POSTGRES_USER: huskyCIUser
+            POSTGRES_PASSWORD: huskyCIPassword
+            POSTGRES_DB: huskyCIDB
+        build:
+            context: ../
+            dockerfile: deployments/dockerfiles/postgres.Dockerfile
+        ports:
+            - "5432:5432"
+        networks:
+            - huskyCI_net
     
 networks:
     huskyCI_net:
