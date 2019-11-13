@@ -41,16 +41,16 @@ func (pR *PostgresRequests) FindOneDBRepository(
 	if !ok {
 		return types.Repository{}, errors.New("Could not find repository URL")
 	}
-	myQuery := `SELECT 
+	repositoryQuery := `SELECT 
 					repositoryURL,
-					repositoryBranch,
 					createdAt
 				FROM
 					repository
 				WHERE
 					repositoryURL = $1`
 
-	if err := pR.DataRetriever.RetrieveFromDB(myQuery, &repositoryResponse, repository); err != nil {
+	if err := pR.DataRetriever.RetrieveFromDB(
+		repositoryQuery, &repositoryResponse, repository); err != nil {
 		return types.Repository{}, err
 	}
 	return repositoryResponse[0], nil
@@ -59,12 +59,12 @@ func (pR *PostgresRequests) FindOneDBRepository(
 // FindOneDBSecurityTest checks if a given securityTest is present into securityTest table.
 func (pR *PostgresRequests) FindOneDBSecurityTest(
 	mapParams map[string]interface{}) (types.SecurityTest, error) {
-	securityResponse := []types.SecurityTest{}
+	securityTestResponse := []types.SecurityTest{}
 	securityTest, ok := mapParams["name"]
 	if !ok {
 		return types.SecurityTest{}, errors.New("Could not find securityTest name field")
 	}
-	myQuery := `SELECT
+	securityTestQuery := `SELECT
 					name,
 					image,
 					imageTag,
@@ -77,10 +77,11 @@ func (pR *PostgresRequests) FindOneDBSecurityTest(
 					securityTest
 				WHERE
 					name = $1`
-	if err := pR.DataRetriever.RetrieveFromDB(myQuery, &securityResponse, securityTest); err != nil {
+	if err := pR.DataRetriever.RetrieveFromDB(
+		securityTestQuery, &securityTestResponse, securityTest); err != nil {
 		return types.SecurityTest{}, err
 	}
-	return securityResponse[0], nil
+	return securityTestResponse[0], nil
 }
 
 // FindOneDBAnalysis checks if a given analysis is present into analysis table.
@@ -91,7 +92,7 @@ func (pR *PostgresRequests) FindOneDBAnalysis(
 	if !ok {
 		return types.Analysis{}, errors.New("Could not find RID field")
 	}
-	myQuery := `SELECT
+	analysisQuery := `SELECT
 					RID,
 					repositoryURL,
 					repositoryBranch,
@@ -109,7 +110,8 @@ func (pR *PostgresRequests) FindOneDBAnalysis(
 				WHERE
 					RID = $1`
 
-	if err := pR.DataRetriever.RetrieveFromDB(myQuery, &analysisResponse, analysis); err != nil {
+	if err := pR.DataRetriever.RetrieveFromDB(
+		analysisQuery, &analysisResponse, analysis); err != nil {
 		return types.Analysis{}, err
 	}
 	return analysisResponse[0], nil
@@ -123,11 +125,11 @@ func (pR *PostgresRequests) FindOneDBUser(
 	if !ok {
 		return types.User{}, errors.New("Could not find user in DB")
 	}
-	myQuery := `SELECT
+	userQuery := `SELECT
 					username,
 					password,
 					salt,
-					interations,
+					iterations,
 					keylen,
 					hashfunction
 				FROM
@@ -135,7 +137,7 @@ func (pR *PostgresRequests) FindOneDBUser(
 				WHERE
 					username = $1`
 
-	if err := pR.DataRetriever.RetrieveFromDB(myQuery, &userResponse, user); err != nil {
+	if err := pR.DataRetriever.RetrieveFromDB(userQuery, &userResponse, user); err != nil {
 		return types.User{}, err
 	}
 	return userResponse[0], nil
@@ -149,7 +151,7 @@ func (pR *PostgresRequests) FindOneDBAccessToken(
 	if !ok {
 		return types.DBToken{}, errors.New("Could not find uuid parameter")
 	}
-	myQuery := `SELECT
+	tokenQuery := `SELECT
 					huskytoken,
 					repositoryURL,
 					isValid,
@@ -160,7 +162,7 @@ func (pR *PostgresRequests) FindOneDBAccessToken(
 					accessToken
 				WHERE
 					uuid = $1`
-	if err := pR.DataRetriever.RetrieveFromDB(myQuery, &tokenResponse, token); err != nil {
+	if err := pR.DataRetriever.RetrieveFromDB(tokenQuery, &tokenResponse, token); err != nil {
 		return types.DBToken{}, err
 	}
 	return tokenResponse[0], nil
@@ -226,9 +228,10 @@ func (pR *PostgresRequests) InsertDBSecurityTest(securityTest types.SecurityTest
 	if (types.SecurityTest{}) == securityTest {
 		return errors.New("Empty SecurityTest data")
 	}
-	securityMap := map[string]interface{}{
+	securityTestMap := map[string]interface{}{
 		"name":           securityTest.Name,
 		"image":          securityTest.Image,
+		"imageTag":       securityTest.ImageTag,
 		"cmd":            securityTest.Cmd,
 		"language":       securityTest.Language,
 		"type":           securityTest.Type,
@@ -236,7 +239,7 @@ func (pR *PostgresRequests) InsertDBSecurityTest(securityTest types.SecurityTest
 		"timeOutSeconds": securityTest.TimeOutInSeconds,
 	}
 	finalQuery, values := ConfigureInsertQuery(
-		`INSERT into securityTest`, securityMap)
+		`INSERT into securityTest`, securityTestMap)
 	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
 	if err != nil {
 		return err
@@ -365,7 +368,6 @@ func (pR *PostgresRequests) UpsertOneDBSecurityTest(
 		"default":        updatedSecurityTest.Default,
 		"timeOutSeconds": updatedSecurityTest.TimeOutInSeconds,
 	}
-	// TODO
 	finalQuery, values := ConfigureUpsertQuery(
 		`INSERT into securityTest`, mapParams, updatedSecurityMap)
 	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
@@ -376,45 +378,6 @@ func (pR *PostgresRequests) UpsertOneDBSecurityTest(
 		return nil, errors.New("No data was updated")
 	}
 	return rowsAff, nil
-}
-
-// ConfigureUpsertQuery will receive a partial query and mount the final query 
-// CONFLICT statement so it will allow Postgres make an Upsert in the entry
-// based on the conflicted columns passed in this statement. An UPDATE query is build
-// with the related values to be updated in case of a conflict.
-func ConfigureUpsertQuery(
-	query string, searchValues, newValues map[string]interface{}) (string, []interface{}) {
-	insertQuery, values := ConfigureInsertQuery(query, newValues)
-	conflictQuery := ""
-	i := 1
-	for k := range searchValues {
-		if !strings.Contains(conflictQuery, "CONFLICT") {
-			conflictQuery = `ON CONFLICT (`
-		}
-		if i == len(searchValues) {
-			conflictQuery = fmt.Sprintf("%s%s)", conflictQuery, k)
-		} else {
-			conflictQuery = fmt.Sprintf("%s%s, ", conflictQuery, k)
-		}
-		i++
-	}
-	updateQuery := ""
-	for k := range newValues {
-		if !strings.Contains(updateQuery, "UPDATE") {
-			updateQuery = `DO UPDATE SET`
-		}
-		if strings.Contains(updateQuery, "=") {
-			updateQuery = fmt.Sprintf("%s,", updateQuery)
-		}
-		updateQuery = fmt.Sprintf("%s %s = EXCLUDED.%s", updateQuery, k, k)
-	}
-	if conflictQuery != "" {
-		insertQuery = fmt.Sprintf("%s %s", insertQuery, conflictQuery)
-	}
-	if updateQuery != "" {
-		insertQuery = fmt.Sprintf("%s %s", insertQuery, updateQuery)
-	}
-	return insertQuery, values
 }
 
 // UpdateOneDBAnalysis checks if a given analysis is present into analysis table and update it.
@@ -521,9 +484,7 @@ func (pR *PostgresRequests) UpdateOneDBAccessToken(
 // GetMetricByType returns data about the metric received
 func (pR *PostgresRequests) GetMetricByType(
 	metricType string, queryStringParams map[string][]string) (interface{}, error) {
-	// TODO: Need to know how to generate the same statistics
-	// as on Mongo
-	return nil, errors.New("Function not supported")
+	return nil, errors.New("Function not supported yet in postgres")
 }
 
 // ConfigureUpdateQuery will receive a partial update query and mount the final query with
@@ -585,6 +546,45 @@ func ConfigureInsertQuery(query string, params map[string]interface{}) (string, 
 	}
 	query = fmt.Sprintf("%s %s %s", query, argsQuery, valuesQuery)
 	return query, values
+}
+
+// ConfigureUpsertQuery will receive a partial query and mount the final query
+// CONFLICT statement so it will allow Postgres make an Upsert in the entry
+// based on the conflicted columns passed in this statement. An UPDATE query is build
+// with the related values to be updated in case of a conflict.
+func ConfigureUpsertQuery(
+	query string, searchValues, newValues map[string]interface{}) (string, []interface{}) {
+	insertQuery, values := ConfigureInsertQuery(query, newValues)
+	conflictQuery := ""
+	index := 1
+	for key := range searchValues {
+		if !strings.Contains(conflictQuery, "CONFLICT") {
+			conflictQuery = `ON CONFLICT (`
+		}
+		if index == len(searchValues) {
+			conflictQuery = fmt.Sprintf("%s%s)", conflictQuery, key)
+		} else {
+			conflictQuery = fmt.Sprintf("%s%s, ", conflictQuery, key)
+		}
+		index++
+	}
+	updateQuery := ""
+	for key := range newValues {
+		if !strings.Contains(updateQuery, "UPDATE") {
+			updateQuery = `DO UPDATE SET`
+		}
+		if strings.Contains(updateQuery, "=") {
+			updateQuery = fmt.Sprintf("%s,", updateQuery)
+		}
+		updateQuery = fmt.Sprintf("%s %s = EXCLUDED.%s", updateQuery, key, key)
+	}
+	if conflictQuery != "" {
+		insertQuery = fmt.Sprintf("%s %s", insertQuery, conflictQuery)
+	}
+	if updateQuery != "" {
+		insertQuery = fmt.Sprintf("%s %s", insertQuery, updateQuery)
+	}
+	return insertQuery, values
 }
 
 // ConfigureQuery will receive a partial search query and will mount the final query with the
