@@ -22,7 +22,7 @@ huskyCI is an open-source tool that performs security tests inside CI pipelines 
 
 ## How does it work?
 
-The main goal of this project is to help development teams improve the quality of their code by finding vulnerabilities as soon as possible.
+The main goal of this project is to help development teams improve the quality of their code by finding vulnerabilities as quickly as possible, and thus addressing them.
 
 huskyCI can perform static security analysis in Python ([Bandit][Bandit] and [Safety][Safety]), Ruby ([Brakeman][Brakeman]), JavaScript ([Npm Audit][NpmAudit] and [Yarn Audit][YarnAudit]), Golang ([Gosec][Gosec]), and Java([SpotBugs][SpotBugs] plus [Find Sec Bugs][FindSec]). It can also audit repositories for secrets like AWS Secret Keys, Private SSH Keys, and many others using [GitLeaks][Gitleaks]. You should check our [wiki](https://github.com/globocom/huskyCI/wiki/How-does-huskyCI-work%3F) to better understand how this tool could help securing your organization projects!
 
