@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/globocom/huskyCI/api/db"
+	postgres "github.com/globocom/huskyCI/api/db/postgres"
 	"github.com/globocom/huskyCI/api/types"
 )
 
@@ -357,7 +358,19 @@ func (dF DefaultConfig) GetMaxContainersAllowed() int {
 func (dF DefaultConfig) GetDB() db.Requests {
 	dB := dF.Caller.GetEnvironmentVariable("HUSKYCI_DATABASE_TYPE")
 	if strings.EqualFold(dB, "postgres") {
-		return nil
+		postgresOperations := postgres.PostgresHandler{}
+		sqlConfig := postgres.SQLConfig{
+			Postgres: &postgresOperations,
+		}
+		jsonHandler := db.JSONCaller{}
+		sqlJSONRetriever := db.SQLJSONRetrieve{
+			Psql:        &sqlConfig,
+			JSONHandler: &jsonHandler,
+		}
+		postgres := db.PostgresRequests{
+			DataRetriever: &sqlJSONRetriever,
+		}
+		return &postgres
 	}
 	return &db.MongoRequests{}
 }
