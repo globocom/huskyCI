@@ -628,31 +628,37 @@ func ConfigureQuery(query string, params map[string]interface{}) (string, []inte
 	return query, values
 }
 
+// ConfigureAnalysisData will convert slice and struct data types
+// to a valid type to Postgres. For slices, it will use PqArray
+// function that convert slices to a valid array format in Postgres.
+// All the structs mapped in a JSON will be converted to a []byte
+// data type so it could be stored in correctly in a raw JSON
+// format. If any convertions fail, it will return an error.
 func (pR *PostgresRequests) ConfigureAnalysisData(
 	updatedAnalysis map[string]interface{}) (map[string]interface{}, error) {
 	if authors, ok := updatedAnalysis["commitAuthors"].([]string); ok {
 		updatedAnalysis["commitAuthors"] = pR.DataRetriever.PqArray(authors)
 	}
 	if containers, ok := updatedAnalysis["containers"].([]types.Container); ok {
-		containerJson, err := pR.JSONHandler.Marshal(containers)
+		containerJSON, err := pR.JSONHandler.Marshal(containers)
 		if err != nil {
 			return updatedAnalysis, err
 		}
-		updatedAnalysis["containers"] = containerJson
+		updatedAnalysis["containers"] = containerJSON
 	}
 	if huskyciresults, ok := updatedAnalysis["huskyciresults"].(types.HuskyCIResults); ok {
-		huskyJson, err := pR.JSONHandler.Marshal(huskyciresults)
+		huskyJSON, err := pR.JSONHandler.Marshal(huskyciresults)
 		if err != nil {
 			return updatedAnalysis, err
 		}
-		updatedAnalysis["huskyciresults"] = huskyJson
+		updatedAnalysis["huskyciresults"] = huskyJSON
 	}
 	if myCodes, ok := updatedAnalysis["codes"].([]types.Code); ok {
-		codeJson, err := pR.JSONHandler.Marshal(myCodes)
+		codeJSON, err := pR.JSONHandler.Marshal(myCodes)
 		if err != nil {
 			return updatedAnalysis, err
 		}
-		updatedAnalysis["codes"] = codeJson
+		updatedAnalysis["codes"] = codeJSON
 	}
 	return updatedAnalysis, nil
 }
