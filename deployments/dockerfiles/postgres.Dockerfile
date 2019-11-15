@@ -1,2 +1,2 @@
 FROM postgres:latest
-ADD deployments/mydb.sql /docker-entrypoint-initdb.d/
+ADD deployments/huskyci.sql /docker-entrypoint-initdb.d/
