@@ -831,7 +831,6 @@ var _ = Describe("Postgres", func() {
 		})
 		Context("When WriteInDB returns 0 rows affected", func() {
 			It("Should return the expected error", func() {
-<<<<<<< HEAD
 				fakeJson := FakeJson{
 					expectedMarshalError: nil,
 				}
