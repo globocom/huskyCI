@@ -369,6 +369,7 @@ func (dF DefaultConfig) GetDB() db.Requests {
 		}
 		postgres := db.PostgresRequests{
 			DataRetriever: &sqlJSONRetriever,
+			JSONHandler:   &jsonHandler,
 		}
 		return &postgres
 	}

@@ -14,7 +14,7 @@ type RunAllInfo struct {
 	Status         string
 	Containers     []types.Container
 	CommitAuthors  []string
-	Codes          []Code
+	Codes          []types.Code
 	FinalResult    string
 	ErrorFound     error
 	HuskyCIResults types.HuskyCIResults
@@ -334,6 +334,9 @@ func getAllDefaultSecurityTests(typeOf, language string) ([]types.SecurityTest, 
 	}
 	securityTests, err := apiContext.APIConfiguration.DBInstance.FindAllDBSecurityTest(securityTestQuery)
 	if err != nil {
+		if err.Error() == "No data found" {
+			return securityTests, nil
+		}
 		log.Error("getAllDefaultSecurityTests", "SECURITYTEST", 2009, err)
 		return securityTests, err
 	}

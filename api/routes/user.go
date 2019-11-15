@@ -49,7 +49,7 @@ func UpdateUser(c echo.Context) error {
 	userQuery := map[string]interface{}{"username": attemptUser.Username}
 	user, err := apiContext.APIConfiguration.DBInstance.FindOneDBUser(userQuery)
 	if err != nil {
-		if err == mgo.ErrNotFound {
+		if err == mgo.ErrNotFound || err.Error() == "No data found" {
 			reply := map[string]interface{}{"success": false, "error": "user not found"}
 			return c.JSON(http.StatusNotFound, reply)
 		}
@@ -92,7 +92,7 @@ func UpdateUser(c echo.Context) error {
 
 	// step 5.2: update user
 	if err := apiContext.APIConfiguration.DBInstance.UpdateOneDBUser(userQuery, updatedUser); err != nil {
-		if err == mgo.ErrNotFound {
+		if err == mgo.ErrNotFound || err.Error() == "No data found" {
 			reply := map[string]interface{}{"success": false, "error": "user not found"}
 			return c.JSON(http.StatusNotFound, reply)
 		}

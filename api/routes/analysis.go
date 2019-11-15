@@ -55,7 +55,7 @@ func GetAnalysis(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, reply)
 	}
 	if err != nil {
-		if err == mgo.ErrNotFound {
+		if err == mgo.ErrNotFound || err.Error() == "No data found" {
 			log.Warning(logActionGetAnalysis, logInfoAnalysis, 106, RID)
 			reply := map[string]interface{}{"success": false, "error": "analysis not found"}
 			return c.JSON(http.StatusNotFound, reply)
@@ -96,31 +96,35 @@ func ReceiveRequest(c echo.Context) error {
 	// step-02: is this repository already in MongoDB?
 	repositoryQuery := map[string]interface{}{"repositoryURL": repository.URL}
 	_, err = apiContext.APIConfiguration.DBInstance.FindOneDBRepository(repositoryQuery)
-	if err == mgo.ErrNotFound {
-		// step-02-o1: repository not found! insert it into MongoDB
-		repository.CreatedAt = time.Now()
-		err = apiContext.APIConfiguration.DBInstance.InsertDBRepository(repository)
-		if err != nil {
-			log.Error(logActionReceiveRequest, logInfoAnalysis, 1010, err)
+	if err != nil {
+		if err == mgo.ErrNotFound || err.Error() == "No data found" {
+			// step-02-o1: repository not found! insert it into MongoDB
+			repository.CreatedAt = time.Now()
+			err = apiContext.APIConfiguration.DBInstance.InsertDBRepository(repository)
+			if err != nil {
+				log.Error(logActionReceiveRequest, logInfoAnalysis, 1010, err)
+				reply := map[string]interface{}{"success": false, "error": "internal error"}
+				return c.JSON(http.StatusInternalServerError, reply)
+			}
+		} else {
+			// step-02-o2: another error searching for repositoryQuery
+			log.Error(logActionReceiveRequest, logInfoAnalysis, 1013, err)
 			reply := map[string]interface{}{"success": false, "error": "internal error"}
 			return c.JSON(http.StatusInternalServerError, reply)
 		}
-	} else if err != nil {
-		// step-02-o2: another error searching for repositoryQuery
-		log.Error(logActionReceiveRequest, logInfoAnalysis, 1013, err)
-		reply := map[string]interface{}{"success": false, "error": "internal error"}
-		return c.JSON(http.StatusInternalServerError, reply)
 	} else { // err == nil
 		// step-03: repository found! does it have a running status analysis?
 		analysisQuery := map[string]interface{}{"repositoryURL": repository.URL, "repositoryBranch": repository.Branch}
 		analysisResult, err := apiContext.APIConfiguration.DBInstance.FindOneDBAnalysis(analysisQuery)
-		if err == mgo.ErrNotFound {
-			// nice! we can start this analysis!
-		} else if err != nil {
-			// step-03-err: another error searching for analysisQuery
-			log.Error(logActionReceiveRequest, logInfoAnalysis, 1009, err)
-			reply := map[string]interface{}{"success": false, "error": "internal error"}
-			return c.JSON(http.StatusInternalServerError, reply)
+		if err != nil {
+			if err == mgo.ErrNotFound || err.Error() == "No data found" {
+				// nice! we can start this analysis!
+			} else {
+				// step-03-err: another error searching for analysisQuery
+				log.Error(logActionReceiveRequest, logInfoAnalysis, 1009, err)
+				reply := map[string]interface{}{"success": false, "error": "internal error"}
+				return c.JSON(http.StatusInternalServerError, reply)
+			}
 		} else { // err == nil
 			// step 03-a: Ops, this analysis is already running!
 			if analysisResult.Status == "running" {

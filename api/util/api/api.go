@@ -16,6 +16,7 @@ import (
 const logActionCheckReqs = "CheckHuskyRequirements"
 const logInfoAPIUtil = "API-UTIL"
 
+
 // CheckHuskyRequirements checks for all requirements needed before starting huskyCI.
 func (hU HuskyUtils) CheckHuskyRequirements(configAPI *apiContext.APIConfig) error {
 
@@ -164,7 +165,7 @@ func (cH *CheckUtils) checkDefaultUser(configAPI *apiContext.APIConfig) error {
 	defaultUserQuery := map[string]interface{}{"username": user.DefaultAPIUser}
 	_, err := configAPI.DBInstance.FindOneDBUser(defaultUserQuery)
 	if err != nil {
-		if err == mgo.ErrNotFound {
+		if err == mgo.ErrNotFound || err.Error() == "No data found" {
 			// user not found, add default user
 			if err := user.InsertDefaultUser(); err != nil {
 				return err

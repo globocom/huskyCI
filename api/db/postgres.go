@@ -25,9 +25,9 @@ func (pR *PostgresRequests) ConnectDB(
 	connMaxLifetime time.Duration) error {
 	return pR.DataRetriever.Connect(
 		address,
+		dbName,
 		username,
 		password,
-		dbName,
 		maxOpenConns,
 		maxIdleConns,
 		connMaxLifetime)
@@ -37,21 +37,9 @@ func (pR *PostgresRequests) ConnectDB(
 func (pR *PostgresRequests) FindOneDBRepository(
 	mapParams map[string]interface{}) (types.Repository, error) {
 	repositoryResponse := []types.Repository{}
-	repository, ok := mapParams["repositoryURL"]
-	if !ok {
-		return types.Repository{}, errors.New("Could not find repository URL")
-	}
-
-	repositoryQuery := `SELECT 
-					"repositoryURL",
-					"createdAt"
-				FROM
-					repository
-				WHERE
-					"repositoryURL" = $1`
-
+	query, params := ConfigureQuery(`SELECT * FROM "repository"`, mapParams)
 	if err := pR.DataRetriever.RetrieveFromDB(
-		repositoryQuery, &repositoryResponse, []string{}, repository); err != nil {
+		query, &repositoryResponse, []string{}, params...); err != nil {
 		return types.Repository{}, err
 	}
 	return repositoryResponse[0], nil
@@ -61,25 +49,9 @@ func (pR *PostgresRequests) FindOneDBRepository(
 func (pR *PostgresRequests) FindOneDBSecurityTest(
 	mapParams map[string]interface{}) (types.SecurityTest, error) {
 	securityTestResponse := []types.SecurityTest{}
-	securityTest, ok := mapParams["name"]
-	if !ok {
-		return types.SecurityTest{}, errors.New("Could not find securityTest name field")
-	}
-	securityTestQuery := `SELECT
-					name,
-					image,
-					"imageTag",
-					cmd,
-					type,
-					language,
-					default,
-					"timeOutSeconds"
-				FROM
-					"securityTest"
-				WHERE
-					name = $1`
+	query, params := ConfigureQuery(`SELECT * FROM "securityTest"`, mapParams)
 	if err := pR.DataRetriever.RetrieveFromDB(
-		securityTestQuery, &securityTestResponse, []string{}, securityTest); err != nil {
+		query, &securityTestResponse, []string{}, params...); err != nil {
 		return types.SecurityTest{}, err
 	}
 	return securityTestResponse[0], nil
@@ -89,31 +61,9 @@ func (pR *PostgresRequests) FindOneDBSecurityTest(
 func (pR *PostgresRequests) FindOneDBAnalysis(
 	mapParams map[string]interface{}) (types.Analysis, error) {
 	analysisResponse := []types.Analysis{}
-	analysis, ok := mapParams["RID"]
-	if !ok {
-		return types.Analysis{}, errors.New("Could not find RID field")
-	}
-
-	analysisQuery := `SELECT
-					"RID",
-					"repositoryURL",
-					"repositoryBranch",
-					"commitAuthors",
-					"status",
-					"result",
-					"errorFound",
-					"containers",
-					"startedAt",
-					"finishedAt",
-					"codes",
-					"huskyciresults"
-				FROM
-					analysis
-				WHERE
-					RID = $1`
-
+	query, params := ConfigureQuery(`SELECT * FROM "analysis"`, mapParams)
 	if err := pR.DataRetriever.RetrieveFromDB(
-		analysisQuery, &analysisResponse, []string{"commitAuthors"}, analysis); err != nil {
+		query, &analysisResponse, []string{"commitAuthors"}, params...); err != nil {
 		return types.Analysis{}, err
 	}
 	return analysisResponse[0], nil
@@ -123,24 +73,9 @@ func (pR *PostgresRequests) FindOneDBAnalysis(
 func (pR *PostgresRequests) FindOneDBUser(
 	mapParams map[string]interface{}) (types.User, error) {
 	userResponse := []types.User{}
-	user, ok := mapParams["username"]
-	if !ok {
-		return types.User{}, errors.New("Could not find user in DB")
-	}
-	userQuery := `SELECT
-					username,
-					password,
-					salt,
-					iterations,
-					keylen,
-					hashfunction
-				FROM
-					user
-				WHERE
-					username = $1`
-
+	query, params := ConfigureQuery(`SELECT * FROM "user"`, mapParams)
 	if err := pR.DataRetriever.RetrieveFromDB(
-		userQuery, &userResponse, []string{}, user); err != nil {
+		query, &userResponse, []string{}, params...); err != nil {
 		return types.User{}, err
 	}
 	return userResponse[0], nil
@@ -150,24 +85,9 @@ func (pR *PostgresRequests) FindOneDBUser(
 func (pR *PostgresRequests) FindOneDBAccessToken(
 	mapParams map[string]interface{}) (types.DBToken, error) {
 	tokenResponse := []types.DBToken{}
-	token, ok := mapParams["uuid"]
-	if !ok {
-		return types.DBToken{}, errors.New("Could not find uuid parameter")
-	}
-	tokenQuery := `SELECT
-					huskytoken,
-					"repositoryURL",
-					"isValid",
-					"createdAt",
-					salt,
-					uuid
-				FROM
-					"accessToken"
-				WHERE
-					uuid = $1`
-
+	query, params := ConfigureQuery(`SELECT * FROM "accessToken"`, mapParams)
 	if err := pR.DataRetriever.RetrieveFromDB(
-		tokenQuery, &tokenResponse, []string{}, token); err != nil {
+		query, &tokenResponse, []string{}, params...); err != nil {
 		return types.DBToken{}, err
 	}
 	return tokenResponse[0], nil
@@ -179,7 +99,7 @@ func (pR *PostgresRequests) FindAllDBRepository(
 	repositoryResponse := []types.Repository{}
 	query, params := ConfigureQuery(`SELECT * FROM repository`, mapParams)
 	if err := pR.DataRetriever.RetrieveFromDB(
-		query, &repositoryResponse, []string{}, params); err != nil {
+		query, &repositoryResponse, []string{}, params...); err != nil {
 		return repositoryResponse, err
 	}
 	return repositoryResponse, nil
@@ -192,7 +112,7 @@ func (pR *PostgresRequests) FindAllDBSecurityTest(
 	securityResponse := []types.SecurityTest{}
 	query, params := ConfigureQuery(`SELECT * FROM "securityTest"`, mapParams)
 	if err := pR.DataRetriever.RetrieveFromDB(
-		query, &securityResponse, []string{}, params); err != nil {
+		query, &securityResponse, []string{}, params...); err != nil {
 		return securityResponse, err
 	}
 	return securityResponse, nil
@@ -204,7 +124,7 @@ func (pR *PostgresRequests) FindAllDBAnalysis(
 	analysisResponse := []types.Analysis{}
 	query, params := ConfigureQuery(`SELECT * FROM analysis`, mapParams)
 	if err := pR.DataRetriever.RetrieveFromDB(
-		query, &analysisResponse, []string{}, params); err != nil {
+		query, &analysisResponse, []string{}, params...); err != nil {
 		return analysisResponse, err
 	}
 	return analysisResponse, nil
@@ -221,7 +141,7 @@ func (pR *PostgresRequests) InsertDBRepository(repository types.Repository) erro
 	}
 	finalQuery, values := ConfigureInsertQuery(
 		`INSERT into repository`, repositoryMap)
-	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
+	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values...)
 	if err != nil {
 		return err
 	}
@@ -248,7 +168,7 @@ func (pR *PostgresRequests) InsertDBSecurityTest(securityTest types.SecurityTest
 	}
 	finalQuery, values := ConfigureInsertQuery(
 		`INSERT into "securityTest"`, securityTestMap)
-	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
+	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values...)
 	if err != nil {
 		return err
 	}
@@ -268,8 +188,6 @@ func (pR *PostgresRequests) InsertDBAnalysis(analysis types.Analysis) error {
 		"repositoryURL":    analysis.URL,
 		"repositoryBranch": analysis.Branch,
 		"status":           analysis.Status,
-		"result":           analysis.Result,
-		"containers":       analysis.Containers,
 		"startedAt":        analysis.StartedAt,
 	}
 	analysisMap, err := pR.ConfigureAnalysisData(analysisMap)
@@ -278,7 +196,7 @@ func (pR *PostgresRequests) InsertDBAnalysis(analysis types.Analysis) error {
 	}
 	finalQuery, values := ConfigureInsertQuery(
 		`INSERT into analysis`, analysisMap)
-	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
+	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values...)
 	if err != nil {
 		return err
 	}
@@ -302,8 +220,8 @@ func (pR *PostgresRequests) InsertDBUser(user types.User) error {
 		"hashfunction": user.HashFunction,
 	}
 	finalQuery, values := ConfigureInsertQuery(
-		`INSERT into user`, userMap)
-	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
+		`INSERT into "user"`, userMap)
+	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values...)
 	if err != nil {
 		return err
 	}
@@ -328,7 +246,7 @@ func (pR *PostgresRequests) InsertDBAccessToken(accessToken types.DBToken) error
 	}
 	finalQuery, values := ConfigureInsertQuery(
 		`INSERT into "accessToken"`, accessTokenMap)
-	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
+	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values...)
 	if err != nil {
 		return err
 	}
@@ -350,7 +268,7 @@ func (pR *PostgresRequests) UpdateOneDBRepository(
 	}
 	finalQuery, values := ConfigureUpdateQuery(
 		`UPDATE repository`, mapParams, updateQuery)
-	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
+	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values...)
 	if err != nil {
 		return err
 	}
@@ -382,7 +300,7 @@ func (pR *PostgresRequests) UpsertOneDBSecurityTest(
 	}
 	finalQuery, values := ConfigureUpsertQuery(
 		`INSERT into "securityTest"`, mapParams, updatedSecurityMap)
-	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
+	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values...)
 	if err != nil {
 		return nil, err
 	}
@@ -409,7 +327,7 @@ func (pR *PostgresRequests) UpdateOneDBAnalysis(
 	}
 	finalQuery, values := ConfigureUpdateQuery(
 		`UPDATE analysis`, mapParams, updatedAnalysis)
-	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
+	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values...)
 	if err != nil {
 		return err
 	}
@@ -437,8 +355,8 @@ func (pR *PostgresRequests) UpdateOneDBUser(
 		"hashfunction": updatedUser.HashFunction,
 	}
 	finalQuery, values := ConfigureUpdateQuery(
-		`UPDATE user`, mapParams, updatedUserMap)
-	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
+		`UPDATE "user"`, mapParams, updatedUserMap)
+	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values...)
 	if err != nil {
 		return err
 	}
@@ -464,7 +382,7 @@ func (pR *PostgresRequests) UpdateOneDBAnalysisContainer(
 	}
 	finalQuery, values := ConfigureUpdateQuery(
 		`UPDATE analysis`, mapParams, updateQuery)
-	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
+	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values...)
 	if err != nil {
 		return err
 	}
@@ -493,7 +411,7 @@ func (pR *PostgresRequests) UpdateOneDBAccessToken(
 	}
 	finalQuery, values := ConfigureUpdateQuery(
 		`UPDATE "accessToken"`, mapParams, updatedAccessTokenMap)
-	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values)
+	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values...)
 	if err != nil {
 		return err
 	}

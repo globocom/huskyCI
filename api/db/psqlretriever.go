@@ -1,7 +1,6 @@
 package db
 
 import (
-	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -60,7 +59,7 @@ func (sR *SQLJSONRetrieve) Connect(
 // query if it exists.
 func (sR *SQLJSONRetrieve) RetrieveFromDB(
 	query string, response interface{}, arrayColumns []string, params ...interface{}) error {
-	values, err := sR.Psql.GetValuesFromDB(query, params)
+	values, err := sR.Psql.GetValuesFromDB(query, params...)
 	if err != nil {
 		return err
 	}
@@ -71,7 +70,7 @@ func (sR *SQLJSONRetrieve) RetrieveFromDB(
 			for _, row := range values {
 				convertedRow, ok := row[column].([]uint8)
 				if !ok {
-					return errors.New("Could not convert the array column. Format not valid")
+					continue
 				}
 				arrayValue := ConvertStringToSlice(string(convertedRow))
 				row[column] = arrayValue
@@ -105,7 +104,7 @@ func (sR *SQLJSONRetrieve) RetrieveFromDB(
 // WriteInDB will call Postgres with INSERT and UPDATE queries. The values to be inserted or
 // updated are passed in args variable.
 func (sR *SQLJSONRetrieve) WriteInDB(query string, args ...interface{}) (int64, error) {
-	return sR.Psql.WriteInDB(query, args)
+	return sR.Psql.WriteInDB(query, args...)
 }
 
 // PqArray will get the array passed as argument and return

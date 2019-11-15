@@ -138,15 +138,6 @@ var _ = Describe("Postgres", func() {
 	})
 
 	Describe("FindOneDBRepository", func() {
-		Context("When key map verification returns false", func() {
-			It("Should return an empty Repository with the expected error", func() {
-				postgres := PostgresRequests{}
-				repo, err := postgres.FindOneDBRepository(
-					map[string]interface{}{"Wrong Key": "Failed"})
-				Expect(repo).To(Equal(types.Repository{}))
-				Expect(err).To(Equal(errors.New("Could not find repository URL")))
-			})
-		})
 		Context("When RetrieveFromDB returns an error", func() {
 			It("Should return an empty Repository with the same error", func() {
 				fakeRetriever := FakeRetriever{
@@ -182,15 +173,6 @@ var _ = Describe("Postgres", func() {
 		})
 	})
 	Describe("FindOneDBSecurityTest", func() {
-		Context("When key map verification returns false", func() {
-			It("Should return an empty SecurityTest with the expected error", func() {
-				postgres := PostgresRequests{}
-				repo, err := postgres.FindOneDBSecurityTest(
-					map[string]interface{}{"Wrong Key": "Failed"})
-				Expect(repo).To(Equal(types.SecurityTest{}))
-				Expect(err).To(Equal(errors.New("Could not find securityTest name field")))
-			})
-		})
 		Context("When RetrieveFromDB returns an error", func() {
 			It("Should return an empty SecurityTest with the same error", func() {
 				fakeRetriever := FakeRetriever{
@@ -226,15 +208,6 @@ var _ = Describe("Postgres", func() {
 		})
 	})
 	Describe("FindOneDBAnalysis", func() {
-		Context("When key map verification returns false", func() {
-			It("Should return an empty Analysis with the expected error", func() {
-				postgres := PostgresRequests{}
-				repo, err := postgres.FindOneDBAnalysis(
-					map[string]interface{}{"Wrong Key": "Failed"})
-				Expect(repo).To(Equal(types.Analysis{}))
-				Expect(err).To(Equal(errors.New("Could not find RID field")))
-			})
-		})
 		Context("When RetrieveFromDB returns an error", func() {
 			It("Should return an empty Analysis with the same error", func() {
 				fakeRetriever := FakeRetriever{
@@ -270,15 +243,6 @@ var _ = Describe("Postgres", func() {
 		})
 	})
 	Describe("FindOneDBUser", func() {
-		Context("When key map verification returns false", func() {
-			It("Should return an empty User with the expected error", func() {
-				postgres := PostgresRequests{}
-				repo, err := postgres.FindOneDBUser(
-					map[string]interface{}{"Wrong Key": "Failed"})
-				Expect(repo).To(Equal(types.User{}))
-				Expect(err).To(Equal(errors.New("Could not find user in DB")))
-			})
-		})
 		Context("When RetrieveFromDB returns an error", func() {
 			It("Should return an empty User with the same error", func() {
 				fakeRetriever := FakeRetriever{
@@ -315,15 +279,6 @@ var _ = Describe("Postgres", func() {
 		})
 	})
 	Describe("FindOneDBAccessToken", func() {
-		Context("When key map verification returns false", func() {
-			It("Should return an empty DBToken with the expected error", func() {
-				postgres := PostgresRequests{}
-				repo, err := postgres.FindOneDBAccessToken(
-					map[string]interface{}{"Wrong Key": "Failed"})
-				Expect(repo).To(Equal(types.DBToken{}))
-				Expect(err).To(Equal(errors.New("Could not find uuid parameter")))
-			})
-		})
 		Context("When RetrieveFromDB returns an error", func() {
 			It("Should return an empty DBToken with the same error", func() {
 				fakeRetriever := FakeRetriever{
@@ -616,20 +571,6 @@ var _ = Describe("Postgres", func() {
 				Expect(
 					postgres.InsertDBAnalysis(types.Analysis{})).To(
 					Equal(errors.New("Empty Analysis data")))
-			})
-		})
-		Context("When ConfigureAnalysisData returns an error", func() {
-			It("Should return the same error", func() {
-				fakeJson := FakeJson{
-					expectedMarshalData:  nil,
-					expectedMarshalError: errors.New("Failed trying to Marshal data"),
-				}
-				postgres := PostgresRequests{
-					JSONHandler: &fakeJson,
-				}
-				Expect(
-					postgres.InsertDBAnalysis(analysis)).To(
-					Equal(fakeJson.expectedMarshalError))
 			})
 		})
 		Context("When WriteInDB returns an error", func() {
