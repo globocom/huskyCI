@@ -95,6 +95,7 @@ func registerFinishedAnalysis(RID string, allScanResults *securitytest.RunAllInf
 			"finishedAt":     time.Now(),
 		},
 	}
+
 	if err := apiContext.APIConfiguration.DBInstance.UpdateOneDBAnalysisContainer(analysisQuery, updateAnalysisQuery); err != nil {
 		log.Error("registerFinishedAnalysis", logInfoAnalysis, 2011, err)
 		return err

@@ -1,6 +1,8 @@
 package db_test
 
 import (
+	"time"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -26,11 +28,11 @@ type FakeSql struct {
 	ExpectedResult          []map[string]interface{}
 }
 
-func (fakeDB *FakeSql) ConfigureDB() error {
+func (fakeDB *FakeSql) ConfigureDB(address, username, password, dbName string) error {
 	return fakeDB.ExpectedConfigDbError
 }
 
-func (fakeDB *FakeSql) ConfigurePool() {}
+func (fakeDB *FakeSql) ConfigurePool(maxOpenConns, maxIdleConns int, connLT time.Duration) {}
 
 func (fakeDB *FakeSql) CloseDB() error {
 	return fakeDB.ExpectedCloseDbError
@@ -86,7 +88,7 @@ var _ = Describe("Sql", func() {
 				sqlConfig := SQLConfig{
 					Postgres: &fakeDB,
 				}
-				Expect(sqlConfig.Connect()).To(Equal(fakeDB.ExpectedConfigDbError))
+				Expect(sqlConfig.Connect("test", "test", "test", "test", 1, 1, time.Hour)).To(Equal(fakeDB.ExpectedConfigDbError))
 			})
 		})
 		Context("When ConfigureDB returns a nil error", func() {
@@ -97,7 +99,7 @@ var _ = Describe("Sql", func() {
 				sqlConfig := SQLConfig{
 					Postgres: &fakeDB,
 				}
-				Expect(sqlConfig.Connect()).To(BeNil())
+				Expect(sqlConfig.Connect("test", "test", "test", "test", 1, 1, time.Hour)).To(BeNil())
 			})
 		})
 	})
