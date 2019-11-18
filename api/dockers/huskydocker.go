@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"time"
 
+	"regexp"
+
 	"github.com/globocom/huskyCI/api/log"
 )
 
@@ -16,8 +18,23 @@ const logActionRun = "DockerRun"
 const logInfoHuskyDocker = "HUSKYDOCKER"
 const logActionPull = "pullImage"
 
+const urlRegexp = `([\w\-_]+(?:(?:\.[\w\-_]+)+))([\w\-\.,@?^=%&amp;:/~\+#]*[\w\-\@?^=%&amp;/~\+#])?`
+
+func configureImagePath(image, tag string) (string, string) {
+	fullContainerImage := fmt.Sprintf("%s:%s", image, tag)
+	regex := regexp.MustCompile(urlRegexp)
+	canonicalURL := image
+	if !regex.MatchString(canonicalURL) {
+		canonicalURL = fmt.Sprintf("docker.io/%s", fullContainerImage)
+	} else {
+		canonicalURL = fullContainerImage
+	}
+
+	return canonicalURL, fullContainerImage
+}
+
 // DockerRun starts a new container and returns its output and an error.
-func DockerRun(fullContainerImage, cmd string, timeOutInSeconds int) (string, string, error) {
+func DockerRun(image, imageTag, cmd string, timeOutInSeconds int) (string, string, error) {
 
 	// step 1: create a new docker API client
 	d, err := NewDocker()
@@ -25,9 +42,10 @@ func DockerRun(fullContainerImage, cmd string, timeOutInSeconds int) (string, st
 		return "", "", err
 	}
 
+	canonicalURL, fullContainerImage := configureImagePath(image, imageTag)
 	// step 2: pull image if it is not there yet
 	if !d.ImageIsLoaded(fullContainerImage) {
-		if err := pullImage(d, fullContainerImage); err != nil {
+		if err := pullImage(d, canonicalURL, fullContainerImage); err != nil {
 			return "", "", err
 		}
 	}
@@ -68,8 +86,7 @@ func DockerRun(fullContainerImage, cmd string, timeOutInSeconds int) (string, st
 	return CID, cOutput, nil
 }
 
-func pullImage(d *Docker, image string) error {
-	canonicalURL := fmt.Sprintf("docker.io/%s", image)
+func pullImage(d *Docker, canonicalURL, image string) error {
 	timeout := time.After(15 * time.Minute)
 	retryTick := time.NewTicker(15 * time.Second)
 	for {
