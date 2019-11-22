@@ -146,12 +146,12 @@ func (dF DefaultConfig) GetAPIPort() int {
 
 // GetAPIVersion returns current API version
 func (dF DefaultConfig) GetAPIVersion() string {
-	return "0.8.0"
+	return "0.10.0"
 }
 
 // GetAPIReleaseDate returns current API release date
 func (dF DefaultConfig) GetAPIReleaseDate() string {
-	return "2019-09-30"
+	return "2019-11-22"
 }
 
 // GetAllowOriginValue returns the allow origin value
