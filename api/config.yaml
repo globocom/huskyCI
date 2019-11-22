@@ -210,9 +210,7 @@ yarnaudit:
     git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneYarnAudit
     if [ $? -eq 0 ]; then
         cd code
-        pathLock=$(dirname "$(find . -name 'yarn.lock' | grep -v vendor)")
-        if [ $? -eq 0 ]; then
-            cd $pathLock
+        if [ -f yarn.lock ]; then
             yarn audit --json > /tmp/results.json 2> /tmp/errorYarnAudit
             if [ ! -s /tmp/errorYarnAudit ]; then
                 jq -c -M -j --slurp '{advisories: (. | map(select(.type == "auditAdvisory") | .data.advisory)), metadata: (. | map(select(.type == "auditSummary") | .data) | add)}' /tmp/results.json > /tmp/output.json
