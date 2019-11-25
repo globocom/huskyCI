@@ -1,0 +1,92 @@
+version: '3'
+services:
+
+    dockerapi:
+        privileged: true
+        image: docker:stable-dind
+        container_name: huskyCI_Docker_API
+        command: "dockerd --host=unix:///var/run/docker.sock --host=tcp://0.0.0.0:2376"
+        ports:
+          - "2376:2376"
+        volumes:
+            - docker_vol:/var/lib/docker
+            - ../deployments/daemon.json:/etc/docker/daemon.json:ro
+            - ../deployments/certs/:/data/certs/
+        networks:
+            - huskyCI_net
+
+    api:
+        container_name: huskyCI_API
+        environment:
+            GOPATH: /go/
+            # required envs
+            HUSKYCI_DATABASE_DB_ADDR: mongodb
+            HUSKYCI_DATABASE_DB_NAME: huskyCIDB
+            HUSKYCI_DATABASE_DB_USERNAME: huskyCIUser
+            HUSKYCI_DATABASE_DB_PASSWORD: huskyCIPassword
+            HUSKYCI_API_DEFAULT_USERNAME: huskyCIUser
+            HUSKYCI_API_DEFAULT_PASSWORD: huskyCIPassword
+            HUSKYCI_API_DEFAULT_ITERATIONS: 100000
+            HUSKYCI_API_DEFAULT_KEY_LENGTH: 512
+            HUSKYCI_API_ALLOW_ORIGIN_CORS: "*"
+            HUSKYCI_API_DEFAULT_HASH_FUNCTION: SHA512
+            HUSKYCI_DOCKERAPI_ADDR: dockerapi
+            HUSKYCI_DOCKERAPI_CERT_FILE: /go/src/github.com/globocom/huskyCI/cert.pem
+            HUSKYCI_DOCKERAPI_CERT_KEY: /go/src/github.com/globocom/huskyCI/key.pem
+            HUSKYCI_DOCKERAPI_CERT_PATH: /go/src/github.com/globocom/huskyCI/
+            HUSKYCI_DOCKERAPI_TLS_VERIFY: 1
+            # optional envs
+            HUSKYCI_DOCKERAPI_PORT: 2376
+            HUSKYCI_LOGGING_GRAYLOG_APP_NAME: huskyCI   
+        build:
+            context: ../
+            dockerfile: deployments/dockerfiles/api.Dockerfile
+        command: "go run api/server.go"
+        volumes:
+            - docker_vol:/var/lib/docker
+            - ../deployments/certs/client-huskyapi-cert.pem:/go/src/github.com/globocom/huskyCI/cert.pem:ro
+            - ../deployments/certs/client-huskyapi-key.pem:/go/src/github.com/globocom/huskyCI/key.pem:ro
+            - ../deployments/certs/ca.pem:/go/src/github.com/globocom/huskyCI/ca.pem:ro
+        ports:
+          - "8888:8888"
+        networks:
+            - huskyCI_net
+        depends_on:
+            - mongodb
+            - dockerapi
+        external_links:
+            - dockerapi:dockerapi
+
+    mongodb:
+        container_name: huskyCI_MongoDB
+        environment:
+            DATABASE: huskyCIDB
+            DATABASE_USER: huskyCIUser
+            DATABASE_PASS: huskyCIPassword
+        build:
+            context: ../
+            dockerfile: deployments/dockerfiles/db.Dockerfile
+        ports:
+          - "27017:27017"
+          - "27018:27018"
+        volumes:
+            - mongo_vol:/data/db
+        networks:
+            - huskyCI_net
+
+    fe:
+        container_name: huskyCI_Dashboard
+        image: "huskyci/dashboard:latest"
+        environment:
+            REACT_APP_HUSKYCI_FE_API_ADDRESS: "http://127.0.0.1:8888"
+        ports:
+          - "8080:80"
+        networks:
+            - huskyCI_net
+    
+networks:
+    huskyCI_net:
+
+volumes:
+    docker_vol:
+    mongo_vol:
