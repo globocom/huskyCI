@@ -1,0 +1,22 @@
+{
+  "name": "huskyci",
+  "version": "1.0.0",
+  "description": "Intentionally Vulnerable huskyCI test branch",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/globocom/huskyCI.git"
+  },
+  "author": "huskyCI",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/globocom/huskyCI"
+  },
+  "homepage": "https://github.com/globocom/huskyCI#readme",
+  "dependencies": {
+    "express": "^4.0.0"
+  }
+}
