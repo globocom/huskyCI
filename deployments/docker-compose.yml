@@ -80,7 +80,7 @@ services:
         environment:
             REACT_APP_HUSKYCI_FE_API_ADDRESS: "http://127.0.0.1:8888"
         ports:
-          - "8080:80"
+          - "10080:80"
         networks:
             - huskyCI_net
     
