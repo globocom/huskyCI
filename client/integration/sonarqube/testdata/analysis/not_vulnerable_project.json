@@ -1,0 +1,93 @@
+{
+    "_id" : "5ddd34734570ce1f149b3506",
+    "result" : "passed",
+    "containers" : [ 
+        {
+            "CID" : "f16680321512487dde9823b0ef21c0ab38bff7e1828be69408b6dee68f409564",
+            "securityTest" : {
+                "_id" : "5ddd31ba4570ce1f149b315d",
+                "name" : "gitauthors",
+                "image" : "huskyci/gitauthors",
+                "imageTag" : "2.18.1",
+                "cmd" : "mkdir -p ~/.ssh &&\necho 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&\nchmod 600 ~/.ssh/huskyci_id_rsa &&\necho \"IdentityFile ~/.ssh/huskyci_id_rsa\" >> /etc/ssh/ssh_config &&\necho \"StrictHostKeyChecking no\" >> /etc/ssh/ssh_config &&\ngit clone %GIT_REPO% code --quiet 2> /tmp/errorGitCloneEnry\ncd code\ngit checkout %GIT_BRANCH% --quiet\nif [ $? -eq 0 ]; then\n  for i in $(git log origin/master.. --pretty=\"%ae\" | sort -u); do\n    jsonMiddle=\"\\\"$i\\\",$jsonMiddle\"\n  done\n  length=${#jsonMiddle}\n  endindex=$(expr $length - 1)\n  authors=\"${jsonMiddle:0:$endindex}\"\n  echo \"{\\\"authors\\\":[$authors]}\"\nelse\n  echo \"ERROR_CLONING\"\n  cat /tmp/errorGitCloneEnry\nfi\n",
+                "type" : "Generic",
+                "language" : "",
+                "default" : true,
+                "timeOutSeconds" : 60
+            },
+            "cStatus" : "finished",
+            "cOutput" : "{\"authors\":[]}\r\n",
+            "cResult" : "passed",
+            "cInfo" : "Could not get authors. Probably master branch is being analyzed.",
+            "startedAt" : "2019-11-26T11:19:38.755-03:00",
+            "finishedAt" : "2019-11-26T11:19:45.934-03:00"
+        }, 
+        {
+            "CID" : "50a7ae3bd99bc62eb3814b964dde1a51cf0019b077cbddf7cdb1c4feeb70a5ac",
+            "securityTest" : {
+                "_id" : "5ddd31ba4570ce1f149b316b",
+                "name" : "gitleaks",
+                "image" : "huskyci/gitleaks",
+                "imageTag" : "2.1.0",
+                "cmd" : "mkdir -p ~/.ssh &&\necho 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&\nchmod 600 ~/.ssh/huskyci_id_rsa &&\necho \"IdentityFile ~/.ssh/huskyci_id_rsa\" >> /etc/ssh/ssh_config &&\necho \"StrictHostKeyChecking no\" >> /etc/ssh/ssh_config &&\ngit clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneGitleaks\nif [ $? -eq 0 ]; then\n    touch /tmp/results.json\n    $(which gitleaks) --log=warn --report=/tmp/results.json --repo-path=./code --repo-config > /tmp/errorGitleaks\n    if [ $? -eq 2 ]; then\n        echo -n 'ERROR_RUNNING_GITLEAKS'\n        cat /tmp/errorGitleaks\n    else\n        jq -j -M -c . /tmp/results.json\n    fi\nelse\n    echo \"ERROR_CLONING\"\n    cat /tmp/errorGitCloneGitleaks\nfi\n",
+                "type" : "Generic",
+                "language" : "",
+                "default" : true,
+                "timeOutSeconds" : 360
+            },
+            "cStatus" : "finished",
+            "cOutput" : "",
+            "cResult" : "passed",
+            "cInfo" : "No issues found.",
+            "startedAt" : "2019-11-26T11:19:38.755-03:00",
+            "finishedAt" : "2019-11-26T11:20:17.714-03:00"
+        }, 
+        {
+            "CID" : "096faa812028a53bc9eabc5df44d30cdf72ff615ceb758df81bbdb0276449241",
+            "securityTest" : {
+                "_id" : "5ddd31ba4570ce1f149b315f",
+                "name" : "gosec",
+                "image" : "huskyci/gosec",
+                "imageTag" : "v2.1.0",
+                "cmd" : "mkdir -p ~/.ssh &&\necho 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&\nchmod 600 ~/.ssh/huskyci_id_rsa &&\necho \"IdentityFile ~/.ssh/huskyci_id_rsa\" >> /etc/ssh/ssh_config &&\necho \"StrictHostKeyChecking no\" >> /etc/ssh/ssh_config &&\ncd src\ngit clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneGosec\nif [ $? -eq 0 ]; then\n  cd code\n  touch results.json\n  $(which gosec) -quiet -fmt=json -log=log.txt -out=results.json ./... 2> /dev/null\n  jq -j -M -c . results.json\nelse\n  echo \"ERROR_CLONING\"\n  cat /tmp/errorGitCloneGosec\nfi\n",
+                "type" : "Language",
+                "language" : "Go",
+                "default" : true,
+                "timeOutSeconds" : 360
+            },
+            "cStatus" : "finished",
+            "cOutput" : "",
+            "cResult" : "passed",
+            "cInfo" : "No issues found.",
+            "startedAt" : "2019-11-26T11:19:38.764-03:00",
+            "finishedAt" : "2019-11-26T11:20:31.350-03:00"
+        }
+    ],
+    "startedAt" : "2019-11-26T11:19:31.987-03:00",
+    "RID" : "PHqtSLeYbz4yH92ub39JvGp1t7vlJIG1",
+    "repositoryURL" : "https://gitlab.com/rafaveira3/appsec-defcon27-huskyci.git",
+    "repositoryBranch" : "master",
+    "status" : "finished",
+    "codes" : [ 
+        {
+            "language" : "Go",
+            "files" : [ 
+                "api/routes/healthcheck.go", 
+                "api/server.go", 
+                "api/util/util.go", 
+                "api/util/util_suite_test.go", 
+                "api/util/util_test.go"
+            ]
+        }, 
+        {
+            "language" : "Makefile",
+            "files" : [ 
+                "Makefile"
+            ]
+        }
+    ],
+    "commitAuthors" : [],
+    "errorFound" : "",
+    "finishedAt" : "2019-11-26T11:20:31.351-03:00",
+    "huskyciresults" : {}
+}
