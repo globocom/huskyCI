@@ -141,6 +141,10 @@ safety:
     git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneSafety
     if [ $? -eq 0 ]; then
       cd code
+      if [ -f Pipfile.lock ]; then
+        jq -r '.default | to_entries[] | if (.value.version | length) > 0 then "\(.key)\(.value.version)" else "\(.key)" end' Pipfile.lock >> requirements.txt
+        sort -u -o requirements.txt requirements.txt
+      fi
       if [ -f requirements.txt ]; then
         cat requirements.txt | grep '=' | grep -v '#' 1> safety_huskyci_analysis_requirements_raw.txt
         sed -i -e 's/>=/==/g; s/<=/==/g' safety_huskyci_analysis_requirements_raw.txt
