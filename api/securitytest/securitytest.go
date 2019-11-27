@@ -40,7 +40,7 @@ type SecTestScanInfo struct {
 	YarnErrorRunning      bool
 	CommitAuthorsNotFound bool
 	CommitAuthors         GitAuthorsOutput
-	Codes                 []Code
+	Codes                 []types.Code
 	Container             types.Container
 	FinalOutput           interface{}
 	Vulnerabilities       types.HuskyCISecurityTestOutput

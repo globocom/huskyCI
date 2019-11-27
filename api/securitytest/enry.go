@@ -10,17 +10,12 @@ import (
 	"reflect"
 
 	"github.com/globocom/huskyCI/api/log"
+	"github.com/globocom/huskyCI/api/types"
 )
 
 // EnryOutput is the struct that holds all data from Gosec output.
 type EnryOutput struct {
-	Codes []Code
-}
-
-// Code is the struct that stores all data from code found in a repository.
-type Code struct {
-	Language string   `bson:"language" json:"language"`
-	Files    []string `bson:"files" json:"files"`
+	Codes []types.Code
 }
 
 func analyzeEnry(enryScan *SecTestScanInfo) error {
@@ -39,7 +34,7 @@ func analyzeEnry(enryScan *SecTestScanInfo) error {
 }
 
 func (enryScan *SecTestScanInfo) prepareEnryOutput() error {
-	repositoryLanguages := []Code{}
+	repositoryLanguages := []types.Code{}
 	mapLanguages := make(map[string][]interface{})
 	err := json.Unmarshal([]byte(enryScan.Container.COutput), &mapLanguages)
 	if err != nil {
@@ -57,7 +52,7 @@ func (enryScan *SecTestScanInfo) prepareEnryOutput() error {
 				return errMsg
 			}
 		}
-		newLanguage := Code{
+		newLanguage := types.Code{
 			Language: name,
 			Files:    fs,
 		}

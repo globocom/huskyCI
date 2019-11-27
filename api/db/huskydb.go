@@ -223,12 +223,15 @@ func (mR *MongoRequests) UpsertOneDBSecurityTest(mapParams map[string]interface{
 
 // UpdateOneDBAnalysis checks if a given analysis is present into AnalysisCollection and update it.
 func (mR *MongoRequests) UpdateOneDBAnalysis(mapParams map[string]interface{}, updatedAnalysis map[string]interface{}) error {
+	updatedQuery := bson.M{
+		"$set": updatedAnalysis,
+	}
 	analysisQuery := []bson.M{}
 	for k, v := range mapParams {
 		analysisQuery = append(analysisQuery, bson.M{k: v})
 	}
 	analysisFinalQuery := bson.M{"$and": analysisQuery}
-	err := mongoHuskyCI.Conn.Update(analysisFinalQuery, updatedAnalysis, mongoHuskyCI.AnalysisCollection)
+	err := mongoHuskyCI.Conn.Update(analysisFinalQuery, updatedQuery, mongoHuskyCI.AnalysisCollection)
 	return err
 }
 
@@ -245,12 +248,15 @@ func (mR *MongoRequests) UpdateOneDBUser(mapParams map[string]interface{}, updat
 
 // UpdateOneDBAnalysisContainer checks if a given analysis is present into AnalysisCollection and update the container associated in it.
 func (mR *MongoRequests) UpdateOneDBAnalysisContainer(mapParams, updateQuery map[string]interface{}) error {
+	updatedQuery := bson.M{
+		"$set": updateQuery,
+	}
 	analysisQuery := []bson.M{}
 	for k, v := range mapParams {
 		analysisQuery = append(analysisQuery, bson.M{k: v})
 	}
 	analysisFinalQuery := bson.M{"$and": analysisQuery}
-	err := mongoHuskyCI.Conn.Update(analysisFinalQuery, updateQuery, mongoHuskyCI.AnalysisCollection)
+	err := mongoHuskyCI.Conn.Update(analysisFinalQuery, updatedQuery, mongoHuskyCI.AnalysisCollection)
 	return err
 }
 
