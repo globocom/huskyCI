@@ -1,7 +1,7 @@
 enry:
   name: enry
   image: huskyci/enry
-  imageTag: dev-fd3c31c
+  imageTag: dev-697929e
   cmd: |+
     mkdir -p ~/.ssh &&
     echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
@@ -52,7 +52,7 @@ gitauthors:
 gosec:
   name: gosec
   image: huskyci/gosec
-  imageTag: "2.0.0"
+  imageTag: v2.1.0
   cmd: |+
     mkdir -p ~/.ssh &&
     echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
@@ -102,7 +102,7 @@ bandit:
 brakeman:
   name: brakeman
   image: huskyci/brakeman
-  imageTag: "4.6.1"
+  imageTag: "4.7.1"
   cmd: |+
     mkdir -p ~/.ssh &&
     echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
@@ -141,6 +141,10 @@ safety:
     git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneSafety
     if [ $? -eq 0 ]; then
       cd code
+      if [ -f Pipfile.lock ]; then
+        jq -r '.default | to_entries[] | if (.value.version | length) > 0 then "\(.key)\(.value.version)" else "\(.key)" end' Pipfile.lock >> requirements.txt
+        sort -u -o requirements.txt requirements.txt
+      fi
       if [ -f requirements.txt ]; then
         cat requirements.txt | grep '=' | grep -v '#' 1> safety_huskyci_analysis_requirements_raw.txt
         sed -i -e 's/>=/==/g; s/<=/==/g' safety_huskyci_analysis_requirements_raw.txt
@@ -172,7 +176,7 @@ safety:
 npmaudit:
   name: npmaudit
   image: huskyci/npmaudit
-  imageTag: "6.10.3"
+  imageTag: "6.12.1"
   cmd: |+
     mkdir -p ~/.ssh &&
     echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
@@ -200,7 +204,7 @@ npmaudit:
 yarnaudit:
   name: yarnaudit
   image: huskyci/yarnaudit
-  imageTag: "1.17.3"
+  imageTag: "1.19.1"
   cmd: |+
     mkdir -p ~/.ssh &&
     echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
@@ -210,9 +214,7 @@ yarnaudit:
     git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneYarnAudit
     if [ $? -eq 0 ]; then
         cd code
-        pathLock=$(dirname "$(find . -name 'yarn.lock' | grep -v vendor)")
-        if [ $? -eq 0 ]; then
-            cd $pathLock
+        if [ -f yarn.lock ]; then
             yarn audit --json > /tmp/results.json 2> /tmp/errorYarnAudit
             if [ ! -s /tmp/errorYarnAudit ]; then
                 jq -c -M -j --slurp '{advisories: (. | map(select(.type == "auditAdvisory") | .data.advisory)), metadata: (. | map(select(.type == "auditSummary") | .data) | add)}' /tmp/results.json > /tmp/output.json

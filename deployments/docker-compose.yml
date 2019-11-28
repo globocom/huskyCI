@@ -20,7 +20,9 @@ services:
         environment:
             GOPATH: /go/
             # required envs
+            HUSKYCI_DATABASE_TYPE: mongodb
             HUSKYCI_DATABASE_DB_ADDR: mongodb
+            HUSKYCI_DATABASE_DB_PORT: "27017"
             HUSKYCI_DATABASE_DB_NAME: huskyCIDB
             HUSKYCI_DATABASE_DB_USERNAME: huskyCIUser
             HUSKYCI_DATABASE_DB_PASSWORD: huskyCIPassword
@@ -80,7 +82,21 @@ services:
         environment:
             REACT_APP_HUSKYCI_FE_API_ADDRESS: "http://127.0.0.1:8888"
         ports:
-          - "8080:80"
+          - "10080:80"
+        networks:
+            - huskyCI_net
+
+    postgres:
+        container_name: huskyCI_Postgres
+        environment:
+            POSTGRES_USER: huskyCIUser
+            POSTGRES_PASSWORD: huskyCIPassword
+            POSTGRES_DB: huskyCIDB
+        build:
+            context: ../
+            dockerfile: deployments/dockerfiles/postgres.Dockerfile
+        ports:
+            - "5432:5432"
         networks:
             - huskyCI_net
     

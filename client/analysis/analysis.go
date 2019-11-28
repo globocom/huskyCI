@@ -119,7 +119,7 @@ func GetAnalysis(RID string) (types.Analysis, error) {
 func MonitorAnalysis(RID string) (types.Analysis, error) {
 
 	analysis := types.Analysis{}
-	timeout := time.After(15 * time.Minute)
+	timeout := time.After(60 * time.Minute)
 	retryTick := time.NewTicker(60 * time.Second)
 
 	for {

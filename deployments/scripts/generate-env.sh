@@ -9,7 +9,7 @@
 
 # huskyCI client default environment variables
 HUSKYCI_CLIENT_REPO_URL="https://github.com/globocom/huskyCI.git"
-HUSKYCI_CLIENT_REPO_BRANCH="vulns-Golang"
+HUSKYCI_CLIENT_REPO_BRANCH="poc-golang-gosec"
 HUSKYCI_CLIENT_API_ADDR="http://localhost:8888"
 HUSKYCI_CLIENT_API_USE_HTTPS="false"
 

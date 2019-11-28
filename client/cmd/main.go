@@ -92,5 +92,5 @@ func main() {
 		fmt.Printf("[HUSKYCI][*] Some HIGH/MEDIUM issues were found :(\n")
 	}
 
-	os.Exit(1)
+	os.Exit(190)
 }

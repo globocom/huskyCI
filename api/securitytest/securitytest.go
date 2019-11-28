@@ -2,7 +2,6 @@ package securitytest
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 	"time"
 
@@ -40,7 +39,7 @@ type SecTestScanInfo struct {
 	YarnErrorRunning      bool
 	CommitAuthorsNotFound bool
 	CommitAuthors         GitAuthorsOutput
-	Codes                 []Code
+	Codes                 []types.Code
 	Container             types.Container
 	FinalOutput           interface{}
 	Vulnerabilities       types.HuskyCISecurityTestOutput
@@ -86,10 +85,9 @@ func (scanInfo *SecTestScanInfo) Start() error {
 func (scanInfo *SecTestScanInfo) dockerRun(timeOutInSeconds int) error {
 	image := scanInfo.Container.SecurityTest.Image
 	imageTag := scanInfo.Container.SecurityTest.ImageTag
-	fullContainerImage := fmt.Sprintf("%s:%s", image, imageTag)
 	cmd := util.HandleCmd(scanInfo.URL, scanInfo.Branch, scanInfo.Container.SecurityTest.Cmd)
 	finalCMD := util.HandlePrivateSSHKey(cmd)
-	CID, cOutput, err := huskydocker.DockerRun(fullContainerImage, finalCMD, timeOutInSeconds)
+	CID, cOutput, err := huskydocker.DockerRun(image, imageTag, finalCMD, timeOutInSeconds)
 	if err != nil {
 		return err
 	}

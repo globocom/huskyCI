@@ -83,7 +83,7 @@ func (sqlConfig *SQLConfig) GetValuesFromDB(query string,
 // to DB and return the number of rows affected
 // during query process.
 func (sqlConfig *SQLConfig) WriteInDB(query string, args ...interface{}) (int64, error) {
-	err := sqlConfig.Postgres.Exec(query, args)
+	err := sqlConfig.Postgres.Exec(query, args...)
 	if err != nil {
 		return 0, err
 	}

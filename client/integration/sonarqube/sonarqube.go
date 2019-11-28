@@ -25,7 +25,7 @@ or is not associated with any specific file, i.e.: vulnerable dependency version
 // GenerateOutputFile prints the analysis output in a JSON format
 func GenerateOutputFile(analysis types.Analysis, outputPath, outputFileName string) error {
 
-	var allVulns []types.HuskyCIVulnerability
+	allVulns := make([]types.HuskyCIVulnerability, 0)
 
 	// gosec
 	allVulns = append(allVulns, analysis.HuskyCIResults.GoResults.HuskyCIGosecOutput.LowVulns...)
@@ -69,6 +69,7 @@ func GenerateOutputFile(analysis types.Analysis, outputPath, outputFileName stri
 	allVulns = append(allVulns, analysis.HuskyCIResults.JavaResults.HuskyCISpotBugsOutput.HighVulns...)
 
 	var sonarOutput HuskyCISonarOutput
+	sonarOutput.Issues = make([]SonarIssue, 0)
 
 	for _, vuln := range allVulns {
 		var issue SonarIssue

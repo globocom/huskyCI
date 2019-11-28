@@ -52,6 +52,7 @@ var _ = Describe("SonarQube", func() {
 			Entry("Vulnerable python project", "vulnerable_python_project.json", testOutputFilesPath, "sonarqube_python_test.json", "vulnerable_python_output.json"),
 			Entry("Vulnerable ruby project", "vulnerable_ruby_project.json", testOutputFilesPath, "sonarqube_ruby_test.json", "vulnerable_ruby_output.json"),
 			Entry("Vulnerable js project", "vulnerable_js_project.json", testOutputFilesPath, "sonarqube_js_test.json", "vulnerable_js_output.json"),
+			Entry("Not Vulnerable project", "not_vulnerable_project.json", testOutputFilesPath, "sonarqube_not_vulnerable_test.json", "not_vulnerable_output.json"),
 		)
 	})
 })

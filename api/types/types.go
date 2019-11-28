@@ -6,34 +6,29 @@ package types
 
 import (
 	"time"
-
-	"gopkg.in/mgo.v2/bson"
 )
 
 // Repository is the struct that stores all data from repository to be analyzed.
 type Repository struct {
-	ID        bson.ObjectId `bson:"_id,omitempty"`
-	URL       string        `bson:"repositoryURL" json:"repositoryURL"`
-	Branch    string        `json:"repositoryBranch"`
-	CreatedAt time.Time     `bson:"createdAt" json:"createdAt"`
+	URL       string    `bson:"repositoryURL" json:"repositoryURL"`
+	Branch    string    `json:"repositoryBranch"`
+	CreatedAt time.Time `bson:"createdAt" json:"createdAt"`
 }
 
 // SecurityTest is the struct that stores all data from the security tests to be executed.
 type SecurityTest struct {
-	ID               bson.ObjectId `bson:"_id,omitempty"`
-	Name             string        `bson:"name" json:"name"`
-	Image            string        `bson:"image" json:"image"`
-	ImageTag         string        `bson:"imageTag" json:"imageTag"`
-	Cmd              string        `bson:"cmd" json:"cmd"`
-	Type             string        `bson:"type" json:"type"`
-	Language         string        `bson:"language" json:"language"`
-	Default          bool          `bson:"default" json:"default"`
-	TimeOutInSeconds int           `bson:"timeOutSeconds" json:"timeOutSeconds"`
+	Name             string `bson:"name" json:"name"`
+	Image            string `bson:"image" json:"image"`
+	ImageTag         string `bson:"imageTag" json:"imageTag"`
+	Cmd              string `bson:"cmd" json:"cmd"`
+	Type             string `bson:"type" json:"type"`
+	Language         string `bson:"language" json:"language"`
+	Default          bool   `bson:"default" json:"default"`
+	TimeOutInSeconds int    `bson:"timeOutSeconds" json:"timeOutSeconds"`
 }
 
 // Analysis is the struct that stores all data from analysis performed.
 type Analysis struct {
-	ID             bson.ObjectId  `bson:"_id,omitempty"`
 	RID            string         `bson:"RID" json:"RID"`
 	URL            string         `bson:"repositoryURL" json:"repositoryURL"`
 	Branch         string         `bson:"repositoryBranch" json:"repositoryBranch"`
@@ -68,15 +63,14 @@ type Code struct {
 
 // User is the struct that holds all data from a huskyCI API user
 type User struct {
-	ID                 bson.ObjectId `bson:"_id,omitempty"`
-	Username           string        `bson:"username" json:"username"`
-	Password           string        `bson:"password" json:"password"`
-	Salt               string        `bson:"salt,omitempty" json:"salt"`
-	Iterations         int           `bson:"iterations,omitempty" json:"iterations"`
-	KeyLen             int           `bson:"keylen,omitempty" json:"keylen"`
-	HashFunction       string        `bson:"hashfunction,omitempty" json:"hashfunction"`
-	NewPassword        string        `bson:"newPassword,omitempty" json:"newPassword"`
-	ConfirmNewPassword string        `bson:"confirmNewPassword,omitempty" json:"confirmNewPassword"`
+	Username           string `bson:"username" json:"username"`
+	Password           string `bson:"password" json:"password"`
+	Salt               string `bson:"salt,omitempty" json:"salt"`
+	Iterations         int    `bson:"iterations,omitempty" json:"iterations"`
+	KeyLen             int    `bson:"keylen,omitempty" json:"keylen"`
+	HashFunction       string `bson:"hashfunction,omitempty" json:"hashfunction"`
+	NewPassword        string `bson:"newPassword,omitempty" json:"newPassword"`
+	ConfirmNewPassword string `bson:"confirmNewPassword,omitempty" json:"confirmNewPassword"`
 }
 
 // HuskyCIVulnerability is the struct that stores vulnerability information.
@@ -159,11 +153,10 @@ type AccessToken struct {
 // DBToken defines the struct that stores husky access token
 // for a repository URL
 type DBToken struct {
-	ID         bson.ObjectId `bson:"_id,omitempty"`
-	HuskyToken string        `bson:"huskytoken" json:"huskytoken"`
-	URL        string        `bson:"repositoryURL" json:"repositoryURL"`
-	IsValid    bool          `bson:"isValid" json:"isValid"`
-	CreatedAt  time.Time     `bson:"createdAt" json:"createdAt"`
-	Salt       string        `bson:"salt" json:"salt"`
-	UUID       string        `bson:"uuid" json:"uuid"`
+	HuskyToken string    `bson:"huskytoken" json:"huskytoken"`
+	URL        string    `bson:"repositoryURL" json:"repositoryURL"`
+	IsValid    bool      `bson:"isValid" json:"isValid"`
+	CreatedAt  time.Time `bson:"createdAt" json:"createdAt"`
+	Salt       string    `bson:"salt" json:"salt"`
+	UUID       string    `bson:"uuid" json:"uuid"`
 }
