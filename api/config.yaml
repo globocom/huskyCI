@@ -190,7 +190,9 @@ npmaudit:
         npm audit --only=prod --json > /tmp/results.json 2> /tmp/errorNpmaudit
         jq -j -M -c . /tmp/results.json
       else
-        echo 'ERROR_PACKAGE_LOCK_NOT_FOUND'
+        if [ ! -f yarn.lock ]; then
+          echo 'ERROR_PACKAGE_LOCK_NOT_FOUND'
+        fi
       fi
     else
       echo "ERROR_CLONING"
@@ -224,7 +226,9 @@ yarnaudit:
                 cat /tmp/errorYarnAudit
             fi
         else
-            echo 'ERROR_YARN_LOCK_NOT_FOUND'
+            if [ ! -f package-lock.json ]; then
+                echo 'ERROR_YARN_LOCK_NOT_FOUND'
+            fi
         fi
     else
         echo "ERROR_CLONING"
