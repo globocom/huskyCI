@@ -181,18 +181,7 @@ var statsQueryBase = map[string][]bson.M{
 							},
 						},
 						"then": "passed",
-						"else": bson.M{
-							"$cond": bson.M{
-								"if": bson.M{
-									"$eq": []string{
-										"$result",
-										"error",
-									},
-								},
-								"then": "failed",
-								"else": "$result",
-							},
-						},
+						"else": "$result",
 					},
 				},
 				"finishedAt": 1,
