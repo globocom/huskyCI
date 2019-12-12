@@ -292,7 +292,7 @@ spotbugs:
     fi
   type: Language
   language: Java
-  default: true
+  default: false
   timeOutInSeconds: 3600
 
 gitleaks:
