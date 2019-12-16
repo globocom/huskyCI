@@ -16,7 +16,6 @@ import (
 const logActionCheckReqs = "CheckHuskyRequirements"
 const logInfoAPIUtil = "API-UTIL"
 
-
 // CheckHuskyRequirements checks for all requirements needed before starting huskyCI.
 func (hU HuskyUtils) CheckHuskyRequirements(configAPI *apiContext.APIConfig) error {
 
@@ -53,49 +52,19 @@ func (hU HuskyUtils) CheckHuskyRequirements(configAPI *apiContext.APIConfig) err
 	return nil
 }
 
+// checkEnvVar verifies if all required environment variables are set
 func (cH *CheckUtils) checkEnvVars() error {
 
 	envVars := []string{
-		// Logging
-		// "HUSKYCI_LOGGING_GRAYLOG_ADDR", (optional)
-		// "HUSKYCI_LOGGING_GRAYLOG_PROTO", (optional)
-		// "HUSKYCI_LOGGING_GRAYLOG_APP_NAME", (optional)
-		// "HUSKYCI_LOGGING_GRAYLOG_TAG", (optional)
-		// "HUSKYCI_LOGGING_GRAYLOG_DEV", (optional)
-
-		// Database:
 		"HUSKYCI_DATABASE_DB_ADDR",
 		"HUSKYCI_DATABASE_DB_NAME",
 		"HUSKYCI_DATABASE_DB_USERNAME",
 		"HUSKYCI_DATABASE_DB_PASSWORD",
-		// "HUSKYCI_DATABASE_MONGO_PORT", (optional)
-		// "HUSKYCI_DATABASE_MONGO_TIMEOUT", (optional)
-		// "HUSKYCI_DATABASE_MONGO_POOL_LIMIT", (optional)
-
-		// Docker API:
-		"HUSKYCI_DOCKERAPI_ADDR",
-		"HUSKYCI_DOCKERAPI_CERT_PATH",
-		"HUSKYCI_DOCKERAPI_CERT_FILE",
-		"HUSKYCI_DOCKERAPI_CERT_KEY",
 		"HUSKYCI_API_DEFAULT_USERNAME",
 		"HUSKYCI_API_DEFAULT_PASSWORD",
 		"HUSKYCI_API_ALLOW_ORIGIN_CORS",
-		// "HUSKYCI_API_DEFAULT_ITERATIONS", (optional)
-		// "HUSKYCI_API_DEFAULT_KEY_LENGTH", (optional)
-		// "HUSKYCI_API_DEFAULT_HASH_FUNCTION", (optional)
-		// "HUSKYCI_DOCKERAPI_CERT_FILE_VALUE", (optional)
-		// "HUSKYCI_DOCKERAPI_CERT_KEY_VALUE", (optional)
-		// "HUSKYCI_DOCKERAPI_API_TLS_CERT_VALUE", (optional)
-		// "HUSKYCI_DOCKERAPI_API_TLS_KEY_VALUE", (optional)
-		// "HUSKYCI_DOCKERAPI_CERT_CA_VALUE", (optional)
-		// "HUSKYCI_DOCKERAPI_PORT", (optional)
-		// "HUSKYCI_DOCKERAPI_TLS_VERIFY", (optional)
-		// "HUSKYCI_DOCKERAPI_MAX_CONTAINERS_BEFORE_CLEANING", (optional)
-
-		// huskyCI API:
-		// "HUSKYCI_API_PORT", (optional)
-		// "HUSKYCI_API_ENABLE_HTTPS", (optional)
-		// "HUSKYCI_API_GIT_PRIVATE_SSH_KEY", (optional)
+		"HUSKYCI_DOCKERAPI_ADDR",
+		"HUSKYCI_DOCKERAPI_CERT_PATH",
 	}
 
 	var envIsSet bool

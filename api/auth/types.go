@@ -23,8 +23,8 @@ type Pbkdf2Generator interface {
 	GenHashValue(value, salt []byte, iter, keyLen int, h hash.Hash) string
 	GenerateSalt() (string, error)
 	GetHashName() string
-	GetIterations() (int, error)
-	GetKeyLength() (int, error)
+	GetIterations() int
+	GetKeyLength() int
 }
 
 // Pbkdf2Caller is the pbkdf2 caller struct.

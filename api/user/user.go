@@ -12,7 +12,6 @@ import (
 	"errors"
 	"hash"
 	"io"
-	"strconv"
 
 	"github.com/globocom/huskyCI/api/auth"
 	apiContext "github.com/globocom/huskyCI/api/context"
@@ -25,12 +24,6 @@ var (
 	DefaultAPIUser = os.Getenv("HUSKYCI_API_DEFAULT_USERNAME")
 	// DefaultAPIPassword is the default API password from huskyCI
 	DefaultAPIPassword = os.Getenv("HUSKYCI_API_DEFAULT_PASSWORD")
-	// DefaultIterations is the default number of iterations used for auth
-	DefaultIterations = os.Getenv("HUSKYCI_API_DEFAULT_ITERATIONS")
-	// DefaultKeyLength is the default key length used for auth
-	DefaultKeyLength = os.Getenv("HUSKYCI_API_DEFAULT_KEY_LENGTH")
-	// DefaultHashFunction is the default hash function name of iterations used for auth
-	DefaultHashFunction = os.Getenv("HUSKYCI_API_DEFAULT_HASH_FUNCTION")
 )
 
 // Create generates a new user
@@ -41,7 +34,13 @@ func Create() types.User {
 
 // InsertDefaultUser insert default user into MongoDB
 func InsertDefaultUser() error {
-	hashFunction, isValid := auth.GetValidHashFunction(DefaultHashFunction)
+
+	var pbkdf2Caller auth.Pbkdf2Caller
+	defaultHashFunction := pbkdf2Caller.GetHashName()
+	keyLength := pbkdf2Caller.GetKeyLength()
+	iterations := pbkdf2Caller.GetIterations()
+
+	hashFunction, isValid := auth.GetValidHashFunction(defaultHashFunction)
 	if !isValid {
 		return errors.New("Invalid hash function")
 	}
@@ -50,17 +49,9 @@ func InsertDefaultUser() error {
 	if err != nil {
 		return err
 	}
-	keyLength, err := strconv.Atoi(DefaultKeyLength)
-	if err != nil {
-		return err
-	}
-	iterations, err := strconv.Atoi(DefaultIterations)
-	if err != nil {
-		return err
-	}
 	newUser := types.User{}
 	newUser.Username = DefaultAPIUser
-	newUser.HashFunction = DefaultHashFunction
+	newUser.HashFunction = defaultHashFunction
 	newUser.Iterations = iterations
 	newUser.KeyLen = keyLength
 	newUser.Salt = base64.StdEncoding.EncodeToString(salt)
