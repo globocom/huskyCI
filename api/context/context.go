@@ -155,7 +155,7 @@ func (dF DefaultConfig) GetAPIReleaseDate() string {
 func (dF DefaultConfig) GetAllowOriginValue() string {
 	urlCORS := dF.Caller.GetEnvironmentVariable("HUSKYCI_API_ALLOW_ORIGIN_CORS")
 	if urlCORS == "" {
-		return "localhost"
+		return "http://127.0.0.1:8888"
 	}
 	return urlCORS
 }
