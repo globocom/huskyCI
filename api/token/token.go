@@ -42,14 +42,8 @@ func (tH *THandler) GenerateAccessToken(repo types.TokenRequest) (string, error)
 		return "", err
 	}
 	hashFunction := tH.HashGen.GetHashName()
-	keyLength, err := tH.HashGen.GetKeyLength()
-	if err != nil {
-		return "", err
-	}
-	iterations, err := tH.HashGen.GetIterations()
-	if err != nil {
-		return "", err
-	}
+	keyLength := tH.HashGen.GetKeyLength()
+	iterations := tH.HashGen.GetIterations()
 	h, isOk := auth.GetValidHashFunction(hashFunction)
 	if !isOk {
 		return "", errors.New("Invalid hash function")
@@ -96,14 +90,8 @@ func (tH *THandler) ValidateRandomData(rdata, hashdata, salt string) error {
 	if !isOk {
 		return errors.New("Invalid hash function")
 	}
-	keyLength, err := tH.HashGen.GetKeyLength()
-	if err != nil {
-		return err
-	}
-	iterations, err := tH.HashGen.GetIterations()
-	if err != nil {
-		return err
-	}
+	keyLength := tH.HashGen.GetKeyLength()
+	iterations := tH.HashGen.GetIterations()
 	hashval := tH.HashGen.GenHashValue([]byte(rdata), bSalt, iterations, keyLength, h)
 	if hashval != hashdata {
 		return errors.New("Hash value from random data is different")

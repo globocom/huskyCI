@@ -35,16 +35,14 @@ type FakeExternal struct {
 }
 
 type FakeHashGen struct {
-	expectedSalt               string
-	expectedGenerateSaltError  error
-	expectedDecodedSalt        []byte
-	expectedDecodeSaltError    error
-	expectedHashName           string
-	expectedKeyLength          int
-	expectedGetKeyError        error
-	expectedIterations         int
-	expectedGetIterationsError error
-	expectedHashValue          string
+	expectedSalt              string
+	expectedGenerateSaltError error
+	expectedDecodedSalt       []byte
+	expectedDecodeSaltError   error
+	expectedHashName          string
+	expectedKeyLength         int
+	expectedIterations        int
+	expectedHashValue         string
 }
 
 func (fE *FakeExternal) ValidateURL(url string) (string, error) {
@@ -100,12 +98,12 @@ func (fH *FakeHashGen) GetHashName() string {
 	return fH.expectedHashName
 }
 
-func (fH *FakeHashGen) GetKeyLength() (int, error) {
-	return fH.expectedKeyLength, fH.expectedGetKeyError
+func (fH *FakeHashGen) GetKeyLength() int {
+	return fH.expectedKeyLength
 }
 
-func (fH *FakeHashGen) GetIterations() (int, error) {
-	return fH.expectedIterations, fH.expectedGetIterationsError
+func (fH *FakeHashGen) GetIterations() int {
+	return fH.expectedIterations
 }
 
 func (fH *FakeHashGen) GenHashValue(value, salt []byte, iter, keyLen int, h hash.Hash) string {
@@ -215,8 +213,8 @@ var _ = Describe("Token", func() {
 			Expect(err).To(Equal(fakeHash.expectedDecodeSaltError))
 		})
 	})
-	Context("When GetKeyLength returns an error", func() {
-		It("Should return the same error and an empty string", func() {
+	Context("When GetValidHashFunction returns a false boolean", func() {
+		It("Should return the expected error", func() {
 			fakeExt := FakeExternal{
 				expectedURL:           "MyValidURL",
 				expectedValidateError: nil,
@@ -229,68 +227,8 @@ var _ = Describe("Token", func() {
 				expectedDecodedSalt:       make([]byte, 0),
 				expectedDecodeSaltError:   nil,
 				expectedHashName:          "",
-				expectedKeyLength:         0,
-				expectedGetKeyError:       errors.New("Error during key length conversion"),
-			}
-			tokenGen := THandler{
-				External: &fakeExt,
-				HashGen:  &fakeHash,
-			}
-			accessToken, err := tokenGen.GenerateAccessToken(types.TokenRequest{
-				RepositoryURL: "myRepo.com",
-			})
-			Expect(accessToken).To(Equal(""))
-			Expect(err).To(Equal(fakeHash.expectedGetKeyError))
-		})
-	})
-	Context("When GetIterations returns an error", func() {
-		It("Should return the same error and an empty string", func() {
-			fakeExt := FakeExternal{
-				expectedURL:           "MyValidURL",
-				expectedValidateError: nil,
-				expectedToken:         "MyBrandNewToken",
-				expectedGenerateError: nil,
-			}
-			fakeHash := FakeHashGen{
-				expectedSalt:               "MySalt",
-				expectedGenerateSaltError:  nil,
-				expectedDecodedSalt:        make([]byte, 0),
-				expectedDecodeSaltError:    nil,
-				expectedHashName:           "",
-				expectedKeyLength:          32,
-				expectedGetKeyError:        nil,
-				expectedIterations:         0,
-				expectedGetIterationsError: errors.New("Failed to convert iterations"),
-			}
-			tokenGen := THandler{
-				External: &fakeExt,
-				HashGen:  &fakeHash,
-			}
-			accessToken, err := tokenGen.GenerateAccessToken(types.TokenRequest{
-				RepositoryURL: "myRepo.com",
-			})
-			Expect(accessToken).To(Equal(""))
-			Expect(err).To(Equal(fakeHash.expectedGetIterationsError))
-		})
-	})
-	Context("When GetValidHashFunction returns a false boolean", func() {
-		It("Should return the expected error", func() {
-			fakeExt := FakeExternal{
-				expectedURL:           "MyValidURL",
-				expectedValidateError: nil,
-				expectedToken:         "MyBrandNewToken",
-				expectedGenerateError: nil,
-			}
-			fakeHash := FakeHashGen{
-				expectedSalt:               "MySalt",
-				expectedGenerateSaltError:  nil,
-				expectedDecodedSalt:        make([]byte, 0),
-				expectedDecodeSaltError:    nil,
-				expectedHashName:           "",
-				expectedKeyLength:          32,
-				expectedGetKeyError:        nil,
-				expectedIterations:         1024,
-				expectedGetIterationsError: nil,
+				expectedKeyLength:         32,
+				expectedIterations:        1024,
 			}
 			tokenGen := THandler{
 				External: &fakeExt,
@@ -315,16 +253,14 @@ var _ = Describe("Token", func() {
 				expectedStoreAccessError: errors.New("Failed to store token"),
 			}
 			fakeHash := FakeHashGen{
-				expectedSalt:               "MySalt",
-				expectedGenerateSaltError:  nil,
-				expectedDecodedSalt:        make([]byte, 0),
-				expectedDecodeSaltError:    nil,
-				expectedHashName:           "Sha512",
-				expectedKeyLength:          32,
-				expectedGetKeyError:        nil,
-				expectedIterations:         1024,
-				expectedGetIterationsError: nil,
-				expectedHashValue:          "MyTokenHashValue",
+				expectedSalt:              "MySalt",
+				expectedGenerateSaltError: nil,
+				expectedDecodedSalt:       make([]byte, 0),
+				expectedDecodeSaltError:   nil,
+				expectedHashName:          "Sha512",
+				expectedKeyLength:         32,
+				expectedIterations:        1024,
+				expectedHashValue:         "MyTokenHashValue",
 			}
 			tokenGen := THandler{
 				External: &fakeExt,
@@ -349,16 +285,14 @@ var _ = Describe("Token", func() {
 				expectedStoreAccessError: nil,
 			}
 			fakeHash := FakeHashGen{
-				expectedSalt:               "MySalt",
-				expectedGenerateSaltError:  nil,
-				expectedDecodedSalt:        make([]byte, 0),
-				expectedDecodeSaltError:    nil,
-				expectedHashName:           "Sha512",
-				expectedKeyLength:          32,
-				expectedGetKeyError:        nil,
-				expectedIterations:         1024,
-				expectedGetIterationsError: nil,
-				expectedHashValue:          "MyTokenHashValue",
+				expectedSalt:              "MySalt",
+				expectedGenerateSaltError: nil,
+				expectedDecodedSalt:       make([]byte, 0),
+				expectedDecodeSaltError:   nil,
+				expectedHashName:          "Sha512",
+				expectedKeyLength:         32,
+				expectedIterations:        1024,
+				expectedHashValue:         "MyTokenHashValue",
 			}
 			tokenGen := THandler{
 				External: &fakeExt,
@@ -444,49 +378,15 @@ var _ = Describe("Token", func() {
 				Expect(tokenVal.ValidateRandomData("ReceivedRandom", "StoredRandom", "StoredSalt")).To(Equal(errors.New("Invalid hash function")))
 			})
 		})
-		Context("When GetKeyLength returns an error", func() {
-			It("Should return the same error", func() {
+		Context("When calculated hash differs from the stored hash", func() {
+			It("Should return the expected error", func() {
 				hashGen := FakeHashGen{
 					expectedDecodedSalt:     []byte("StoredSalt"),
 					expectedDecodeSaltError: nil,
 					expectedHashName:        "Sha512",
-					expectedKeyLength:       0,
-					expectedGetKeyError:     errors.New("Invalid key format"),
-				}
-				tokenVal := THandler{
-					HashGen: &hashGen,
-				}
-				Expect(tokenVal.ValidateRandomData("ReceivedRandom", "StoredRandom", "StoredSalt")).To(Equal(hashGen.expectedGetKeyError))
-			})
-		})
-		Context("When GetIterations returns an error", func() {
-			It("Should return the same error", func() {
-				hashGen := FakeHashGen{
-					expectedDecodedSalt:        []byte("StoredSalt"),
-					expectedDecodeSaltError:    nil,
-					expectedHashName:           "Sha512",
-					expectedKeyLength:          128,
-					expectedGetKeyError:        nil,
-					expectedIterations:         0,
-					expectedGetIterationsError: errors.New("Invalid iterations value format"),
-				}
-				tokenVal := THandler{
-					HashGen: &hashGen,
-				}
-				Expect(tokenVal.ValidateRandomData("ReceivedRandom", "StoredRandom", "StoredSalt")).To(Equal(hashGen.expectedGetIterationsError))
-			})
-		})
-		Context("When calculated hash differs from the stored hash", func() {
-			It("Should return the expected error", func() {
-				hashGen := FakeHashGen{
-					expectedDecodedSalt:        []byte("StoredSalt"),
-					expectedDecodeSaltError:    nil,
-					expectedHashName:           "Sha512",
-					expectedKeyLength:          128,
-					expectedGetKeyError:        nil,
-					expectedIterations:         1024,
-					expectedGetIterationsError: nil,
-					expectedHashValue:          "DifferentFromTheStored",
+					expectedKeyLength:       128,
+					expectedIterations:      1024,
+					expectedHashValue:       "DifferentFromTheStored",
 				}
 				tokenVal := THandler{
 					HashGen: &hashGen,
@@ -497,14 +397,12 @@ var _ = Describe("Token", func() {
 		Context("When calculated hash is equal from the stored hash", func() {
 			It("Should return a nil error", func() {
 				hashGen := FakeHashGen{
-					expectedDecodedSalt:        []byte("StoredSalt"),
-					expectedDecodeSaltError:    nil,
-					expectedHashName:           "Sha512",
-					expectedKeyLength:          128,
-					expectedGetKeyError:        nil,
-					expectedIterations:         1024,
-					expectedGetIterationsError: nil,
-					expectedHashValue:          "StoredRandomHash",
+					expectedDecodedSalt:     []byte("StoredSalt"),
+					expectedDecodeSaltError: nil,
+					expectedHashName:        "Sha512",
+					expectedKeyLength:       128,
+					expectedIterations:      1024,
+					expectedHashValue:       "StoredRandomHash",
 				}
 				tokenVal := THandler{
 					HashGen: &hashGen,
@@ -596,13 +494,11 @@ var _ = Describe("Token", func() {
 		Context("When hash of random data is different from the stored hash", func() {
 			It("Should return the expected error from ValidateRandomData", func() {
 				fakeHash := FakeHashGen{
-					expectedDecodedSalt:        []byte("MySaltDecoded"),
-					expectedDecodeSaltError:    nil,
-					expectedHashName:           "Sha512",
-					expectedKeyLength:          256,
-					expectedGetKeyError:        nil,
-					expectedGetIterationsError: nil,
-					expectedHashValue:          "MyDifferentHash",
+					expectedDecodedSalt:     []byte("MySaltDecoded"),
+					expectedDecodeSaltError: nil,
+					expectedHashName:        "Sha512",
+					expectedKeyLength:       256,
+					expectedHashValue:       "MyDifferentHash",
 				}
 				fakeExt := FakeExternal{
 					expectedURL:             "MyValidURL",
@@ -627,13 +523,11 @@ var _ = Describe("Token", func() {
 		Context("When hash of random data if equal from the stored hash", func() {
 			It("Should return the expected error from ValidateRandomData", func() {
 				fakeHash := FakeHashGen{
-					expectedDecodedSalt:        []byte("MySaltDecoded"),
-					expectedDecodeSaltError:    nil,
-					expectedHashName:           "Sha512",
-					expectedKeyLength:          256,
-					expectedGetKeyError:        nil,
-					expectedGetIterationsError: nil,
-					expectedHashValue:          "MyValidHash",
+					expectedDecodedSalt:     []byte("MySaltDecoded"),
+					expectedDecodeSaltError: nil,
+					expectedHashName:        "Sha512",
+					expectedKeyLength:       256,
+					expectedHashValue:       "MyValidHash",
 				}
 				fakeExt := FakeExternal{
 					expectedURL:             "MyValidURL",

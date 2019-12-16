@@ -52,19 +52,27 @@ func (pC *Pbkdf2Caller) GetHashName() string {
 }
 
 // GetIterations returns the default number of iteration that is stored in an env var.
-func (pC *Pbkdf2Caller) GetIterations() (int, error) {
-	iterations := os.Getenv("HUSKYCI_API_DEFAULT_ITERATIONS")
-	if iterations != "" {
-		return strconv.Atoi(iterations)
+func (pC *Pbkdf2Caller) GetIterations() int {
+	rawIterations := os.Getenv("HUSKYCI_API_DEFAULT_ITERATIONS")
+	if rawIterations != "" {
+		iterations, err := strconv.Atoi(rawIterations)
+		if err != nil {
+			return 100000
+		}
+		return iterations
 	}
-	return 100000, nil
+	return 100000
 }
 
 // GetKeyLength returns the default key lenght that is stored in an env var.
-func (pC *Pbkdf2Caller) GetKeyLength() (int, error) {
-	keyLength := os.Getenv("HUSKYCI_API_DEFAULT_KEY_LENGTH")
-	if keyLength != "" {
-		return strconv.Atoi(keyLength)
+func (pC *Pbkdf2Caller) GetKeyLength() int {
+	rawKeyLength := os.Getenv("HUSKYCI_API_DEFAULT_KEY_LENGTH")
+	if rawKeyLength != "" {
+		keyLengh, err := strconv.Atoi(rawKeyLength)
+		if err != nil {
+			return 512
+		}
+		return keyLengh
 	}
-	return 512, nil
+	return 512
 }
