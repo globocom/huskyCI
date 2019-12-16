@@ -44,12 +44,11 @@ type DBConfig struct {
 
 // DockerHostsConfig represents Docker Hosts configuration.
 type DockerHostsConfig struct {
-	Address              string
-	DockerAPIPort        int
-	PathCertificate      string
-	Host                 string
-	TLSVerify            int
-	MaxContainersAllowed int
+	Address         string
+	DockerAPIPort   int
+	PathCertificate string
+	Host            string
+	TLSVerify       int
 }
 
 // GraylogConfig represents Graylog configuration.
@@ -154,7 +153,11 @@ func (dF DefaultConfig) GetAPIReleaseDate() string {
 
 // GetAllowOriginValue returns the allow origin value
 func (dF DefaultConfig) GetAllowOriginValue() string {
-	return dF.Caller.GetEnvironmentVariable("HUSKYCI_API_ALLOW_ORIGIN_CORS")
+	urlCORS := dF.Caller.GetEnvironmentVariable("HUSKYCI_API_ALLOW_ORIGIN_CORS")
+	if urlCORS == "" {
+		return "localhost"
+	}
+	return urlCORS
 }
 
 // GetAPIUseTLS returns a boolean. If true, Husky API
@@ -287,12 +290,11 @@ func (dF DefaultConfig) getDockerHostsConfig() *DockerHostsConfig {
 	dockerHostsAddresses := strings.Split(dockerHostsAddressesEnv, " ")
 	dockerHostsPathCertificates := dF.Caller.GetEnvironmentVariable("HUSKYCI_DOCKERAPI_CERT_PATH")
 	return &DockerHostsConfig{
-		Address:              dockerHostsAddresses[0],
-		DockerAPIPort:        dockerAPIPort,
-		PathCertificate:      dockerHostsPathCertificates,
-		Host:                 fmt.Sprintf("%s:%d", dockerHostsAddresses[0], dockerAPIPort),
-		TLSVerify:            dF.GetDockerAPITLSVerify(),
-		MaxContainersAllowed: dF.GetMaxContainersAllowed(),
+		Address:         dockerHostsAddresses[0],
+		DockerAPIPort:   dockerAPIPort,
+		PathCertificate: dockerHostsPathCertificates,
+		Host:            fmt.Sprintf("%s:%d", dockerHostsAddresses[0], dockerAPIPort),
+		TLSVerify:       dF.GetDockerAPITLSVerify(),
 	}
 }
 
@@ -331,18 +333,6 @@ func (dF DefaultConfig) getSecurityTestConfig(securityTestName string) *types.Se
 		Default:          dF.Caller.GetBoolFromConfigFile(fmt.Sprintf("%s.default", securityTestName)),
 		TimeOutInSeconds: dF.Caller.GetIntFromConfigFile(fmt.Sprintf("%s.timeOutInSeconds", securityTestName)),
 	}
-}
-
-// GetMaxContainersAllowed returns an interger the maximum number
-// interpreted as the maximum number of containers initialized
-// in parallel. It depends on the environment variable called
-// HUSKYCI_DOCKERAPI_MAX_CONTAINERS_BEFORE_CLEANING.
-func (dF DefaultConfig) GetMaxContainersAllowed() int {
-	maxContainersAllowed, err := dF.Caller.ConvertStrToInt(dF.Caller.GetEnvironmentVariable("HUSKYCI_DOCKERAPI_MAX_CONTAINERS_BEFORE_CLEANING"))
-	if err != nil {
-		return 50
-	}
-	return maxContainersAllowed
 }
 
 // GetDB returns a Requests implementation based on the
