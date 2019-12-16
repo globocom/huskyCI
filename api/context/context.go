@@ -46,9 +46,7 @@ type DBConfig struct {
 type DockerHostsConfig struct {
 	Address              string
 	DockerAPIPort        int
-	Certificate          string
 	PathCertificate      string
-	Key                  string
 	Host                 string
 	TLSVerify            int
 	MaxContainersAllowed int
@@ -287,15 +285,11 @@ func (dF DefaultConfig) getDockerHostsConfig() *DockerHostsConfig {
 	dockerAPIPort := dF.GetDockerAPIPort()
 	dockerHostsAddressesEnv := dF.Caller.GetEnvironmentVariable("HUSKYCI_DOCKERAPI_ADDR")
 	dockerHostsAddresses := strings.Split(dockerHostsAddressesEnv, " ")
-	dockerHostsCertificate := dF.Caller.GetEnvironmentVariable("HUSKYCI_DOCKERAPI_CERT_FILE")
 	dockerHostsPathCertificates := dF.Caller.GetEnvironmentVariable("HUSKYCI_DOCKERAPI_CERT_PATH")
-	dockerHostsKey := dF.Caller.GetEnvironmentVariable("HUSKYCI_DOCKERAPI_CERT_KEY")
 	return &DockerHostsConfig{
 		Address:              dockerHostsAddresses[0],
 		DockerAPIPort:        dockerAPIPort,
-		Certificate:          dockerHostsCertificate,
 		PathCertificate:      dockerHostsPathCertificates,
-		Key:                  dockerHostsKey,
 		Host:                 fmt.Sprintf("%s:%d", dockerHostsAddresses[0], dockerAPIPort),
 		TLSVerify:            dF.GetDockerAPITLSVerify(),
 		MaxContainersAllowed: dF.GetMaxContainersAllowed(),

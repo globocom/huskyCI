@@ -33,8 +33,6 @@ services:
             HUSKYCI_API_ALLOW_ORIGIN_CORS: "*"
             HUSKYCI_API_DEFAULT_HASH_FUNCTION: SHA512
             HUSKYCI_DOCKERAPI_ADDR: dockerapi
-            HUSKYCI_DOCKERAPI_CERT_FILE: /go/src/github.com/globocom/huskyCI/cert.pem
-            HUSKYCI_DOCKERAPI_CERT_KEY: /go/src/github.com/globocom/huskyCI/key.pem
             HUSKYCI_DOCKERAPI_CERT_PATH: /go/src/github.com/globocom/huskyCI/
             HUSKYCI_DOCKERAPI_TLS_VERIFY: 1
             # optional envs

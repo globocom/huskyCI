@@ -349,9 +349,7 @@ var _ = Describe("Context", func() {
 					DockerHostsConfig: &DockerHostsConfig{
 						Address:              "1",
 						DockerAPIPort:        fakeCaller.expectedIntegerValue,
-						Certificate:          fakeCaller.expectedEnvVar,
 						PathCertificate:      fakeCaller.expectedEnvVar,
-						Key:                  fakeCaller.expectedEnvVar,
 						Host:                 "1:1234",
 						TLSVerify:            1,
 						MaxContainersAllowed: fakeCaller.expectedIntegerValue,
