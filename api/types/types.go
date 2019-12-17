@@ -160,3 +160,6 @@ type DBToken struct {
 	Salt       string    `bson:"salt" json:"salt"`
 	UUID       string    `bson:"uuid" json:"uuid"`
 }
+
+// NohuskyFunction represents all the #nohusky verifier methods.
+type NohuskyFunction func(string, int) bool
