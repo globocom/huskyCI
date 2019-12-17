@@ -207,21 +207,28 @@ func CountDigits(i int) int {
 	return count
 }
 
-// VerifyNoHusky verifies if the code string is marked with the #nohusky tag.
-func VerifyNoHusky(code string, lineNumber int, securityTool string) bool {
-	if securityTool == "Bandit" {
-		lineNumberLength := CountDigits(lineNumber)
-		splitCode := strings.Split(code, "\n")
-		for _, codeLine := range splitCode {
-			if len(codeLine) > 0 {
-				codeLineNumber := codeLine[:lineNumberLength]
-				if strings.Contains(codeLine, "#nohusky") && (codeLineNumber == strconv.Itoa(lineNumber)) {
-					return true
-				}
+func banditCase(code string, lineNumber int) bool {
+	lineNumberLength := CountDigits(lineNumber)
+	splitCode := strings.Split(code, "\n")
+	for _, codeLine := range splitCode {
+		if len(codeLine) > 0 {
+			codeLineNumber := codeLine[:lineNumberLength]
+			if strings.Contains(codeLine, "#nohusky") && (codeLineNumber == strconv.Itoa(lineNumber)) {
+				return true
 			}
 		}
 	}
 	return false
+}
+
+// VerifyNoHusky verifies if the code string is marked with the #nohusky tag.
+func VerifyNoHusky(code string, lineNumber int, securityTool string) bool {
+	m := map[string]types.NohuskyFunction{
+		"Bandit": banditCase,
+	}
+
+	return m[securityTool](code, lineNumber)
+
 }
 
 // SliceContains returns true if a given value is present on the given slice

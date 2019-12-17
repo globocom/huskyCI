@@ -82,6 +82,7 @@ func prepareAllSummary(analysis types.Analysis) {
 	outputJSON.GenericResults = analysis.HuskyCIResults.GenericResults
 
 	// GoSec summary
+	outputJSON.Summary.GosecSummary.NoSecVuln = len(outputJSON.GoResults.HuskyCIGosecOutput.NoSecVulns)
 	outputJSON.Summary.GosecSummary.LowVuln = len(outputJSON.GoResults.HuskyCIGosecOutput.LowVulns)
 	outputJSON.Summary.GosecSummary.MediumVuln = len(outputJSON.GoResults.HuskyCIGosecOutput.MediumVulns)
 	outputJSON.Summary.GosecSummary.HighVuln = len(outputJSON.GoResults.HuskyCIGosecOutput.HighVulns)
@@ -179,7 +180,7 @@ func prepareAllSummary(analysis types.Analysis) {
 		types.FoundInfo = true
 	}
 
-	totalNoSec = outputJSON.Summary.BanditSummary.NoSecVuln
+	totalNoSec = outputJSON.Summary.BanditSummary.NoSecVuln + outputJSON.Summary.GosecSummary.NoSecVuln
 	totalLow = outputJSON.Summary.BrakemanSummary.LowVuln + outputJSON.Summary.SafetySummary.LowVuln + outputJSON.Summary.BanditSummary.LowVuln + outputJSON.Summary.GosecSummary.LowVuln + outputJSON.Summary.NpmAuditSummary.LowVuln + outputJSON.Summary.YarnAuditSummary.LowVuln + outputJSON.Summary.GitleaksSummary.LowVuln + outputJSON.Summary.SpotBugsSummary.LowVuln
 	totalMedium = outputJSON.Summary.BrakemanSummary.MediumVuln + outputJSON.Summary.SafetySummary.MediumVuln + outputJSON.Summary.BanditSummary.MediumVuln + outputJSON.Summary.GosecSummary.MediumVuln + outputJSON.Summary.NpmAuditSummary.MediumVuln + outputJSON.Summary.YarnAuditSummary.MediumVuln + outputJSON.Summary.GitleaksSummary.MediumVuln + outputJSON.Summary.SpotBugsSummary.MediumVuln
 	totalHigh = outputJSON.Summary.BrakemanSummary.HighVuln + outputJSON.Summary.SafetySummary.HighVuln + outputJSON.Summary.BanditSummary.HighVuln + outputJSON.Summary.GosecSummary.HighVuln + outputJSON.Summary.NpmAuditSummary.HighVuln + outputJSON.Summary.YarnAuditSummary.HighVuln + outputJSON.Summary.GitleaksSummary.HighVuln + outputJSON.Summary.SpotBugsSummary.HighVuln
@@ -222,6 +223,7 @@ func printAllSummary(analysis types.Analysis) {
 		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", outputJSON.Summary.GosecSummary.HighVuln)
 		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", outputJSON.Summary.GosecSummary.MediumVuln)
 		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", outputJSON.Summary.GosecSummary.LowVuln)
+		fmt.Printf("[HUSKYCI][SUMMARY] NoSecHusky: %d\n", outputJSON.Summary.GosecSummary.NoSecVuln)
 	}
 
 	if outputJSON.Summary.BanditSummary.FoundVuln || outputJSON.Summary.BanditSummary.FoundInfo {
