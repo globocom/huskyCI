@@ -14,6 +14,96 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+// Analysis is the struct that stores all data from analysis performed.
+type Analysis struct {
+	RID string `bson:"RID" json:"RID"`
+	// Repository      *repository.Repository        `bson:"repository" json:"repository"`
+	Status     string    `bson:"status" json:"status"`
+	Result     string    `bson:"result,omitempty" json:"result"`
+	StartedAt  time.Time `bson:"startedAt" json:"startedAt"`
+	FinishedAt time.Time `bson:"finishedAt" json:"finishedAt"`
+	ErrorFound string    `bson:"errorFound,omitempty" json:"errorFound"`
+	// Vulnerabilities []vulnerability.Vulnerability `bson:"vulnerabilities" json:"vulnerabilities"`
+	// SecurityTests   []securitytest.SecurityTest   `bson:"securityTests" json:"securityTests"`
+}
+
+// New returns a new analysis struct based on a repository
+// func New(repository *repository.Repository) *Analysis {
+// 	return &Analysis{
+// 		RID: uuid.New().String(),
+// 		Repository: repository,
+// 		StartedAt: time.Now(),
+// 	}
+// }
+
+// Start runs a new analysis
+func (a *Analysis) Start() error {
+
+	// if err := a.Repository.Scan(); err != nil {
+	// 	return err
+	// }
+
+	if err := a.checkCacheHit(); err != nil {
+		return err
+	}
+
+	if err := a.setSecurityTests(); err != nil {
+		return err
+	}
+
+	if err := a.startSecurityTests(); err != nil {
+		return err
+	}
+
+	if err := a.registerInDatabase(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (a *Analysis) checkCacheHit() error {
+
+	var cacheHit bool
+
+	if cacheHit {
+		if err := a.registerInDatabase(); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (a *Analysis) setSecurityTests() error {
+
+	// var securityTestsFound []securitytest.SecurityTest
+
+	// securityTestsFound, err := securitytest.GetAllConfigsByLanguage(a.Repository.Languages)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// a.SecurityTests = securityTestsFound
+
+	return nil
+}
+
+func (a *Analysis) startSecurityTests() error {
+
+	// for _, securityTest := range a.SecurityTests {
+	// 	if err := securityTest.Container.Run(); err != nil {
+	// 		return err
+	// 	}
+	// }
+
+	return nil
+}
+
+func (a *Analysis) registerInDatabase() error {
+	return nil
+}
+
 const logActionStart = "StartAnalysis"
 const logInfoAnalysis = "ANALYSIS"
 
