@@ -40,6 +40,7 @@ require (
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/viper v1.5.0
+	github.com/src-d/enry/v2 v2.1.0
 	github.com/stretchr/testify v1.4.0
 	github.com/uudashr/gocognit v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.0.1 // indirect
@@ -52,6 +53,7 @@ require (
 	gopkg.in/Graylog2/go-gelf.v2 v2.0.0-20180326133423-4dbb9d721348 // indirect
 	gopkg.in/fsnotify/fsnotify.v1 v1.4.7 // indirect
 	gopkg.in/mgo.v2 v2.0.0-20180705113604-9856a29383ce
+	gopkg.in/src-d/go-git.v4 v4.13.1
 	gopkg.in/yaml.v2 v2.2.7 // indirect
 	mvdan.cc/unparam v0.0.0-20190917161559-b83a221c10a2 // indirect
 	sourcegraph.com/sqs/pbtypes v1.0.0 // indirect
