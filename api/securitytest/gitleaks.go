@@ -51,7 +51,7 @@ func analyseGitleaks(gitleaksScan *SecTestScanInfo) error {
 		return nil
 	}
 
-	gitleaksErrorRunning := strings.Contains(gitleaksScan.Container.COutput, "ERROR_RUNNING_YARN_AUDIT")
+	gitleaksErrorRunning := strings.Contains(gitleaksScan.Container.COutput, "ERROR_RUNNING_GITLEAKS")
 	if gitleaksErrorRunning {
 		gitleaksScan.GitleaksErrorRunning = true
 		gitleaksScan.prepareGitleaksVulns()
@@ -84,9 +84,9 @@ func (gitleaksScan *SecTestScanInfo) prepareGitleaksVulns() {
 		gitleaksVuln.Language = "Generic"
 		gitleaksVuln.SecurityTool = "Gitleaks"
 		gitleaksVuln.Severity = "nosec"
-		gitleaksVuln.Details = "It looks like your project has too many commits. Gitleaks was enable to run during huskyCI scan."
+		gitleaksVuln.Details = "It looks like your project is too big and huskyCI was not able to run Gitleaks."
 
-		gitleaksScan.Vulnerabilities.LowVulns = append(gitleaksScan.Vulnerabilities.NoSecVulns, gitleaksVuln)
+		gitleaksScan.Vulnerabilities.NoSecVulns = append(gitleaksScan.Vulnerabilities.NoSecVulns, gitleaksVuln)
 		return
 	}
 
@@ -97,7 +97,7 @@ func (gitleaksScan *SecTestScanInfo) prepareGitleaksVulns() {
 		gitleaksVuln.Severity = "nosec"
 		gitleaksVuln.Details = "Internal error running Gitleaks."
 
-		gitleaksScan.Vulnerabilities.LowVulns = append(gitleaksScan.Vulnerabilities.NoSecVulns, gitleaksVuln)
+		gitleaksScan.Vulnerabilities.NoSecVulns = append(gitleaksScan.Vulnerabilities.NoSecVulns, gitleaksVuln)
 		return
 	}
 
