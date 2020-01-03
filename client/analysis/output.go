@@ -86,7 +86,7 @@ func prepareAllSummary(analysis types.Analysis) {
 	outputJSON.Summary.GosecSummary.LowVuln = len(outputJSON.GoResults.HuskyCIGosecOutput.LowVulns)
 	outputJSON.Summary.GosecSummary.MediumVuln = len(outputJSON.GoResults.HuskyCIGosecOutput.MediumVulns)
 	outputJSON.Summary.GosecSummary.HighVuln = len(outputJSON.GoResults.HuskyCIGosecOutput.HighVulns)
-	if len(outputJSON.GoResults.HuskyCIGosecOutput.LowVulns) > 0 {
+	if len(outputJSON.GoResults.HuskyCIGosecOutput.LowVulns) > 0 || len(outputJSON.GoResults.HuskyCIGosecOutput.NoSecVulns) > 0 {
 		outputJSON.Summary.GosecSummary.FoundInfo = true
 	}
 	if len(outputJSON.GoResults.HuskyCIGosecOutput.MediumVulns) > 0 || len(outputJSON.GoResults.HuskyCIGosecOutput.HighVulns) > 0 {
@@ -98,7 +98,7 @@ func prepareAllSummary(analysis types.Analysis) {
 	outputJSON.Summary.BanditSummary.LowVuln = len(outputJSON.PythonResults.HuskyCIBanditOutput.LowVulns)
 	outputJSON.Summary.BanditSummary.MediumVuln = len(outputJSON.PythonResults.HuskyCIBanditOutput.MediumVulns)
 	outputJSON.Summary.BanditSummary.HighVuln = len(outputJSON.PythonResults.HuskyCIBanditOutput.HighVulns)
-	if len(outputJSON.PythonResults.HuskyCIBanditOutput.LowVulns) > 0 {
+	if len(outputJSON.PythonResults.HuskyCIBanditOutput.LowVulns) > 0 || len(outputJSON.PythonResults.HuskyCIBanditOutput.NoSecVulns) > 0 {
 		outputJSON.Summary.BanditSummary.FoundInfo = true
 	}
 	if len(outputJSON.PythonResults.HuskyCIBanditOutput.MediumVulns) > 0 || len(outputJSON.PythonResults.HuskyCIBanditOutput.HighVulns) > 0 {
@@ -109,7 +109,7 @@ func prepareAllSummary(analysis types.Analysis) {
 	outputJSON.Summary.SafetySummary.LowVuln = len(outputJSON.PythonResults.HuskyCISafetyOutput.LowVulns)
 	outputJSON.Summary.SafetySummary.MediumVuln = len(outputJSON.PythonResults.HuskyCISafetyOutput.MediumVulns)
 	outputJSON.Summary.SafetySummary.HighVuln = len(outputJSON.PythonResults.HuskyCISafetyOutput.HighVulns)
-	if len(outputJSON.PythonResults.HuskyCISafetyOutput.LowVulns) > 0 {
+	if len(outputJSON.PythonResults.HuskyCISafetyOutput.LowVulns) > 0 || len(outputJSON.PythonResults.HuskyCISafetyOutput.NoSecVulns) > 0 {
 		outputJSON.Summary.SafetySummary.FoundInfo = true
 	}
 	if len(outputJSON.PythonResults.HuskyCISafetyOutput.MediumVulns) > 0 || len(outputJSON.PythonResults.HuskyCISafetyOutput.HighVulns) > 0 {
@@ -120,7 +120,7 @@ func prepareAllSummary(analysis types.Analysis) {
 	outputJSON.Summary.BrakemanSummary.LowVuln = len(outputJSON.RubyResults.HuskyCIBrakemanOutput.LowVulns)
 	outputJSON.Summary.BrakemanSummary.MediumVuln = len(outputJSON.RubyResults.HuskyCIBrakemanOutput.MediumVulns)
 	outputJSON.Summary.BrakemanSummary.HighVuln = len(outputJSON.RubyResults.HuskyCIBrakemanOutput.HighVulns)
-	if len(outputJSON.RubyResults.HuskyCIBrakemanOutput.LowVulns) > 0 {
+	if len(outputJSON.RubyResults.HuskyCIBrakemanOutput.LowVulns) > 0 || len(outputJSON.RubyResults.HuskyCIBrakemanOutput.NoSecVulns) > 0 {
 		outputJSON.Summary.BrakemanSummary.FoundInfo = true
 	}
 	if len(outputJSON.RubyResults.HuskyCIBrakemanOutput.MediumVulns) > 0 || len(outputJSON.RubyResults.HuskyCIBrakemanOutput.HighVulns) > 0 {
@@ -131,7 +131,7 @@ func prepareAllSummary(analysis types.Analysis) {
 	outputJSON.Summary.NpmAuditSummary.LowVuln = len(outputJSON.JavaScriptResults.HuskyCINpmAuditOutput.LowVulns)
 	outputJSON.Summary.NpmAuditSummary.MediumVuln = len(outputJSON.JavaScriptResults.HuskyCINpmAuditOutput.MediumVulns)
 	outputJSON.Summary.NpmAuditSummary.HighVuln = len(outputJSON.JavaScriptResults.HuskyCINpmAuditOutput.HighVulns)
-	if len(outputJSON.JavaScriptResults.HuskyCINpmAuditOutput.LowVulns) > 0 {
+	if len(outputJSON.JavaScriptResults.HuskyCINpmAuditOutput.LowVulns) > 0 || len(outputJSON.JavaScriptResults.HuskyCINpmAuditOutput.NoSecVulns) > 0 {
 		outputJSON.Summary.NpmAuditSummary.FoundInfo = true
 	}
 	if len(outputJSON.JavaScriptResults.HuskyCINpmAuditOutput.MediumVulns) > 0 || len(outputJSON.JavaScriptResults.HuskyCINpmAuditOutput.HighVulns) > 0 {
@@ -142,7 +142,7 @@ func prepareAllSummary(analysis types.Analysis) {
 	outputJSON.Summary.YarnAuditSummary.LowVuln = len(outputJSON.JavaScriptResults.HuskyCIYarnAuditOutput.LowVulns)
 	outputJSON.Summary.YarnAuditSummary.MediumVuln = len(outputJSON.JavaScriptResults.HuskyCIYarnAuditOutput.MediumVulns)
 	outputJSON.Summary.YarnAuditSummary.HighVuln = len(outputJSON.JavaScriptResults.HuskyCIYarnAuditOutput.HighVulns)
-	if len(outputJSON.JavaScriptResults.HuskyCIYarnAuditOutput.LowVulns) > 0 {
+	if len(outputJSON.JavaScriptResults.HuskyCIYarnAuditOutput.LowVulns) > 0 || len(outputJSON.JavaScriptResults.HuskyCIYarnAuditOutput.NoSecVulns) > 0 {
 		outputJSON.Summary.YarnAuditSummary.FoundInfo = true
 	}
 	if len(outputJSON.JavaScriptResults.HuskyCIYarnAuditOutput.MediumVulns) > 0 || len(outputJSON.JavaScriptResults.HuskyCIYarnAuditOutput.HighVulns) > 0 {
@@ -153,7 +153,7 @@ func prepareAllSummary(analysis types.Analysis) {
 	outputJSON.Summary.SpotBugsSummary.LowVuln = len(outputJSON.JavaResults.HuskyCISpotBugsOutput.LowVulns)
 	outputJSON.Summary.SpotBugsSummary.MediumVuln = len(outputJSON.JavaResults.HuskyCISpotBugsOutput.MediumVulns)
 	outputJSON.Summary.SpotBugsSummary.HighVuln = len(outputJSON.JavaResults.HuskyCISpotBugsOutput.HighVulns)
-	if len(outputJSON.JavaResults.HuskyCISpotBugsOutput.LowVulns) > 0 {
+	if len(outputJSON.JavaResults.HuskyCISpotBugsOutput.LowVulns) > 0 || len(outputJSON.JavaResults.HuskyCISpotBugsOutput.NoSecVulns) > 0 {
 		outputJSON.Summary.SpotBugsSummary.FoundInfo = true
 	}
 	if len(outputJSON.JavaResults.HuskyCISpotBugsOutput.MediumVulns) > 0 || len(outputJSON.JavaResults.HuskyCISpotBugsOutput.HighVulns) > 0 {
@@ -164,7 +164,7 @@ func prepareAllSummary(analysis types.Analysis) {
 	outputJSON.Summary.GitleaksSummary.LowVuln = len(outputJSON.GenericResults.HuskyCIGitleaksOutput.LowVulns)
 	outputJSON.Summary.GitleaksSummary.MediumVuln = len(outputJSON.GenericResults.HuskyCIGitleaksOutput.MediumVulns)
 	outputJSON.Summary.GitleaksSummary.HighVuln = len(outputJSON.GenericResults.HuskyCIGitleaksOutput.HighVulns)
-	if len(outputJSON.GenericResults.HuskyCIGitleaksOutput.LowVulns) > 0 {
+	if len(outputJSON.GenericResults.HuskyCIGitleaksOutput.LowVulns) > 0 || len(outputJSON.GenericResults.HuskyCIGitleaksOutput.NoSecVulns) > 0 {
 		outputJSON.Summary.GitleaksSummary.FoundInfo = true
 	}
 	if len(outputJSON.GenericResults.HuskyCIGitleaksOutput.MediumVulns) > 0 || len(outputJSON.GenericResults.HuskyCIGitleaksOutput.HighVulns) > 0 {
