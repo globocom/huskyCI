@@ -308,7 +308,8 @@ gitleaks:
     git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneGitleaks
     if [ $? -eq 0 ]; then
         touch /tmp/results.json
-        $(which gitleaks) --log=warn --report=/tmp/results.json --repo-path=./code --branch=%GIT_BRANCH% --repo-config > /tmp/errorGitleaks
+        timeout -t 300 $(which gitleaks) --log=warn --report=/tmp/results.json --repo-path=./code --branch=%GIT_BRANCH% --repo-config > /tmp/errorGitleaks ||
+        echo "ERROR_TIMEOUT_GITLEAKS"
         if [ $? -eq 2 ]; then
             echo -n 'ERROR_RUNNING_GITLEAKS'
             cat /tmp/errorGitleaks

@@ -42,6 +42,23 @@ func analyseGitleaks(gitleaksScan *SecTestScanInfo) error {
 		return nil
 	}
 
+	// if gitleaks timeout, a warning will be generated as a low vuln
+	gitleaksTimeout := strings.Contains(gitleaksScan.Container.COutput, "ERROR_TIMEOUT_GITLEAKS")
+	if gitleaksTimeout {
+		gitleaksScan.GitleaksTimeout = true
+		gitleaksScan.prepareGitleaksVulns()
+		gitleaksScan.prepareContainerAfterScan()
+		return nil
+	}
+
+	gitleaksErrorRunning := strings.Contains(gitleaksScan.Container.COutput, "ERROR_RUNNING_YARN_AUDIT")
+	if gitleaksErrorRunning {
+		gitleaksScan.GitleaksErrorRunning = true
+		gitleaksScan.prepareGitleaksVulns()
+		gitleaksScan.prepareContainerAfterScan()
+		return nil
+	}
+
 	// Unmarshall rawOutput into finalOutput, that is a GitleaksOutput struct.
 	if err := json.Unmarshal([]byte(gitleaksScan.Container.COutput), &gitLeaksOutput); err != nil {
 		log.Error("analyzeGitleaks", "GITLEAKS", 1038, gitleaksScan.Container.COutput, err)
@@ -61,6 +78,29 @@ func (gitleaksScan *SecTestScanInfo) prepareGitleaksVulns() {
 
 	huskyCIgitleaksResults := types.HuskyCISecurityTestOutput{}
 	gitleaksOutput := gitleaksScan.FinalOutput.(GitleaksOutput)
+
+	if gitleaksScan.GitleaksTimeout {
+		gitleaksVuln := types.HuskyCIVulnerability{}
+		gitleaksVuln.Language = "Generic"
+		gitleaksVuln.SecurityTool = "Gitleaks"
+		gitleaksVuln.Severity = "nosec"
+		gitleaksVuln.Details = "It looks like your project has too many commits. Gitleaks was enable to run during huskyCI scan."
+
+		gitleaksScan.Vulnerabilities.LowVulns = append(gitleaksScan.Vulnerabilities.NoSecVulns, gitleaksVuln)
+		return
+	}
+
+	if gitleaksScan.GitleaksErrorRunning {
+		gitleaksVuln := types.HuskyCIVulnerability{}
+		gitleaksVuln.Language = "Generic"
+		gitleaksVuln.SecurityTool = "Gitleaks"
+		gitleaksVuln.Severity = "nosec"
+		gitleaksVuln.Details = "Internal error running Gitleaks."
+
+		gitleaksScan.Vulnerabilities.LowVulns = append(gitleaksScan.Vulnerabilities.NoSecVulns, gitleaksVuln)
+		return
+	}
+
 	for _, issue := range gitleaksOutput {
 		// dependencies issues will not checked at this moment by huskyCI
 		if strings.Contains(issue.File, "vendor/") || strings.Contains(issue.File, "node_modules/") {
