@@ -42,7 +42,7 @@ func analyseGitleaks(gitleaksScan *SecTestScanInfo) error {
 		return nil
 	}
 
-	// if gitleaks timeout, a warning will be generated as a low vuln
+	// if gitleaks timeout, a warning will be generated as a nosec vuln
 	gitleaksTimeout := strings.Contains(gitleaksScan.Container.COutput, "ERROR_TIMEOUT_GITLEAKS")
 	if gitleaksTimeout {
 		gitleaksScan.GitleaksTimeout = true
