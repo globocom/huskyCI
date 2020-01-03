@@ -88,7 +88,7 @@ func (gosecScan *SecTestScanInfo) prepareGosecVulns() {
 		}
 	}
 
-	for i := 0; i <= gosecOutput.GosecStats.Nosec; i++ {
+	for i := 0; i < gosecOutput.GosecStats.Nosec; i++ {
 		gosecVuln := types.HuskyCIVulnerability{}
 		huskyCIgosecResults.NoSecVulns = append(huskyCIgosecResults.NoSecVulns, gosecVuln)
 	}
