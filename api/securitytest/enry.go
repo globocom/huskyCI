@@ -21,7 +21,7 @@ type EnryOutput struct {
 func analyzeEnry(enryScan *SecTestScanInfo) error {
 	// Unmarshall rawOutput into finalOutput, that is a EnryOutput struct.
 	if err := json.Unmarshal([]byte(enryScan.Container.COutput), &enryScan.FinalOutput); err != nil {
-		log.Error("analyzeEnry", "ENRY", 1002, enryScan.Container.COutput, err)
+		log.Error("analyzeEnry", "ENRY", 1003, enryScan.Container.COutput, err)
 		enryScan.ErrorFound = err
 		return err
 	}
