@@ -161,6 +161,7 @@ func prepareAllSummary(analysis types.Analysis) {
 	}
 
 	// GitLeaks summary
+	outputJSON.Summary.GitleaksSummary.NoSecVuln = len(outputJSON.GenericResults.HuskyCIGitleaksOutput.NoSecVulns)
 	outputJSON.Summary.GitleaksSummary.LowVuln = len(outputJSON.GenericResults.HuskyCIGitleaksOutput.LowVulns)
 	outputJSON.Summary.GitleaksSummary.MediumVuln = len(outputJSON.GenericResults.HuskyCIGitleaksOutput.MediumVulns)
 	outputJSON.Summary.GitleaksSummary.HighVuln = len(outputJSON.GenericResults.HuskyCIGitleaksOutput.HighVulns)
