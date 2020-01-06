@@ -57,7 +57,7 @@ func (c *Container) Run() error {
 
 	// step 1: create a new docker client
 	if err := c.NewDockerClient(); err != nil {
-		log.Error("DockerRun", "HUSKYDOCKER", 3005, err)
+		log.Error("RUN", "CONTAINER", 3005, err)
 		return err
 	}
 
@@ -74,11 +74,12 @@ func (c *Container) Run() error {
 
 	// step 3: create the container
 	if err := c.Create(); err != nil {
-		log.Error("DockerRun", "CONTAINER", 3014, c.Image.Name, c.Image.Tag, err)
+		log.Error("RUN", "CONTAINER", 3014, c.Image.Name, c.Image.Tag, err)
 		return err
 	}
 
 	// step 4: start the container
+	c.StartedAt = time.Now()
 	if err := c.Start(); err != nil {
 		log.Error("RUN", "CONTAINER", 3015, c.Image.Name, c.Image.Tag, err)
 		return err
@@ -92,6 +93,7 @@ func (c *Container) Run() error {
 	}
 
 	// step 6: read container's STDOUT when it finishes
+	c.FinishedAt = time.Now()
 	if err := c.ReadOutput(true, false); err != nil {
 		log.Error("RUN", "CONTAINER", 3007, err)
 		return err
