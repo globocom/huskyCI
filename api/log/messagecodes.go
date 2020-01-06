@@ -119,7 +119,7 @@ var MsgCode = map[int]string{
 	// Docker API errors
 	3001: "Could not set DOCKER_HOST enviroment variable.",
 	3002: "Could not start a new Docker API client: ",
-	3005: "Could not create a new container via d.client: ",
+	3005: "Could not create a new docker client: ",
 	3006: "Could not get containers' logs: ",
 	3007: "Could not read containers' STDOUT: ",
 	3008: "Could not read containers' STDERR: ",
@@ -142,6 +142,8 @@ var MsgCode = map[int]string{
 	3025: "Could not update listed containers: ",
 	3026: "Could not initialize default configurations: ",
 	3027: "Could not remove container via huskyCI: ",
+	3028: "Error waitting container! Status Code received: ",
+	3029: "Error checking if image is loaded: ",
 
 	// Util package errors
 	4001: "Could not read certificate file: ",

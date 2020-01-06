@@ -1,6 +1,7 @@
 package container
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -12,6 +13,7 @@ import (
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/globocom/huskyCI/api/context"
+	"github.com/globocom/huskyCI/api/log"
 	goContext "golang.org/x/net/context"
 )
 
@@ -29,8 +31,9 @@ type Container struct {
 
 // Image is the struct that holds all information regarding a container image.
 type Image struct {
-	Name string `bson:"name" json:"name"`
-	Tag  string `bson:"tag" json:"tag"`
+	CanonicalURL string `bson:"canonicalURL" json:"canonicalURL"`
+	Name         string `bson:"name" json:"name"`
+	Tag          string `bson:"tag" json:"tag"`
 }
 
 // NewDockerClient creates a new docker API client and set it to the container struct.
@@ -52,12 +55,52 @@ func (c *Container) NewDockerClient() error {
 // Run runs a container by creating and starting it.
 func (c *Container) Run() error {
 
-	if err := c.Create(); err != nil {
+	// step 1: create a new docker client
+	if err := c.NewDockerClient(); err != nil {
+		log.Error("DockerRun", "HUSKYDOCKER", 3005, err)
 		return err
 	}
 
-	if err := c.Start(); err != nil {
+	// step 2: pull image if it is not there yet
+	imageIsLoaded, err := c.ImageIsLoaded()
+	if err != nil {
 		return err
+	}
+	if !imageIsLoaded {
+		if err := c.PullImageWorker(); err != nil {
+			return err
+		}
+	}
+
+	// step 3: create the container
+	if err := c.Create(); err != nil {
+		log.Error("DockerRun", "CONTAINER", 3014, c.Image.Name, c.Image.Tag, err)
+		return err
+	}
+
+	// step 4: start the container
+	if err := c.Start(); err != nil {
+		log.Error("RUN", "CONTAINER", 3015, c.Image.Name, c.Image.Tag, err)
+		return err
+	}
+	log.Info("RUN", "CONTAINER", 32, c.Image.Name, c.Image.Tag)
+
+	// step 5: wait the container finish
+	if err := c.Wait(); err != nil {
+		log.Error("RUN", "CONTAINER", 3016, err)
+		return err
+	}
+
+	// step 6: read container's STDOUT when it finishes
+	if err := c.ReadOutput(true, false); err != nil {
+		log.Error("RUN", "CONTAINER", 3007, err)
+		return err
+	}
+	log.Info("RUN", "CONTAINER", 34, c.Image.Name, c.Image.Tag)
+
+	// step 7: remove container from docker API
+	if err := c.Remove(); err != nil {
+		log.Error("RUN", "CONTAINER", 3027, err)
 	}
 
 	return nil
@@ -67,8 +110,8 @@ func (c *Container) Run() error {
 func (c *Container) Create() error {
 
 	ctx := goContext.Background()
-
 	fullImageName := fmt.Sprintf("%s:%s", c.Image.Name, c.Image.Tag)
+
 	containerConfig := &container.Config{
 		Image: fullImageName,
 		Tty:   true,
@@ -92,6 +135,19 @@ func (c *Container) Start() error {
 	return c.dockerClient.ContainerStart(ctx, c.CID, dockerTypes.ContainerStartOptions{})
 }
 
+// Wait returns when container finishes executing cmd.
+func (c *Container) Wait() error {
+
+	ctx := goContext.Background()
+
+	statusCode, err := c.dockerClient.ContainerWait(ctx, c.CID)
+	if statusCode != 0 {
+		log.Error("Wait", "CONTAINER", 3028, statusCode, err)
+	}
+
+	return err
+}
+
 // Stop stops an active container by it's CID.
 func (c *Container) Stop() error {
 
@@ -113,10 +169,44 @@ func (c *Container) PullImage() error {
 
 	ctx := goContext.Background()
 
-	fullImageName := fmt.Sprintf("%s:%s", c.Image.Name, c.Image.Tag)
-	_, err := c.dockerClient.ImagePull(ctx, fullImageName, dockerTypes.ImagePullOptions{})
+	_, err := c.dockerClient.ImagePull(ctx, c.Image.CanonicalURL, dockerTypes.ImagePullOptions{})
 
 	return err
+}
+
+// PullImageWorker will try to pull the container image a few times before returning a error
+func (c *Container) PullImageWorker() error {
+	timeout := time.After(15 * time.Minute)
+	retryTick := time.NewTicker(15 * time.Second)
+	for {
+		select {
+		case <-timeout:
+
+			timeOutErr := errors.New("timeout")
+			log.Error("pullImageWorker", "HUSKYDOCKER", 3013, timeOutErr)
+
+			return timeOutErr
+
+		case <-retryTick.C:
+
+			log.Info("pullImageWorker", "HUSKYDOCKER", 31, c.Image.Name)
+
+			isLoaded, err := c.ImageIsLoaded()
+			if err != nil {
+				log.Error("pullImageWorker", "HUSKYDOCKER", 3029, err)
+				return err
+			}
+			if isLoaded {
+				log.Info("pullImageWorker", "HUSKYDOCKER", 35, c.Image.Name)
+				return nil
+			}
+
+			if err := c.PullImage(); err != nil {
+				log.Error("pullImageWorker", "HUSKYDOCKER", 3013, err)
+				return err
+			}
+		}
+	}
 }
 
 // ListImages returns docker images, like docker image ls.
@@ -136,7 +226,7 @@ func (c *Container) RemoveImage(imageID string) ([]dockerTypes.ImageDelete, erro
 }
 
 // ReadOutput returns the output of a container based on isSTDERR and isSTDOUT bool parameters.
-func (c *Container) ReadOutput(isSTDOUT, isSTDERR bool) (string, error) {
+func (c *Container) ReadOutput(isSTDOUT, isSTDERR bool) error {
 
 	ctx := goContext.Background()
 	containerLogOptions := dockerTypes.ContainerLogsOptions{
@@ -146,15 +236,17 @@ func (c *Container) ReadOutput(isSTDOUT, isSTDERR bool) (string, error) {
 
 	cOutput, err := c.dockerClient.ContainerLogs(ctx, c.CID, containerLogOptions)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	body, err := ioutil.ReadAll(cOutput)
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	return string(body), nil
+	c.Output = string(body)
+
+	return nil
 }
 
 // ImageIsLoaded returns a bool if a a docker image is loaded in DockerAPI or not.
@@ -185,7 +277,7 @@ func HealthCheckDockerAPI() error {
 
 	err := healthCheckContainer.NewDockerClient()
 	if err != nil {
-		// log.Error("HealthCheckDockerAPI", logInfoAPI, 3011, err)
+		log.Error("HealthCheckDockerAPI", "CONTAINER", 3011, err)
 		return err
 	}
 
@@ -202,17 +294,17 @@ func setDockerClientEnvs() error {
 
 	// env vars needed by docker/docker library to create a NewEnvClient:
 	if err := os.Setenv("DOCKER_HOST", dockerHost); err != nil {
-		// log.Error(logActionNew, logInfoAPI, 3001, err)
+		log.Error("setDockerClientEnvs", "CONTAINER", 3001, err)
 		return err
 	}
 
 	if err := os.Setenv("DOCKER_CERT_PATH", pathCertificate); err != nil {
-		// log.Error(logActionNew, logInfoAPI, 3019, err)
+		log.Error("setDockerClientEnvs", "CONTAINER", 3019, err)
 		return err
 	}
 
 	if err := os.Setenv("DOCKER_TLS_VERIFY", tlsVerify); err != nil {
-		// log.Error(logActionNew, logInfoAPI, 3020, err)
+		log.Error("setDockerClientEnvs", "CONTAINER", 3020, err)
 		return err
 	}
 

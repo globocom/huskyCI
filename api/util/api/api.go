@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/globocom/huskyCI/api/container"
 	apiContext "github.com/globocom/huskyCI/api/context"
-	docker "github.com/globocom/huskyCI/api/dockers"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
 	"github.com/globocom/huskyCI/api/user"
@@ -95,7 +95,7 @@ func (cH *CheckUtils) checkDockerHosts(configAPI *apiContext.APIConfig) error {
 		return err
 	}
 
-	return docker.HealthCheckDockerAPI()
+	return container.HealthCheckDockerAPI()
 }
 
 func (cH *CheckUtils) checkDB(configAPI *apiContext.APIConfig) error {
