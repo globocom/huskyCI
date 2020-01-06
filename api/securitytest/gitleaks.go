@@ -42,7 +42,7 @@ func analyseGitleaks(gitleaksScan *SecTestScanInfo) error {
 		return nil
 	}
 
-	// if gitleaks timeout, a warning will be generated as a nosec vuln
+	// if gitleaks timeout, a warning will be generated as a low vuln
 	gitleaksTimeout := strings.Contains(gitleaksScan.Container.COutput, "ERROR_TIMEOUT_GITLEAKS")
 	if gitleaksTimeout {
 		gitleaksScan.GitleaksTimeout = true
@@ -83,10 +83,10 @@ func (gitleaksScan *SecTestScanInfo) prepareGitleaksVulns() {
 		gitleaksVuln := types.HuskyCIVulnerability{}
 		gitleaksVuln.Language = "Generic"
 		gitleaksVuln.SecurityTool = "Gitleaks"
-		gitleaksVuln.Severity = "nosec"
+		gitleaksVuln.Severity = "low"
 		gitleaksVuln.Details = "It looks like your project is too big and huskyCI was not able to run Gitleaks."
 
-		gitleaksScan.Vulnerabilities.NoSecVulns = append(gitleaksScan.Vulnerabilities.NoSecVulns, gitleaksVuln)
+		gitleaksScan.Vulnerabilities.LowVulns = append(gitleaksScan.Vulnerabilities.LowVulns, gitleaksVuln)
 		return
 	}
 
@@ -94,10 +94,10 @@ func (gitleaksScan *SecTestScanInfo) prepareGitleaksVulns() {
 		gitleaksVuln := types.HuskyCIVulnerability{}
 		gitleaksVuln.Language = "Generic"
 		gitleaksVuln.SecurityTool = "Gitleaks"
-		gitleaksVuln.Severity = "nosec"
+		gitleaksVuln.Severity = "low"
 		gitleaksVuln.Details = "Internal error running Gitleaks."
 
-		gitleaksScan.Vulnerabilities.NoSecVulns = append(gitleaksScan.Vulnerabilities.NoSecVulns, gitleaksVuln)
+		gitleaksScan.Vulnerabilities.LowVulns = append(gitleaksScan.Vulnerabilities.LowVulns, gitleaksVuln)
 		return
 	}
 
