@@ -56,12 +56,15 @@ func main() {
 	// step 2.2: prepare the list of securityTests that ran in the analysis.
 	var passedList []string
 	var failedList []string
+	var errorList []string
 	for _, container := range huskyAnalysis.Containers {
 		securityTestFullName := fmt.Sprintf("%s:%s", container.SecurityTest.Image, container.SecurityTest.ImageTag)
 		if container.CResult == "passed" && container.SecurityTest.Name != "gitauthors" {
 			passedList = append(passedList, securityTestFullName)
 		} else if container.CResult == "failed" {
 			failedList = append(failedList, securityTestFullName)
+		} else if container.CResult == "error" {
+			failedList = append(errorList, securityTestFullName)
 		}
 	}
 
@@ -88,6 +91,10 @@ func main() {
 	// step 4: block developer CI if vulnerabilities were found
 	if !types.FoundVuln && !types.FoundInfo {
 		if !types.IsJSONoutput {
+			if len(errorList) > 0 {
+				fmt.Println("[HUSKYCI][*] The following securityTests failed to run:")
+				fmt.Println("[HUSKYCI][*]", errorList)
+			}
 			fmt.Println("[HUSKYCI][*] The following securityTests were executed and no blocking vulnerabilities were found:")
 			fmt.Println("[HUSKYCI][*]", passedList)
 			fmt.Println("[HUSKYCI][*] No issues were found.")
@@ -97,6 +104,10 @@ func main() {
 
 	if !types.FoundVuln && types.FoundInfo {
 		if !types.IsJSONoutput {
+			if len(errorList) > 0 {
+				fmt.Println("[HUSKYCI][*] The following securityTests failed to run:")
+				fmt.Println("[HUSKYCI][*]", errorList)
+			}
 			fmt.Println("[HUSKYCI][*] The following securityTests were executed and no blocking vulnerabilities were found:")
 			fmt.Println("[HUSKYCI][*]", passedList)
 			fmt.Println("[HUSKYCI][*] However, some LOW/INFO issues were found...")
@@ -105,6 +116,10 @@ func main() {
 	}
 
 	if types.FoundVuln && !types.IsJSONoutput {
+		if len(errorList) > 0 {
+			fmt.Println("[HUSKYCI][*] The following securityTests failed to run:")
+			fmt.Println("[HUSKYCI][*]", errorList)
+		}
 		if len(passedList) > 0 {
 			fmt.Println("[HUSKYCI][*] The following securityTests were executed and no blocking vulnerabilities were found:")
 			fmt.Println("[HUSKYCI][*]", passedList)
