@@ -46,11 +46,23 @@ func main() {
 		fmt.Println("[HUSKYCI][*] huskyCI analysis started!", RID)
 	}
 
-	// step 2: keep querying huskyCI API to check if a given analysis has already finished.
+	// step 2.1: keep querying huskyCI API to check if a given analysis has already finished.
 	huskyAnalysis, err := analysis.MonitorAnalysis(RID)
 	if err != nil {
 		fmt.Println(fmt.Sprintf("[HUSKYCI][ERROR] Monitoring analysis %s: %s", RID, err))
 		os.Exit(1)
+	}
+
+	// step 2.2: prepare the list of securityTests that ran in the analysis.
+	var passedList []string
+	var failedList []string
+	for _, container := range huskyAnalysis.Containers {
+		securityTestFullName := fmt.Sprintf("%s:%s", container.SecurityTest.Image, container.SecurityTest.ImageTag)
+		if container.CResult == "passed" && container.SecurityTest.Name != "gitauthors" {
+			passedList = append(passedList, securityTestFullName)
+		} else if container.CResult == "failed" {
+			failedList = append(failedList, securityTestFullName)
+		}
 	}
 
 	// step 3: print output based on os.Args(1) parameter received
@@ -76,20 +88,29 @@ func main() {
 	// step 4: block developer CI if vulnerabilities were found
 	if !types.FoundVuln && !types.FoundInfo {
 		if !types.IsJSONoutput {
-			fmt.Printf("[HUSKYCI][*] Nice! No issues were found :)\n")
+			fmt.Println("[HUSKYCI][*] The following securityTests were executed and no blocking vulnerabilities were found:")
+			fmt.Println("[HUSKYCI][*]", passedList)
+			fmt.Println("[HUSKYCI][*] No issues were found.")
 		}
 		os.Exit(0)
 	}
 
 	if !types.FoundVuln && types.FoundInfo {
 		if !types.IsJSONoutput {
-			fmt.Printf("[HUSKYCI][*] Some LOW/INFO issues were found :|\n")
+			fmt.Println("[HUSKYCI][*] The following securityTests were executed and no blocking vulnerabilities were found:")
+			fmt.Println("[HUSKYCI][*]", passedList)
+			fmt.Println("[HUSKYCI][*] However, some LOW/INFO issues were found...")
 		}
 		os.Exit(0)
 	}
 
 	if types.FoundVuln && !types.IsJSONoutput {
-		fmt.Printf("[HUSKYCI][*] Some HIGH/MEDIUM issues were found :(\n")
+		if len(passedList) > 0 {
+			fmt.Println("[HUSKYCI][*] The following securityTests were executed and no blocking vulnerabilities were found:")
+			fmt.Println("[HUSKYCI][*]", passedList)
+		}
+		fmt.Println("[HUSKYCI][*] Some HIGH/MEDIUM issues were found in these securityTests:")
+		fmt.Println("[HUSKYCI][*]", failedList)
 	}
 
 	os.Exit(190)
