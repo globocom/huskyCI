@@ -6,8 +6,6 @@ import (
 	"github.com/globocom/huskyCI/api/analysis"
 	"github.com/globocom/huskyCI/api/auth"
 	postgres "github.com/globocom/huskyCI/api/db/postgres"
-	"github.com/globocom/huskyCI/api/repository"
-	"github.com/globocom/huskyCI/api/securitytest"
 	"github.com/globocom/huskyCI/api/types"
 )
 
@@ -18,24 +16,15 @@ import (
 // implementing Requests.
 type Requests interface {
 	ConnectDB(address string, dbName string, username string, password string, timeout time.Duration, poolLimit int, port int, maxOpenConns int, maxIdleConns int, connMaxLifetime time.Duration) error
-	FindOneDBRepository(mapParams map[string]interface{}) (repository.Repository, error)
-	FindOneDBSecurityTest(mapParams map[string]interface{}) (securitytest.SecurityTest, error)
 	FindOneDBAnalysis(mapParams map[string]interface{}) (analysis.Analysis, error)
-	FindOneDBUser(mapParams map[string]interface{}) (auth.User, error)
 	FindOneDBAccessToken(mapParams map[string]interface{}) (types.DBToken, error)
-	FindAllDBRepository(mapParams map[string]interface{}) ([]repository.Repository, error)
-	FindAllDBSecurityTest(mapParams map[string]interface{}) ([]securitytest.SecurityTest, error)
+	FindOneDBUser(mapParams map[string]interface{}) (auth.User, error)
 	FindAllDBAnalysis(mapParams map[string]interface{}) ([]analysis.Analysis, error)
-	InsertDBRepository(repository repository.Repository) error
-	InsertDBSecurityTest(securityTest securitytest.SecurityTest) error
 	InsertDBAnalysis(analysis analysis.Analysis) error
-	InsertDBUser(user auth.User) error
 	InsertDBAccessToken(accessToken types.DBToken) error
-	UpdateOneDBRepository(mapParams, updateQuery map[string]interface{}) error
-	UpsertOneDBSecurityTest(mapParams map[string]interface{}, updatedSecurityTest securitytest.SecurityTest) (interface{}, error)
+	InsertDBUser(user auth.User) error
 	UpdateOneDBAnalysis(mapParams map[string]interface{}, updatedAnalysis map[string]interface{}) error
 	UpdateOneDBUser(mapParams map[string]interface{}, updatedUser auth.User) error
-	UpdateOneDBAnalysisContainer(mapParams, updateQuery map[string]interface{}) error
 	UpdateOneDBAccessToken(mapParams map[string]interface{}, updatedAccessToken types.DBToken) error
 	GetMetricByType(metricType string, queryStringParams map[string][]string) (interface{}, error)
 }

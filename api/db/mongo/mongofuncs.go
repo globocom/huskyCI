@@ -18,11 +18,9 @@ var Conn *DB
 
 // Collections names used in MongoDB.
 var (
-	RepositoryCollection   = "repository"
-	SecurityTestCollection = "securityTest"
-	AnalysisCollection     = "analysis"
-	UserCollection         = "user"
-	AccessTokenCollection  = "accessToken"
+	AnalysisCollection = "analysis"
+	UserCollection     = "user"
+	TokenCollection    = "accessToken"
 )
 
 // DB is the struct that represents mongo session.

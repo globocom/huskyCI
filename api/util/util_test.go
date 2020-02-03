@@ -8,10 +8,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"os"
 
 	"github.com/globocom/huskyCI/api/log"
-	"github.com/globocom/huskyCI/api/types"
+	"github.com/globocom/huskyCI/api/repository"
 	"github.com/globocom/huskyCI/api/util"
 
 	"github.com/labstack/echo"
@@ -20,64 +19,6 @@ import (
 )
 
 var _ = Describe("Util", func() {
-
-	Describe("HandleCmd", func() {
-		inputRepositoryURL := "https://github.com/globocom/secDevLabs.git"
-		inputRepositoryBranch := "myBranch"
-		inputCMD := "git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitClone -- "
-		expected := "git clone -b myBranch --single-branch https://github.com/globocom/secDevLabs.git code --quiet 2> /tmp/errorGitClone -- "
-
-		Context("When inputRepositoryURL, inputRepositoryBranch and inputCMD are not empty", func() {
-			It("Should return a string based on these params", func() {
-				Expect(util.HandleCmd(inputRepositoryURL, inputRepositoryBranch, inputCMD)).To(Equal(expected))
-			})
-		})
-		Context("When inputRepositoryURL is empty", func() {
-			It("Should return an empty string.", func() {
-				Expect(util.HandleCmd("", inputRepositoryBranch, inputCMD)).To(Equal(""))
-			})
-		})
-		Context("When inputRepositoryBranch is empty", func() {
-			It("Should return an empty string.", func() {
-				Expect(util.HandleCmd(inputRepositoryURL, "", inputCMD)).To(Equal(""))
-			})
-		})
-		Context("When inputCMD is empty", func() {
-			It("Should return an empty string.", func() {
-				Expect(util.HandleCmd(inputRepositoryURL, inputRepositoryBranch, "")).To(Equal(""))
-			})
-		})
-	})
-
-	Describe("HandlePrivateSSHKey", func() {
-
-		rawString := "echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&"
-		expectedNotEmpty := "echo 'PRIVKEYTEST' > ~/.ssh/huskyci_id_rsa &&"
-		expectedEmpty := "echo '' > ~/.ssh/huskyci_id_rsa &&"
-
-		Context("When rawString and HUSKYCI_API_GIT_PRIVATE_SSH_KEY are not empty", func() {
-			It("Should return a string based on these params", func() {
-				os.Setenv("HUSKYCI_API_GIT_PRIVATE_SSH_KEY", "PRIVKEYTEST")
-				Expect(util.HandlePrivateSSHKey(rawString)).To(Equal(expectedNotEmpty))
-			})
-		})
-		Context("When rawString is empty and HUSKYCI_API_GIT_PRIVATE_SSH_KEY is not empty", func() {
-			It("Should return an empty string.", func() {
-				Expect(util.HandlePrivateSSHKey("")).To(Equal(""))
-			})
-		})
-		Context("When rawString is not empty and HUSKYCI_API_GIT_PRIVATE_SSH_KEY is empty", func() {
-			It("Should return a string based on these params.", func() {
-				os.Unsetenv("HUSKYCI_API_GIT_PRIVATE_SSH_KEY")
-				Expect(util.HandlePrivateSSHKey(rawString)).To(Equal(expectedEmpty))
-			})
-		})
-		Context("When rawString and HUSKYCI_API_GIT_PRIVATE_SSH_KEY are empty", func() {
-			It("Should return an empty string.", func() {
-				Expect(util.HandlePrivateSSHKey("")).To(Equal(""))
-			})
-		})
-	})
 
 	Describe("GetLastLine", func() {
 
@@ -164,7 +105,7 @@ Line4`
 		log.InitLog(true, "", "", "log_test", "log_test")
 
 		Context("When URL is already ok", func() {
-			repository := types.Repository{
+			repository := repository.Repository{
 				URL:    "https://github.com/globocom/secDevLabs.git",
 				Branch: "branch",
 			}
@@ -177,7 +118,7 @@ Line4`
 
 		Context("When URL is invalid", func() {
 			It("Should response with invalid repository URL", func() {
-				repository := types.Repository{
+				repository := repository.Repository{
 					URL:    "http://globo.com",
 					Branch: "branch",
 				}
@@ -195,7 +136,7 @@ Line4`
 			})
 
 			It("Should response with invalid branch", func() {
-				repository := types.Repository{
+				repository := repository.Repository{
 					URL:    "https://github.com/globocom/secDevLabs.git",
 					Branch: " [bra nch] ",
 				}

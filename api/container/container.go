@@ -119,8 +119,8 @@ func (c *Container) Create(repositoryURL, branch string) error {
 	fullImageName := fmt.Sprintf("%s:%s", c.Image.Name, c.Image.Tag)
 
 	// replace GIT repository URL, branch and SSH private key from os env var
-	cmd := handleCmd(repositoryURL, branch, c.Command)
-	finalCMD := handlePrivateSSHKey(cmd)
+	cmd := HandleCmd(repositoryURL, branch, c.Command)
+	finalCMD := HandlePrivateSSHKey(cmd)
 
 	containerConfig := &container.Config{
 		Image: fullImageName,
@@ -331,8 +331,8 @@ func setDockerClientEnvs() error {
 	return nil
 }
 
-// handleCmd will extract %GIT_REPO% and %GIT_BRANCH% from cmd and replace it with the proper repository URL.
-func handleCmd(repositoryURL, repositoryBranch, cmd string) string {
+// HandleCmd will extract %GIT_REPO% and %GIT_BRANCH% from cmd and replace it with the proper repository URL.
+func HandleCmd(repositoryURL, repositoryBranch, cmd string) string {
 	if repositoryURL != "" && repositoryBranch != "" && cmd != "" {
 		replace1 := strings.Replace(cmd, "%GIT_REPO%", repositoryURL, -1)
 		replace2 := strings.Replace(replace1, "%GIT_BRANCH%", repositoryBranch, -1)
@@ -341,8 +341,8 @@ func handleCmd(repositoryURL, repositoryBranch, cmd string) string {
 	return ""
 }
 
-// handlePrivateSSHKey will extract %GIT_PRIVATE_SSH_KEY% from cmd and replace it with the proper private SSH key.
-func handlePrivateSSHKey(rawString string) string {
+// HandlePrivateSSHKey will extract %GIT_PRIVATE_SSH_KEY% from cmd and replace it with the proper private SSH key.
+func HandlePrivateSSHKey(rawString string) string {
 	privKey := os.Getenv("HUSKYCI_API_GIT_PRIVATE_SSH_KEY")
 	cmdReplaced := strings.Replace(rawString, "GIT_PRIVATE_SSH_KEY", privKey, -1)
 	return cmdReplaced

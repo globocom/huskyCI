@@ -17,10 +17,10 @@ import (
 type Repository struct {
 	GitInfo    *git.Repository
 	Files      []File
+	Commits    []Commit `bson:"commits" json:"commits"`
 	URL        string   `bson:"repositoryURL" json:"repositoryURL"`
 	Branch     string   `bson:"repositoryBranch" json:"repositoryBranch"`
 	HeadCommit string   `bson:"headcommit" json:"headcommit"`
-	Commits    []Commit `bson:"commits" json:"commits"`
 	Languages  []string `bson:"languages" json:"languages"`
 }
 

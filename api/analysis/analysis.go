@@ -19,11 +19,11 @@ import (
 // new
 type Analysis struct {
 	ID              string                        `bson:"ID" json:"ID"`
-	Repository      *repository.Repository        `bson:"repository" json:"repository"`
-	Result          Result                        `bson:"result,omitempty" json:"result"`
 	StartedAt       time.Time                     `bson:"startedAt" json:"startedAt"`
 	FinishedAt      time.Time                     `bson:"finishedAt" json:"finishedAt"`
 	ErrorsFound     []string                      `bson:"errorsFound,omitempty" json:"errorsFound"`
+	Result          Result                        `bson:"result,omitempty" json:"result"`
+	Repository      *repository.Repository        `bson:"repository" json:"repository"`
 	Vulnerabilities []vulnerability.Vulnerability `bson:"vulnerabilities" json:"vulnerabilities"`
 	SecurityTests   []*securitytest.SecurityTest  `bson:"securityTests" json:"securityTests"`
 }

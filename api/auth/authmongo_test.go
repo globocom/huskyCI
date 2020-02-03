@@ -5,6 +5,8 @@
 package auth_test
 
 import (
+	"os/user"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -17,7 +19,7 @@ import (
 
 type FakeGen struct {
 	expectedHash            string
-	expectedPbkdf2          types.User
+	expectedPbkdf2          user.User
 	expectedGetCredsError   error
 	expectedDecodedSalt     []byte
 	expectedDecodeSaltError error
@@ -31,7 +33,7 @@ func (fG *FakeGen) DecodeSaltValue(salt string) ([]byte, error) {
 	return fG.expectedDecodedSalt, fG.expectedDecodeSaltError
 }
 
-func (fG *FakeGen) GetCredsFromDB(username string) (types.User, error) {
+func (fG *FakeGen) GetCredsFromDB(username string) (user.User, error) {
 	return fG.expectedPbkdf2, fG.expectedGetCredsError
 }
 
