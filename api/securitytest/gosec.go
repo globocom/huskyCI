@@ -8,7 +8,7 @@ import (
 	"encoding/json"
 
 	"github.com/globocom/huskyCI/api/log"
-	"github.com/globocom/huskyCI/api/types"
+	"github.com/globocom/huskyCI/api/vulnerability"
 )
 
 // GosecOutput is the struct that holds all data from Gosec output.
@@ -36,41 +36,42 @@ type GosecStats struct {
 	Found int `json:"found"`
 }
 
-func analyzeGosec(gosecScan *SecTestScanInfo) error {
+func (s *SecurityTest) analyzeGosec() error {
 
-	goSecOutput := GosecOutput{}
-	gosecScan.FinalOutput = goSecOutput
-
-	// nil cOutput states that no Issues were found.
-	if gosecScan.Container.COutput == "" {
-		gosecScan.prepareContainerAfterScan()
+	// An empty container output states that no Issues were found.
+	if s.Container.Output == "" {
+		s.Result = "passed"
+		s.Info = "No issues found."
 		return nil
 	}
 
-	// Unmarshall rawOutput into finalOutput, that is a GosecOutput struct.
-	if err := json.Unmarshal([]byte(gosecScan.Container.COutput), &goSecOutput); err != nil {
-		log.Error("analyzeGosec", "GOSEC", 1002, gosecScan.Container.COutput, err)
-		gosecScan.ErrorFound = err
-		gosecScan.prepareContainerAfterScan()
+	goSecOutput := GosecOutput{}
+
+	//  Unmarshall container output into a Gosec struct.
+	if err := json.Unmarshal([]byte(s.Container.Output), &goSecOutput); err != nil {
+		log.Error("analyzeGosec", "GOSEC", 1002, s.Container.Output, err)
+		s.Result = "error"
+		s.Info = log.MsgCode[1002]
+		s.ErrorFound = err.Error()
 		return err
 	}
-	gosecScan.FinalOutput = goSecOutput
 
-	// check results and prepare all vulnerabilities found
-	gosecScan.prepareGosecVulns()
-	gosecScan.prepareContainerAfterScan()
+	s.prepareGosecVulns(goSecOutput)
+
 	return nil
 }
 
-func (gosecScan *SecTestScanInfo) prepareGosecVulns() {
+func (s *SecurityTest) prepareGosecVulns(gosecOutput GosecOutput) {
 
-	huskyCIgosecResults := types.HuskyCISecurityTestOutput{}
-	gosecOutput := gosecScan.FinalOutput.(GosecOutput)
+	results := gosecOutput.GosecIssues
+	stats := gosecOutput.GosecStats
 
-	for _, issue := range gosecOutput.GosecIssues {
-		gosecVuln := types.HuskyCIVulnerability{}
+	for _, issue := range results {
+
+		gosecVuln := vulnerability.New()
+
 		gosecVuln.Language = "Go"
-		gosecVuln.SecurityTool = "GoSec"
+		gosecVuln.SecurityTest = "GoSec"
 		gosecVuln.Severity = issue.Severity
 		gosecVuln.Confidence = issue.Confidence
 		gosecVuln.Details = issue.Details
@@ -78,20 +79,18 @@ func (gosecScan *SecTestScanInfo) prepareGosecVulns() {
 		gosecVuln.Line = issue.Line
 		gosecVuln.Code = issue.Code
 
-		switch gosecVuln.Severity {
-		case "LOW":
-			huskyCIgosecResults.LowVulns = append(huskyCIgosecResults.LowVulns, gosecVuln)
-		case "MEDIUM":
-			huskyCIgosecResults.MediumVulns = append(huskyCIgosecResults.MediumVulns, gosecVuln)
-		case "HIGH":
-			huskyCIgosecResults.HighVulns = append(huskyCIgosecResults.HighVulns, gosecVuln)
-		}
+		s.Vulnerabilities = append(s.Vulnerabilities, *gosecVuln)
 	}
 
-	for i := 0; i <= gosecOutput.GosecStats.Nosec; i++ {
-		gosecVuln := types.HuskyCIVulnerability{}
-		huskyCIgosecResults.NoSecVulns = append(huskyCIgosecResults.NoSecVulns, gosecVuln)
+	for i := 0; i <= stats.Nosec; i++ {
+
+		gosecVuln := vulnerability.New()
+
+		gosecVuln.Language = "Go"
+		gosecVuln.SecurityTest = "GoSec"
+		gosecVuln.Severity = "NOSEC"
+
+		s.Vulnerabilities = append(s.Vulnerabilities, *gosecVuln)
 	}
 
-	gosecScan.Vulnerabilities = huskyCIgosecResults
 }

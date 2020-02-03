@@ -15,7 +15,7 @@ import (
 // used for external calls and validate some
 // necessary information about TokenHandler.
 type ExternalCalls interface {
-	ValidateURL(url string) (string, error)
+	// ValidateURL(url string) (string, error)
 	GenerateToken() (string, error)
 	GetTimeNow() time.Time
 	StoreAccessToken(accessToken types.DBToken) error

@@ -9,14 +9,16 @@ import (
 	"strings"
 
 	"github.com/globocom/huskyCI/api/log"
-	"github.com/globocom/huskyCI/api/types"
+	"github.com/globocom/huskyCI/api/vulnerability"
 )
 
 // GitleaksOutput is the struct that holds all data from Gitleaks output.
-type GitleaksOutput []GitLeaksIssue
+type GitleaksOutput struct {
+	Results []GitLeaksResult `json:"results"`
+}
 
-// GitLeaksIssue is the struct that holds all isssues from Gitleaks output.
-type GitLeaksIssue struct {
+// GitLeaksResult is the struct that holds all isssues from Gitleaks output.
+type GitLeaksResult struct {
 	Line          string `json:"line"`
 	Commit        string `json:"commit"`
 	Offender      string `json:"offender"`
@@ -32,46 +34,65 @@ type GitLeaksIssue struct {
 	Severity      string `json:"severity"`
 }
 
-func analyseGitleaks(gitleaksScan *SecTestScanInfo) error {
-	gitLeaksOutput := GitleaksOutput{}
-	gitleaksScan.FinalOutput = gitLeaksOutput
+func (s *SecurityTest) analyzeGitleaks() error {
 
-	// nil cOutput states that no Issues were found.
-	if gitleaksScan.Container.COutput == "" {
-		gitleaksScan.prepareContainerAfterScan()
+	// An empty container output states that no Issues were found.
+	if s.Container.Output == "" {
+		s.Result = "passed"
+		s.Info = "No issues found."
 		return nil
 	}
 
-	// Unmarshall rawOutput into finalOutput, that is a GitleaksOutput struct.
-	if err := json.Unmarshal([]byte(gitleaksScan.Container.COutput), &gitLeaksOutput); err != nil {
-		log.Error("analyzeGitleaks", "GITLEAKS", 1038, gitleaksScan.Container.COutput, err)
-		gitleaksScan.ErrorFound = err
-		gitleaksScan.prepareContainerAfterScan()
+	gitLeaksOutput := GitleaksOutput{}
+
+	// gitleaks took too long to finish
+	if s.WarningFound != "" {
+		s.prepareGitleaksVulns(gitLeaksOutput.Results)
+		return nil
+	}
+
+	// Unmarshall container output into a GitleaksOutput struct.
+	if err := json.Unmarshal([]byte(s.Container.Output), &gitLeaksOutput); err != nil {
+		log.Error("analyzeGitleaks", "GITLEAKS", 1038, s.Container.Output, err)
+		s.Result = "error"
+		s.Info = log.MsgCode[1038]
+		s.ErrorFound = err.Error()
 		return err
 	}
-	gitleaksScan.FinalOutput = gitLeaksOutput
 
-	// check results and prepare all vulnerabilities found
-	gitleaksScan.prepareGitleaksVulns()
-	gitleaksScan.prepareContainerAfterScan()
+	s.prepareGitleaksVulns(gitLeaksOutput.Results)
+
 	return nil
 }
 
-func (gitleaksScan *SecTestScanInfo) prepareGitleaksVulns() {
+func (s *SecurityTest) prepareGitleaksVulns(results []GitLeaksResult) {
 
-	huskyCIgitleaksResults := types.HuskyCISecurityTestOutput{}
-	gitleaksOutput := gitleaksScan.FinalOutput.(GitleaksOutput)
-	for _, issue := range gitleaksOutput {
+	if s.WarningFound != "" {
+
+		gitleaksVuln := vulnerability.New()
+
+		gitleaksVuln.Language = "Generic"
+		gitleaksVuln.SecurityTest = "GitLeaks"
+		gitleaksVuln.Details = s.WarningFound
+
+		s.Vulnerabilities = append(s.Vulnerabilities, *gitleaksVuln)
+
+		return
+	}
+
+	for _, issue := range results {
+
 		// dependencies issues will not checked at this moment by huskyCI
 		if strings.Contains(issue.File, "vendor/") || strings.Contains(issue.File, "node_modules/") {
 			continue
 		}
 
-		gitleaksVuln := types.HuskyCIVulnerability{}
-		gitleaksVuln.SecurityTool = "GitLeaks"
-		gitleaksVuln.Details = issue.Rule + " @ [" + issue.Commit + "]"
+		gitleaksVuln := vulnerability.New()
+
+		gitleaksVuln.Language = "Generic"
+		gitleaksVuln.SecurityTest = "GitLeaks"
 		gitleaksVuln.File = issue.File
-		gitleaksVuln.Code = issue.Line
+		gitleaksVuln.Line = issue.Line
 
 		switch issue.Rule {
 		case "PKCS8", "RSA", "SSH", "PGP", "EC":
@@ -82,15 +103,10 @@ func (gitleaksScan *SecTestScanInfo) prepareGitleaksVulns() {
 			gitleaksVuln.Severity = "LOW"
 		}
 
-		switch gitleaksVuln.Severity {
-		case "LOW":
-			huskyCIgitleaksResults.LowVulns = append(huskyCIgitleaksResults.LowVulns, gitleaksVuln)
-		case "MEDIUM":
-			huskyCIgitleaksResults.MediumVulns = append(huskyCIgitleaksResults.MediumVulns, gitleaksVuln)
-		case "HIGH":
-			huskyCIgitleaksResults.HighVulns = append(huskyCIgitleaksResults.HighVulns, gitleaksVuln)
-		}
+		gitleaksVuln.Details = issue.Rule + " @ [" + issue.Commit + "]"
+
+		s.Vulnerabilities = append(s.Vulnerabilities, *gitleaksVuln)
+
 	}
 
-	gitleaksScan.Vulnerabilities = huskyCIgitleaksResults
 }

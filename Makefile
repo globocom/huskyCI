@@ -28,7 +28,7 @@ LDFLAGS := '-X "main.version=$(TAG)" -X "main.commit=$(COMMIT)" -X "main.date=$(
 
 ## Builds Go project to the executable file huskyci
 build:
-	cd api && GOOS=linux GOARCH=amd64 $(GO) build -mod vendor -ldflags $(LDFLAGS) -o "$(HUSKYCIBIN)"
+	cd api/cmd && GOOS=linux GOARCH=amd64 $(GO) build -mod vendor -ldflags $(LDFLAGS) -o "$(HUSKYCIBIN)"
 
 ## Builds client to the executable file huskyci-client
 build-client:
@@ -99,7 +99,7 @@ get-gosec-deps:
 
 ## Gets all link dependencies
 get-lint-deps:
-	curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s v1.21.0
+	curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.21.0
 	$(GO) get -u golang.org/x/lint/golint
 
 ## Gets all go test dependencies

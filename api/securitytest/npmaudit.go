@@ -6,10 +6,9 @@ package securitytest
 
 import (
 	"encoding/json"
-	"strings"
 
 	"github.com/globocom/huskyCI/api/log"
-	"github.com/globocom/huskyCI/api/types"
+	"github.com/globocom/huskyCI/api/vulnerability"
 )
 
 // NpmAuditOutput is the struct that stores all npm audit output
@@ -48,59 +47,41 @@ type VulnerabilitiesSummary struct {
 	Critical int `json:"critical"`
 }
 
-func analyzeNpmaudit(npmAuditScan *SecTestScanInfo) error {
+func (s *SecurityTest) analyzeNpmaudit() error {
+
+	// An empty container output states that no Issues were found.
+	if s.Container.Output == "" {
+		s.Result = "passed"
+		s.Info = "No issues found."
+		return nil
+	}
 
 	npmAuditOutput := NpmAuditOutput{}
-	npmAuditScan.FinalOutput = npmAuditOutput
 
-	// if package-lock was not found, a warning will be genrated as a low vuln
-	packageNotFound := strings.Contains(npmAuditScan.Container.COutput, "ERROR_PACKAGE_LOCK_NOT_FOUND")
-	if packageNotFound {
-		npmAuditScan.PackageNotFound = true
-		npmAuditScan.prepareNpmAuditVulns()
-		npmAuditScan.prepareContainerAfterScan()
-		return nil
-	}
-
-	// nil cOutput states that no Issues were found.
-	if npmAuditScan.Container.COutput == "" {
-		npmAuditScan.prepareContainerAfterScan()
-		return nil
-	}
-
-	// Unmarshall rawOutput into finalOutput, that is a NpmAuditOutput struct.
-	if err := json.Unmarshal([]byte(npmAuditScan.Container.COutput), &npmAuditOutput); err != nil {
-		log.Error("analyzeNpmaudit", "NPMAUDIT", 1014, npmAuditScan.Container.COutput, err)
+	// Unmarshall container output into a NpmAuditOutput struct.
+	if err := json.Unmarshal([]byte(s.Container.Output), &npmAuditOutput); err != nil {
+		log.Error("analyzeNpmaudit", "NPMAUDIT", 1014, s.Container.Output, err)
+		s.Result = "error"
+		s.Info = log.MsgCode[1014]
+		s.ErrorFound = err.Error()
 		return err
 	}
-	npmAuditScan.FinalOutput = npmAuditOutput
 
-	// step 4: find Issues that have severity "MEDIUM" or "HIGH" and confidence "HIGH".
-	npmAuditScan.prepareNpmAuditVulns()
-	npmAuditScan.prepareContainerAfterScan()
+	s.prepareNpmAuditVulns(npmAuditOutput)
+
 	return nil
 }
 
-func (npmAuditScan *SecTestScanInfo) prepareNpmAuditVulns() {
+func (s *SecurityTest) prepareNpmAuditVulns(npmAuditOutput NpmAuditOutput) {
 
-	huskyCInpmauditResults := types.HuskyCISecurityTestOutput{}
-	npmAuditOutput := npmAuditScan.FinalOutput.(NpmAuditOutput)
+	results := npmAuditOutput.Advisories
 
-	if npmAuditScan.PackageNotFound {
-		npmauditVuln := types.HuskyCIVulnerability{}
+	for _, issue := range results {
+
+		npmauditVuln := vulnerability.New()
+
 		npmauditVuln.Language = "JavaScript"
-		npmauditVuln.SecurityTool = "NpmAudit"
-		npmauditVuln.Severity = "low"
-		npmauditVuln.Details = "It looks like your project doesn't have a package-lock.json file. If you use NPM to handle your dependencies, it would be a good idea to commit it so huskyCI can check for vulnerabilities."
-
-		npmAuditScan.Vulnerabilities.LowVulns = append(npmAuditScan.Vulnerabilities.LowVulns, npmauditVuln)
-		return
-	}
-
-	for _, issue := range npmAuditOutput.Advisories {
-		npmauditVuln := types.HuskyCIVulnerability{}
-		npmauditVuln.Language = "JavaScript"
-		npmauditVuln.SecurityTool = "NpmAudit"
+		npmauditVuln.SecurityTest = "NpmAudit"
 		npmauditVuln.Details = issue.Overview
 		npmauditVuln.VunerableBelow = issue.VulnerableVersions
 		npmauditVuln.Code = issue.ModuleName
@@ -111,16 +92,14 @@ func (npmAuditScan *SecTestScanInfo) prepareNpmAuditVulns() {
 		switch issue.Severity {
 		case "info", "low":
 			npmauditVuln.Severity = "low"
-			huskyCInpmauditResults.LowVulns = append(huskyCInpmauditResults.LowVulns, npmauditVuln)
 		case "moderate":
 			npmauditVuln.Severity = "medium"
-			huskyCInpmauditResults.MediumVulns = append(huskyCInpmauditResults.MediumVulns, npmauditVuln)
 		case "high", "critical":
 			npmauditVuln.Severity = "high"
-			huskyCInpmauditResults.HighVulns = append(huskyCInpmauditResults.HighVulns, npmauditVuln)
 		}
+
+		s.Vulnerabilities = append(s.Vulnerabilities, *npmauditVuln)
 
 	}
 
-	npmAuditScan.Vulnerabilities = huskyCInpmauditResults
 }

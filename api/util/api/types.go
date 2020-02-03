@@ -9,7 +9,6 @@ type CheckInterface interface {
 	checkEnvVars() error
 	checkDockerHosts(configAPI *apiContext.APIConfig) error
 	checkDB(configAPI *apiContext.APIConfig) error
-	checkEachSecurityTest(configAPI *apiContext.APIConfig) error
 	checkDefaultUser(configAPI *apiContext.APIConfig) error
 }
 
@@ -40,10 +39,6 @@ func (fC *FakeCheck) checkDockerHosts(configAPI *apiContext.APIConfig) error {
 
 func (fC *FakeCheck) checkDB(configAPI *apiContext.APIConfig) error {
 	return fC.MongoDBError
-}
-
-func (fC *FakeCheck) checkEachSecurityTest(configAPI *apiContext.APIConfig) error {
-	return fC.EachSecurityTestError
 }
 
 func (fC *FakeCheck) checkDefaultUser(configAPI *apiContext.APIConfig) error {

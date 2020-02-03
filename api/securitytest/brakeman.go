@@ -9,16 +9,16 @@ import (
 	"strconv"
 
 	"github.com/globocom/huskyCI/api/log"
-	"github.com/globocom/huskyCI/api/types"
+	"github.com/globocom/huskyCI/api/vulnerability"
 )
 
 // BrakemanOutput is the struct that holds issues and stats found on a Brakeman scan.
 type BrakemanOutput struct {
-	Warnings []WarningItem `json:"warnings"`
+	Results []BrakemanResult `json:"warnings"`
 }
 
-// WarningItem is the struct that holds all detailed information of a vulnerability found.
-type WarningItem struct {
+// BrakemanResult is the struct that holds all detailed information of a vulnerability found.
+type BrakemanResult struct {
 	Type       string `json:"warning_type"`
 	Code       string `json:"code"`
 	Message    string `json:"message"`
@@ -28,54 +28,50 @@ type WarningItem struct {
 	Confidence string `json:"confidence"`
 }
 
-func analyzeBrakeman(brakemanScan *SecTestScanInfo) error {
+func (s *SecurityTest) analyzeBrakeman() error {
+
+	// An empty container output states that no Issues were found.
+	if s.Container.Output == "" {
+		s.Result = "passed"
+		s.Info = "No issues found."
+		return nil
+	}
 
 	brakemanOutput := BrakemanOutput{}
 
-	// nil cOutput states that no Issues were found.
-	if brakemanScan.Container.COutput == "" {
-		brakemanScan.prepareContainerAfterScan()
-		return nil
-	}
-	// Unmarshall rawOutput into finalOutput, that is a Brakeman struct.
-	if err := json.Unmarshal([]byte(brakemanScan.Container.COutput), &brakemanOutput); err != nil {
-		log.Error("analyzeBrakeman", "BRAKEMAN", 1005, brakemanScan.Container.COutput, err)
-		brakemanScan.ErrorFound = err
+	// Unmarshall container output into a BrakemanOutput struct.
+	if err := json.Unmarshal([]byte(s.Container.Output), &brakemanOutput); err != nil {
+		log.Error("analyzeBrakeman", "BRAKEMAN", 1005, s.Container.Output, err)
+		s.Result = "error"
+		s.Info = log.MsgCode[1005]
+		s.ErrorFound = err.Error()
 		return err
 	}
-	brakemanScan.FinalOutput = brakemanOutput
 
-	// check results and prepare all vulnerabilities found
-	brakemanScan.prepareBrakemanVulns()
-	brakemanScan.prepareContainerAfterScan()
+	s.prepareBrakemanVulns(brakemanOutput)
+
 	return nil
 }
 
-func (brakemanScan *SecTestScanInfo) prepareBrakemanVulns() {
+func (s *SecurityTest) prepareBrakemanVulns(brakemanOutput BrakemanOutput) {
 
-	huskyCIbrakemanResults := types.HuskyCISecurityTestOutput{}
-	brakemanOutput := brakemanScan.FinalOutput.(BrakemanOutput)
+	results := brakemanOutput.Results
 
-	for _, warning := range brakemanOutput.Warnings {
-		brakemanVuln := types.HuskyCIVulnerability{}
+	for _, issue := range results {
+
+		brakemanVuln := vulnerability.New()
+
 		brakemanVuln.Language = "Ruby"
-		brakemanVuln.SecurityTool = "Brakeman"
-		brakemanVuln.Confidence = warning.Confidence
-		brakemanVuln.Details = warning.Details + warning.Message
-		brakemanVuln.File = warning.File
-		brakemanVuln.Line = strconv.Itoa(warning.Line)
-		brakemanVuln.Code = warning.Code
-		brakemanVuln.Type = warning.Type
+		brakemanVuln.SecurityTest = "Brakeman"
+		brakemanVuln.Confidence = issue.Confidence
+		brakemanVuln.Details = issue.Details + issue.Message
+		brakemanVuln.File = issue.File
+		brakemanVuln.Line = strconv.Itoa(issue.Line)
+		brakemanVuln.Code = issue.Code
+		brakemanVuln.Type = issue.Type
 
-		switch brakemanVuln.Confidence {
-		case "High":
-			huskyCIbrakemanResults.HighVulns = append(huskyCIbrakemanResults.HighVulns, brakemanVuln)
-		case "Medium":
-			huskyCIbrakemanResults.MediumVulns = append(huskyCIbrakemanResults.MediumVulns, brakemanVuln)
-		case "Low":
-			huskyCIbrakemanResults.LowVulns = append(huskyCIbrakemanResults.LowVulns, brakemanVuln)
-		}
+		s.Vulnerabilities = append(s.Vulnerabilities, *brakemanVuln)
+
 	}
 
-	brakemanScan.Vulnerabilities = huskyCIbrakemanResults
 }

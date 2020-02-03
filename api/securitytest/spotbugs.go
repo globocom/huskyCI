@@ -6,13 +6,11 @@ package securitytest
 
 import (
 	"encoding/xml"
-	"errors"
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/globocom/huskyCI/api/log"
-	"github.com/globocom/huskyCI/api/types"
+	"github.com/globocom/huskyCI/api/vulnerability"
 )
 
 const (
@@ -22,10 +20,10 @@ const (
 
 // SpotBugsOutput is the struct that holds all data from SpotBugs output.
 type SpotBugsOutput struct {
-	XMLName       xml.Name        `xml:"BugCollection"`
-	Project       Project         `xml:"Project"`
-	SpotBugsIssue []SpotBugsIssue `xml:"BugInstance"`
-	Errors        Error           `xml:"Errors"`
+	XMLName        xml.Name        `xml:"BugCollection"`
+	Project        Project         `xml:"Project"`
+	SpotBugsIssues []SpotBugsIssue `xml:"BugInstance"`
+	Errors         Error           `xml:"Errors"`
 }
 
 // Project is the struct that holds data about project
@@ -66,59 +64,76 @@ type SourceLine struct {
 	SourcePath    string   `xml:"sourcepath,attr"`
 }
 
-func analyzeSpotBugs(spotbugsScan *SecTestScanInfo) error {
+func (s *SecurityTest) analyzeSpotBugs() error {
 
-	spotBugsOutput := SpotBugsOutput{}
-	spotbugsScan.FinalOutput = spotBugsOutput
-
-	// check if GRADLE failed running
-	errorGradleFound := strings.Contains(spotbugsScan.Container.COutput, "ERROR_RUNNING_GRADLE_BUILD")
-	if errorGradleFound {
-		spotbugsScan.ErrorFound = errors.New("error running gradle")
-		spotbugsScan.prepareSpotBugsVulns()
-		spotbugsScan.prepareContainerAfterScan()
-		return nil
-	}
-
-	// check if Maven failed running
-	errorMavenFound := strings.Contains(spotbugsScan.Container.COutput, "ERROR_RUNNING_MAVEN_BUILD")
-	if errorMavenFound {
-		spotbugsScan.ErrorFound = errors.New("error running maven")
-		spotbugsScan.prepareSpotBugsVulns()
-		spotbugsScan.prepareContainerAfterScan()
-		return nil
-	}
-
-	// check if unsuported java project was found
-	errorUnsuported := strings.Contains(spotbugsScan.Container.COutput, "ERROR_UNSUPPORTED_JAVA_PROJECT")
-	if errorUnsuported {
-		spotbugsScan.ErrorFound = errors.New("error unsuported java project")
-		spotbugsScan.prepareSpotBugsVulns()
-		spotbugsScan.prepareContainerAfterScan()
-		return nil
-	}
-
-	// nil cOutput states that no Issues were found.
-	if spotbugsScan.Container.COutput == "" {
-		spotbugsScan.prepareContainerAfterScan()
+	// An empty container output states that no Issues were found.
+	if s.Container.Output == "" {
+		s.Result = "passed"
+		s.Info = "No issues found."
 		return nil
 	}
 
 	// Unmarshall rawOutput into finalOutput, that is a SpotBugsOutput struct.
-	spotBugsOutput, err := parseXMLtoJSON([]byte(spotbugsScan.Container.COutput))
+	spotBugsOutput, err := parseXMLtoJSON([]byte(s.Container.Output))
 	if err != nil {
-		log.Error("analyzeSpotBugs", "SPOTBUGS", 1039, spotbugsScan.Container.COutput, err)
-		spotbugsScan.ErrorFound = err
-		spotbugsScan.prepareContainerAfterScan()
+		log.Error("analyzeSpotBugs", "SPOTBUGS", 1039, s.Container.Output, err)
+		s.Result = "error"
+		s.Info = log.MsgCode[1039]
+		s.ErrorFound = err.Error()
 		return err
 	}
 
-	spotbugsScan.FinalOutput = spotBugsOutput
-
-	// check results and prepare all vulnerabilities found
-	spotbugsScan.prepareSpotBugsVulns()
-	spotbugsScan.prepareContainerAfterScan()
+	s.prepareSpotBugsVulns(spotBugsOutput)
 	return nil
+}
+
+func (s *SecurityTest) prepareSpotBugsVulns(spotBugsOutput SpotBugsOutput) {
+
+	results := spotBugsOutput.SpotBugsIssues
+
+	for _, issue := range results {
+		for _, sourceLine := range issue.SourceLine {
+
+			spotbugsVuln := vulnerability.New()
+
+			spotbugsVuln.Language = "Java"
+			spotbugsVuln.SecurityTest = "SpotBugs"
+			spotbugsVuln.Type = issue.Abbreviation
+			spotbugsVuln.Details = issue.Type
+			spotbugsVuln.Code = fmt.Sprintf("Code beetween Line %s and Line %s.", sourceLine.Start, sourceLine.End)
+			spotbugsVuln.Line = sourceLine.Start
+			spotbugsVuln.File = sourceLine.SourcePath
+
+			switch issue.Priority {
+			case "1":
+				spotbugsVuln.Confidence = "HIGH"
+			case "2":
+				spotbugsVuln.Confidence = "MEDIUM"
+			default:
+				spotbugsVuln.Confidence = "LOW"
+			}
+
+			rank, err := strconv.Atoi(issue.Rank)
+			if err != nil {
+				log.Warning("analyzeSpotBugs", "SPOTBUGS", 1039, "exception while reading rank from a spotbugs issue", err)
+				continue
+			}
+
+			switch {
+			case rank < highSeverityValue:
+				spotbugsVuln.Severity = "HIGH"
+			case rank < mediumSeverityValue:
+				spotbugsVuln.Severity = "MEDIUM"
+			default:
+				spotbugsVuln.Severity = "LOW"
+			}
+
+			s.Vulnerabilities = append(s.Vulnerabilities, *spotbugsVuln)
+
+		}
+
+	}
+
 }
 
 func parseXMLtoJSON(byteValue []byte) (SpotBugsOutput, error) {
@@ -134,71 +149,8 @@ func parseXMLtoJSON(byteValue []byte) (SpotBugsOutput, error) {
 	if err != nil {
 		return bugs, err
 	}
-	if (len(bugs.SpotBugsIssue) == 0) && (numOfErrors > 0 || numOfMissingClasses > 0) {
+	if (len(bugs.SpotBugsIssues) == 0) && (numOfErrors > 0 || numOfMissingClasses > 0) {
 		return bugs, fmt.Errorf("spotbugs has risen errors because of [%d] missing classes and [%d] errors while analysing", numOfMissingClasses, numOfErrors)
 	}
 	return bugs, nil
-}
-
-func (spotbugsScan *SecTestScanInfo) prepareSpotBugsVulns() {
-	var spotbugsOutput SpotBugsOutput
-
-	huskyCIspotbugsResults := types.HuskyCISecurityTestOutput{}
-	spotbugsOutput = spotbugsScan.FinalOutput.(SpotBugsOutput)
-
-	if spotbugsScan.ErrorFound != nil {
-		spotbugsVuln := types.HuskyCIVulnerability{}
-		spotbugsVuln.Language = "Java"
-		spotbugsVuln.SecurityTool = "SpotBugs"
-		spotbugsVuln.Details = fmt.Sprintf("An error occured running huskyCI scan on your Java project: %s", spotbugsScan.ErrorFound.Error())
-		spotbugsVuln.Severity = "LOW"
-		spotbugsVuln.Confidence = "HIGH"
-
-		spotbugsScan.Vulnerabilities.LowVulns = append(huskyCIspotbugsResults.LowVulns, spotbugsVuln)
-		return
-	}
-
-	for i := 0; i < len(spotbugsOutput.SpotBugsIssue); i++ {
-		for j := 0; j < len(spotbugsOutput.SpotBugsIssue[i].SourceLine); j++ {
-			spotbugsVuln := types.HuskyCIVulnerability{}
-			spotbugsVuln.Language = "Java"
-			spotbugsVuln.SecurityTool = "SpotBugs"
-			spotbugsVuln.Type = spotbugsOutput.SpotBugsIssue[i].Abbreviation
-			spotbugsVuln.Details = spotbugsOutput.SpotBugsIssue[i].Type
-			startLine := spotbugsOutput.SpotBugsIssue[i].SourceLine[j].Start
-			endLine := spotbugsOutput.SpotBugsIssue[i].SourceLine[j].End
-			spotbugsVuln.Code = fmt.Sprintf("Code beetween Line %s and Line %s.", startLine, endLine)
-			spotbugsVuln.Line = startLine
-			spotbugsVuln.File = spotbugsOutput.SpotBugsIssue[i].SourceLine[j].SourcePath
-
-			switch spotbugsOutput.SpotBugsIssue[i].Priority {
-			case "1":
-				spotbugsVuln.Confidence = "HIGH"
-			case "2":
-				spotbugsVuln.Confidence = "MEDIUM"
-			default:
-				spotbugsVuln.Confidence = "LOW"
-			}
-
-			rank, err := strconv.Atoi(spotbugsOutput.SpotBugsIssue[i].Rank)
-			if err != nil {
-				log.Warning("analyzeSpotBugs", "SPOTBUGS", 1039, "exception while reading rank from a spotbugs issue", err)
-				continue
-			}
-
-			switch {
-			case rank < highSeverityValue:
-				spotbugsVuln.Severity = "HIGH"
-				huskyCIspotbugsResults.HighVulns = append(huskyCIspotbugsResults.HighVulns, spotbugsVuln)
-			case rank < mediumSeverityValue:
-				spotbugsVuln.Severity = "MEDIUM"
-				huskyCIspotbugsResults.MediumVulns = append(huskyCIspotbugsResults.MediumVulns, spotbugsVuln)
-			default:
-				spotbugsVuln.Severity = "LOW"
-				huskyCIspotbugsResults.LowVulns = append(huskyCIspotbugsResults.LowVulns, spotbugsVuln)
-			}
-		}
-	}
-
-	spotbugsScan.Vulnerabilities = huskyCIspotbugsResults
 }

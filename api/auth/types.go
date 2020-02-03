@@ -6,8 +6,6 @@ package auth
 
 import (
 	"hash"
-
-	"github.com/globocom/huskyCI/api/types"
 )
 
 // UserCredsHandler is the User handler used in auth.
@@ -18,7 +16,7 @@ type UserCredsHandler interface {
 
 // Pbkdf2Generator is the interface that stores all pbkdf2 functions.
 type Pbkdf2Generator interface {
-	GetCredsFromDB(username string) (types.User, error)
+	GetCredsFromDB(username string) (User, error)
 	DecodeSaltValue(salt string) ([]byte, error)
 	GenHashValue(value, salt []byte, iter, keyLen int, h hash.Hash) string
 	GenerateSalt() (string, error)

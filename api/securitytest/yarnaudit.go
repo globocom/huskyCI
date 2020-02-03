@@ -6,10 +6,9 @@ package securitytest
 
 import (
 	"encoding/json"
-	"strings"
 
 	"github.com/globocom/huskyCI/api/log"
-	"github.com/globocom/huskyCI/api/types"
+	"github.com/globocom/huskyCI/api/vulnerability"
 )
 
 // YarnAuditOutput is the struct that stores all yarn audit output
@@ -49,83 +48,44 @@ type YarnVulnerabilitiesSummary struct {
 	Critical int `json:"critical"`
 }
 
-func analyzeYarnaudit(yarnAuditScan *SecTestScanInfo) error {
+func (s *SecurityTest) analyzeYarnaudit() error {
+
+	// An empty container output states that no Issues were found.
+	if s.Container.Output == "" {
+		s.Result = "passed"
+		s.Info = "No issues found."
+		return nil
+	}
 
 	yarnAuditOutput := YarnAuditOutput{}
-	yarnAuditScan.FinalOutput = yarnAuditOutput
 
-	// if package-lock was not found, a warning will be genrated as a low vuln
-	yarnLockNotFound := strings.Contains(yarnAuditScan.Container.COutput, "ERROR_YARN_LOCK_NOT_FOUND")
-	if yarnLockNotFound {
-		yarnAuditScan.YarnLockNotFound = true
-		yarnAuditScan.prepareYarnAuditVulns()
-		yarnAuditScan.prepareContainerAfterScan()
-		return nil
-	}
-
-	// if yarn audit fails to run, a warning will be genrated as a low vuln
-	YarnErrorRunning := strings.Contains(yarnAuditScan.Container.COutput, "ERROR_RUNNING_YARN_AUDIT")
-	if YarnErrorRunning {
-		yarnAuditScan.YarnErrorRunning = true
-		yarnAuditScan.prepareYarnAuditVulns()
-		yarnAuditScan.prepareContainerAfterScan()
-		return nil
-	}
-
-	// nil cOutput states that no Issues were found.
-	if yarnAuditScan.Container.COutput == "" {
-		yarnAuditScan.prepareContainerAfterScan()
-		return nil
-	}
-
-	// Unmarshall rawOutput into finalOutput, that is a YarnAuditOutput struct.
-	if err := json.Unmarshal([]byte(yarnAuditScan.Container.COutput), &yarnAuditOutput); err != nil {
-		log.Error("analyzeYarnaudit", "YARNAUDIT", 1036, yarnAuditScan.Container.COutput, err)
+	// Unmarshall  container output into a YarnAuditOutput struct.
+	if err := json.Unmarshal([]byte(s.Container.Output), &yarnAuditOutput); err != nil {
+		log.Error("analyzeYarnaudit", "YARNAUDIT", 1036, s.Container.Output, err)
+		s.Result = "error"
+		s.Info = log.MsgCode[1036]
+		s.ErrorFound = err.Error()
 		return err
 	}
-	yarnAuditScan.FinalOutput = yarnAuditOutput
 
-	// step 4: find Issues that have severity "MEDIUM" or "HIGH" and confidence "HIGH".
-	yarnAuditScan.prepareYarnAuditVulns()
-	yarnAuditScan.prepareContainerAfterScan()
+	s.prepareYarnAuditVulns(yarnAuditOutput)
+
 	return nil
 }
 
-func (yarnAuditScan *SecTestScanInfo) prepareYarnAuditVulns() {
+func (s *SecurityTest) prepareYarnAuditVulns(yarnAuditOutput YarnAuditOutput) {
 
-	huskyCIyarnauditResults := types.HuskyCISecurityTestOutput{}
-	yarnAuditOutput := yarnAuditScan.FinalOutput.(YarnAuditOutput)
+	results := yarnAuditOutput.Advisories
 
-	if yarnAuditScan.YarnLockNotFound {
-		yarnauditVuln := types.HuskyCIVulnerability{}
+	for _, issue := range results {
+
+		yarnauditVuln := vulnerability.New()
+
 		yarnauditVuln.Language = "JavaScript"
-		yarnauditVuln.SecurityTool = "YarnAudit"
-		yarnauditVuln.Severity = "low"
-		yarnauditVuln.Details = "It looks like your project doesn't have a yarn.lock file. If you use Yarn to handle your dependencies, it would be a good idea to commit it so huskyCI can check for vulnerabilities."
-
-		yarnAuditScan.Vulnerabilities.LowVulns = append(yarnAuditScan.Vulnerabilities.LowVulns, yarnauditVuln)
-		return
-	}
-
-	if yarnAuditScan.YarnErrorRunning {
-		yarnauditVuln := types.HuskyCIVulnerability{}
-		yarnauditVuln.Language = "JavaScript"
-		yarnauditVuln.SecurityTool = "YarnAudit"
-		yarnauditVuln.Severity = "low"
-		yarnauditVuln.Details = "Yarn returned an error"
-
-		yarnAuditScan.Vulnerabilities.LowVulns = append(yarnAuditScan.Vulnerabilities.LowVulns, yarnauditVuln)
-		return
-	}
-
-	for _, issue := range yarnAuditOutput.Advisories {
-		yarnauditVuln := types.HuskyCIVulnerability{}
-		yarnauditVuln.Language = "JavaScript"
-		yarnauditVuln.SecurityTool = "YarnAudit"
+		yarnauditVuln.SecurityTest = "YarnAudit"
 		yarnauditVuln.Details = issue.Overview
 		yarnauditVuln.VunerableBelow = issue.VulnerableVersions
 		yarnauditVuln.Code = issue.ModuleName
-		yarnauditVuln.Occurrences = 1
 		for _, findings := range issue.Findings {
 			yarnauditVuln.Version = findings.Version
 		}
@@ -133,33 +93,14 @@ func (yarnAuditScan *SecTestScanInfo) prepareYarnAuditVulns() {
 		switch issue.Severity {
 		case "info", "low":
 			yarnauditVuln.Severity = "low"
-			if !vulnListContains(huskyCIyarnauditResults.LowVulns, yarnauditVuln) {
-				huskyCIyarnauditResults.LowVulns = append(huskyCIyarnauditResults.LowVulns, yarnauditVuln)
-			}
 		case "moderate":
 			yarnauditVuln.Severity = "medium"
-			if !vulnListContains(huskyCIyarnauditResults.MediumVulns, yarnauditVuln) {
-				huskyCIyarnauditResults.MediumVulns = append(huskyCIyarnauditResults.MediumVulns, yarnauditVuln)
-			}
 		case "high", "critical":
 			yarnauditVuln.Severity = "high"
-			if !vulnListContains(huskyCIyarnauditResults.HighVulns, yarnauditVuln) {
-				huskyCIyarnauditResults.HighVulns = append(huskyCIyarnauditResults.HighVulns, yarnauditVuln)
-			}
 		}
+
+		s.Vulnerabilities = append(s.Vulnerabilities, *yarnauditVuln)
 
 	}
 
-	yarnAuditScan.Vulnerabilities = huskyCIyarnauditResults
-}
-
-// vulnListContains increments the occurrence counter in case a vulnerability is found again
-func vulnListContains(vulnList []types.HuskyCIVulnerability, vuln types.HuskyCIVulnerability) bool {
-	for i := range vulnList {
-		if vulnList[i].Details == vuln.Details && vulnList[i].Code == vuln.Code {
-			vulnList[i].Occurrences = vulnList[i].Occurrences + 1
-			return true
-		}
-	}
-	return false
 }

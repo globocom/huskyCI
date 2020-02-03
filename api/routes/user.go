@@ -13,7 +13,6 @@ import (
 	"github.com/globocom/huskyCI/api/auth"
 	apiContext "github.com/globocom/huskyCI/api/context"
 	"github.com/globocom/huskyCI/api/log"
-	"github.com/globocom/huskyCI/api/types"
 	"github.com/labstack/echo"
 	"golang.org/x/crypto/pbkdf2"
 	"gopkg.in/mgo.v2"
@@ -23,7 +22,7 @@ import (
 func UpdateUser(c echo.Context) error {
 
 	// step 1.1: valid JSON?
-	attemptUser := types.User{}
+	attemptUser := auth.User{}
 	err := c.Bind(&attemptUser)
 	if err != nil {
 		log.Error("EditUser", "USER", 1024, err)
@@ -81,7 +80,7 @@ func UpdateUser(c echo.Context) error {
 		return hashFunction
 	})
 
-	updatedUser := types.User{
+	updatedUser := auth.User{
 		Username:     attemptUser.Username,
 		Password:     base64.StdEncoding.EncodeToString(newHashedPass),
 		Salt:         user.Salt,

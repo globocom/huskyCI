@@ -22,13 +22,15 @@ import (
 // the two parts separated by two points.
 func (tH *THandler) GenerateAccessToken(repo types.TokenRequest) (string, error) {
 	accessToken := types.DBToken{}
-	validatedURL, err := tH.External.ValidateURL(repo.RepositoryURL)
-	if err != nil {
-		return "", err
-	}
-	if validatedURL == "" {
-		return "", errors.New("Empty URL is not valid")
-	}
+
+	// validatedURL, err := tH.External.ValidateURL(repo.RepositoryURL)
+	// if err != nil {
+	// 	return "", err
+	// }
+	// if validatedURL == "" {
+	// 	return "", errors.New("Empty URL is not valid")
+	// }
+
 	token, err := tH.External.GenerateToken()
 	if err != nil {
 		return "", err
@@ -49,7 +51,7 @@ func (tH *THandler) GenerateAccessToken(repo types.TokenRequest) (string, error)
 		return "", errors.New("Invalid hash function")
 	}
 	accessToken.HuskyToken = tH.HashGen.GenHashValue([]byte(token), bSalt, iterations, keyLength, h)
-	accessToken.URL = validatedURL
+	accessToken.URL = repo.RepositoryURL
 	accessToken.IsValid = true
 	accessToken.CreatedAt = tH.External.GetTimeNow()
 	accessToken.Salt = salt
@@ -106,10 +108,10 @@ func (tH *THandler) ValidateRandomData(rdata, hashdata, salt string) error {
 // has permission to start an analysis for the received
 // repository URL.
 func (tH *THandler) ValidateToken(token, repositoryURL string) error {
-	validURL, err := tH.External.ValidateURL(repositoryURL)
-	if err != nil {
-		return err
-	}
+	// validURL, err := tH.External.ValidateURL(repositoryURL)
+	// if err != nil {
+	// 	return err
+	// }
 	uUID, randomData, err := tH.GetSplitted(token)
 	if err != nil {
 		return err
@@ -121,20 +123,20 @@ func (tH *THandler) ValidateToken(token, repositoryURL string) error {
 	if !accessToken.IsValid {
 		return errors.New("Access token is invalid")
 	}
-	if accessToken.URL != validURL {
-		return errors.New("Access token doesn't have permission to run analysis in the provided repository")
-	}
+	// if accessToken.URL != validURL {
+	// 	return errors.New("Access token doesn't have permission to run analysis in the provided repository")
+	// }
 	return tH.ValidateRandomData(randomData, accessToken.HuskyToken, accessToken.Salt)
 }
 
 // VerifyRepo will verify if exists an entry
 // for the received repository
 func (tH *THandler) VerifyRepo(repositoryURL string) error {
-	validURL, err := tH.External.ValidateURL(repositoryURL)
-	if err != nil {
-		return err
-	}
-	return tH.External.FindRepoURL(validURL)
+	// validURL, err := tH.External.ValidateURL(repositoryURL)
+	// if err != nil {
+	// 	return err
+	// }
+	return tH.External.FindRepoURL(repositoryURL)
 }
 
 // InvalidateToken will set boolean flag IsValid

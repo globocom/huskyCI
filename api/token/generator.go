@@ -11,14 +11,13 @@ import (
 
 	apiContext "github.com/globocom/huskyCI/api/context"
 	"github.com/globocom/huskyCI/api/types"
-	"github.com/globocom/huskyCI/api/util"
 	"github.com/google/uuid"
 )
 
 // ValidateURL validates if an URL is malicious or not.
-func (tC *TCaller) ValidateURL(url string) (string, error) {
-	return util.CheckMaliciousRepoURL(url)
-}
+// func (tC *TCaller) ValidateURL(url string) (string, error) {
+// 	return util.CheckMaliciousRepoURL(url)
+// }
 
 func generateRandomBytes() ([]byte, error) {
 	b := make([]byte, 32)

@@ -12,15 +12,17 @@ import (
 	"os"
 	"strconv"
 
-	apiContext "github.com/globocom/huskyCI/api/context"
-	"github.com/globocom/huskyCI/api/types"
 	"golang.org/x/crypto/pbkdf2"
 )
 
 // GetCredsFromDB returns an user info given an username.
-func (pC *Pbkdf2Caller) GetCredsFromDB(username string) (types.User, error) {
-	searchParam := map[string]interface{}{"username": username}
-	return apiContext.APIConfiguration.DBInstance.FindOneDBUser(searchParam)
+func (pC *Pbkdf2Caller) GetCredsFromDB(username string) (User, error) {
+
+	user := User{}
+	return user, nil
+
+	// searchParam := map[string]interface{}{"username": username}
+	// return apiContext.APIConfiguration.DBInstance.FindOneDBUser(searchParam)
 }
 
 // DecodeSaltValue decodes a salt and returns a string and an error.

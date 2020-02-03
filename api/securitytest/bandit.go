@@ -7,19 +7,20 @@ package securitytest
 import (
 	"encoding/json"
 	"strconv"
+	"strings"
 
 	"github.com/globocom/huskyCI/api/log"
-	"github.com/globocom/huskyCI/api/types"
 	"github.com/globocom/huskyCI/api/util"
+	"github.com/globocom/huskyCI/api/vulnerability"
 )
 
 // BanditOutput is the struct that holds all data from Bandit output.
 type BanditOutput struct {
-	Results []Result `json:"results"`
+	Results []BanditResult `json:"results"`
 }
 
-// Result is the struct that holds detailed information of issues from Bandit output.
-type Result struct {
+// BanditResult is the struct that holds detailed information of issues from Bandit output.
+type BanditResult struct {
 	Code            string `json:"code"`
 	Filename        string `json:"filename"`
 	IssueConfidence string `json:"issue_confidence"`
@@ -31,60 +32,69 @@ type Result struct {
 	TestName        string `json:"test_name"`
 }
 
-func analyzeBandit(banditScan *SecTestScanInfo) error {
+func (s *SecurityTest) analyzeBandit() error {
 
 	banditOutput := BanditOutput{}
 
-	// Unmarshall rawOutput into finalOutput, that is a Bandit struct.
-	if err := json.Unmarshal([]byte(banditScan.Container.COutput), &banditOutput); err != nil {
-		log.Error("analyzeBandit", "BANDIT", 1006, banditScan.Container.COutput, err)
-		banditScan.ErrorFound = err
+	// Unmarshall container output into a BanditOutput struct.
+	if err := json.Unmarshal([]byte(s.Container.Output), &banditOutput); err != nil {
+		log.Error("analyzeBandit", "BANDIT", 1006, s.Container.Output, err)
+		s.Result = "error"
+		s.Info = log.MsgCode[1006]
+		s.ErrorFound = err.Error()
 		return err
 	}
-	banditScan.FinalOutput = banditOutput
 
-	// an empty Results slice states that no Issues were found.
+	// An empty Results slice states that no Issues were found.
 	if len(banditOutput.Results) == 0 {
-		banditScan.prepareContainerAfterScan()
+		s.Result = "passed"
+		s.Info = "No issues found."
 		return nil
 	}
-	// check results and prepare all vulnerabilities found
-	banditScan.prepareBanditVulns()
-	banditScan.prepareContainerAfterScan()
+
+	s.prepareBanditVulns(banditOutput.Results)
+
 	return nil
 }
 
-func (banditScan *SecTestScanInfo) prepareBanditVulns() {
+func (s *SecurityTest) prepareBanditVulns(results []BanditResult) {
 
-	huskyCIbanditResults := types.HuskyCISecurityTestOutput{}
-	banditOutput := banditScan.FinalOutput.(BanditOutput)
+	for _, issue := range results {
 
-	for _, issue := range banditOutput.Results {
-		banditVuln := types.HuskyCIVulnerability{}
-		banditVuln.Language = "Python"
-		banditVuln.SecurityTool = "Bandit"
-		noHuskyInLine := util.VerifyNoHusky(issue.Code, issue.LineNumber, banditVuln.SecurityTool)
-		if noHuskyInLine {
-			issue.IssueSeverity = "NOSEC"
+		banditVuln := vulnerability.New()
+
+		isFalsePositive := checkFalsePositiveBandit(issue.Code, issue.LineNumber)
+		if isFalsePositive {
+			banditVuln.Nosec = true
+			banditVuln.Severity = "NOSEC"
+		} else {
+			banditVuln.Severity = issue.IssueSeverity
 		}
-		banditVuln.Severity = issue.IssueSeverity
+
+		banditVuln.Language = "Python"
+		banditVuln.SecurityTest = "Bandit"
 		banditVuln.Confidence = issue.IssueConfidence
-		banditVuln.Details = issue.IssueText
 		banditVuln.File = issue.Filename
 		banditVuln.Line = strconv.Itoa(issue.LineNumber)
 		banditVuln.Code = issue.Code
+		banditVuln.Details = issue.IssueText
 
-		switch banditVuln.Severity {
-		case "NOSEC":
-			huskyCIbanditResults.NoSecVulns = append(huskyCIbanditResults.NoSecVulns, banditVuln)
-		case "LOW":
-			huskyCIbanditResults.LowVulns = append(huskyCIbanditResults.LowVulns, banditVuln)
-		case "MEDIUM":
-			huskyCIbanditResults.MediumVulns = append(huskyCIbanditResults.MediumVulns, banditVuln)
-		case "HIGH":
-			huskyCIbanditResults.HighVulns = append(huskyCIbanditResults.HighVulns, banditVuln)
-		}
+		s.Vulnerabilities = append(s.Vulnerabilities, *banditVuln)
+
 	}
 
-	banditScan.Vulnerabilities = huskyCIbanditResults
+}
+
+func checkFalsePositiveBandit(code string, lineNumber int) bool {
+	lineNumberLength := util.CountDigits(lineNumber)
+	splitCode := strings.Split(code, "\n")
+	for _, codeLine := range splitCode {
+		if len(codeLine) > 0 {
+			codeLineNumber := codeLine[:lineNumberLength]
+			if strings.Contains(codeLine, "#nohusky") && (codeLineNumber == strconv.Itoa(lineNumber)) {
+				return true
+			}
+		}
+	}
+	return false
 }

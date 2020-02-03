@@ -6,12 +6,11 @@ package securitytest
 
 import (
 	"encoding/json"
-	"errors"
 	"strings"
 
 	"github.com/globocom/huskyCI/api/log"
-	"github.com/globocom/huskyCI/api/types"
 	"github.com/globocom/huskyCI/api/util"
+	"github.com/globocom/huskyCI/api/vulnerability"
 )
 
 // SafetyOutput is the struct that holds issues, messages and errors found on a Safety scan.
@@ -31,106 +30,119 @@ type SafetyIssue struct {
 	ID         string `json:"id"`
 }
 
-func analyzeSafety(safetyScan *SecTestScanInfo) error {
-
-	failedRunning := strings.Contains(safetyScan.Container.COutput, "ERROR_RUNNING_SAFETY")
-	reqNotFound := strings.Contains(safetyScan.Container.COutput, "ERROR_REQ_NOT_FOUND")
-	warningFound := strings.Contains(safetyScan.Container.COutput, "Warning: unpinned requirement ")
+func (s *SecurityTest) analyzeSafety() error {
 
 	safetyOutput := SafetyOutput{}
-	safetyScan.FinalOutput = safetyOutput
 
-	// check if there were any internal errors running safety
-	if failedRunning {
-		errorMsg := errors.New("internal error safety - ERROR_RUNNING_SAFETY")
-		log.Error("analyzeSafety", "SAFETY", 1033, errorMsg)
-		safetyScan.ErrorFound = errorMsg
-		safetyScan.prepareContainerAfterScan()
-		return errorMsg
-	}
-
-	// check if requirements.txt were found or not
-	if reqNotFound {
-		safetyScan.ReqNotFound = true
-		safetyScan.prepareSafetyVulns()
-		safetyScan.prepareContainerAfterScan()
+	// requirements.txt not found
+	if s.WarningFound != "" {
+		s.prepareSafetyVulns(safetyOutput)
 		return nil
 	}
 
-	// check if warning were found and handle its output
+	warningFound := strings.Contains(s.Container.Output, "Warning: unpinned requirement ")
+
+	// check if warnings were found and handle container output
 	if warningFound {
-		safetyScan.WarningFound = true
-		outputJSON := util.GetLastLine(safetyScan.Container.COutput)
-		safetyOutput.OutputWarnings = util.GetAllLinesButLast(safetyScan.Container.COutput)
-		safetyScan.Container.COutput = outputJSON
+		outputJSON := util.GetLastLine(s.Container.Output)
+		safetyOutput.OutputWarnings = util.GetAllLinesButLast(s.Container.Output)
+		s.Container.Output = outputJSON
 	}
 
-	cOutputSanitized := util.SanitizeSafetyJSON(safetyScan.Container.COutput)
-	safetyScan.Container.COutput = cOutputSanitized
+	cOutputSanitized := sanitizeSafetyJSON(s.Container.Output)
+	s.Container.Output = cOutputSanitized
 
 	// Unmarshall rawOutput into finalOutput, that is a Safety struct.
-	if err := json.Unmarshal([]byte(safetyScan.Container.COutput), &safetyOutput); err != nil {
-		log.Error("analyzeSafety", "SAFETY", 1018, safetyScan.Container.COutput, err)
-		safetyScan.ErrorFound = err
-		safetyScan.prepareContainerAfterScan()
+	if err := json.Unmarshal([]byte(s.Container.Output), &safetyOutput); err != nil {
+		log.Error("analyzeSafety", "SAFETY", 1018, s.Container.Output, err)
+		s.Result = "error"
+		s.Info = log.MsgCode[1018]
+		s.ErrorFound = err.Error()
 		return err
 	}
-	safetyScan.FinalOutput = safetyOutput
 
-	// check results and prepare all vulnerabilities found
-	safetyScan.prepareSafetyVulns()
-	safetyScan.prepareContainerAfterScan()
+	s.prepareSafetyVulns(safetyOutput)
+
 	return nil
 }
 
-func (safetyScan *SecTestScanInfo) prepareSafetyVulns() {
+func (s *SecurityTest) prepareSafetyVulns(safetyOutput SafetyOutput) {
 
-	huskyCIsafetyResults := types.HuskyCISecurityTestOutput{}
-	safetyOutput := safetyScan.FinalOutput.(SafetyOutput)
-	onlyWarning := false
+	// requirements.txt not found
+	if s.WarningFound != "" {
 
-	if safetyScan.ReqNotFound {
-		safetyVuln := types.HuskyCIVulnerability{}
+		safetyVuln := vulnerability.New()
+
 		safetyVuln.Language = "Python"
-		safetyVuln.SecurityTool = "Safety"
+		safetyVuln.SecurityTest = "Safety"
 		safetyVuln.Severity = "low"
-		safetyVuln.Details = "It looks like your project doesn't have a requirements.txt file. huskyCI was not able to run safety properly."
+		safetyVuln.Details = s.WarningFound
 
-		huskyCIsafetyResults.LowVulns = append(huskyCIsafetyResults.LowVulns, safetyVuln)
-		safetyScan.Vulnerabilities = huskyCIsafetyResults
+		s.Vulnerabilities = append(s.Vulnerabilities, *safetyVuln)
+
 		return
 	}
 
+	onlyWarning := false
+
+	// requiments.txt contains values that are not pinned or similiar
 	if safetyOutput.WarningFound {
 		if len(safetyOutput.SafetyIssues) == 0 {
 			onlyWarning = true
 		}
 		for _, warning := range safetyOutput.OutputWarnings {
-			safetyVuln := types.HuskyCIVulnerability{}
-			safetyVuln.Language = "Python"
-			safetyVuln.SecurityTool = "Safety"
-			safetyVuln.Severity = "low"
-			safetyVuln.Details = util.AdjustWarningMessage(warning)
 
-			huskyCIsafetyResults.LowVulns = append(huskyCIsafetyResults.LowVulns, safetyVuln)
+			safetyVuln := vulnerability.New()
+
+			safetyVuln.Language = "Python"
+			safetyVuln.SecurityTest = "Safety"
+			safetyVuln.Severity = "low"
+			safetyVuln.Details = adjustWarningMessage(warning)
+
+			s.Vulnerabilities = append(s.Vulnerabilities, *safetyVuln)
+
 		}
 		if onlyWarning {
-			safetyScan.Vulnerabilities = huskyCIsafetyResults
 			return
 		}
 	}
 
 	for _, issue := range safetyOutput.SafetyIssues {
-		safetyVuln := types.HuskyCIVulnerability{}
+
+		safetyVuln := vulnerability.New()
+
 		safetyVuln.Language = "Python"
-		safetyVuln.SecurityTool = "Safety"
+		safetyVuln.SecurityTest = "Safety"
 		safetyVuln.Severity = "high"
 		safetyVuln.Details = issue.Comment
 		safetyVuln.Code = issue.Dependency + " " + issue.Version
 		safetyVuln.VunerableBelow = issue.Below
 
-		huskyCIsafetyResults.HighVulns = append(huskyCIsafetyResults.HighVulns, safetyVuln)
+		s.Vulnerabilities = append(s.Vulnerabilities, *safetyVuln)
 	}
 
-	safetyScan.Vulnerabilities = huskyCIsafetyResults
+}
+
+// sanitizeSafetyJSON returns a sanitized string from Safety container logs.
+// Safety might return a JSON with the "\" and "\"" characters, which needs to be sanitized to be unmarshalled correctly.
+func sanitizeSafetyJSON(s string) string {
+	if s == "" {
+		return ""
+	}
+	s1 := strings.Replace(s, "\\", "\\\\", -1)
+	s2 := strings.Replace(s1, "\\\"", "\\\\\"", -1)
+	return s2
+}
+
+// adjustWarningMessage returns the Safety Warning string that will be printed.
+func adjustWarningMessage(warningRaw string) string {
+	warning := strings.Split(warningRaw, ":")
+	if len(warning) > 1 {
+		warning[1] = strings.Replace(warning[1], "safety_huskyci_analysis_requirements_raw.txt", "'requirements.txt'", -1)
+		warning[1] = strings.Replace(warning[1], " unpinned", "Unpinned", -1)
+
+		return (warning[1] + " huskyCI can check it if you pin it in a format such as this: \"mypacket==3.2.9\" :D")
+	}
+
+	return warningRaw
 }

@@ -13,6 +13,7 @@ import (
 	"hash"
 	"time"
 
+	"github.com/globocom/huskyCI/api/auth"
 	. "github.com/globocom/huskyCI/api/token"
 	"github.com/globocom/huskyCI/api/types"
 )
@@ -110,8 +111,8 @@ func (fH *FakeHashGen) GenHashValue(value, salt []byte, iter, keyLen int, h hash
 	return fH.expectedHashValue
 }
 
-func (fH *FakeHashGen) GetCredsFromDB(username string) (types.User, error) {
-	return types.User{}, nil
+func (fH *FakeHashGen) GetCredsFromDB(username string) (auth.User, error) {
+	return auth.User{}, nil
 }
 
 var _ = Describe("Token", func() {

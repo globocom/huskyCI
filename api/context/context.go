@@ -12,7 +12,6 @@ import (
 
 	"github.com/globocom/huskyCI/api/db"
 	postgres "github.com/globocom/huskyCI/api/db/postgres"
-	"github.com/globocom/huskyCI/api/types"
 )
 
 // APIConfiguration holds all API configuration.
@@ -62,26 +61,16 @@ type GraylogConfig struct {
 
 // APIConfig represents API configuration.
 type APIConfig struct {
-	Port                   int
-	Version                string
-	ReleaseDate            string
-	AllowOriginValue       string
-	UseTLS                 bool
-	GitPrivateSSHKey       string
-	GraylogConfig          *GraylogConfig
-	DBConfig               *DBConfig
-	DockerHostsConfig      *DockerHostsConfig
-	EnrySecurityTest       *types.SecurityTest
-	GitAuthorsSecurityTest *types.SecurityTest
-	GosecSecurityTest      *types.SecurityTest
-	BanditSecurityTest     *types.SecurityTest
-	BrakemanSecurityTest   *types.SecurityTest
-	NpmAuditSecurityTest   *types.SecurityTest
-	YarnAuditSecurityTest  *types.SecurityTest
-	SpotBugsSecurityTest   *types.SecurityTest
-	GitleaksSecurityTest   *types.SecurityTest
-	SafetySecurityTest     *types.SecurityTest
-	DBInstance             db.Requests
+	Port              int
+	Version           string
+	ReleaseDate       string
+	AllowOriginValue  string
+	UseTLS            bool
+	GitPrivateSSHKey  string
+	GraylogConfig     *GraylogConfig
+	DBInstance        db.Requests
+	DBConfig          *DBConfig
+	DockerHostsConfig *DockerHostsConfig
 }
 
 // DefaultConfig is the struct that stores the caller for testing.
@@ -91,12 +80,6 @@ type DefaultConfig struct {
 
 // GetAPIConfig returns the instance of an APIConfig.
 func (dF DefaultConfig) GetAPIConfig() (*APIConfig, error) {
-
-	// load Viper using api/config.yml
-	if err := dF.Caller.SetConfigFile("config", "api/"); err != nil {
-		fmt.Println("Error reading Viper config: ", err)
-		return nil, err
-	}
 	dF.SetOnceConfig()
 	return APIConfiguration, nil
 }
@@ -105,26 +88,16 @@ func (dF DefaultConfig) GetAPIConfig() (*APIConfig, error) {
 func (dF DefaultConfig) SetOnceConfig() {
 	onceConfig.Do(func() {
 		APIConfiguration = &APIConfig{
-			Port:                   dF.GetAPIPort(),
-			Version:                dF.GetAPIVersion(),
-			ReleaseDate:            dF.GetAPIReleaseDate(),
-			AllowOriginValue:       dF.GetAllowOriginValue(),
-			UseTLS:                 dF.GetAPIUseTLS(),
-			GitPrivateSSHKey:       dF.getGitPrivateSSHKey(),
-			GraylogConfig:          dF.getGraylogConfig(),
-			DBConfig:               dF.getDBConfig(),
-			DockerHostsConfig:      dF.getDockerHostsConfig(),
-			EnrySecurityTest:       dF.getSecurityTestConfig("enry"),
-			GitAuthorsSecurityTest: dF.getSecurityTestConfig("gitauthors"),
-			GosecSecurityTest:      dF.getSecurityTestConfig("gosec"),
-			BanditSecurityTest:     dF.getSecurityTestConfig("bandit"),
-			BrakemanSecurityTest:   dF.getSecurityTestConfig("brakeman"),
-			NpmAuditSecurityTest:   dF.getSecurityTestConfig("npmaudit"),
-			YarnAuditSecurityTest:  dF.getSecurityTestConfig("yarnaudit"),
-			SpotBugsSecurityTest:   dF.getSecurityTestConfig("spotbugs"),
-			GitleaksSecurityTest:   dF.getSecurityTestConfig("gitleaks"),
-			SafetySecurityTest:     dF.getSecurityTestConfig("safety"),
-			DBInstance:             dF.GetDB(),
+			Port:              dF.GetAPIPort(),
+			Version:           dF.GetAPIVersion(),
+			ReleaseDate:       dF.GetAPIReleaseDate(),
+			AllowOriginValue:  dF.GetAllowOriginValue(),
+			UseTLS:            dF.GetAPIUseTLS(),
+			GitPrivateSSHKey:  dF.getGitPrivateSSHKey(),
+			GraylogConfig:     dF.getGraylogConfig(),
+			DBConfig:          dF.getDBConfig(),
+			DockerHostsConfig: dF.getDockerHostsConfig(),
+			DBInstance:        dF.GetDB(),
 		}
 	})
 }
@@ -286,14 +259,12 @@ func (dF DefaultConfig) GetDBPoolLimit() int {
 
 func (dF DefaultConfig) getDockerHostsConfig() *DockerHostsConfig {
 	dockerAPIPort := dF.GetDockerAPIPort()
-	dockerHostsAddressesEnv := dF.Caller.GetEnvironmentVariable("HUSKYCI_DOCKERAPI_ADDR")
-	dockerHostsAddresses := strings.Split(dockerHostsAddressesEnv, " ")
-	dockerHostsPathCertificates := dF.Caller.GetEnvironmentVariable("HUSKYCI_DOCKERAPI_CERT_PATH")
+	dockerHostAddress := dF.Caller.GetEnvironmentVariable("HUSKYCI_DOCKERAPI_ADDR")
 	return &DockerHostsConfig{
-		Address:         dockerHostsAddresses[0],
+		Address:         dockerHostAddress,
 		DockerAPIPort:   dockerAPIPort,
-		PathCertificate: dockerHostsPathCertificates,
-		Host:            fmt.Sprintf("%s:%d", dockerHostsAddresses[0], dockerAPIPort),
+		PathCertificate: dF.Caller.GetEnvironmentVariable("HUSKYCI_DOCKERAPI_CERT_PATH"),
+		Host:            fmt.Sprintf("%s:%d", dockerHostAddress, dockerAPIPort),
 		TLSVerify:       dF.GetDockerAPITLSVerify(),
 	}
 }
@@ -320,19 +291,6 @@ func (dF DefaultConfig) GetDockerAPITLSVerify() int {
 		return 0
 	}
 	return 1
-}
-
-func (dF DefaultConfig) getSecurityTestConfig(securityTestName string) *types.SecurityTest {
-	return &types.SecurityTest{
-		Name:             dF.Caller.GetStringFromConfigFile(fmt.Sprintf("%s.name", securityTestName)),
-		Image:            dF.Caller.GetStringFromConfigFile(fmt.Sprintf("%s.image", securityTestName)),
-		ImageTag:         dF.Caller.GetStringFromConfigFile(fmt.Sprintf("%s.imageTag", securityTestName)),
-		Cmd:              dF.Caller.GetStringFromConfigFile(fmt.Sprintf("%s.cmd", securityTestName)),
-		Type:             dF.Caller.GetStringFromConfigFile(fmt.Sprintf("%s.type", securityTestName)),
-		Language:         dF.Caller.GetStringFromConfigFile(fmt.Sprintf("%s.language", securityTestName)),
-		Default:          dF.Caller.GetBoolFromConfigFile(fmt.Sprintf("%s.default", securityTestName)),
-		TimeOutInSeconds: dF.Caller.GetIntFromConfigFile(fmt.Sprintf("%s.timeOutInSeconds", securityTestName)),
-	}
 }
 
 // GetDB returns a Requests implementation based on the

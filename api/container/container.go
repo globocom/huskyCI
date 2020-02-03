@@ -5,14 +5,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"strconv"
+	"strings"
 	"time"
 
 	dockerTypes "github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
-	"github.com/globocom/huskyCI/api/context"
 	"github.com/globocom/huskyCI/api/log"
 	goContext "golang.org/x/net/context"
 )
@@ -20,13 +19,13 @@ import (
 // Container holds all information regarding a container.
 type Container struct {
 	dockerClient *client.Client
-	CID          string    `bson:"CID" json:"CID"`
+	CID          string    `bson:"CID,omitempty" json:"CID"`
+	Status       string    `bson:"status,omitempty" json:"status"`
 	Command      string    `bson:"cmd" json:"cmd"`
-	Output       string    `bson:"output" json:"output"`
-	Result       string    `bson:"result" json:"result"`
+	Output       string    `bson:"output,omitempty" json:"output"`
 	Image        Image     `bson:"image" json:"image"`
-	StartedAt    time.Time `bson:"startedAt" json:"startedAt"`
-	FinishedAt   time.Time `bson:"finishedAt" json:"finishedAt"`
+	StartedAt    time.Time `bson:"startedAt,omitempty" json:"startedAt"`
+	FinishedAt   time.Time `bson:"finishedAt,omitempty" json:"finishedAt"`
 }
 
 // Image is the struct that holds all information regarding a container image.
@@ -53,7 +52,7 @@ func (c *Container) NewDockerClient() error {
 }
 
 // Run runs a container by creating and starting it.
-func (c *Container) Run() error {
+func (c *Container) Run(repositoryURL, branch string) error {
 
 	// step 1: create a new docker client
 	if err := c.NewDockerClient(); err != nil {
@@ -73,21 +72,25 @@ func (c *Container) Run() error {
 	}
 
 	// step 3: create the container
-	if err := c.Create(); err != nil {
+	if err := c.Create(repositoryURL, branch); err != nil {
 		log.Error("RUN", "CONTAINER", 3014, c.Image.Name, c.Image.Tag, err)
 		return err
 	}
+	c.Status = "created"
 
 	// step 4: start the container
 	c.StartedAt = time.Now()
 	if err := c.Start(); err != nil {
+		c.Status = "finished"
 		log.Error("RUN", "CONTAINER", 3015, c.Image.Name, c.Image.Tag, err)
 		return err
 	}
 	log.Info("RUN", "CONTAINER", 32, c.Image.Name, c.Image.Tag)
+	c.Status = "running"
 
 	// step 5: wait the container finish
 	if err := c.Wait(); err != nil {
+		c.Status = "finished"
 		log.Error("RUN", "CONTAINER", 3016, err)
 		return err
 	}
@@ -99,6 +102,7 @@ func (c *Container) Run() error {
 		return err
 	}
 	log.Info("RUN", "CONTAINER", 34, c.Image.Name, c.Image.Tag)
+	c.Status = "finished"
 
 	// step 7: remove container from docker API
 	if err := c.Remove(); err != nil {
@@ -109,15 +113,19 @@ func (c *Container) Run() error {
 }
 
 // Create creates a new container, set its CID and return an error.
-func (c *Container) Create() error {
+func (c *Container) Create(repositoryURL, branch string) error {
 
 	ctx := goContext.Background()
 	fullImageName := fmt.Sprintf("%s:%s", c.Image.Name, c.Image.Tag)
 
+	// replace GIT repository URL, branch and SSH private key from os env var
+	cmd := handleCmd(repositoryURL, branch, c.Command)
+	finalCMD := handlePrivateSSHKey(cmd)
+
 	containerConfig := &container.Config{
 		Image: fullImageName,
 		Tty:   true,
-		Cmd:   []string{"/bin/sh", "-c", c.Command},
+		Cmd:   []string{"/bin/sh", "-c", finalCMD},
 	}
 
 	resp, err := c.dockerClient.ContainerCreate(ctx, containerConfig, nil, nil, "")
@@ -261,12 +269,12 @@ func (c *Container) ImageIsLoaded() (bool, error) {
 	args.Add("reference", fullImageName)
 	options := dockerTypes.ImageListOptions{Filters: args}
 
-	result, err := c.dockerClient.ImageList(ctx, options)
+	resultImageList, err := c.dockerClient.ImageList(ctx, options)
 	if err != nil {
 		return false, err
 	}
 
-	isLoaded := (len(result) != 0)
+	isLoaded := (len(resultImageList) != 0)
 	return isLoaded, nil
 }
 
@@ -290,9 +298,19 @@ func HealthCheckDockerAPI() error {
 // setDockerClientEnvs sets env vars needed by docker/docker library to create a NewEnvClient.
 func setDockerClientEnvs() error {
 
-	dockerHost := fmt.Sprintf("https://%s", context.APIConfiguration.DockerHostsConfig.Host)
-	pathCertificate := context.APIConfiguration.DockerHostsConfig.PathCertificate
-	tlsVerify := strconv.Itoa(context.APIConfiguration.DockerHostsConfig.TLSVerify)
+	dockerAPIAddress := os.Getenv("HUSKYCI_DOCKERAPI_ADDR")
+	dockerAPIPort := os.Getenv("HUSKYCI_DOCKERAPI_PORT")
+	if dockerAPIPort == "" {
+		dockerAPIPort = "2376"
+	}
+
+	dockerHost := fmt.Sprintf("https://%s:%s", dockerAPIAddress, dockerAPIPort)
+	pathCertificate := os.Getenv("HUSKYCI_DOCKERAPI_CERT_PATH")
+	tlsVerify := os.Getenv("HUSKYCI_DOCKERAPI_TLS_VERIFY")
+
+	if tlsVerify == "" {
+		tlsVerify = "1"
+	}
 
 	// env vars needed by docker/docker library to create a NewEnvClient:
 	if err := os.Setenv("DOCKER_HOST", dockerHost); err != nil {
@@ -311,4 +329,21 @@ func setDockerClientEnvs() error {
 	}
 
 	return nil
+}
+
+// handleCmd will extract %GIT_REPO% and %GIT_BRANCH% from cmd and replace it with the proper repository URL.
+func handleCmd(repositoryURL, repositoryBranch, cmd string) string {
+	if repositoryURL != "" && repositoryBranch != "" && cmd != "" {
+		replace1 := strings.Replace(cmd, "%GIT_REPO%", repositoryURL, -1)
+		replace2 := strings.Replace(replace1, "%GIT_BRANCH%", repositoryBranch, -1)
+		return replace2
+	}
+	return ""
+}
+
+// handlePrivateSSHKey will extract %GIT_PRIVATE_SSH_KEY% from cmd and replace it with the proper private SSH key.
+func handlePrivateSSHKey(rawString string) string {
+	privKey := os.Getenv("HUSKYCI_API_GIT_PRIVATE_SSH_KEY")
+	cmdReplaced := strings.Replace(rawString, "GIT_PRIVATE_SSH_KEY", privKey, -1)
+	return cmdReplaced
 }

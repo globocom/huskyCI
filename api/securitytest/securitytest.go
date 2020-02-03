@@ -2,161 +2,199 @@ package securitytest
 
 import (
 	"errors"
-	"strings"
-	"time"
+	"fmt"
+	"regexp"
 
-	apiContext "github.com/globocom/huskyCI/api/context"
-	huskydocker "github.com/globocom/huskyCI/api/dockers"
+	"github.com/globocom/huskyCI/api/container"
 	"github.com/globocom/huskyCI/api/log"
-	"github.com/globocom/huskyCI/api/types"
-	"github.com/globocom/huskyCI/api/util"
+	"github.com/globocom/huskyCI/api/vulnerability"
 )
 
-var securityTestAnalyze = map[string]func(scanInfo *SecTestScanInfo) error{
-	"bandit":     analyzeBandit,
-	"brakeman":   analyzeBrakeman,
-	"enry":       analyzeEnry,
-	"gitauthors": analyzeGitAuthors,
-	"gosec":      analyzeGosec,
-	"npmaudit":   analyzeNpmaudit,
-	"yarnaudit":  analyzeYarnaudit,
-	"spotbugs":   analyzeSpotBugs,
-	"gitleaks":   analyseGitleaks,
-	"safety":     analyzeSafety,
+// DefaultSecTestConf hold all information from all securityTests
+var (
+	DefaultSecTestConf *ViperConfig
+	AllGeneric         []*SecurityTest
+	GitleaksConfig     *SecurityTest
+	BanditConfig       *SecurityTest
+	BrakemanConfig     *SecurityTest
+	GosecConfig        *SecurityTest
+	NpmAuditConfig     *SecurityTest
+	YarnAuditConfig    *SecurityTest
+	SafetyConfig       *SecurityTest
+	SpotBugsConfig     *SecurityTest
+)
+
+// ViperConfig is the struct that stores the caller for testing.
+type ViperConfig struct {
+	Caller ViperInterface
 }
 
-// SecTestScanInfo holds all information of securityTest scan.
-type SecTestScanInfo struct {
-	RID                   string
-	URL                   string
-	Branch                string
-	SecurityTestName      string
-	ErrorFound            error
-	ReqNotFound           bool
-	WarningFound          bool
-	PackageNotFound       bool
-	YarnLockNotFound      bool
-	YarnErrorRunning      bool
-	CommitAuthorsNotFound bool
-	CommitAuthors         GitAuthorsOutput
-	Codes                 []types.Code
-	Container             types.Container
-	FinalOutput           interface{}
-	Vulnerabilities       types.HuskyCISecurityTestOutput
+func init() {
+
+	DefaultSecTestConf = &ViperConfig{
+		Caller: &ViperCalls{},
+	}
+
+	// load Viper using api/config.yml
+	if err := DefaultSecTestConf.Caller.SetConfigFile("config", "api/"); err != nil {
+		fmt.Println("Error reading Viper config: ", err)
+	}
+
+	BanditConfig = DefaultSecTestConf.getSecurityTestConfig("bandit")
+	BrakemanConfig = DefaultSecTestConf.getSecurityTestConfig("brakeman")
+	GitleaksConfig = DefaultSecTestConf.getSecurityTestConfig("gitleaks")
+	GosecConfig = DefaultSecTestConf.getSecurityTestConfig("gosec")
+	NpmAuditConfig = DefaultSecTestConf.getSecurityTestConfig("npmaudit")
+	YarnAuditConfig = DefaultSecTestConf.getSecurityTestConfig("yarnaudit")
+	SafetyConfig = DefaultSecTestConf.getSecurityTestConfig("safety")
+	SpotBugsConfig = DefaultSecTestConf.getSecurityTestConfig("spotbugs")
+
+	AllGeneric = append(AllGeneric, GitleaksConfig)
 }
 
-// New creates a new huskyCI scan based given RID, URL, Branch and a securityTest name and returns an error.
-func (scanInfo *SecTestScanInfo) New(RID, URL, branch, securityTestName string) error {
-	scanInfo.RID = RID
-	scanInfo.URL = URL
-	scanInfo.Branch = branch
-	scanInfo.SecurityTestName = securityTestName
-	return scanInfo.setSecurityTestContainer(securityTestName)
+// SecurityTest is the struct that stores all data from the securityTest
+type SecurityTest struct {
+	Name            string                        `bson:"name" json:"name"`
+	Type            string                        `bson:"type" json:"type"`
+	Language        string                        `bson:"language" json:"language"`
+	WarningFound    string                        `bson:"warningFound" json:"warningFound"`
+	ErrorFound      string                        `bson:"errorFound" json:"errorFound"`
+	Info            string                        `bson:"info" json:"info"`
+	Result          string                        `bson:"result" json:"result"`
+	Container       container.Container           `bson:"container" json:"container"`
+	Vulnerabilities []vulnerability.Vulnerability `bson:"vulnerabilities" json:"vulnerabilities"`
 }
 
-func (scanInfo *SecTestScanInfo) setSecurityTestContainer(securityTestName string) error {
-	securityTestQuery := map[string]interface{}{"name": securityTestName}
-	securityTest, err := apiContext.APIConfiguration.DBInstance.FindOneDBSecurityTest(securityTestQuery)
-	if err != nil {
-		log.Error("createSecurityTestContainer", "SECURITYTEST", 2012, err)
+// Analyze analyzes the result of a securityTest given a container output
+func (s *SecurityTest) Analyze() error {
+
+	if err := s.checkContainerOutputSize(); err != nil {
 		return err
 	}
-	scanInfo.Container.StartedAt = time.Now()
-	scanInfo.Container.SecurityTest = securityTest
+
+	if err := s.checkContainerErrorOrWarning(); err != nil {
+		if s.ErrorFound != "" {
+			return err
+		}
+	}
+
+	if err := s.checkVulns(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
-// Start starts a new huskyCI scan!
-func (scanInfo *SecTestScanInfo) Start() error {
-	if err := scanInfo.dockerRun(scanInfo.Container.SecurityTest.TimeOutInSeconds); err != nil {
-		scanInfo.ErrorFound = err
-		scanInfo.prepareContainerAfterScan()
-		return err
+func (s *SecurityTest) checkContainerOutputSize() error {
+
+	maxNumCharsOutput := 1000000
+
+	if len(s.Container.Output) > maxNumCharsOutput {
+		s.Result = "error"
+		s.Info = "huskyCI was not able to analyze container output: it is huge!"
+		s.ErrorFound = "Container output is too big."
+		return errors.New("container output is huge")
 	}
-	if err := scanInfo.analyze(); err != nil {
-		scanInfo.ErrorFound = err
-		scanInfo.prepareContainerAfterScan()
-		return err
-	}
-	scanInfo.prepareContainerAfterScan()
+
 	return nil
 }
 
-func (scanInfo *SecTestScanInfo) dockerRun(timeOutInSeconds int) error {
-	image := scanInfo.Container.SecurityTest.Image
-	imageTag := scanInfo.Container.SecurityTest.ImageTag
-	cmd := util.HandleCmd(scanInfo.URL, scanInfo.Branch, scanInfo.Container.SecurityTest.Cmd)
-	finalCMD := util.HandlePrivateSSHKey(cmd)
-	CID, cOutput, err := huskydocker.DockerRun(image, imageTag, finalCMD, timeOutInSeconds)
-	if err != nil {
-		return err
+func (s *SecurityTest) checkContainerErrorOrWarning() error {
+
+	r, _ := regexp.Compile(`ERROR_\w+`) // #nohusky
+
+	errorMessage := r.FindString(s.Container.Output)
+	errorInfo, errorFound := log.MsgCode[errorMessage]
+
+	if errorFound {
+		s.Result = "error"
+		s.Info = errorInfo
+		s.ErrorFound = s.Container.Output
+		return errors.New("error found in container")
 	}
-	scanInfo.Container.CID = CID
-	scanInfo.Container.COutput = cOutput
+
+	r, _ = regexp.Compile(`WARNING_\w+`) // #nohusky
+
+	warningMessage := r.FindString(s.Container.Output)
+	warningInfo := log.MsgCode[warningMessage]
+
+	if warningInfo != "" {
+		s.Result = "warning"
+		s.Info = warningInfo
+		s.WarningFound = warningInfo
+		return errors.New("warning found in container")
+	}
+
 	return nil
+
 }
 
-func (scanInfo *SecTestScanInfo) analyze() error {
-	errorClonning := strings.Contains(scanInfo.Container.COutput, "ERROR_CLONING")
-	if errorClonning {
-		errorMsg := errors.New("error clonning")
-		log.Error("analyze", "SECURITYTEST", 1031, scanInfo.URL, scanInfo.Branch, errorMsg)
-		scanInfo.ErrorFound = errorMsg
-		return errorMsg
+func (s *SecurityTest) checkVulns() error {
+
+	switch s.Name {
+	case "bandit":
+		return s.analyzeBandit()
+	case "brakeman":
+		return s.analyzeBrakeman()
+	case "gosec":
+		return s.analyzeGosec()
+	case "npmaudit":
+		return s.analyzeNpmaudit()
+	case "yarnaudit":
+		return s.analyzeYarnaudit()
+	case "spotbugs":
+		return s.analyzeSpotBugs()
+	case "gitleaks":
+		return s.analyzeGitleaks()
+	case "safety":
+		return s.analyzeSafety()
 	}
-	securityTestAnalyze := securityTestAnalyze[scanInfo.SecurityTestName]
-	return securityTestAnalyze(scanInfo)
+
+	return errors.New("invalid securityTest")
 }
 
-func (scanInfo *SecTestScanInfo) prepareContainerAfterScan() {
+// GetAllGeneric returns a slice of securityTests containing all
+// generic securityTests.
+func GetAllGeneric() []*SecurityTest {
+	return AllGeneric
+}
 
-	cOutputMaxSize := 1000000
-	scanInfo.Container.FinishedAt = time.Now()
-	scanInfo.Container.CInfo = "No issues found."
-	scanInfo.Container.CResult = "passed"
-	scanInfo.Container.CStatus = "finished"
+// GetAllByLanguage returns all generic securityTests based on its type (Language or Generic).
+// If Language is used, the second argument must be the name of the language.
+func GetAllByLanguage(language string) []*SecurityTest {
 
-	// change scanInfo.Container.COutput to prevent error writing to MongoDB
-	if len(scanInfo.Container.COutput) > cOutputMaxSize {
-		scanInfo.Container.COutput = "Container Output is too large."
+	var allByLanguage []*SecurityTest
+
+	switch language {
+	case "Go":
+		allByLanguage = append(allByLanguage, GosecConfig)
+	case "Python":
+		allByLanguage = append(allByLanguage, BanditConfig)
+		allByLanguage = append(allByLanguage, SafetyConfig)
+	case "JavaScript":
+		allByLanguage = append(allByLanguage, YarnAuditConfig)
+		allByLanguage = append(allByLanguage, NpmAuditConfig)
+	case "Java":
+		allByLanguage = append(allByLanguage, SpotBugsConfig)
+	case "Ruby":
+		allByLanguage = append(allByLanguage, BrakemanConfig)
 	}
 
-	if scanInfo.ErrorFound != nil {
-		scanInfo.Container.CInfo = "Error found running container"
-		scanInfo.Container.CResult = "error"
-		scanInfo.Container.CStatus = "error running"
-		return
-	}
+	return allByLanguage
+}
 
-	if scanInfo.ReqNotFound {
-		scanInfo.Container.CInfo = "requeriments.txt was not found."
-		scanInfo.Container.CResult = "warning"
-		return
+func (dF ViperConfig) getSecurityTestConfig(securityTestName string) *SecurityTest {
+	return &SecurityTest{
+		Name:     dF.Caller.GetStringFromConfigFile(fmt.Sprintf("%s.name", securityTestName)),
+		Type:     dF.Caller.GetStringFromConfigFile(fmt.Sprintf("%s.type", securityTestName)),
+		Language: dF.Caller.GetStringFromConfigFile(fmt.Sprintf("%s.language", securityTestName)),
+		Container: container.Container{
+			Command: dF.Caller.GetStringFromConfigFile(fmt.Sprintf("%s.container.command", securityTestName)),
+			Image: container.Image{
+				CanonicalURL: dF.Caller.GetStringFromConfigFile(fmt.Sprintf("%s.container.image.canonicalurl", securityTestName)),
+				Name:         dF.Caller.GetStringFromConfigFile(fmt.Sprintf("%s.container.image.name", securityTestName)),
+				Tag:          dF.Caller.GetStringFromConfigFile(fmt.Sprintf("%s.container.image.tag", securityTestName)),
+			},
+		},
 	}
-
-	if scanInfo.PackageNotFound {
-		scanInfo.Container.CInfo = "package-lock.json was not found."
-		scanInfo.Container.CResult = "warning"
-		return
-	}
-
-	if scanInfo.YarnLockNotFound {
-		scanInfo.Container.CInfo = "yarn.lock was not found."
-		scanInfo.Container.CResult = "warning"
-		return
-	}
-
-	if scanInfo.CommitAuthorsNotFound {
-		scanInfo.Container.CInfo = "Could not get authors. Probably master branch is being analyzed."
-		return
-	}
-
-	if len(scanInfo.Vulnerabilities.MediumVulns) > 0 || len(scanInfo.Vulnerabilities.HighVulns) > 0 {
-		scanInfo.Container.CInfo = "Issues found."
-		scanInfo.Container.CResult = "failed"
-	} else if len(scanInfo.Vulnerabilities.LowVulns) > 0 {
-		scanInfo.Container.CInfo = "Warnings found."
-		scanInfo.Container.CResult = "passed"
-	}
-
 }

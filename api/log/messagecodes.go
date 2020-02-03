@@ -5,7 +5,7 @@
 package log
 
 // MsgCode holds all log messages and their respective codes.
-var MsgCode = map[int]string{
+var MsgCode = map[interface{}]string{
 
 	// HuskyCI API infos
 	11: "Starting HuskyCI.",
@@ -13,7 +13,7 @@ var MsgCode = map[int]string{
 	13: "Docker API is up and running.",
 	14: "Connection with MongoDB succeed.",
 	15: "Default securityTests found on MongoDB.",
-	16: "Request received to start the following branch, repository and internal dependencies URL: ",
+	16: "Request received to start the following branch, url: ",
 	17: "Repository created into MongoDB: ",
 	18: "SecurityTest created into MongoDB: ",
 	19: "SecurityTest upserted in MondoDB: ",
@@ -35,11 +35,10 @@ var MsgCode = map[int]string{
 
 	// HuskyCI API errors
 	1001: "Error(s) found when starting HuskyCI API: ",
-	1002: "Could not Unmarshall the following gosecOutput: ",
-	1003: "Could not Unmarshall the following enryOutput: ",
+	1002: "Could not Unmarshall gosecOutput.",
 	1004: "Error mapping languages: ",
-	1005: "Could not Unmarshall the following brakemanOutput: ",
-	1006: "Could not Unmarshall the following banditOutput: ",
+	1005: "Could not Unmarshall brakemanOutput.",
+	1006: "Could not Unmarshall banditOutput.",
 	1007: "Could not bind repository JSON: ",
 	1008: "Internal error MatchString: ",
 	1009: "MongoDB message in FindOneDBAnalysis: ",
@@ -47,11 +46,11 @@ var MsgCode = map[int]string{
 	1011: "Internal error finding repository just inserted into MongoDB: ",
 	1012: "MongoDB message in FindOneDBSecurityTest: ",
 	1013: "MongoDB message in FindOneDBRepository: ",
-	1014: "Could not Unmarshal the following npmauditOutput: ",
+	1014: "Could not Unmarshal npmauditOutput.",
 	1015: "Received an invalid repository JSON: ",
 	1016: "Received an invalid repository URL: ",
 	1017: "Received an invalid repository branch: ",
-	1018: "Could not Unmarshall the following safetyOutput: ",
+	1018: "Could not Unmarshall safetyOutput.",
 	1019: "Error loading viper: ",
 	1020: "Error searching for an analysis: ",
 	1021: "Received an invalid internal dependency URL: ",
@@ -71,8 +70,9 @@ var MsgCode = map[int]string{
 	1035: "Could not Unmarshall the following gitAuthorsOutput: ",
 	1036: "Could not Unmarshal the following yarnauditOutput: ",
 	1037: "Internal error running Yarnaudit: ",
-	1038: "Could not Unmarshall the following gitleaksOutput: ",
-	1039: "Could not Unmarshall the following spotbugsOutput: ",
+	1038: "Could not Unmarshall gitleaksOutput.",
+	1039: "Could not Unmarshall spotbugsOutput.",
+	1040: "Internal error when starting a new analysis: ",
 
 	// MongoDB infos
 	21: "Connecting to MongoDB.",
@@ -148,4 +148,23 @@ var MsgCode = map[int]string{
 	// Util package errors
 	4001: "Could not read certificate file: ",
 	4002: "Could not append ceritificates: ",
+
+	// securityTests errors
+	"ERROR_CLONING":              "huskyCI was not able to clone this repository.",
+	"ERROR_RUNNING_GOSEC":        "huskyCI encountered an error when running Gosec.",
+	"ERROR_RUNNING_BANDIT":       "huskyCI encountered an error when running Bandit.",
+	"ERROR_RUNNING_SAFETY":       "huskyCI encountered an error when running Safety.",
+	"ERROR_RUNNING_BRAKEMAN":     "huskyCI encountered an error when running Brakeman.",
+	"ERROR_RUNNING_YARN_AUDIT":   "huskyCI encountered an error when running Yarn Audit.",
+	"ERROR_RUNNING_NPM_AUDIT":    "huskyCI encountered an error when running Yarn Audit.",
+	"ERROR_RUNNING_MAVEN_BUILD":  "huskyCI encountered an error when running Maven Build.",
+	"ERROR_RUNNING_GRADLE_BUILD": "huskyCI encountered an error when running Gradle Build.",
+	"ERROR_RUNNING_GITLEAKS":     "huskyCI encountered an error when running Gitleaks.",
+
+	// securityTests warnings
+	"WARNING_TIMEOUT_GITLEAKS":         "It looks like your project has too many commits. huskyCI was unable to run gitleaks properly.",
+	"WARNING_REQ_NOT_FOUND":            "It looks like your project doesn't have a requirements.txt file. huskyCI was not able to run safety properly.",
+	"WARNING_PACKAGE_LOCK_NOT_FOUND":   "It looks like your project doesn't have a package-lock.json file. If you use NPM to handle your dependencies, it would be a good idea to commit it so huskyCI can check for vulnerabilities.",
+	"WARNING_YARN_LOCK_NOT_FOUND":      "It looks like your project doesn't have a yarn.lock file. If you use Yarn to handle your dependencies, it would be a good idea to commit it so huskyCI can check for vulnerabilities.",
+	"WARNING_UNSUPPORTED_JAVA_PROJECT": "huskyCI does not support this type of Java project yet. Why don't you help us by contributing with this one?",
 }

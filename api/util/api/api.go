@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/globocom/huskyCI/api/auth"
 	"github.com/globocom/huskyCI/api/container"
 	apiContext "github.com/globocom/huskyCI/api/context"
 	"github.com/globocom/huskyCI/api/log"
-	"github.com/globocom/huskyCI/api/types"
-	"github.com/globocom/huskyCI/api/user"
 	mgo "gopkg.in/mgo.v2"
 )
 
@@ -36,12 +35,6 @@ func (hU HuskyUtils) CheckHuskyRequirements(configAPI *apiContext.APIConfig) err
 		return err
 	}
 	log.Info(logActionCheckReqs, logInfoAPIUtil, 14)
-
-	// check if default securityTests are set into MongoDB.
-	if err := hU.CheckHandler.checkEachSecurityTest(configAPI); err != nil {
-		return err
-	}
-	log.Info(logActionCheckReqs, logInfoAPIUtil, 15)
 
 	// check if default user is set into MongoDB.
 	if err := hU.CheckHandler.checkDefaultUser(configAPI); err != nil {
@@ -116,69 +109,19 @@ func (cH *CheckUtils) checkDB(configAPI *apiContext.APIConfig) error {
 	return nil
 }
 
-func (cH *CheckUtils) checkEachSecurityTest(configAPI *apiContext.APIConfig) error {
-	securityTests := []string{"enry", "gitauthors", "gosec", "brakeman", "bandit", "npmaudit", "yarnaudit", "spotbugs", "gitleaks", "safety"}
-	for _, securityTest := range securityTests {
-		if err := checkSecurityTest(securityTest, configAPI); err != nil {
-			errMsg := fmt.Sprintf("%s %s", securityTest, err)
-			log.Error("checkEachSecurityTest", logInfoAPIUtil, 1023, errMsg)
-			return err
-		}
-		log.Info("checkEachSecurityTest", logInfoAPIUtil, 19, securityTest)
-	}
-	return nil
-}
-
 func (cH *CheckUtils) checkDefaultUser(configAPI *apiContext.APIConfig) error {
 
-	defaultUserQuery := map[string]interface{}{"username": user.DefaultAPIUser}
+	defaultUserQuery := map[string]interface{}{"username": auth.DefaultAPIUser}
 	_, err := configAPI.DBInstance.FindOneDBUser(defaultUserQuery)
 	if err != nil {
 		if err == mgo.ErrNotFound || err.Error() == "No data found" {
 			// user not found, add default user
-			if err := user.InsertDefaultUser(); err != nil {
+			if err := auth.InsertDefaultUser(); err != nil {
 				return err
 			}
 		} else {
 			return err
 		}
-	}
-	return nil
-}
-
-func checkSecurityTest(securityTestName string, configAPI *apiContext.APIConfig) error {
-
-	var securityTestConfig types.SecurityTest
-
-	switch securityTestName {
-	case "enry":
-		securityTestConfig = *configAPI.EnrySecurityTest
-	case "gitauthors":
-		securityTestConfig = *configAPI.GitAuthorsSecurityTest
-	case "gosec":
-		securityTestConfig = *configAPI.GosecSecurityTest
-	case "brakeman":
-		securityTestConfig = *configAPI.BrakemanSecurityTest
-	case "bandit":
-		securityTestConfig = *configAPI.BanditSecurityTest
-	case "npmaudit":
-		securityTestConfig = *configAPI.NpmAuditSecurityTest
-	case "yarnaudit":
-		securityTestConfig = *configAPI.YarnAuditSecurityTest
-	case "spotbugs":
-		securityTestConfig = *configAPI.SpotBugsSecurityTest
-	case "gitleaks":
-		securityTestConfig = *configAPI.GitleaksSecurityTest
-	case "safety":
-		securityTestConfig = *configAPI.SafetySecurityTest
-	default:
-		return errors.New("securityTest name not defined")
-	}
-
-	securityTestQuery := map[string]interface{}{"name": securityTestName}
-	_, err := configAPI.DBInstance.UpsertOneDBSecurityTest(securityTestQuery, securityTestConfig)
-	if err != nil {
-		return err
 	}
 	return nil
 }

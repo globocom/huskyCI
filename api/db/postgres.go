@@ -6,6 +6,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/globocom/huskyCI/api/analysis"
+	"github.com/globocom/huskyCI/api/auth"
+	"github.com/globocom/huskyCI/api/repository"
+	repo "github.com/globocom/huskyCI/api/repository"
+	"github.com/globocom/huskyCI/api/securitytest"
 	"github.com/globocom/huskyCI/api/types"
 )
 
@@ -35,48 +40,48 @@ func (pR *PostgresRequests) ConnectDB(
 
 // FindOneDBRepository checks if a given repository is present into repository table.
 func (pR *PostgresRequests) FindOneDBRepository(
-	mapParams map[string]interface{}) (types.Repository, error) {
-	repositoryResponse := []types.Repository{}
+	mapParams map[string]interface{}) (repo.Repository, error) {
+	repositoryResponse := []repo.Repository{}
 	query, params := ConfigureQuery(`SELECT * FROM "repository"`, mapParams)
 	if err := pR.DataRetriever.RetrieveFromDB(
 		query, &repositoryResponse, []string{}, params...); err != nil {
-		return types.Repository{}, err
+		return repository.Repository{}, err
 	}
 	return repositoryResponse[0], nil
 }
 
 // FindOneDBSecurityTest checks if a given securityTest is present into securityTest table.
 func (pR *PostgresRequests) FindOneDBSecurityTest(
-	mapParams map[string]interface{}) (types.SecurityTest, error) {
-	securityTestResponse := []types.SecurityTest{}
+	mapParams map[string]interface{}) (securitytest.SecurityTest, error) {
+	securityTestResponse := []securitytest.SecurityTest{}
 	query, params := ConfigureQuery(`SELECT * FROM "securityTest"`, mapParams)
 	if err := pR.DataRetriever.RetrieveFromDB(
 		query, &securityTestResponse, []string{}, params...); err != nil {
-		return types.SecurityTest{}, err
+		return securitytest.SecurityTest{}, err
 	}
 	return securityTestResponse[0], nil
 }
 
 // FindOneDBAnalysis checks if a given analysis is present into analysis table.
 func (pR *PostgresRequests) FindOneDBAnalysis(
-	mapParams map[string]interface{}) (types.Analysis, error) {
-	analysisResponse := []types.Analysis{}
+	mapParams map[string]interface{}) (analysis.Analysis, error) {
+	analysisResponse := []analysis.Analysis{}
 	query, params := ConfigureQuery(`SELECT * FROM "analysis"`, mapParams)
 	if err := pR.DataRetriever.RetrieveFromDB(
 		query, &analysisResponse, []string{"commitAuthors"}, params...); err != nil {
-		return types.Analysis{}, err
+		return analysis.Analysis{}, err
 	}
 	return analysisResponse[0], nil
 }
 
 // FindOneDBUser checks if a given user is present into user table.
 func (pR *PostgresRequests) FindOneDBUser(
-	mapParams map[string]interface{}) (types.User, error) {
-	userResponse := []types.User{}
+	mapParams map[string]interface{}) (auth.User, error) {
+	userResponse := []auth.User{}
 	query, params := ConfigureQuery(`SELECT * FROM "user"`, mapParams)
 	if err := pR.DataRetriever.RetrieveFromDB(
 		query, &userResponse, []string{}, params...); err != nil {
-		return types.User{}, err
+		return auth.User{}, err
 	}
 	return userResponse[0], nil
 }
@@ -95,8 +100,8 @@ func (pR *PostgresRequests) FindOneDBAccessToken(
 
 // FindAllDBRepository returns all Repository of a given query present into repository table.
 func (pR *PostgresRequests) FindAllDBRepository(
-	mapParams map[string]interface{}) ([]types.Repository, error) {
-	repositoryResponse := []types.Repository{}
+	mapParams map[string]interface{}) ([]repo.Repository, error) {
+	repositoryResponse := []repo.Repository{}
 	query, params := ConfigureQuery(`SELECT * FROM repository`, mapParams)
 	if err := pR.DataRetriever.RetrieveFromDB(
 		query, &repositoryResponse, []string{}, params...); err != nil {
@@ -108,8 +113,8 @@ func (pR *PostgresRequests) FindAllDBRepository(
 // FindAllDBSecurityTest returns all SecurityTests of a given query present
 // into security Test table.
 func (pR *PostgresRequests) FindAllDBSecurityTest(
-	mapParams map[string]interface{}) ([]types.SecurityTest, error) {
-	securityResponse := []types.SecurityTest{}
+	mapParams map[string]interface{}) ([]securitytest.SecurityTest, error) {
+	securityResponse := []securitytest.SecurityTest{}
 	query, params := ConfigureQuery(`SELECT * FROM "securityTest"`, mapParams)
 	if err := pR.DataRetriever.RetrieveFromDB(
 		query, &securityResponse, []string{}, params...); err != nil {
@@ -120,8 +125,8 @@ func (pR *PostgresRequests) FindAllDBSecurityTest(
 
 // FindAllDBAnalysis returns all Analysis of a given query present into analysis table.
 func (pR *PostgresRequests) FindAllDBAnalysis(
-	mapParams map[string]interface{}) ([]types.Analysis, error) {
-	analysisResponse := []types.Analysis{}
+	mapParams map[string]interface{}) ([]analysis.Analysis, error) {
+	analysisResponse := []analysis.Analysis{}
 	query, params := ConfigureQuery(`SELECT * FROM analysis`, mapParams)
 	if err := pR.DataRetriever.RetrieveFromDB(
 		query, &analysisResponse, []string{}, params...); err != nil {
@@ -131,86 +136,101 @@ func (pR *PostgresRequests) FindAllDBAnalysis(
 }
 
 // InsertDBRepository inserts a new repository into repository table.
-func (pR *PostgresRequests) InsertDBRepository(repository types.Repository) error {
-	if (types.Repository{}) == repository {
-		return errors.New("Empty repository data")
-	}
+func (pR *PostgresRequests) InsertDBRepository(repository repo.Repository) error {
+
 	repositoryMap := map[string]interface{}{
-		"repositoryURL": repository.URL,
-		"createdAt":     repository.CreatedAt,
+		"repositoryURL":    repository.URL,
+		"repositoryBranch": repository.Branch,
+		"headcommit":       repository.HeadCommit,
+		"commits":          repository.Commits,
+		"languages":        repository.Languages,
 	}
+
 	finalQuery, values := ConfigureInsertQuery(
 		`INSERT into repository`, repositoryMap)
+
 	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values...)
 	if err != nil {
 		return err
 	}
+
 	if rowsAff == int64(0) {
 		return errors.New("No data was inserted")
 	}
+
 	return nil
 }
 
 // InsertDBSecurityTest inserts a new securityTest into securityTest table.
-func (pR *PostgresRequests) InsertDBSecurityTest(securityTest types.SecurityTest) error {
-	if (types.SecurityTest{}) == securityTest {
-		return errors.New("Empty SecurityTest data")
-	}
+func (pR *PostgresRequests) InsertDBSecurityTest(securityTest securitytest.SecurityTest) error {
+
 	securityTestMap := map[string]interface{}{
-		"name":           securityTest.Name,
-		"image":          securityTest.Image,
-		"imageTag":       securityTest.ImageTag,
-		"cmd":            securityTest.Cmd,
-		"language":       securityTest.Language,
-		"type":           securityTest.Type,
-		"default":        securityTest.Default,
-		"timeOutSeconds": securityTest.TimeOutInSeconds,
+		"name":            securityTest.Name,
+		"type":            securityTest.Type,
+		"language":        securityTest.Language,
+		"errorFound":      securityTest.ErrorFound,
+		"info":            securityTest.Info,
+		"result":          securityTest.Result,
+		"container":       securityTest.Container,
+		"vulnerabilities": securityTest.Vulnerabilities,
 	}
+
 	finalQuery, values := ConfigureInsertQuery(
 		`INSERT into "securityTest"`, securityTestMap)
+
 	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values...)
 	if err != nil {
 		return err
 	}
+
 	if rowsAff == int64(0) {
 		return errors.New("No data was inserted")
 	}
+
 	return nil
 }
 
 // InsertDBAnalysis inserts a new analysis into analysis table.
-func (pR *PostgresRequests) InsertDBAnalysis(analysis types.Analysis) error {
-	if analysis.URL == "" {
-		return errors.New("Empty Analysis data")
-	}
+func (pR *PostgresRequests) InsertDBAnalysis(analysis analysis.Analysis) error {
+
 	analysisMap := map[string]interface{}{
-		"RID":              analysis.RID,
-		"repositoryURL":    analysis.URL,
-		"repositoryBranch": analysis.Branch,
-		"status":           analysis.Status,
-		"startedAt":        analysis.StartedAt,
+		"ID":              analysis.ID,
+		"repository":      analysis.Repository,
+		"result":          analysis.Result,
+		"startedAt":       analysis.StartedAt,
+		"finishedAt":      analysis.FinishedAt,
+		"errorsFound":     analysis.ErrorsFound,
+		"vulnerabilities": analysis.Vulnerabilities,
+		"securityTests":   analysis.SecurityTests,
 	}
+
 	analysisMap, err := pR.ConfigureAnalysisData(analysisMap)
 	if err != nil {
 		return err
 	}
+
 	finalQuery, values := ConfigureInsertQuery(
 		`INSERT into analysis`, analysisMap)
+
 	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values...)
 	if err != nil {
 		return err
 	}
+
 	if rowsAff == int64(0) {
 		return errors.New("No data was inserted")
 	}
+
 	return nil
 }
 
 // InsertDBUser inserts a new user into user table.
-func (pR *PostgresRequests) InsertDBUser(user types.User) error {
-	if (types.User{}) == user {
+func (pR *PostgresRequests) InsertDBUser(user auth.User) error {
+
+	if (auth.User{}) == user {
 		return errors.New("Empty User data")
 	}
+
 	userMap := map[string]interface{}{
 		"username":     user.Username,
 		"password":     user.Password,
@@ -219,15 +239,19 @@ func (pR *PostgresRequests) InsertDBUser(user types.User) error {
 		"keylen":       user.KeyLen,
 		"hashfunction": user.HashFunction,
 	}
+
 	finalQuery, values := ConfigureInsertQuery(
 		`INSERT into "user"`, userMap)
+
 	rowsAff, err := pR.DataRetriever.WriteInDB(finalQuery, values...)
 	if err != nil {
 		return err
 	}
+
 	if rowsAff == int64(0) {
 		return errors.New("No data was inserted")
 	}
+
 	return nil
 }
 
@@ -281,22 +305,19 @@ func (pR *PostgresRequests) UpdateOneDBRepository(
 // UpsertOneDBSecurityTest checks if a given securityTest is present into securityTest
 // and update it. If not, it will insert a new entry.
 func (pR *PostgresRequests) UpsertOneDBSecurityTest(
-	mapParams map[string]interface{}, updatedSecurityTest types.SecurityTest) (interface{}, error) {
-	if (types.SecurityTest{}) == updatedSecurityTest {
-		return nil, errors.New("Empty fields to be updated")
-	}
+	mapParams map[string]interface{}, updatedSecurityTest securitytest.SecurityTest) (interface{}, error) {
 	if len(mapParams) == 0 {
 		return nil, errors.New("Empty fields to search")
 	}
 	updatedSecurityMap := map[string]interface{}{
-		"name":           updatedSecurityTest.Name,
-		"image":          updatedSecurityTest.Image,
-		"imageTag":       updatedSecurityTest.ImageTag,
-		"cmd":            updatedSecurityTest.Cmd,
-		"type":           updatedSecurityTest.Type,
-		"language":       updatedSecurityTest.Language,
-		"default":        updatedSecurityTest.Default,
-		"timeOutSeconds": updatedSecurityTest.TimeOutInSeconds,
+		"name":            updatedSecurityTest.Name,
+		"type":            updatedSecurityTest.Type,
+		"language":        updatedSecurityTest.Language,
+		"errorFound":      updatedSecurityTest.ErrorFound,
+		"info":            updatedSecurityTest.Info,
+		"result":          updatedSecurityTest.Result,
+		"container":       updatedSecurityTest.Container,
+		"vulnerabilities": updatedSecurityTest.Vulnerabilities,
 	}
 	finalQuery, values := ConfigureUpsertQuery(
 		`INSERT into "securityTest"`, mapParams, updatedSecurityMap)
@@ -339,8 +360,8 @@ func (pR *PostgresRequests) UpdateOneDBAnalysis(
 
 // UpdateOneDBUser checks if a given user is present into user table and update it.
 func (pR *PostgresRequests) UpdateOneDBUser(
-	mapParams map[string]interface{}, updatedUser types.User) error {
-	if (types.User{}) == updatedUser {
+	mapParams map[string]interface{}, updatedUser auth.User) error {
+	if (auth.User{}) == updatedUser {
 		return errors.New("Empty fields to be updated")
 	}
 	if len(mapParams) == 0 {
@@ -552,31 +573,30 @@ func ConfigureQuery(query string, params map[string]interface{}) (string, []inte
 // All the structs mapped in a JSON will be converted to a []byte
 // data type so it could be stored in correctly in a raw JSON
 // format. If any convertions fail, it will return an error.
-func (pR *PostgresRequests) ConfigureAnalysisData(
-	updatedAnalysis map[string]interface{}) (map[string]interface{}, error) {
-	if authors, ok := updatedAnalysis["commitAuthors"].([]string); ok {
-		updatedAnalysis["commitAuthors"] = pR.DataRetriever.PqArray(authors)
-	}
-	if containers, ok := updatedAnalysis["containers"].([]types.Container); ok {
-		containerJSON, err := pR.JSONHandler.Marshal(containers)
-		if err != nil {
-			return updatedAnalysis, err
-		}
-		updatedAnalysis["containers"] = containerJSON
-	}
-	if huskyciresults, ok := updatedAnalysis["huskyciresults"].(types.HuskyCIResults); ok {
-		huskyJSON, err := pR.JSONHandler.Marshal(huskyciresults)
-		if err != nil {
-			return updatedAnalysis, err
-		}
-		updatedAnalysis["huskyciresults"] = huskyJSON
-	}
-	if myCodes, ok := updatedAnalysis["codes"].([]types.Code); ok {
-		codeJSON, err := pR.JSONHandler.Marshal(myCodes)
-		if err != nil {
-			return updatedAnalysis, err
-		}
-		updatedAnalysis["codes"] = codeJSON
-	}
+func (pR *PostgresRequests) ConfigureAnalysisData(updatedAnalysis map[string]interface{}) (map[string]interface{}, error) {
+	// if authors, ok := updatedAnalysis["commitAuthors"].([]string); ok {
+	// 	updatedAnalysis["commitAuthors"] = pR.DataRetriever.PqArray(authors)
+	// }
+	// if containers, ok := updatedAnalysis["containers"].([]container.Container); ok {
+	// 	containerJSON, err := pR.JSONHandler.Marshal(containers)
+	// 	if err != nil {
+	// 		return updatedAnalysis, err
+	// 	}
+	// 	updatedAnalysis["containers"] = containerJSON
+	// }
+	// if huskyciresults, ok := updatedAnalysis["huskyciresults"].(types.HuskyCIResults); ok {
+	// 	huskyJSON, err := pR.JSONHandler.Marshal(huskyciresults)
+	// 	if err != nil {
+	// 		return updatedAnalysis, err
+	// 	}
+	// 	updatedAnalysis["huskyciresults"] = huskyJSON
+	// }
+	// if myCodes, ok := updatedAnalysis["codes"].([]types.Code); ok {
+	// 	codeJSON, err := pR.JSONHandler.Marshal(myCodes)
+	// 	if err != nil {
+	// 		return updatedAnalysis, err
+	// 	}
+	// 	updatedAnalysis["codes"] = codeJSON
+	// }
 	return updatedAnalysis, nil
 }
