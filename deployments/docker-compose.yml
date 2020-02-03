@@ -20,26 +20,15 @@ services:
         environment:
             GOPATH: /go/
             # required envs
-            HUSKYCI_DATABASE_TYPE: mongodb
             HUSKYCI_DATABASE_DB_ADDR: mongodb
-            HUSKYCI_DATABASE_DB_PORT: "27017"
             HUSKYCI_DATABASE_DB_NAME: huskyCIDB
             HUSKYCI_DATABASE_DB_USERNAME: huskyCIUser
             HUSKYCI_DATABASE_DB_PASSWORD: huskyCIPassword
             HUSKYCI_API_DEFAULT_USERNAME: huskyCIUser
             HUSKYCI_API_DEFAULT_PASSWORD: huskyCIPassword
-            HUSKYCI_API_DEFAULT_ITERATIONS: 100000
-            HUSKYCI_API_DEFAULT_KEY_LENGTH: 512
             HUSKYCI_API_ALLOW_ORIGIN_CORS: "*"
-            HUSKYCI_API_DEFAULT_HASH_FUNCTION: SHA512
             HUSKYCI_DOCKERAPI_ADDR: dockerapi
-            HUSKYCI_DOCKERAPI_CERT_FILE: /go/src/github.com/globocom/huskyCI/cert.pem
-            HUSKYCI_DOCKERAPI_CERT_KEY: /go/src/github.com/globocom/huskyCI/key.pem
             HUSKYCI_DOCKERAPI_CERT_PATH: /go/src/github.com/globocom/huskyCI/
-            HUSKYCI_DOCKERAPI_TLS_VERIFY: 1
-            # optional envs
-            HUSKYCI_DOCKERAPI_PORT: 2376
-            HUSKYCI_LOGGING_GRAYLOG_APP_NAME: huskyCI   
         build:
             context: ../
             dockerfile: deployments/dockerfiles/api.Dockerfile

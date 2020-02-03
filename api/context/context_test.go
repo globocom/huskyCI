@@ -265,32 +265,6 @@ var _ = Describe("Context", func() {
 			})
 		})
 	})
-	Describe("GetMaxContainersAllowed", func() {
-		Context("When ConvertStrToInt returns an error", func() {
-			It("Should return a maximum number of containers equals to 50", func() {
-				fakeCaller := FakeCaller{
-					expectedIntegerValue:         0,
-					expectedConvertStrToIntError: errors.New("Error during the convertion from string to integer"),
-				}
-				config := DefaultConfig{
-					Caller: &fakeCaller,
-				}
-				Expect(config.GetMaxContainersAllowed()).To(Equal(50))
-			})
-		})
-		Context("When ConvertStrToInt returns a value", func() {
-			It("Should return a maximum number of containers as expected", func() {
-				fakeCaller := FakeCaller{
-					expectedIntegerValue:         25000,
-					expectedConvertStrToIntError: nil,
-				}
-				config := DefaultConfig{
-					Caller: &fakeCaller,
-				}
-				Expect(config.GetMaxContainersAllowed()).To(Equal(fakeCaller.expectedIntegerValue))
-			})
-		})
-	})
 	Describe("GetAPIConfig", func() {
 		Context("When SetConfigFile returns an error", func() {
 			It("Should return the expected error", func() {
@@ -347,14 +321,11 @@ var _ = Describe("Context", func() {
 						ConnMaxLifetime: time.Duration(fakeCaller.expectedIntegerValue) * time.Hour,
 					},
 					DockerHostsConfig: &DockerHostsConfig{
-						Address:              "1",
-						DockerAPIPort:        fakeCaller.expectedIntegerValue,
-						Certificate:          fakeCaller.expectedEnvVar,
-						PathCertificate:      fakeCaller.expectedEnvVar,
-						Key:                  fakeCaller.expectedEnvVar,
-						Host:                 "1:1234",
-						TLSVerify:            1,
-						MaxContainersAllowed: fakeCaller.expectedIntegerValue,
+						Address:         "1",
+						DockerAPIPort:   fakeCaller.expectedIntegerValue,
+						PathCertificate: fakeCaller.expectedEnvVar,
+						Host:            "1:1234",
+						TLSVerify:       1,
 					},
 					EnrySecurityTest: &types.SecurityTest{
 						Name:             fakeCaller.expectedStringFromConfig,

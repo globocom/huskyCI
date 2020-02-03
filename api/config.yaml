@@ -23,7 +23,7 @@ enry:
 gitauthors:
   name: gitauthors
   image: huskyci/gitauthors
-  imageTag: "2.18.1"
+  imageTag: "2.18.2"
   cmd: |+
     mkdir -p ~/.ssh &&
     echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
@@ -64,7 +64,7 @@ gosec:
     if [ $? -eq 0 ]; then
       cd code
       touch results.json
-      $(which gosec) -quiet -fmt=json -log=log.txt -out=results.json ./... 2> /dev/null
+      $(which gosec) -quiet -fmt=json -nosec-tag nohusky -log=log.txt -out=results.json ./... 2> /dev/null
       jq -j -M -c . results.json
     else
       echo "ERROR_CLONING"
@@ -102,7 +102,7 @@ bandit:
 brakeman:
   name: brakeman
   image: huskyci/brakeman
-  imageTag: "4.7.1"
+  imageTag: "4.7.2"
   cmd: |+
     mkdir -p ~/.ssh &&
     echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
@@ -176,7 +176,7 @@ safety:
 npmaudit:
   name: npmaudit
   image: huskyci/npmaudit
-  imageTag: "6.12.1"
+  imageTag: "6.13.1"
   cmd: |+
     mkdir -p ~/.ssh &&
     echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
@@ -190,7 +190,9 @@ npmaudit:
         npm audit --only=prod --json > /tmp/results.json 2> /tmp/errorNpmaudit
         jq -j -M -c . /tmp/results.json
       else
-        echo 'ERROR_PACKAGE_LOCK_NOT_FOUND'
+        if [ ! -f yarn.lock ]; then
+          echo 'ERROR_PACKAGE_LOCK_NOT_FOUND'
+        fi
       fi
     else
       echo "ERROR_CLONING"
@@ -204,7 +206,7 @@ npmaudit:
 yarnaudit:
   name: yarnaudit
   image: huskyci/yarnaudit
-  imageTag: "1.19.1"
+  imageTag: "1.19.2"
   cmd: |+
     mkdir -p ~/.ssh &&
     echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
@@ -215,7 +217,7 @@ yarnaudit:
     if [ $? -eq 0 ]; then
         cd code
         if [ -f yarn.lock ]; then
-            yarn audit --json > /tmp/results.json 2> /tmp/errorYarnAudit
+            yarn audit --groups dependencies --json > /tmp/results.json 2> /tmp/errorYarnAudit
             if [ ! -s /tmp/errorYarnAudit ]; then
                 jq -c -M -j --slurp '{advisories: (. | map(select(.type == "auditAdvisory") | .data.advisory)), metadata: (. | map(select(.type == "auditSummary") | .data) | add)}' /tmp/results.json > /tmp/output.json
                 cat /tmp/output.json
@@ -224,7 +226,9 @@ yarnaudit:
                 cat /tmp/errorYarnAudit
             fi
         else
-            echo 'ERROR_YARN_LOCK_NOT_FOUND'
+            if [ ! -f package-lock.json ]; then
+                echo 'ERROR_YARN_LOCK_NOT_FOUND'
+            fi
         fi
     else
         echo "ERROR_CLONING"
@@ -288,7 +292,7 @@ spotbugs:
     fi
   type: Language
   language: Java
-  default: true
+  default: false
   timeOutInSeconds: 3600
 
 gitleaks:
@@ -304,9 +308,12 @@ gitleaks:
     git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneGitleaks
     if [ $? -eq 0 ]; then
         touch /tmp/results.json
-        $(which gitleaks) --log=warn --report=/tmp/results.json --repo-path=./code --repo-config > /tmp/errorGitleaks
-        if [ $? -eq 2 ]; then
-            echo -n 'ERROR_RUNNING_GITLEAKS'
+        timeout -t 360 $(which gitleaks) --log=warn --report=/tmp/results.json --repo-path=./code --branch=%GIT_BRANCH% --repo-config &> /tmp/errorGitleaks
+        if [[ $? -eq 124 || $? -eq 143 ]]; then #timeout exit codes
+            echo 'ERROR_TIMEOUT_GITLEAKS'
+            cat /tmp/errorGitleaks
+        elif [ $? -eq 2 ]; then
+            echo 'ERROR_RUNNING_GITLEAKS'
             cat /tmp/errorGitleaks
         else
             jq -j -M -c . /tmp/results.json

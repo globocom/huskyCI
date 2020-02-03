@@ -43,12 +43,12 @@ func (fG *FakeGen) GetHashName() string {
 	return ""
 }
 
-func (fG *FakeGen) GetIterations() (int, error) {
-	return 0, nil
+func (fG *FakeGen) GetIterations() int {
+	return 0
 }
 
-func (fG *FakeGen) GetKeyLength() (int, error) {
-	return 0, nil
+func (fG *FakeGen) GetKeyLength() int {
+	return 0
 }
 
 var _ = Describe("Authmongo", func() {

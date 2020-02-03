@@ -37,6 +37,8 @@ type SecTestScanInfo struct {
 	PackageNotFound       bool
 	YarnLockNotFound      bool
 	YarnErrorRunning      bool
+	GitleaksErrorRunning  bool
+	GitleaksTimeout       bool
 	CommitAuthorsNotFound bool
 	CommitAuthors         GitAuthorsOutput
 	Codes                 []types.Code

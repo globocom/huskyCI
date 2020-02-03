@@ -139,10 +139,15 @@ help:
 	printf "\n"
 
 ## Installs a development environment using docker-compose
-install: create-certs compose generate-passwords generate-local-token
+install: create-certs prepare-local-mongodb compose generate-passwords generate-local-token
 
 ## Runs all huskyCI lint
 lint: get-lint-deps golint golangci-lint
+
+## Set up local mongoDB settings file
+prepare-local-mongodb:
+	chmod +x deployments/scripts/prepare-local-mongodb.sh
+	./deployments/scripts/prepare-local-mongodb.sh
 
 ## Push securityTest containers to hub.docker
 push-containers:
