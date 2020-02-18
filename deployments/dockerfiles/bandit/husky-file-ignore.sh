@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 # Copyright 2020 Globo.com authors. All rights reserved.
 # Use of this source code is governed by a BSD-style
@@ -12,7 +12,7 @@ huskyCIFile=".huskyci"
 if [ -f "$huskyCIFile" ]; then
     while IFS= read -r line; do
 	commentRegexp='^[[:space:]]*#'
-        if [[ "$line" =~ "huskyCI-Ignore" ]] || [[ $line =~ $commentRegexp]] || [["$line" =~ "" ]]; then
+        if echo "$line" | grep -q "huskyCI-Ignore" || echo "$line" | grep -Eq "$commentRegexp" || [ ! "$line" ]; then
             continue
         fi
 
