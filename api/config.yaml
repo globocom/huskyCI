@@ -32,6 +32,11 @@ gitauthors:
     echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
     git clone %GIT_REPO% code --quiet 2> /tmp/errorGitCloneEnry
     cd code
+    git branch -a | egrep 'remotes/origin/master' 1> /dev/null 2> /dev/null
+    if [ $? -ne 0 ]; then
+      echo "{\"authors\":[]}"
+      exit 0
+    fi
     git checkout %GIT_BRANCH% --quiet
     if [ $? -eq 0 ]; then
       for i in $(git log origin/master.. --pretty="%ae" | sort -u); do
