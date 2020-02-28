@@ -83,7 +83,7 @@ gosec:
 bandit:
   name: bandit
   image: huskyci/bandit
-  imageTag: "1.6.2"
+  imageTag: "dev"
   cmd: |+
      mkdir -p ~/.ssh &&
      echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
@@ -93,6 +93,8 @@ bandit:
      git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneBandit
      if [ $? -eq 0 ]; then
        cd code
+       chmod +x /usr/local/bin/husky-file-ignore.sh
+       husky-file-ignore.sh 2> /tmp/errorBanditIgnoreScript 1> /dev/null
        bandit -r . -f json 2> /dev/null > results.json
        jq -j -M -c . results.json
      else
