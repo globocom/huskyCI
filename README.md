@@ -7,7 +7,7 @@
   <a href="https://github.com/globocom/huskyCI/releases"><img src="https://img.shields.io/github/v/release/globocom/huskyCI"/></a>
   <a href="https://circleci.com/gh/globocom/huskyCI/tree/master"><img src="https://img.shields.io/circleci/build/github/globocom/huskyCI/master?token=415bfb6b5aa0dfce8d2129878a66326da9533150"/></a>
   <a href="https://github.com/rafaveira3/writing-and-presentations/blob/master/DEFCON-27-APP-SEC-VILLAGE-Rafael-Santos-huskyCI-Finding-security-flaws-in-CI-before-deploying-them.pdf"><img src="https://img.shields.io/badge/DEFCON%2027-AppSec%20Village-black"/></a>
-<a href="https://github.com/rafaveira3/contributions/blob/master/huskyCI-BlackHat-Europe-2019.pdf"><img src="https://img.shields.io/badge/Black%20Hat%20Europe%202019-Arsenal-black"/></a>
+<a href="https://github.com/rafaveira3/contributions/blob/master/huskyCI-BlackHat-Europe-9.pdf"><img src="https://img.shields.io/badge/Black%20Hat%20Europe%202019-Arsenal-black"/></a>
 </p>
 
 ## Introduction
@@ -56,11 +56,11 @@ ERROR: Job failed: exit code 1
 
 ## Getting Started
 
-You can try huskyCI by setting up a local environment using Docker Compose following [this guide](http://201.7.182.242/docs/development/set-up-environment).
+You can try huskyCI by setting up a local environment using Docker Compose following [this guide](http://husky.ci/docs/development/set-up-environment).
 
 ## Documentation
 
-All guides and the full documentation can be found in the [official documentation page](http://201.7.182.242/docs/quickstart/overview).
+All guides and the full documentation can be found in the [official documentation page](http://husky.ci/docs/quickstart/overview).
 
 ## Contributing
 
