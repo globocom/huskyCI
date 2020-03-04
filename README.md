@@ -56,11 +56,11 @@ ERROR: Job failed: exit code 1
 
 ## Getting Started
 
-You can try huskyCI by setting up a local environment using Docker Compose following [this guide](http://201.7.182.242/docs/development/set-up-environment).
+You can try huskyCI by setting up a local environment using Docker Compose following [this guide](http://husky.ci/docs/development/set-up-environment).
 
 ## Documentation
 
-All guides and the full documentation can be found in the [official documentation page](http://201.7.182.242/docs/quickstart/overview).
+All guides and the full documentation can be found in the [official documentation page](http://husky.ci/docs/quickstart/overview).
 
 ## Contributing
 
