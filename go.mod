@@ -28,6 +28,8 @@ require (
 	github.com/labstack/gommon v0.2.8 // indirect
 	github.com/lib/pq v1.2.0
 	github.com/mattn/goveralls v0.0.4 // indirect
+	github.com/mholt/archiver v3.1.1+incompatible
+	github.com/mholt/archiver/v3 v3.3.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/nightlyone/lockfile v0.0.0-20180618180623-0ad87eef1443 // indirect
 	github.com/onsi/ginkgo v1.10.3
@@ -40,7 +42,8 @@ require (
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/viper v1.5.0
-	github.com/stretchr/testify v1.4.0
+	github.com/src-d/enry/v2 v2.1.0
+	github.com/stretchr/testify v1.4.0 // indirect
 	github.com/uudashr/gocognit v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.0.1 // indirect
 	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
