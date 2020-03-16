@@ -63,8 +63,8 @@ func (a *Analysis) CheckPath(path string) error {
 		errorcli.Handle(err)
 	}
 
-	fmt.Println("[HUSKYCI] 🔎 Scanning your code from", fullPath)
-	defer fmt.Println("[HUSKYCI] 🔎 Scanned!")
+	fmt.Println("[HUSKYCI] Scanning your code from", fullPath)
+	defer fmt.Println("[HUSKYCI] Scanned!")
 
 	if err := a.setFiles(fullPath); err != nil {
 		errorcli.Handle(err)
@@ -85,7 +85,7 @@ func (a *Analysis) CheckPath(path string) error {
 // CompressFiles will compress all files from a given path into a single file named GUID
 func (a *Analysis) CompressFiles(path string) error {
 
-	fmt.Println("[HUSKYCI] 🗃  Compressing your code...")
+	fmt.Println("[HUSKYCI] Compressing your code...")
 
 	// get all files and folders name inside this path
 	var allFilesAndDirNames []string
@@ -123,27 +123,27 @@ func (a *Analysis) CompressFiles(path string) error {
 
 	friendlySize := byteCountSI(a.CompressedFile.Size)
 
-	fmt.Println("[HUSKYCI] 🗃  Compressed! ", destination, friendlySize)
+	fmt.Println("[HUSKYCI] Compressed! ", destination, friendlySize)
 	return nil
 }
 
 // SendZip will send the zip file to the huskyCI API to start the analysis
 func (a *Analysis) SendZip() error {
-	fmt.Println("[HUSKYCI] 🚀 Sending your code to the huskyCI API at...")
-	defer fmt.Println("[HUSKYCI] 🚀 Sent!")
+	fmt.Println("[HUSKYCI] Sending your code to the huskyCI API at...")
+	defer fmt.Println("[HUSKYCI] Sent!")
 	return nil
 }
 
 // CheckStatus is a worker to check the huskyCI API for the status of the particular analysis
 func (a *Analysis) CheckStatus() error {
-	fmt.Println("[HUSKYCI] 👀 Checking if the analysis has already finished...")
-	defer fmt.Println("[HUSKYCI] 👀 Checked!")
+	fmt.Println("[HUSKYCI] Checking if the analysis has already finished...")
+	defer fmt.Println("[HUSKYCI] Checked!")
 	return nil
 }
 
 // PrintVulns prints all vulnerabilities found after the analysis has been finished
 func (a *Analysis) PrintVulns() {
-	fmt.Println("[HUSKYCI] 🟢🔵🟡🔴")
+	// fmt.Println("[HUSKYCI] 🟢🔵🟡🔴")
 }
 
 func (a *Analysis) setFiles(pathReceived string) error {
