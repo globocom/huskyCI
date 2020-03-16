@@ -40,7 +40,7 @@ build-client-linux:
 
 ## Builds CLI to the executable file huskyci-client
 build-cli:
-	cd cli && $(GO) build -o "$(HUSKYCICLIENTBIN)" main.go && mv "$(HUSKYCICLIENTBIN)" ../
+	$(GO) build -o "$(HUSKYCICLIENTBIN)" cli/main.go
 
 ## Builds CLI to the executable file huskyci-client
 build-cli-linux:
