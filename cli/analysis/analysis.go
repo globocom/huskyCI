@@ -108,7 +108,7 @@ func (a *Analysis) CompressFiles(path string) error {
 	}
 
 	// get size of the archived file
-	file, err := os.Open(destination)
+	file, err := os.Open(destination) // #nosec -> this destination is a "GUID.zip". Example: "2af32301-3260-4f55-ad17-d516f38fb7ea.zip"
 	if err != nil {
 		return err
 	}

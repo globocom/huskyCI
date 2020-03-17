@@ -98,10 +98,13 @@ func CreateFile(output []byte, filePath, fileName string) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
 
 	_, err = f.Write(output)
 	if err != nil {
+		return err
+	}
+
+	if err := f.Close(); err != nil {
 		return err
 	}
 
