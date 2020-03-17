@@ -52,6 +52,10 @@ var runCmd = &cobra.Command{
 		fmt.Println()
 		currentAnalysis.PrintVulns()
 
+		if err := currentAnalysis.HouseCleaning(); err != nil {
+			errorcli.Handle(err)
+		}
+
 		return nil
 	},
 }

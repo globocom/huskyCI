@@ -3,15 +3,14 @@ package analysis
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
 
+	"github.com/globocom/huskyCI/cli/config"
 	"github.com/globocom/huskyCI/cli/errorcli"
 	"github.com/globocom/huskyCI/cli/vulnerability"
 	"github.com/google/uuid"
-	"github.com/mholt/archiver"
 	"github.com/src-d/enry/v2"
 )
 
@@ -20,7 +19,6 @@ type Analysis struct {
 	ID              string                        `bson:"ID" json:"ID"`
 	CompressedFile  CompressedFile                `bson:"compressedFile" json:"compressedFile"`
 	Errors          []string                      `bson:"errorsFound,omitempty" json:"errorsFound"`
-	Files           []string                      `bson:"files" json:"files"`
 	Languages       []string                      `bson:"languages" json:"languages"`
 	StartedAt       time.Time                     `bson:"startedAt" json:"startedAt"`
 	FinishedAt      time.Time                     `bson:"finishedAt" json:"finishedAt"`
@@ -31,7 +29,7 @@ type Analysis struct {
 // CompressedFile holds the info from the compressed file
 type CompressedFile struct {
 	Name string `bson:"name" json:"name"`
-	Size int64  `bson:"size" json:"size"`
+	Size string `bson:"size" json:"size"`
 }
 
 // Result holds the status and the info of an analysis.
@@ -42,17 +40,9 @@ type Result struct {
 
 // New returns a new analysis struct
 func New() *Analysis {
-
-	newID := uuid.New().String()
-	newZipFileName := fmt.Sprintf("%s.zip", newID)
-
 	return &Analysis{
-		ID: newID,
-		CompressedFile: CompressedFile{
-			Name: newZipFileName,
-		},
+		ID: uuid.New().String(),
 	}
-
 }
 
 // CheckPath checks the given path to check which languages were found and do some others security checks
@@ -64,19 +54,13 @@ func (a *Analysis) CheckPath(path string) error {
 	}
 
 	fmt.Println("[HUSKYCI] Scanning your code from", fullPath)
-	defer fmt.Println("[HUSKYCI] Scanned!")
 
-	if err := a.setFiles(fullPath); err != nil {
+	if err := a.setLanguages(fullPath); err != nil {
 		errorcli.Handle(err)
 	}
 
-	if err := a.setLanguages(); err != nil {
-		errorcli.Handle(err)
-	}
-
-	fmt.Println(fmt.Sprintf("[HUSKYCI] %d files found", len(a.Files)))
-	for language, securityTests := range a.getAvailableSecurityTests(a.Languages) {
-		fmt.Println(fmt.Sprintf("[HUSKYCI] %s -> %s", language, securityTests))
+	for language := range a.getAvailableSecurityTests(a.Languages) {
+		fmt.Println(fmt.Sprintf("[HUSKYCI] %s found.", language))
 	}
 
 	return nil
@@ -87,43 +71,27 @@ func (a *Analysis) CompressFiles(path string) error {
 
 	fmt.Println("[HUSKYCI] Compressing your code...")
 
-	// get all files and folders name inside this path
-	var allFilesAndDirNames []string
-	filesAndDirs, err := ioutil.ReadDir(path)
+	if err := a.HouseCleaning(); err != nil {
+		// it's ok. maybe the file is not there yet.
+		fmt.Println("")
+	}
+
+	allFilesAndDirNames, err := config.GetAllAllowedFilesAndDirsFromPath(path)
 	if err != nil {
 		return err
 	}
-	for _, f := range filesAndDirs {
-		allFilesAndDirNames = append(allFilesAndDirNames, f.Name())
-	}
 
-	// compress everthing inside the $HOME directory
-	home, err := os.UserHomeDir()
+	zipFilePath, err := config.CompressFiles(allFilesAndDirNames)
 	if err != nil {
 		return err
 	}
-	destination := fmt.Sprintf("%s/%s", home, a.CompressedFile.Name)
-	if err := archiver.Archive(allFilesAndDirNames, destination); err != nil {
+
+	if err := a.setZipSize(zipFilePath); err != nil {
 		return err
 	}
 
-	// get size of the archived file
-	file, err := os.Open(destination) // #nosec -> this destination is a "GUID.zip". Example: "2af32301-3260-4f55-ad17-d516f38fb7ea.zip"
-	if err != nil {
-		return err
-	}
-	fi, err := file.Stat()
-	if err != nil {
-		return err
-	}
-	if err := file.Close(); err != nil {
-		return err
-	}
-	a.CompressedFile.Size = fi.Size()
+	fmt.Println("[HUSKYCI] Compressed! ", zipFilePath, a.CompressedFile.Size)
 
-	friendlySize := byteCountSI(a.CompressedFile.Size)
-
-	fmt.Println("[HUSKYCI] Compressed! ", destination, friendlySize)
 	return nil
 }
 
@@ -143,31 +111,45 @@ func (a *Analysis) CheckStatus() error {
 
 // PrintVulns prints all vulnerabilities found after the analysis has been finished
 func (a *Analysis) PrintVulns() {
-	// fmt.Println("[HUSKYCI] 🟢🔵🟡🔴")
+	fmt.Println("[HUSKYCI] Results:")
 }
 
-func (a *Analysis) setFiles(pathReceived string) error {
+// HouseCleaning will do stuff to clean the $HOME directory.
+func (a *Analysis) HouseCleaning() error {
+
+	zipFilePath, err := config.GetHuskyZipFilePath()
+	if err != nil {
+		return err
+	}
+
+	return config.DeleteHuskyFile(zipFilePath)
+}
+
+func (a *Analysis) setZipSize(destination string) error {
+	friendlySize, err := config.GetZipFriendlySize(destination)
+	if err != nil {
+		return err
+	}
+	a.CompressedFile.Size = friendlySize
+	return nil
+}
+
+func (a *Analysis) setLanguages(pathReceived string) error {
 	err := filepath.Walk(pathReceived,
 		func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
 			}
-			a.Files = append(a.Files, info.Name())
+			fileName := info.Name()
+			lang, _ := enry.GetLanguageByExtension(fileName)
+			a.Languages = appendIfMissing(a.Languages, lang)
 			return nil
 		})
 	if err != nil {
 		return err
 	}
-	return nil
-}
-
-func (a *Analysis) setLanguages() error {
-	if len(a.Files) == 0 {
-		return errors.New("no files found")
-	}
-	for _, file := range a.Files {
-		lang, _ := enry.GetLanguageByExtension(file)
-		a.Languages = appendIfMissing(a.Languages, lang)
+	if len(a.Languages) == 0 {
+		return errors.New("no languages found")
 	}
 	return nil
 }
@@ -207,18 +189,4 @@ func appendIfMissing(slice []string, s string) []string {
 		}
 	}
 	return append(slice, s)
-}
-
-func byteCountSI(b int64) string {
-	const unit = 1000
-	if b < unit {
-		return fmt.Sprintf("%d B", b)
-	}
-	div, exp := int64(unit), 0
-	for n := b / unit; n >= unit; n /= unit {
-		div *= unit
-		exp++
-	}
-	return fmt.Sprintf("%.1f %cB",
-		float64(b)/float64(div), "kMGTPE"[exp])
 }
