@@ -192,9 +192,9 @@ func checkFileExtension(file string) error {
 	case "":
 		return nil
 	case ".jpg", ".png", ".gif", ".webp", ".tiff", ".psd", ".raw", ".bmp", ".heif", ".indd", ".jpeg", ".svg", ".ai", ".eps", ".pdf":
-		return errorcli.InvalidExtension
+		return errorcli.ErrInvalidExtension
 	case ".webm", ".mpg", ".mp2", ".mpeg", ".mpe", ".mpv", ".ogg", ".mp4", ".m4p", ".m4v", ".avi", ".wmv", ".mov", ".qt", ".flv", ".swf", ".avchd":
-		return errorcli.InvalidExtension
+		return errorcli.ErrInvalidExtension
 	default:
 		return nil
 	}

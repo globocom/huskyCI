@@ -7,8 +7,8 @@ import (
 )
 
 var (
-	// InvalidExtension occurs when an extension is a image and video one
-	InvalidExtension = errors.New("invalid extension")
+	// ErrInvalidExtension occurs when an extension is a image and video one
+	ErrInvalidExtension = errors.New("invalid extension")
 )
 
 // Handle prints the error message in the cli format
