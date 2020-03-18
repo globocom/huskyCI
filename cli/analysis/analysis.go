@@ -9,6 +9,7 @@ import (
 
 	"github.com/globocom/huskyCI/cli/config"
 	"github.com/globocom/huskyCI/cli/errorcli"
+	"github.com/globocom/huskyCI/cli/util"
 	"github.com/globocom/huskyCI/cli/vulnerability"
 	"github.com/google/uuid"
 	"github.com/src-d/enry/v2"
@@ -73,15 +74,15 @@ func (a *Analysis) CompressFiles(path string) error {
 
 	if err := a.HouseCleaning(); err != nil {
 		// it's ok. maybe the file is not there yet.
-		fmt.Println("")
+		fmt.Print("")
 	}
 
-	allFilesAndDirNames, err := config.GetAllAllowedFilesAndDirsFromPath(path)
+	allFilesAndDirNames, err := util.GetAllAllowedFilesAndDirsFromPath(path)
 	if err != nil {
 		return err
 	}
 
-	zipFilePath, err := config.CompressFiles(allFilesAndDirNames)
+	zipFilePath, err := util.CompressFiles(allFilesAndDirNames)
 	if err != nil {
 		return err
 	}
@@ -122,11 +123,11 @@ func (a *Analysis) HouseCleaning() error {
 		return err
 	}
 
-	return config.DeleteHuskyFile(zipFilePath)
+	return util.DeleteHuskyFile(zipFilePath)
 }
 
 func (a *Analysis) setZipSize(destination string) error {
-	friendlySize, err := config.GetZipFriendlySize(destination)
+	friendlySize, err := util.GetZipFriendlySize(destination)
 	if err != nil {
 		return err
 	}
@@ -142,7 +143,7 @@ func (a *Analysis) setLanguages(pathReceived string) error {
 			}
 			fileName := info.Name()
 			lang, _ := enry.GetLanguageByExtension(fileName)
-			a.Languages = appendIfMissing(a.Languages, lang)
+			a.Languages = util.AppendIfMissing(a.Languages, lang)
 			return nil
 		})
 	if err != nil {
@@ -180,13 +181,4 @@ func (a *Analysis) getAvailableSecurityTests(languages []string) map[string][]st
 	list["Generic"] = []string{"huskyci/gitleaks"}
 
 	return list
-}
-
-func appendIfMissing(slice []string, s string) []string {
-	for _, ele := range slice {
-		if ele == s {
-			return slice
-		}
-	}
-	return append(slice, s)
 }
