@@ -305,7 +305,7 @@ spotbugs:
 gitleaks:
   name: gitleaks
   image: huskyci/gitleaks
-  imageTag: "v4.0.1"
+  imageTag: "2.1.0"
   cmd: |+
     mkdir -p ~/.ssh &&
     echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
