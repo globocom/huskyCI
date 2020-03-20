@@ -5,15 +5,13 @@
 package main
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/globocom/huskyCI/cli/cmd"
+	"github.com/globocom/huskyCI/cli/errorcli"
 )
 
 func main() {
-	if err := cmd.Execute(); err != nil {
-		fmt.Println("error found: ", err)
-		os.Exit(1)
+	err := cmd.Execute()
+	if err != nil {
+		errorcli.Handle(err)
 	}
 }
