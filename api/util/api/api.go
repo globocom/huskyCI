@@ -219,10 +219,13 @@ func createAPICert() error {
 		if err != nil {
 			return err
 		}
-		defer f.Close()
 
 		_, err = f.WriteString(certValue)
 		if err != nil {
+			return err
+		}
+
+		if err := f.Close(); err != nil {
 			return err
 		}
 
@@ -237,12 +240,16 @@ func createAPIKey() error {
 		if err != nil {
 			return err
 		}
-		defer f.Close()
 
 		_, err = f.WriteString(certKeyValue)
 		if err != nil {
 			return err
 		}
+
+		if err := f.Close(); err != nil {
+			return err
+		}
+
 	}
 	return nil
 }
@@ -254,12 +261,16 @@ func createAPITLSCert() error {
 		if err != nil {
 			return err
 		}
-		defer f.Close()
 
 		_, err = f.WriteString(apiCertValue)
 		if err != nil {
 			return err
 		}
+
+		if err := f.Close(); err != nil {
+			return err
+		}
+
 	}
 	return nil
 }
@@ -271,12 +282,16 @@ func createAPITLSKey() error {
 		if err != nil {
 			return err
 		}
-		defer f.Close()
 
 		_, err = f.WriteString(apiKeyValue)
 		if err != nil {
 			return err
 		}
+
+		if err := f.Close(); err != nil {
+			return err
+		}
+
 	}
 	return nil
 }
@@ -288,12 +303,16 @@ func createAPICA() error {
 		if err != nil {
 			return err
 		}
-		defer f.Close()
 
 		_, err = f.WriteString(caValue)
 		if err != nil {
 			return err
 		}
+
+		if err := f.Close(); err != nil {
+			return err
+		}
+
 	}
 	return nil
 }

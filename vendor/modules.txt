@@ -1,7 +1,5 @@
 # github.com/Microsoft/go-winio v0.4.12
 github.com/Microsoft/go-winio
-# github.com/davecgh/go-spew v1.1.1
-github.com/davecgh/go-spew/spew
 # github.com/dgrijalva/jwt-go v3.2.0+incompatible
 github.com/dgrijalva/jwt-go
 # github.com/docker/distribution v2.7.1+incompatible
@@ -30,10 +28,19 @@ github.com/docker/go-connections/sockets
 github.com/docker/go-connections/tlsconfig
 # github.com/docker/go-units v0.3.3
 github.com/docker/go-units
+# github.com/dsnet/compress v0.0.1
+github.com/dsnet/compress
+github.com/dsnet/compress/bzip2
+github.com/dsnet/compress/bzip2/internal/sais
+github.com/dsnet/compress/internal
+github.com/dsnet/compress/internal/errors
+github.com/dsnet/compress/internal/prefix
 # github.com/fsnotify/fsnotify v1.4.7
 github.com/fsnotify/fsnotify
 # github.com/globocom/glbgelf v0.0.0-20190310030100-36e52796d86a
 github.com/globocom/glbgelf
+# github.com/golang/snappy v0.0.1
+github.com/golang/snappy
 # github.com/google/uuid v1.1.1
 github.com/google/uuid
 # github.com/hashicorp/hcl v1.0.0
@@ -73,10 +80,14 @@ github.com/magiconair/properties
 github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.8
 github.com/mattn/go-isatty
+# github.com/mholt/archiver v3.1.1+incompatible
+github.com/mholt/archiver
 # github.com/mitchellh/go-homedir v1.1.0
 github.com/mitchellh/go-homedir
 # github.com/mitchellh/mapstructure v1.1.2
 github.com/mitchellh/mapstructure
+# github.com/nwaples/rardecode v1.0.0
+github.com/nwaples/rardecode
 # github.com/onsi/ginkgo v1.10.3
 github.com/onsi/ginkgo
 github.com/onsi/ginkgo/config
@@ -114,10 +125,11 @@ github.com/onsi/gomega/types
 github.com/opencontainers/go-digest
 # github.com/pelletier/go-toml v1.5.0
 github.com/pelletier/go-toml
+# github.com/pierrec/lz4 v2.0.5+incompatible
+github.com/pierrec/lz4
+github.com/pierrec/lz4/internal/xxh32
 # github.com/pkg/errors v0.8.1
 github.com/pkg/errors
-# github.com/pmezard/go-difflib v1.0.0
-github.com/pmezard/go-difflib/difflib
 # github.com/spf13/afero v1.2.2
 github.com/spf13/afero
 github.com/spf13/afero/mem
@@ -131,20 +143,36 @@ github.com/spf13/jwalterweatherman
 github.com/spf13/pflag
 # github.com/spf13/viper v1.5.0
 github.com/spf13/viper
-# github.com/stretchr/testify v1.4.0
-github.com/stretchr/testify/assert
+# github.com/src-d/enry/v2 v2.1.0
+github.com/src-d/enry/v2
+github.com/src-d/enry/v2/data
+github.com/src-d/enry/v2/data/rule
+github.com/src-d/enry/v2/internal/tokenizer
+github.com/src-d/enry/v2/internal/tokenizer/flex
+github.com/src-d/enry/v2/regex
+# github.com/src-d/go-oniguruma v1.1.0
+github.com/src-d/go-oniguruma
 # github.com/subosito/gotenv v1.2.0
 github.com/subosito/gotenv
+# github.com/toqueteos/trie v1.0.0
+github.com/toqueteos/trie
+# github.com/ulikunitz/xz v0.5.6
+github.com/ulikunitz/xz
+github.com/ulikunitz/xz/internal/hash
+github.com/ulikunitz/xz/internal/xlog
+github.com/ulikunitz/xz/lzma
 # github.com/valyala/bytebufferpool v1.0.0
 github.com/valyala/bytebufferpool
 # github.com/valyala/fasttemplate v1.0.1
 github.com/valyala/fasttemplate
+# github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8
+github.com/xi2/xz
 # golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
 golang.org/x/crypto/acme
 golang.org/x/crypto/acme/autocert
 golang.org/x/crypto/pbkdf2
 golang.org/x/crypto/sha3
-# golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553
+# golang.org/x/net v0.0.0-20200226121028-0de0cce0169b
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
 golang.org/x/net/html
@@ -190,5 +218,7 @@ gopkg.in/mgo.v2/internal/sasl
 gopkg.in/mgo.v2/internal/scram
 # gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7
 gopkg.in/tomb.v1
+# gopkg.in/toqueteos/substring.v1 v1.0.2
+gopkg.in/toqueteos/substring.v1
 # gopkg.in/yaml.v2 v2.2.7
 gopkg.in/yaml.v2
