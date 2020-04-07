@@ -224,7 +224,7 @@ yarnaudit:
     if [ $? -eq 0 ]; then
         cd code
         if [ -f yarn.lock ]; then
-            yarn audit --groups dependencies --json > /tmp/results.json 2> /tmp/errorYarnAudit
+            yarn audit --level moderate --prod --groups dependencies --json > /tmp/results.json 2> /tmp/errorYarnAudit
             if [ ! -s /tmp/errorYarnAudit ]; then
                 jq -c -M -j --slurp '{advisories: (. | map(select(.type == "auditAdvisory") | .data.advisory)), metadata: (. | map(select(.type == "auditSummary") | .data) | add)}' /tmp/results.json > /tmp/output.json
                 cat /tmp/output.json
