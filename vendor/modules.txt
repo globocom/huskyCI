@@ -88,7 +88,7 @@ github.com/mitchellh/go-homedir
 github.com/mitchellh/mapstructure
 # github.com/nwaples/rardecode v1.0.0
 github.com/nwaples/rardecode
-# github.com/onsi/ginkgo v1.10.3
+# github.com/onsi/ginkgo v1.12.0
 github.com/onsi/ginkgo
 github.com/onsi/ginkgo/config
 github.com/onsi/ginkgo/extensions/table
@@ -108,7 +108,7 @@ github.com/onsi/ginkgo/reporters/stenographer
 github.com/onsi/ginkgo/reporters/stenographer/support/go-colorable
 github.com/onsi/ginkgo/reporters/stenographer/support/go-isatty
 github.com/onsi/ginkgo/types
-# github.com/onsi/gomega v1.7.1
+# github.com/onsi/gomega v1.9.0
 github.com/onsi/gomega
 github.com/onsi/gomega/format
 github.com/onsi/gomega/internal/assertion
@@ -206,6 +206,9 @@ golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
+# golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
+golang.org/x/xerrors
+golang.org/x/xerrors/internal
 # gopkg.in/Graylog2/go-gelf.v2 v2.0.0-20180326133423-4dbb9d721348
 gopkg.in/Graylog2/go-gelf.v2/gelf
 # gopkg.in/fsnotify/fsnotify.v1 v1.4.7
@@ -220,5 +223,5 @@ gopkg.in/mgo.v2/internal/scram
 gopkg.in/tomb.v1
 # gopkg.in/toqueteos/substring.v1 v1.0.2
 gopkg.in/toqueteos/substring.v1
-# gopkg.in/yaml.v2 v2.2.7
+# gopkg.in/yaml.v2 v2.2.8
 gopkg.in/yaml.v2
