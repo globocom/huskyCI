@@ -152,8 +152,9 @@ safety:
         jq -r '.default | to_entries[] | if (.value.version | length) > 0 then "\(.key)\(.value.version)" else "\(.key)" end' Pipfile.lock >> requirements.txt
         sort -u -o requirements.txt requirements.txt
       fi
-      if [ -f requirements.txt ]; then
-        cat requirements.txt | grep '=' | grep -v '#' 1> safety_huskyci_analysis_requirements_raw.txt
+      find . -maxdepth 3 -name requirements.txt -exec cat {} \; > safety_huskyci_analysis_all_requirements.txt
+      if [ -s safety_huskyci_analysis_all_requirements.txt ]; then
+        cat safety_huskyci_analysis_all_requirements.txt | grep '=' | grep -v '#' 1> safety_huskyci_analysis_requirements_raw.txt
         sed -i -e 's/>=/==/g; s/<=/==/g' safety_huskyci_analysis_requirements_raw.txt
         cat safety_huskyci_analysis_requirements_raw.txt | cut -f1 -d "," > safety_huskyci_analysis_requirements.txt
         safety check -r safety_huskyci_analysis_requirements.txt --json > /tmp/safety_huskyci_analysis_output.json 2> /tmp/errorRunning
