@@ -1,7 +1,0 @@
-healthcheck:
-    path: /healthcheck
-    method: GET
-    status: 200
-    match: WORKING
-    allowed_failures: 5
-    use_in_router: true

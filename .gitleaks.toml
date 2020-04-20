@@ -1,8 +1,0 @@
-title = "gitleaks config"
-[whitelist]
-files = [
-  "(.*?)(jpg|gif|doc|pdf|bin)$",
-  "^vendor/(.*?)$",
-  "testdata/(.*?)$",
-  "^.gitleaks.toml$",
-]
