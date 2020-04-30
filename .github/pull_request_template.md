@@ -1,6 +1,8 @@
 ### Description
 
-Motivation for this PR. Linking the related issue is enough.
+Motivation for this PR. Linking the related issue is enough:
+
+Closes #...
 
 ### Proposed Changes
 
