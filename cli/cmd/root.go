@@ -14,26 +14,28 @@ import (
 	"github.com/spf13/viper"
 )
 
-var cfgFile string
+var (
+	cfgFile string
 
-// rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
-	Use:   "huskyci",
-	Short: "huskyci is a CLI to use huskyCI",
-	Long: `huskyci is a CLI to use huskyCI
-	
-huskyCI is an Open Source tool that performs security tests
-inside CI pipelines of multiple projects and centralizes all results 
-into a database for further analysis and metrics.`,
-}
+	rootCmd = &cobra.Command{
+		Use:   "huskyci",
+		Short: "huskyci is the huskyCI command line tool",
+		Long: `
+huskyCI is an open source tool that orchestrates security tests and
+centralizes all results into a database for further analysis and metrics.
+It can perform static security analysis in Python (Bandit and Safety),
+Ruby (Brakeman), JavaScript (Npm Audit and Yarn Audit), Golang (Gosec),
+and Java (SpotBugs plus Find Sec Bugs). It can also audit repositories
+for secrets like AWS Secret Keys, Private SSH Keys, and many others using
+GitLeaks.
+		`,
+	}
+)
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+func Execute() error {
+	return rootCmd.Execute()
 }
 
 func init() {

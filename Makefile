@@ -40,7 +40,7 @@ build-client-linux:
 
 ## Builds CLI to the executable file huskyci-client
 build-cli:
-	cd cli && $(GO) build -o "$(HUSKYCICLIENTBIN)" main.go
+	$(GO) build -o "$(HUSKYCICLIENTBIN)" cli/main.go
 
 ## Builds CLI to the executable file huskyci-client
 build-cli-linux:
@@ -51,7 +51,7 @@ build-containers:
 	chmod +x deployments/scripts/build-containers.sh
 	./deployments/scripts/build-containers.sh
 
-## Checks depencies of the project
+## Checks dependencies of the project
 check-deps:
 	$(GO) mod verify
 	$(GO) mod vendor
@@ -183,7 +183,7 @@ run-client-linux: build-client-linux
 run-client-linux-json: build-client-linux
 	./"$(HUSKYCICLIENTBIN)" JSON
 
-## Perfoms all make tests
+## Performs all make tests
 test: get-test-deps ginkgo coverage
 
 ## Builds and push securityTest containers with the latest tags

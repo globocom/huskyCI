@@ -8,7 +8,7 @@ enry:
     chmod 600 ~/.ssh/huskyci_id_rsa &&
     echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
     echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
-    git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneEnry
+    GIT_TERMINAL_PROMPT=0 git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneEnry
     if [ $? -eq 0 ]; then
       cd code
       enry --json | tr -d '\r\n'
@@ -30,8 +30,13 @@ gitauthors:
     chmod 600 ~/.ssh/huskyci_id_rsa &&
     echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
     echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
-    git clone %GIT_REPO% code --quiet 2> /tmp/errorGitCloneEnry
+    GIT_TERMINAL_PROMPT=0 git clone %GIT_REPO% code --quiet 2> /tmp/errorGitCloneEnry
     cd code
+    git branch -a | egrep 'remotes/origin/master' 1> /dev/null 2> /dev/null
+    if [ $? -ne 0 ]; then
+      echo "{\"authors\":[]}"
+      exit 0
+    fi
     git checkout %GIT_BRANCH% --quiet
     if [ $? -eq 0 ]; then
       for i in $(git log origin/master.. --pretty="%ae" | sort -u); do
@@ -52,7 +57,7 @@ gitauthors:
 gosec:
   name: gosec
   image: huskyci/gosec
-  imageTag: v2.1.0
+  imageTag: v2.2.0
   cmd: |+
     mkdir -p ~/.ssh &&
     echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
@@ -60,7 +65,7 @@ gosec:
     echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
     echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
     cd src
-    git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneGosec
+    GIT_TERMINAL_PROMPT=0 git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneGosec
     if [ $? -eq 0 ]; then
       cd code
       touch results.json
@@ -85,9 +90,11 @@ bandit:
      chmod 600 ~/.ssh/huskyci_id_rsa &&
      echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
      echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
-     git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneBandit
+     GIT_TERMINAL_PROMPT=0 git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneBandit
      if [ $? -eq 0 ]; then
        cd code
+       chmod +x /usr/local/bin/husky-file-ignore.sh
+       husky-file-ignore.sh 2> /tmp/errorBanditIgnoreScript 1> /dev/null
        bandit -r . -f json 2> /dev/null > results.json
        jq -j -M -c . results.json
      else
@@ -102,14 +109,14 @@ bandit:
 brakeman:
   name: brakeman
   image: huskyci/brakeman
-  imageTag: "4.7.2"
+  imageTag: "4.8.0"
   cmd: |+
     mkdir -p ~/.ssh &&
     echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
     chmod 600 ~/.ssh/huskyci_id_rsa &&
     echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
     echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
-    git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneBrakeman
+    GIT_TERMINAL_PROMPT=0 git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneBrakeman
     if [ $? -eq 0 ]; then
       if [ -d /code/app ]; then
         brakeman -q -o results.json /code
@@ -138,15 +145,16 @@ safety:
     chmod 600 ~/.ssh/huskyci_id_rsa &&
     echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
     echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
-    git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneSafety
+    GIT_TERMINAL_PROMPT=0 git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneSafety
     if [ $? -eq 0 ]; then
       cd code
       if [ -f Pipfile.lock ]; then
         jq -r '.default | to_entries[] | if (.value.version | length) > 0 then "\(.key)\(.value.version)" else "\(.key)" end' Pipfile.lock >> requirements.txt
         sort -u -o requirements.txt requirements.txt
       fi
-      if [ -f requirements.txt ]; then
-        cat requirements.txt | grep '=' | grep -v '#' 1> safety_huskyci_analysis_requirements_raw.txt
+      find . -maxdepth 3 -name requirements.txt -exec cat {} \; > safety_huskyci_analysis_all_requirements.txt
+      if [ -s safety_huskyci_analysis_all_requirements.txt ]; then
+        cat safety_huskyci_analysis_all_requirements.txt | grep '=' | grep -v '#' 1> safety_huskyci_analysis_requirements_raw.txt
         sed -i -e 's/>=/==/g; s/<=/==/g' safety_huskyci_analysis_requirements_raw.txt
         cat safety_huskyci_analysis_requirements_raw.txt | cut -f1 -d "," > safety_huskyci_analysis_requirements.txt
         safety check -r safety_huskyci_analysis_requirements.txt --json > /tmp/safety_huskyci_analysis_output.json 2> /tmp/errorRunning
@@ -176,14 +184,14 @@ safety:
 npmaudit:
   name: npmaudit
   image: huskyci/npmaudit
-  imageTag: "6.13.1"
+  imageTag: "6.13.6"
   cmd: |+
     mkdir -p ~/.ssh &&
     echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
     chmod 600 ~/.ssh/huskyci_id_rsa &&
     echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
     echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
-    git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneNpmAudit
+    GIT_TERMINAL_PROMPT=0 git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneNpmAudit
     if [ $? -eq 0 ]; then
       cd code
       if [ -f package-lock.json ]; then
@@ -206,18 +214,18 @@ npmaudit:
 yarnaudit:
   name: yarnaudit
   image: huskyci/yarnaudit
-  imageTag: "1.19.2"
+  imageTag: "1.21.1"
   cmd: |+
     mkdir -p ~/.ssh &&
     echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
     chmod 600 ~/.ssh/huskyci_id_rsa &&
     echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
     echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
-    git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneYarnAudit
+    GIT_TERMINAL_PROMPT=0 git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneYarnAudit
     if [ $? -eq 0 ]; then
         cd code
         if [ -f yarn.lock ]; then
-            yarn audit --groups dependencies --json > /tmp/results.json 2> /tmp/errorYarnAudit
+            yarn audit --level moderate --prod --groups dependencies --json > /tmp/results.json 2> /tmp/errorYarnAudit
             if [ ! -s /tmp/errorYarnAudit ]; then
                 jq -c -M -j --slurp '{advisories: (. | map(select(.type == "auditAdvisory") | .data.advisory)), metadata: (. | map(select(.type == "auditSummary") | .data) | add)}' /tmp/results.json > /tmp/output.json
                 cat /tmp/output.json
@@ -249,7 +257,7 @@ spotbugs:
     chmod 600 ~/.ssh/huskyci_id_rsa &&
     echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
     echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
-    git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneSpotBugs
+    GIT_TERMINAL_PROMPT=0 git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneSpotBugs
     if [ $? -eq 0 ]; then
        cd code
        if [ -f "pom.xml" ]; then
@@ -305,7 +313,7 @@ gitleaks:
     chmod 600 ~/.ssh/huskyci_id_rsa &&
     echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
     echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
-    git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneGitleaks
+    GIT_TERMINAL_PROMPT=0 git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneGitleaks
     if [ $? -eq 0 ]; then
         touch /tmp/results.json
         timeout -t 360 $(which gitleaks) --log=warn --report=/tmp/results.json --repo-path=./code --branch=%GIT_BRANCH% --repo-config &> /tmp/errorGitleaks

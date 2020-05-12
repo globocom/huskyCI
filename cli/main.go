@@ -6,8 +6,12 @@ package main
 
 import (
 	"github.com/globocom/huskyCI/cli/cmd"
+	"github.com/globocom/huskyCI/cli/errorcli"
 )
 
 func main() {
-	cmd.Execute()
+	err := cmd.Execute()
+	if err != nil {
+		errorcli.Handle(err)
+	}
 }

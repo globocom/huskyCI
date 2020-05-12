@@ -22,7 +22,7 @@ func analyzeGitAuthors(gitAuthorsScan *SecTestScanInfo) error {
 
 	// Unmarshall rawOutput into finalOutput, that is a GitAuthors struct.
 	if err := json.Unmarshal([]byte(gitAuthorsScan.Container.COutput), &gitAuthorsOutput); err != nil {
-		log.Error("analyzeGitAuthors", "GITAUTHORS", 1002, gitAuthorsScan.Container.COutput, err)
+		log.Error("analyzeGitAuthors", "GITAUTHORS", 1035, gitAuthorsScan.Container.COutput, err)
 		gitAuthorsScan.ErrorFound = err
 		gitAuthorsScan.prepareContainerAfterScan()
 		return err

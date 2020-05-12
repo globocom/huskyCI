@@ -94,3 +94,24 @@ func CreateConfigFile(path string, debug bool) (string, error) {
 	}
 	return configFile, nil
 }
+
+// GetHuskyZipFilePath returns "$HOME/.huskyci/compressed-code.zip" and an error.
+// If .huskyci folder is not present, the CLI will create it.
+func GetHuskyZipFilePath() (string, error) {
+
+	var fullFilePath string
+
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return fullFilePath, err
+	}
+
+	huskyHome, err := CheckAndCreateConfigFolder(home, false)
+	if err != nil {
+		return fullFilePath, err
+	}
+
+	fullFilePath = fmt.Sprintf("%s/%s", huskyHome, "compressed-code.zip")
+
+	return fullFilePath, nil
+}

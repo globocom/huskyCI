@@ -16,3 +16,4 @@ huskyci-client
 .scannerwork/
 sonar-project.properties
 mongo-init.js
+*.zip

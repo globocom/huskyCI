@@ -20,7 +20,7 @@ Developers can set up a new stage into their CI pipelines to check for vulnerabi
 
 <p align="center"><img src="huskyCI-stage.png"/></p>
 
-If security issues are found in the code, the severity, the confidence, the file, the line, and many more useful information can be shown, as exemplified: 
+If security issues are found in the code, the severity, the confidence, the file, the line, and many more useful information can be shown, as exemplified:
 
 ```
 [HUSKYCI][*] poc-python-bandit -> https://github.com/globocom/huskyCI.git
@@ -34,9 +34,9 @@ If security issues are found in the code, the severity, the confidence, the file
 [HUSKYCI][!] File: ./main.py
 [HUSKYCI][!] Line: 7
 [HUSKYCI][!] Code:
-6 
+6
 7 exec(command)
-8 
+8
 
 [HUSKYCI][SUMMARY] Python -> huskyci/bandit:1.6.2
 [HUSKYCI][SUMMARY] High: 0
@@ -56,11 +56,11 @@ ERROR: Job failed: exit code 1
 
 ## Getting Started
 
-You can try huskyCI by setting up a local environment using Docker Compose following [this guide](http://201.7.182.242/docs/development/set-up-environment).
+You can try huskyCI by setting up a local environment using Docker Compose following [this guide](https://huskyci.opensource.globo.com/docs/development/set-up-environment).
 
 ## Documentation
 
-All guides and the full documentation can be found in the [official documentation page](http://201.7.182.242/docs/quickstart/overview).
+All guides and the full documentation can be found in the [official documentation page](https://huskyci.opensource.globo.com/docs/quickstart/overview).
 
 ## Contributing
 

@@ -12,6 +12,7 @@ FROM python:3.6-alpine
 
 COPY --from=builder /usr/local/lib/python3.6 /usr/local/lib/python3.6
 COPY --from=builder /usr/local/bin/bandit /usr/local/bin/bandit
+COPY husky-file-ignore.sh /usr/local/bin/husky-file-ignore.sh
 
 # Add packages that we need in the final image on runtime
 RUN apk add --no-cache git jq bash openssh-client 
