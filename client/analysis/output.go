@@ -440,9 +440,9 @@ func printSTDOUTOutputTFSec(issues []types.HuskyCIVulnerability) {
 		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
 		fmt.Printf("[HUSKYCI][!] Severity: %s\n", issue.Severity)
 		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
-		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
 		fmt.Printf("[HUSKYCI][!] File: %s\n", issue.File)
 		fmt.Printf("[HUSKYCI][!] Line: %s\n", issue.Line)
+		fmt.Printf("[HUSKYCI][!] Code: %s\n", issue.Code)
 	}
 }
 
