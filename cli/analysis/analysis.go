@@ -61,7 +61,8 @@ func (a *Analysis) CheckPath(path string) error {
 	}
 
 	for language := range a.getAvailableSecurityTests(a.Languages) {
-		fmt.Println(fmt.Sprintf("[HUSKYCI] %s found.", language))
+		s := fmt.Sprintf("[HUSKYCI] %s found.", language)
+		fmt.Println(s)
 	}
 
 	return nil
