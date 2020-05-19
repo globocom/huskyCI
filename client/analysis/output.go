@@ -68,9 +68,9 @@ func printSTDOUTOutput(analysis types.Analysis) {
 	printSTDOUTOutputSpotBugs(outputJSON.JavaResults.HuskyCISpotBugsOutput.HighVulns)
 
 	// tfsec
-	printSTDOUTOutputSpotBugs(outputJSON.HclResults.HuskyCITFSecOutput.LowVulns)
-	printSTDOUTOutputSpotBugs(outputJSON.HclResults.HuskyCITFSecOutput.MediumVulns)
-	printSTDOUTOutputSpotBugs(outputJSON.HclResults.HuskyCITFSecOutput.HighVulns)
+	printSTDOUTOutputTFSec(outputJSON.HclResults.HuskyCITFSecOutput.LowVulns)
+	printSTDOUTOutputTFSec(outputJSON.HclResults.HuskyCITFSecOutput.MediumVulns)
+	printSTDOUTOutputTFSec(outputJSON.HclResults.HuskyCITFSecOutput.HighVulns)
 
 	printAllSummary(analysis)
 }
