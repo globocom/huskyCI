@@ -12,7 +12,7 @@ type TFSecOutput struct {
 	Results  []TFSecResult   `json:"results"`
 }
 
-// TFSecResult is the struct that holds detailed information of issues from TFSec output.
+// TFSecResult is the struct that holds detailed information of results from TFSec output.
 type TFSecResult struct {
 	RuleID      string   `json:"rule_id"`
 	Link        string   `json:"link"`
@@ -21,6 +21,7 @@ type TFSecResult struct {
 	Severity    string   `json:"severity"`
 }
 
+// Location is the struct that holds detailed information of location from each result
 type Location struct {
 	Filename  string `json:"filename"`
 	StartLine string `json:"start_line"`
