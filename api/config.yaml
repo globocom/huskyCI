@@ -333,3 +333,28 @@ gitleaks:
   type: Generic
   default: true
   timeOutInSeconds: 360
+
+tfsec:
+  name: tfsec
+  image: huskyci/tfsec
+  imageTag: "v0.19.0"
+  cmd: |+
+    mkdir -p ~/.ssh &&
+    echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
+    chmod 600 ~/.ssh/huskyci_id_rsa &&
+    echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
+    echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
+    GIT_TERMINAL_PROMPT=0 git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneTFSec
+    if [ $? -eq 0 ]; then
+        tfsec code --format=json | grep -v "WARNING: skipped" > pre-results.json
+        cat pre-results.json | grep -v "WARNING: skipped" > results.json
+        echo "{\"warnings\":\"$(cat pre-results.json | grep "WARNING: skipped")\"}" >> warning.json
+        cat results.json warning.json | jq -s add | jq -j -M -c .
+    else
+      echo "ERROR_CLONING"
+      cat /tmp/errorGitCloneTFSec
+    fi
+  type: Language
+  language: HCL
+  default: true
+  timeOutInSeconds: 360
