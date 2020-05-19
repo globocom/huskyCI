@@ -2,4 +2,10 @@
 # https://hub.docker.com/r/huskyci/tfsec/
 FROM golang:1.13-alpine
 
-RUN env GO111MODULE=on go get -u github.com/liamg/tfsec/cmd/tfsec
+ARG TFSEC_VERSION=v0.19.0
+
+RUN wget https://github.com/liamg/tfsec/releases/download/${TFSEC_VERSION}/tfsec-linux-amd64
+
+RUN mv tfsec-linux-amd64 tfsec
+
+RUN chmod +x tfsec

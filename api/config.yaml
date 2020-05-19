@@ -346,7 +346,7 @@ tfsec:
     echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
     GIT_TERMINAL_PROMPT=0 git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneTFSec
     if [ $? -eq 0 ]; then
-        tfsec code --format=json | grep -v "WARNING: skipped" > pre-results.json
+        ./tfsec code --format=json | grep -v "WARNING: skipped" > pre-results.json
         cat pre-results.json | grep -v "WARNING: skipped" > results.json
         echo "{\"warnings\":\"$(cat pre-results.json | grep "WARNING: skipped")\"}" >> warning.json
         cat results.json warning.json | jq -s add | jq -j -M -c .
