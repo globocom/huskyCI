@@ -24,6 +24,6 @@ type TFSecResult struct {
 // Location is the struct that holds detailed information of location from each result
 type Location struct {
 	Filename  string `json:"filename"`
-	StartLine string `json:"start_line"`
-	EndLine   string `json:"end_line"`
+	StartLine int    `json:"start_line"`
+	EndLine   int    `json:"end_line"`
 }

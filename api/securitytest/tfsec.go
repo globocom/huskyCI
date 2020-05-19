@@ -7,6 +7,7 @@ package securitytest
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
@@ -30,8 +31,8 @@ type TFSecResult struct {
 // Location is the struct that holds detailed information of location from each result
 type Location struct {
 	Filename  string `json:"filename"`
-	StartLine string `json:"start_line"`
-	EndLine   string `json:"end_line"`
+	StartLine int    `json:"start_line"`
+	EndLine   int    `json:"end_line"`
 }
 
 func analyzeTFSec(tfsecScan *SecTestScanInfo) error {
@@ -69,8 +70,8 @@ func (tfsecScan *SecTestScanInfo) prepareTFSecVulns() {
 		tfsecVuln.SecurityTool = "TFSec"
 		tfsecVuln.Severity = result.Severity
 		tfsecVuln.Details = result.RuleID + " @ [" + result.Description + "]"
-		startLine := result.Location.StartLine
-		endLine := result.Location.EndLine
+		startLine := strconv.Itoa(result.Location.StartLine)
+		endLine := strconv.Itoa(result.Location.EndLine)
 		tfsecVuln.Line = startLine
 		tfsecVuln.Code = fmt.Sprintf("Code beetween Line %s and Line %s.", startLine, endLine)
 		tfsecVuln.File = result.Location.Filename
