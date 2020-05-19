@@ -174,6 +174,8 @@ func (a *Analysis) getAvailableSecurityTests(languages []string) map[string][]st
 			list[language] = []string{"huskyci/npmaudit", "huskyci/yarnaudit"}
 		case "Java":
 			list[language] = []string{"huskyci/spotbugs"}
+		case "HCL":
+			list[language] = []string{"huskyci/hcl"}
 		}
 	}
 
