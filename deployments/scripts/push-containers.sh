@@ -17,6 +17,7 @@ yarnAuditVersion=$(docker run --rm huskyci/yarnaudit:latest yarn audit --version
 safetyVersion=$(docker run --rm huskyci/safety:latest safety --version | awk -F " " '{print $3}')
 gitleaksVersion=$(docker run --rm huskyci/gitleaks:latest gitleaks --version)
 spotbugsVersion=$(docker run --rm huskyci/spotbugs:latest cat /opt/spotbugs/version)
+tfsecVersion=$(docker run --rm huskyci/tfsec:latest tfsec -v)
 
 docker tag "huskyci/bandit:latest" "huskyci/bandit:$banditVersion"
 docker tag "huskyci/brakeman:latest" "huskyci/brakeman:$brakemanVersion"
@@ -28,6 +29,7 @@ docker tag "huskyci/yarnaudit:latest" "huskyci/yarnaudit:$yarnAuditVersion"
 docker tag "huskyci/safety:latest" "huskyci/safety:$safetyVersion"
 docker tag "huskyci/gitleaks:latest" "huskyci/gitleaks:$gitleaksVersion"
 docker tag "huskyci/spotbugs:latest" "huskyci/spotbugs:$spotbugsVersion"
+docker tag "huskyci/tfsec:latest" "huskyci/tfsec:$tfsecVersion"
 
 docker push "huskyci/bandit:latest" && docker push "huskyci/bandit:$banditVersion"
 docker push "huskyci/brakeman:latest" && docker push "huskyci/brakeman:$brakemanVersion"
@@ -39,3 +41,4 @@ docker push "huskyci/yarnaudit:latest" && docker push "huskyci/yarnaudit:$yarnAu
 docker push "huskyci/safety:latest" && docker push "huskyci/safety:$safetyVersion"
 docker push "huskyci/gitleaks:latest" && docker push "huskyci/gitleaks:$gitleaksVersion"
 docker push "huskyci/spotbugs:latest" && docker push "huskyci/spotbugs:$spotbugsVersion"
+docker push "huskyci/tfsec:latest" && docker push "huskyci/tfsec:$tfsecVersion"

@@ -18,6 +18,7 @@ yarnAuditVersion=$(docker run --rm huskyci/yarnaudit:latest yarn audit --version
 safetyVersion=$(docker run --rm huskyci/safety:latest safety --version | awk -F " " '{print $3}')
 gitleaksVersion=$(docker run --rm huskyci/gitleaks:latest gitleaks --version)
 spotbugsVersion=$(docker run --rm huskyci/spotbugs:latest cat /opt/spotbugs/version)
+tfsecVersion=$(docker run --rm huskyci/tfsec:latest tfsec -v)
 
 echo "bandit: $banditVersion"
 echo "brakeman: $brakemanVersion"
@@ -29,3 +30,4 @@ echo "yarnauditVersion: $yarnAuditVersion"
 echo "safetyVersion: $safetyVersion"
 echo "gitleaksVersion: $gitleaksVersion"
 echo "spotbugsVersion: $spotbugsVersion"
+echo "tfsecVersion: $tfsecVersion"
