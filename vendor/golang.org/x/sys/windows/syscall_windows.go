@@ -701,8 +701,8 @@ const socket_error = uintptr(^uint32(0))
 //sys	WSACleanup() (err error) [failretval==socket_error] = ws2_32.WSACleanup
 //sys	WSAIoctl(s Handle, iocc uint32, inbuf *byte, cbif uint32, outbuf *byte, cbob uint32, cbbr *uint32, overlapped *Overlapped, completionRoutine uintptr) (err error) [failretval==socket_error] = ws2_32.WSAIoctl
 //sys	socket(af int32, typ int32, protocol int32) (handle Handle, err error) [failretval==InvalidHandle] = ws2_32.socket
-//sys	sendto(s Handle, buf []byte, flags int, to unsafe.Pointer, tolen int32) (err error) [failretval==socket_error] = ws2_32.sendto
-//sys	recvfrom(s Handle, buf []byte, flags int, from *RawSockaddrAny, fromlen *int) (n int, err error) [failretval==-1] = ws2_32.recvfrom
+//sys	sendto(s Handle, buf []byte, flags int32, to unsafe.Pointer, tolen int32) (err error) [failretval==socket_error] = ws2_32.sendto
+//sys	recvfrom(s Handle, buf []byte, flags int32, from *RawSockaddrAny, fromlen *int32) (n int32, err error) [failretval==-1] = ws2_32.recvfrom
 //sys	Setsockopt(s Handle, level int32, optname int32, optval *byte, optlen int32) (err error) [failretval==socket_error] = ws2_32.setsockopt
 //sys	Getsockopt(s Handle, level int32, optname int32, optval *byte, optlen *int32) (err error) [failretval==socket_error] = ws2_32.getsockopt
 //sys	bind(s Handle, name unsafe.Pointer, namelen int32) (err error) [failretval==socket_error] = ws2_32.bind
@@ -1134,8 +1134,9 @@ func Accept(fd Handle) (nfd Handle, sa Sockaddr, err error) { return 0, nil, sys
 
 func Recvfrom(fd Handle, p []byte, flags int) (n int, from Sockaddr, err error) {
 	var rsa RawSockaddrAny
-	l := int(unsafe.Sizeof(rsa))
-	n, err = recvfrom(fd, p, flags, &rsa, &l)
+	l := int32(unsafe.Sizeof(rsa))
+	n32, err := recvfrom(fd, p, int32(flags), &rsa, &l)
+	n = int(n32)
 	if err != nil {
 		return
 	}
@@ -1148,7 +1149,7 @@ func Sendto(fd Handle, p []byte, flags int, to Sockaddr) (err error) {
 	if err != nil {
 		return err
 	}
-	return sendto(fd, p, flags, ptr, l)
+	return sendto(fd, p, int32(flags), ptr, l)
 }
 
 func SetsockoptTimeval(fd Handle, level, opt int, tv *Timeval) (err error) { return syscall.EWINDOWS }
@@ -1180,7 +1181,12 @@ type IPv6Mreq struct {
 	Interface uint32
 }
 
-func GetsockoptInt(fd Handle, level, opt int) (int, error) { return -1, syscall.EWINDOWS }
+func GetsockoptInt(fd Handle, level, opt int) (int, error) {
+	v := int32(0)
+	l := int32(unsafe.Sizeof(v))
+	err := Getsockopt(fd, int32(level), int32(opt), (*byte)(unsafe.Pointer(&v)), &l)
+	return int(v), err
+}
 
 func SetsockoptLinger(fd Handle, level, opt int, l *Linger) (err error) {
 	sys := sysLinger{Onoff: uint16(l.Onoff), Linger: uint16(l.Linger)}
