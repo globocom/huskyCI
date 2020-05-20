@@ -14,7 +14,7 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
-	"github.com/globocom/huskyCI/api/context"
+	apiContext "github.com/globocom/huskyCI/api/context"
 	"github.com/globocom/huskyCI/api/log"
 	goContext "golang.org/x/net/context"
 )
@@ -37,7 +37,7 @@ const logInfoAPI = "DOCKERAPI"
 
 // NewDocker returns a new docker.
 func NewDocker() (*Docker, error) {
-	configAPI, err := context.DefaultConf.GetAPIConfig()
+	configAPI, err := apiContext.DefaultConf.GetAPIConfig()
 	if err != nil {
 		log.Error(logActionNew, logInfoAPI, 3026, err)
 		return nil, err

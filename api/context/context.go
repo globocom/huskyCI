@@ -93,7 +93,7 @@ type DefaultConfig struct {
 func (dF DefaultConfig) GetAPIConfig() (*APIConfig, error) {
 
 	// load Viper using api/config.yml
-	if err := dF.Caller.SetConfigFile("config", "api/"); err != nil {
+	if err := dF.Caller.SetConfigFile("config", "."); err != nil {
 		fmt.Println("Error reading Viper config: ", err)
 		return nil, err
 	}
