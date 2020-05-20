@@ -19,7 +19,7 @@ jobs:
           name: "Test"
           command: |
             make test
-            mv coverage.html /tmp/artifacts
+            mv api/coverage.html /tmp/artifacts
       - run:
           name: "Lint"
           command: |
