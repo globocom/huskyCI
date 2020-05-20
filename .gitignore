@@ -10,6 +10,7 @@
 *.pem
 dockers.env
 sonar-project.properties
+sonarqube.json
 mongo-init.js
 
 api/vendor/
@@ -23,6 +24,6 @@ d.out
 e.out
 coverage.html
 
-huskyci
-huskyci-client
-huskyci-cli
+huskyci-api-bin
+huskyci-client-bin
+huskyci-cli-bin

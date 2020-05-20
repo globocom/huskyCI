@@ -38,10 +38,5 @@ jobs:
           command: |
             make check-sec
 
-      - run:
-          name: "Goveralls"
-          command: |
-            $GOPATH/bin/goveralls -coverprofile=c.out -service=circle-ci -repotoken=$COVERALLS_TOKEN
-
       - store_artifacts:
           path: /tmp/artifacts

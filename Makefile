@@ -7,10 +7,11 @@ GOPATH ?= $(shell $(GO) env GOPATH)
 GOBIN ?= $(GOPATH)/bin
 GOLINT ?= $(GOBIN)/golint
 GOSEC ?= $(GOBIN)/gosec
+GOVERALLS ?= $(GOBIN)/goveralls
 
-HUSKYCIBIN ?= huskyci
-HUSKYCICLIENTBIN ?= huskyci-client
-HUSKYCICLIBIN ?= huskyci-cli
+HUSKYCI-API-BIN ?= huskyci-api-bin
+HUSKYCI-CLIENT-BIN ?= huskyci-client-bin
+HUSKYCI-CLI-BIN ?= huskyci-cli-bin
 
 COLOR_RESET = \033[0m
 COLOR_COMMAND = \033[36m
@@ -30,27 +31,27 @@ build-all: build-api build-api-linux build-client build-client-linux build-cli b
 
 ## Builds API code into a binary
 build-api:
-	cd api && $(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCICLIENTBIN)" server.go
+	cd api && $(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCI-API-BIN)" server.go
 
 ## Builds API code using linux architecture into a binary
 build-api-linux:
-	cd api && GOOS=linux GOARCH=amd64 $(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCICLIENTBIN)" server.go
+	cd api && GOOS=linux GOARCH=amd64 $(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCI-API-BIN)" server.go
 
 ## Builds client code into a binary
 build-client:
-	cd client/cmd && $(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCIBIN)" main.go
+	cd client/cmd && $(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCI-CLIENT-BIN)" main.go
 
 ## Builds client code using linux architecture into a binary
 build-client-linux:
-	cd client/cmd && GOOS=linux GOARCH=amd64 $(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCICLIENTBIN)" main.go
+	cd client/cmd && GOOS=linux GOARCH=amd64 $(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCI-CLIENT-BIN)" main.go
 
 ## Builds cli code into a binary
 build-cli:
-	cd cli && $(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCICLIBIN)" main.go
+	cd cli && $(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCI-CLI-BIN)" main.go
 
 ## Builds cli code using linux architecture into a binary
 build-cli-linux:
-	cd cli && GOOS=linux GOARCH=amd64 $(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCICLIBIN)" main.go
+	cd cli && GOOS=linux GOARCH=amd64 $(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCI-CLI-BIN)" main.go
 
 ## Builds all securityTest containers locally with the latest tags
 build-containers:
@@ -66,7 +67,9 @@ check-deps:
 ## Runs a security static analysis using Gosec
 check-sec:
 	$(GO) get -u github.com/securego/gosec/cmd/gosec
-	$(GOSEC) ./... 2> /dev/null
+	cd api && $(GOSEC) ./...
+	cd client && $(GOSEC) ./...
+	cd cli && $(GOSEC) ./...
 
 ## Checks .env file from huskyCI
 check-env:
@@ -96,6 +99,11 @@ generate-local-token:
 generate-passwords:
 	chmod +x deployments/scripts/generate-env.sh
 	./deployments/scripts/generate-env.sh
+
+## Sends coverage report to coveralls
+goveralls:
+	$(GO) get -u github.com/mattn/goveralls
+	$(GOVERALLS) -coverprofile=c.out -service=circle-ci -repotoken=$COVERALLS_TOKEN
 
 ## Prints help message
 help:
@@ -136,27 +144,27 @@ restart-huskyci-api:
 
 ## Runs huskyci-client
 run-cli: build-cli
-	./cli/"$(HUSKYCICLIBIN)" run
+	./cli/"$(HUSKYCI-CLI-BIN)" run
 
 ## Run huskyci-client compiling it in Linux arch
 run-cli-linux: build-cli-linux
-	./cli/"$(HUSKYCICLIBIN)" run
+	./cli/"$(HUSKYCI-CLI-BIN)" run
 
 ## Runs huskyci-client
 run-client: build-client
-	./client/cmd/"$(HUSKYCICLIENTBIN)"
+	./client/cmd/"$(HUSKYCI-CLIENT-BIN)"
 
 ## Runs huskyci-client with JSON output
 run-client-json: build-client
-	./client/cmd/"$(HUSKYCICLIENTBIN)" JSON
+	./client/cmd/"$(HUSKYCI-CLIENT-BIN)" JSON
 
 ## Run huskyci-client compiling it in Linux arch
 run-client-linux: build-client-linux
-	./client/cmd/"$(HUSKYCICLIENTBIN)"
+	./client/cmd/"$(HUSKYCI-CLIENT-BIN)"
 
 ## Run huskyci-client compiling it in Linux arch with JSON output
 run-client-linux-json: build-client-linux
-	./client/cmd/"$(HUSKYCICLIENTBIN)" JSON
+	./client/cmd/"$(HUSKYCI-CLIENT-BIN)" JSON
 
 ## Performs all unit tests using ginkgo
 test:
