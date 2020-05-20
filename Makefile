@@ -5,10 +5,8 @@ GO ?= go
 GOROOT ?= $(shell $(GO) env GOROOT)
 GOPATH ?= $(shell $(GO) env GOPATH)
 GOBIN ?= $(GOPATH)/bin
-GOCILINT ?= ./bin/golangci-lint
 GOLINT ?= $(GOBIN)/golint
 GOSEC ?= $(GOBIN)/gosec
-GINKGO ?= $(GOBIN)/ginkgo
 
 HUSKYCIBIN ?= huskyci
 HUSKYCICLIENTBIN ?= huskyci-client
@@ -32,11 +30,11 @@ build-all: build-api build-api-linux build-client build-client-linux build-cli b
 
 ## Builds API code into a binary
 build-api:
-	cd api && $(GO) build -o "$(HUSKYCICLIENTBIN)" server.go
+	cd api && $(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCICLIENTBIN)" server.go
 
 ## Builds API code using linux architecture into a binary
 build-api-linux:
-	cd api && GOOS=linux GOARCH=amd64 $(GO) build -o "$(HUSKYCICLIENTBIN)" server.go
+	cd api && GOOS=linux GOARCH=amd64 $(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCICLIENTBIN)" server.go
 
 ## Builds client code into a binary
 build-client:
@@ -44,15 +42,15 @@ build-client:
 
 ## Builds client code using linux architecture into a binary
 build-client-linux:
-	cd client/cmd && GOOS=linux GOARCH=amd64 $(GO) build -o "$(HUSKYCICLIENTBIN)" main.go
+	cd client/cmd && GOOS=linux GOARCH=amd64 $(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCICLIENTBIN)" main.go
 
 ## Builds cli code into a binary
 build-cli:
-	cd cli && $(GO) build -o "$(HUSKYCICLIBIN)" main.go
+	cd cli && $(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCICLIBIN)" main.go
 
 ## Builds cli code using linux architecture into a binary
 build-cli-linux:
-	cd cli && GOOS=linux GOARCH=amd64 $(GO) build -o "$(HUSKYCICLIBIN)" main.go
+	cd cli && GOOS=linux GOARCH=amd64 $(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCICLIBIN)" main.go
 
 ## Builds all securityTest containers locally with the latest tags
 build-containers:
@@ -66,7 +64,9 @@ check-deps:
 	cd client && $(GO) mod tidy && $(GO) mod verify
 
 ## Runs a security static analysis using Gosec
-check-sec: get-gosec-deps gosec
+check-sec:
+	$(GO) get -u github.com/securego/gosec/cmd/gosec
+	$(GOSEC) ./... 2> /dev/null
 
 ## Checks .env file from huskyCI
 check-env:
@@ -76,7 +76,6 @@ check-env:
 check-containers-version:
 	chmod +x deployments/scripts/check-containers-version.sh
 	./deployments/scripts/check-containers-version.sh
-
 
 ## Composes huskyCI environment using docker-compose
 compose:
@@ -98,29 +97,6 @@ generate-passwords:
 	chmod +x deployments/scripts/generate-env.sh
 	./deployments/scripts/generate-env.sh
 
-## Gets all gosec dependencies
-get-gosec-deps:
-	$(GO) get -u github.com/securego/gosec/cmd/gosec
-
-## Gets all link dependencies
-get-lint-deps:
-	curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s v1.27.0
-	$(GO) get -u golang.org/x/lint/golint
-
-## Runs go lint
-golint:
-	cd api && $(GOLINT) $(shell $(GO) list ./...)
-	cd client && $(GOLINT) $(shell $(GO) list ./...)
-	cd cli && $(GOLINT) $(shell $(GO) list ./...)
-
-## Runs Golangci-lint
-golangci-lint:
-	$(GOCILINT) run
-
-## Runs gosec
-gosec:
-	$(GOSEC) ./... 2> /dev/null
-
 ## Prints help message
 help:
 	printf "\n${COLOR_YELLOW}${PROJECT}\n------\n${COLOR_RESET}"
@@ -139,7 +115,11 @@ help:
 install: create-certs prepare-local-mongodb compose generate-passwords generate-local-token
 
 ## Runs all huskyCI lint
-lint: get-lint-deps golint golangci-lint
+lint:
+	$(GO) get -u golang.org/x/lint/golint
+	cd api && $(GOLINT) $(shell $(GO) list ./...)
+	cd client && $(GOLINT) $(shell $(GO) list ./...)
+	cd cli && $(GOLINT) $(shell $(GO) list ./...)
 
 ## Set up local mongoDB settings file
 prepare-local-mongodb:
