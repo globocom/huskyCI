@@ -12,6 +12,7 @@ GINKGO ?= $(GOBIN)/ginkgo
 
 HUSKYCIBIN ?= huskyci
 HUSKYCICLIENTBIN ?= huskyci-client
+HUSKYCICLIBIN ?= huskyci-cli
 
 COLOR_RESET = \033[0m
 COLOR_COMMAND = \033[36m
@@ -26,35 +27,40 @@ DATE := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 COMMIT := $(shell git rev-parse $(TAG))
 LDFLAGS := '-X "main.version=$(TAG)" -X "main.commit=$(COMMIT)" -X "main.date=$(DATE)"'
 
-## Builds Go project to the executable file huskyci
-build:
-	cd api && GOOS=linux GOARCH=amd64 $(GO) build -mod vendor -ldflags $(LDFLAGS) -o "$(HUSKYCIBIN)"
+## Builds API code into a binary
+build-api:
+	$(GO) build -o "$(HUSKYCICLIENTBIN)" /api/server.go
 
-## Builds client to the executable file huskyci-client
+## Builds API code using linux architecture into a binary
+build-api-linux:
+	GOOS=linux GOARCH=amd64 $(GO) build -o "$(HUSKYCICLIENTBIN)" /api/server.go
+
+## Builds client code into a binary
 build-client:
-	cd client/cmd && $(GO) build -mod vendor -o "$(HUSKYCICLIENTBIN)" && mv "$(HUSKYCICLIENTBIN)" ../..
+	$(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCIBIN)" client/cmd/main.go
 
-## Builds client to the executable file huskyci-client
+## Builds client code using linux architecture into a binary
 build-client-linux:
-	cd client/cmd && GOOS=linux GOARCH=amd64 $(GO) build -mod vendor -o "$(HUSKYCICLIENTBIN)" && mv "$(HUSKYCICLIENTBIN)" ../..
+	GOOS=linux GOARCH=amd64 $(GO) build -o "$(HUSKYCICLIENTBIN)" client/cmd/main.go
 
-## Builds CLI to the executable file huskyci-client
+## Builds cli code into a binary
 build-cli:
-	$(GO) build -o "$(HUSKYCICLIENTBIN)" cli/main.go
+	$(GO) build -o "$(HUSKYCICLIBIN)" cli/main.go
 
-## Builds CLI to the executable file huskyci-client
+## Builds cli code using linux architecture into a binary
 build-cli-linux:
-	cd cli && GOOS=linux GOARCH=amd64 $(GO) build -o "$(HUSKYCICLIENTBIN)" main.go
+	GOOS=linux GOARCH=amd64 $(GO) build -o "$(HUSKYCICLIBIN)" cli/main.go
 
-## Builds all securityTest containers locally with the tag latest
+## Builds all securityTest containers locally with the latest tags
 build-containers:
 	chmod +x deployments/scripts/build-containers.sh
 	./deployments/scripts/build-containers.sh
 
-## Checks dependencies of the project
+## Checks dependencies
 check-deps:
-	$(GO) mod verify
-	$(GO) mod vendor
+	cd api && $(GO) mod tidy && $(GO) mod verify
+	cd cli && $(GO) mod tidy && $(GO) mod verify
+	cd client && $(GO) mod tidy && $(GO) mod verify
 
 ## Runs a security static analysis using Gosec
 check-sec: get-gosec-deps gosec
@@ -68,10 +74,6 @@ check-containers-version:
 	chmod +x deployments/scripts/check-containers-version.sh
 	./deployments/scripts/check-containers-version.sh
 
-## Run tests with code coverage
-coverage:
-	$(GO) test -mod vendor ./... -coverprofile=c.out
-	$(GO) tool cover -html=c.out -o coverage.html
 
 ## Composes huskyCI environment using docker-compose
 compose:
@@ -101,16 +103,6 @@ get-gosec-deps:
 get-lint-deps:
 	curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s v1.21.0
 	$(GO) get -u golang.org/x/lint/golint
-
-## Gets all go test dependencies
-get-test-deps:
-	$(GO) get -u github.com/onsi/ginkgo/ginkgo
-	$(GO) get -u github.com/onsi/gomega/...
-	$(GO) get -u github.com/mattn/goveralls
-
-## Runs ginkgo
-ginkgo:
-	$(GINKGO) -r -keepGoing
 
 ## Runs go lint
 golint:
@@ -161,30 +153,33 @@ restart-huskyci-api:
 
 ## Runs huskyci-client
 run-cli: build-cli
-	cd cli && ./"$(HUSKYCICLIENTBIN)" run
+	./cli/"$(HUSKYCICLIBIN)" run
 
 ## Run huskyci-client compiling it in Linux arch
 run-cli-linux: build-cli-linux
-	cd cli && ./"$(HUSKYCICLIENTBIN)" run
+	./cli/"$(HUSKYCICLIBIN)" run
 
 ## Runs huskyci-client
 run-client: build-client
-	./"$(HUSKYCICLIENTBIN)"
+	./client/cmd/"$(HUSKYCICLIENTBIN)"
 
 ## Runs huskyci-client with JSON output
 run-client-json: build-client
-	./"$(HUSKYCICLIENTBIN)" JSON
+	./client/cmd/"$(HUSKYCICLIENTBIN)" JSON
 
 ## Run huskyci-client compiling it in Linux arch
 run-client-linux: build-client-linux
-	./"$(HUSKYCICLIENTBIN)"
+	./client/cmd/"$(HUSKYCICLIENTBIN)"
 
 ## Run huskyci-client compiling it in Linux arch with JSON output
 run-client-linux-json: build-client-linux
-	./"$(HUSKYCICLIENTBIN)" JSON
+	./client/cmd/"$(HUSKYCICLIENTBIN)" JSON
 
-## Performs all make tests
-test: get-test-deps ginkgo coverage
+## Performs all unit tests using ginkgo
+test:
+	cd api && $(GO) test -coverprofile=c.out ./...
+	cd api && $(GO) tool cover -func=c.out
+	cd api && $(GO) tool cover -html=c.out -o coverage.html
 
 ## Builds and push securityTest containers with the latest tags
 update-containers: build-containers push-containers
