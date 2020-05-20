@@ -9,7 +9,6 @@ require (
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
 	github.com/globocom/glbgelf v0.0.0-20190310030100-36e52796d86a
-	github.com/globocom/huskyCI v0.3.0 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/labstack/echo v3.3.10+incompatible
 	github.com/labstack/gommon v0.3.0 // indirect
