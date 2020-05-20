@@ -27,29 +27,32 @@ DATE := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 COMMIT := $(shell git rev-parse $(TAG))
 LDFLAGS := '-X "main.version=$(TAG)" -X "main.commit=$(COMMIT)" -X "main.date=$(DATE)"'
 
+## Builds all project binaries
+build-all: build-api build-api-linux build-client build-client-linux build-cli build-cli-linux
+
 ## Builds API code into a binary
 build-api:
-	$(GO) build -o "$(HUSKYCICLIENTBIN)" /api/server.go
+	cd api && $(GO) build -o "$(HUSKYCICLIENTBIN)" server.go
 
 ## Builds API code using linux architecture into a binary
 build-api-linux:
-	GOOS=linux GOARCH=amd64 $(GO) build -o "$(HUSKYCICLIENTBIN)" /api/server.go
+	cd api && GOOS=linux GOARCH=amd64 $(GO) build -o "$(HUSKYCICLIENTBIN)" server.go
 
 ## Builds client code into a binary
 build-client:
-	$(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCIBIN)" client/cmd/main.go
+	cd client/cmd && $(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCIBIN)" main.go
 
 ## Builds client code using linux architecture into a binary
 build-client-linux:
-	GOOS=linux GOARCH=amd64 $(GO) build -o "$(HUSKYCICLIENTBIN)" client/cmd/main.go
+	cd client/cmd && GOOS=linux GOARCH=amd64 $(GO) build -o "$(HUSKYCICLIENTBIN)" main.go
 
 ## Builds cli code into a binary
 build-cli:
-	$(GO) build -o "$(HUSKYCICLIBIN)" cli/main.go
+	cd cli && $(GO) build -o "$(HUSKYCICLIBIN)" main.go
 
 ## Builds cli code using linux architecture into a binary
 build-cli-linux:
-	GOOS=linux GOARCH=amd64 $(GO) build -o "$(HUSKYCICLIBIN)" cli/main.go
+	cd cli && GOOS=linux GOARCH=amd64 $(GO) build -o "$(HUSKYCICLIBIN)" main.go
 
 ## Builds all securityTest containers locally with the latest tags
 build-containers:
@@ -101,12 +104,14 @@ get-gosec-deps:
 
 ## Gets all link dependencies
 get-lint-deps:
-	curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s v1.21.0
+	curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s v1.27.0
 	$(GO) get -u golang.org/x/lint/golint
 
 ## Runs go lint
 golint:
-	$(GOLINT) $(shell $(GO) list ./...)
+	cd api && $(GOLINT) $(shell $(GO) list ./...)
+	cd client && $(GOLINT) $(shell $(GO) list ./...)
+	cd cli && $(GOLINT) $(shell $(GO) list ./...)
 
 ## Runs Golangci-lint
 golangci-lint:
@@ -180,6 +185,10 @@ test:
 	cd api && $(GO) test -coverprofile=c.out ./...
 	cd api && $(GO) tool cover -func=c.out
 	cd api && $(GO) tool cover -html=c.out -o coverage.html
+	cd client && $(GO) test -coverprofile=d.out ./...
+	cd client && $(GO) tool cover -func=d.out
+	cd cli && $(GO) test -coverprofile=e.out ./...
+	cd cli && $(GO) tool cover -func=e.out
 
 ## Builds and push securityTest containers with the latest tags
 update-containers: build-containers push-containers
