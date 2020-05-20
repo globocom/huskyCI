@@ -84,6 +84,7 @@ func prepareAllSummary(analysis types.Analysis) {
 	outputJSON.PythonResults = analysis.HuskyCIResults.PythonResults
 	outputJSON.RubyResults = analysis.HuskyCIResults.RubyResults
 	outputJSON.JavaResults = analysis.HuskyCIResults.JavaResults
+	outputJSON.HclResults = analysis.HuskyCIResults.HclResults
 	outputJSON.GenericResults = analysis.HuskyCIResults.GenericResults
 
 	// GoSec summary
@@ -313,7 +314,7 @@ func printAllSummary(analysis types.Analysis) {
 
 	if outputJSON.Summary.TFSecSummary.FoundVuln || outputJSON.Summary.TFSecSummary.FoundInfo {
 		fmt.Println()
-		fmt.Printf("[HUSKYCI][SUMMARY] Java -> %s\n", tfsecVersion)
+		fmt.Printf("[HUSKYCI][SUMMARY] HCL -> %s\n", tfsecVersion)
 		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", outputJSON.Summary.TFSecSummary.HighVuln)
 		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", outputJSON.Summary.TFSecSummary.MediumVuln)
 		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", outputJSON.Summary.TFSecSummary.LowVuln)
