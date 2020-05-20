@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/globocom/huskyCI/client/types"
+	"github.com/globocom/huskyCI/cli/types"
 	"github.com/spf13/viper"
 )
 
