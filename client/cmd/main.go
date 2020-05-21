@@ -35,7 +35,8 @@ func main() {
 
 	// step 1: start analysis and get its RID.
 	if !types.IsJSONoutput {
-		fmt.Println(fmt.Sprintf("[HUSKYCI][*] %s -> %s", config.RepositoryBranch, config.RepositoryURL))
+		s := fmt.Sprintf("[HUSKYCI][*] %s -> %s", config.RepositoryBranch, config.RepositoryURL)
+		fmt.Println(s)
 	}
 	RID, err := analysis.StartAnalysis()
 	if err != nil {
@@ -49,7 +50,8 @@ func main() {
 	// step 2.1: keep querying huskyCI API to check if a given analysis has already finished.
 	huskyAnalysis, err := analysis.MonitorAnalysis(RID)
 	if err != nil {
-		fmt.Println(fmt.Sprintf("[HUSKYCI][ERROR] Monitoring analysis %s: %s", RID, err))
+		s := fmt.Sprintf("[HUSKYCI][ERROR] Monitoring analysis %s: %s", RID, err)
+		fmt.Println(s)
 		os.Exit(1)
 	}
 

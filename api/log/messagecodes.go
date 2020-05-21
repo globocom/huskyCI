@@ -73,6 +73,7 @@ var MsgCode = map[int]string{
 	1037: "Internal error running Yarnaudit: ",
 	1038: "Could not Unmarshall the following gitleaksOutput: ",
 	1039: "Could not Unmarshall the following spotbugsOutput: ",
+	1040: "Could not Unmarshall the following tfsecOutput: ",
 
 	// MongoDB infos
 	21: "Connecting to MongoDB.",

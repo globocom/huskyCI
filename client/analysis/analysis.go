@@ -65,7 +65,7 @@ func StartAnalysis() (string, error) {
 
 	RID := resp.Header.Get("X-Request-Id")
 	if RID == "" {
-		errorMsg := fmt.Sprintf("Error sending request to start analysis. RID is empty!")
+		errorMsg := "Error sending request to start analysis. RID is empty!"
 		return "", errors.New(errorMsg)
 	}
 
