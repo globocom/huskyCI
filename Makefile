@@ -5,13 +5,13 @@ GO ?= go
 GOROOT ?= $(shell $(GO) env GOROOT)
 GOPATH ?= $(shell $(GO) env GOPATH)
 GOBIN ?= $(GOPATH)/bin
-GOCILINT ?= ./bin/golangci-lint
 GOLINT ?= $(GOBIN)/golint
 GOSEC ?= $(GOBIN)/gosec
-GINKGO ?= $(GOBIN)/ginkgo
+GOVERALLS ?= $(GOBIN)/goveralls
 
-HUSKYCIBIN ?= huskyci
-HUSKYCICLIENTBIN ?= huskyci-client
+HUSKYCI-API-BIN ?= huskyci-api-bin
+HUSKYCI-CLIENT-BIN ?= huskyci-client-bin
+HUSKYCI-CLI-BIN ?= huskyci-cli-bin
 
 COLOR_RESET = \033[0m
 COLOR_COMMAND = \033[36m
@@ -26,38 +26,50 @@ DATE := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 COMMIT := $(shell git rev-parse $(TAG))
 LDFLAGS := '-X "main.version=$(TAG)" -X "main.commit=$(COMMIT)" -X "main.date=$(DATE)"'
 
-## Builds Go project to the executable file huskyci
-build:
-	cd api && GOOS=linux GOARCH=amd64 $(GO) build -mod vendor -ldflags $(LDFLAGS) -o "$(HUSKYCIBIN)"
+## Builds all project binaries
+build-all: build-api build-api-linux build-client build-client-linux build-cli build-cli-linux
 
-## Builds client to the executable file huskyci-client
+## Builds API code into a binary
+build-api:
+	cd api && $(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCI-API-BIN)" server.go
+
+## Builds API code using linux architecture into a binary
+build-api-linux:
+	cd api && GOOS=linux GOARCH=amd64 $(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCI-API-BIN)" server.go
+
+## Builds client code into a binary
 build-client:
-	cd client/cmd && $(GO) build -mod vendor -o "$(HUSKYCICLIENTBIN)" && mv "$(HUSKYCICLIENTBIN)" ../..
+	cd client/cmd && $(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCI-CLIENT-BIN)" main.go
 
-## Builds client to the executable file huskyci-client
+## Builds client code using linux architecture into a binary
 build-client-linux:
-	cd client/cmd && GOOS=linux GOARCH=amd64 $(GO) build -mod vendor -o "$(HUSKYCICLIENTBIN)" && mv "$(HUSKYCICLIENTBIN)" ../..
+	cd client/cmd && GOOS=linux GOARCH=amd64 $(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCI-CLIENT-BIN)" main.go
 
-## Builds CLI to the executable file huskyci-client
+## Builds cli code into a binary
 build-cli:
-	$(GO) build -o "$(HUSKYCICLIENTBIN)" cli/main.go
+	cd cli && $(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCI-CLI-BIN)" main.go
 
-## Builds CLI to the executable file huskyci-client
+## Builds cli code using linux architecture into a binary
 build-cli-linux:
-	cd cli && GOOS=linux GOARCH=amd64 $(GO) build -o "$(HUSKYCICLIENTBIN)" main.go
+	cd cli && GOOS=linux GOARCH=amd64 $(GO) build -ldflags $(LDFLAGS) -o "$(HUSKYCI-CLI-BIN)" main.go
 
-## Builds all securityTest containers locally with the tag latest
+## Builds all securityTest containers locally with the latest tags
 build-containers:
 	chmod +x deployments/scripts/build-containers.sh
 	./deployments/scripts/build-containers.sh
 
-## Checks dependencies of the project
+## Checks dependencies
 check-deps:
-	$(GO) mod verify
-	$(GO) mod vendor
+	cd api && $(GO) mod tidy && $(GO) mod verify
+	cd cli && $(GO) mod tidy && $(GO) mod verify
+	cd client && $(GO) mod tidy && $(GO) mod verify
 
 ## Runs a security static analysis using Gosec
-check-sec: get-gosec-deps gosec
+check-sec:
+	$(GO) get -u github.com/securego/gosec/cmd/gosec
+	cd api && $(GOSEC) ./...
+	cd client && $(GOSEC) ./...
+	cd cli && $(GOSEC) ./...
 
 ## Checks .env file from huskyCI
 check-env:
@@ -67,11 +79,6 @@ check-env:
 check-containers-version:
 	chmod +x deployments/scripts/check-containers-version.sh
 	./deployments/scripts/check-containers-version.sh
-
-## Run tests with code coverage
-coverage:
-	$(GO) test -mod vendor ./... -coverprofile=c.out
-	$(GO) tool cover -html=c.out -o coverage.html
 
 ## Composes huskyCI environment using docker-compose
 compose:
@@ -93,36 +100,10 @@ generate-passwords:
 	chmod +x deployments/scripts/generate-env.sh
 	./deployments/scripts/generate-env.sh
 
-## Gets all gosec dependencies
-get-gosec-deps:
-	$(GO) get -u github.com/securego/gosec/cmd/gosec
-
-## Gets all link dependencies
-get-lint-deps:
-	curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s v1.21.0
-	$(GO) get -u golang.org/x/lint/golint
-
-## Gets all go test dependencies
-get-test-deps:
-	$(GO) get -u github.com/onsi/ginkgo/ginkgo
-	$(GO) get -u github.com/onsi/gomega/...
+## Sends coverage report to coveralls
+goveralls:
 	$(GO) get -u github.com/mattn/goveralls
-
-## Runs ginkgo
-ginkgo:
-	$(GINKGO) -r -keepGoing
-
-## Runs go lint
-golint:
-	$(GOLINT) $(shell $(GO) list ./...)
-
-## Runs Golangci-lint
-golangci-lint:
-	$(GOCILINT) run
-
-## Runs gosec
-gosec:
-	$(GOSEC) ./... 2> /dev/null
+	$(GOVERALLS) -coverprofile=c.out -service=circle-ci -repotoken=$COVERALLS_TOKEN
 
 ## Prints help message
 help:
@@ -142,7 +123,9 @@ help:
 install: create-certs prepare-local-mongodb compose generate-passwords generate-local-token
 
 ## Runs all huskyCI lint
-lint: get-lint-deps golint golangci-lint
+lint:
+	$(GO) get -u golang.org/x/lint/golint
+	$(GOLINT) ./...
 
 ## Set up local mongoDB settings file
 prepare-local-mongodb:
@@ -161,30 +144,37 @@ restart-huskyci-api:
 
 ## Runs huskyci-client
 run-cli: build-cli
-	cd cli && ./"$(HUSKYCICLIENTBIN)" run
+	./cli/"$(HUSKYCI-CLI-BIN)" run
 
 ## Run huskyci-client compiling it in Linux arch
 run-cli-linux: build-cli-linux
-	cd cli && ./"$(HUSKYCICLIENTBIN)" run
+	./cli/"$(HUSKYCI-CLI-BIN)" run
 
 ## Runs huskyci-client
 run-client: build-client
-	./"$(HUSKYCICLIENTBIN)"
+	./client/cmd/"$(HUSKYCI-CLIENT-BIN)"
 
 ## Runs huskyci-client with JSON output
 run-client-json: build-client
-	./"$(HUSKYCICLIENTBIN)" JSON
+	./client/cmd/"$(HUSKYCI-CLIENT-BIN)" JSON
 
 ## Run huskyci-client compiling it in Linux arch
 run-client-linux: build-client-linux
-	./"$(HUSKYCICLIENTBIN)"
+	./client/cmd/"$(HUSKYCI-CLIENT-BIN)"
 
 ## Run huskyci-client compiling it in Linux arch with JSON output
 run-client-linux-json: build-client-linux
-	./"$(HUSKYCICLIENTBIN)" JSON
+	./client/cmd/"$(HUSKYCI-CLIENT-BIN)" JSON
 
-## Performs all make tests
-test: get-test-deps ginkgo coverage
+## Performs all unit tests using ginkgo
+test:
+	cd api && $(GO) test -coverprofile=c.out ./...
+	cd api && $(GO) tool cover -func=c.out
+	cd api && $(GO) tool cover -html=c.out -o coverage.html
+	cd client && $(GO) test -coverprofile=d.out ./...
+	cd client && $(GO) tool cover -func=d.out
+	cd cli && $(GO) test -coverprofile=e.out ./...
+	cd cli && $(GO) tool cover -func=e.out
 
 ## Builds and push securityTest containers with the latest tags
 update-containers: build-containers push-containers

@@ -61,7 +61,8 @@ func (a *Analysis) CheckPath(path string) error {
 	}
 
 	for language := range a.getAvailableSecurityTests(a.Languages) {
-		fmt.Println(fmt.Sprintf("[HUSKYCI] %s found.", language))
+		s := fmt.Sprintf("[HUSKYCI] %s found.", language)
+		fmt.Println(s)
 	}
 
 	return nil
@@ -174,6 +175,8 @@ func (a *Analysis) getAvailableSecurityTests(languages []string) map[string][]st
 			list[language] = []string{"huskyci/npmaudit", "huskyci/yarnaudit"}
 		case "Java":
 			list[language] = []string{"huskyci/spotbugs"}
+		case "HCL":
+			list[language] = []string{"huskyci/tfsec"}
 		}
 	}
 

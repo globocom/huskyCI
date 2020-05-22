@@ -81,6 +81,7 @@ type APIConfig struct {
 	SpotBugsSecurityTest   *types.SecurityTest
 	GitleaksSecurityTest   *types.SecurityTest
 	SafetySecurityTest     *types.SecurityTest
+	TFSecSecurityTest      *types.SecurityTest
 	DBInstance             db.Requests
 }
 
@@ -93,7 +94,7 @@ type DefaultConfig struct {
 func (dF DefaultConfig) GetAPIConfig() (*APIConfig, error) {
 
 	// load Viper using api/config.yml
-	if err := dF.Caller.SetConfigFile("config", "api/"); err != nil {
+	if err := dF.Caller.SetConfigFile("config", "."); err != nil {
 		fmt.Println("Error reading Viper config: ", err)
 		return nil, err
 	}
@@ -124,6 +125,7 @@ func (dF DefaultConfig) SetOnceConfig() {
 			SpotBugsSecurityTest:   dF.getSecurityTestConfig("spotbugs"),
 			GitleaksSecurityTest:   dF.getSecurityTestConfig("gitleaks"),
 			SafetySecurityTest:     dF.getSecurityTestConfig("safety"),
+			TFSecSecurityTest:      dF.getSecurityTestConfig("tfsec"),
 			DBInstance:             dF.GetDB(),
 		}
 	})

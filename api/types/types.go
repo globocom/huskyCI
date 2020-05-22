@@ -96,6 +96,7 @@ type HuskyCIResults struct {
 	JavaScriptResults JavaScriptResults `bson:"javascriptresults,omitempty" json:"javascriptresults,omitempty"`
 	RubyResults       RubyResults       `bson:"rubyresults,omitempty" json:"rubyresults,omitempty"`
 	JavaResults       JavaResults       `bson:"javaresults,omitempty" json:"javaresults,omitempty"`
+	HclResults        HclResults        `bson:"hclresults,omitempty" json:"hclresults,omitempty"`
 	GenericResults    GenericResults    `bson:"genericresults,omitempty" json:"genericresults,omitempty"`
 }
 
@@ -129,6 +130,11 @@ type RubyResults struct {
 // GenericResults represents all generic securityTests results
 type GenericResults struct {
 	HuskyCIGitleaksOutput HuskyCISecurityTestOutput `bson:"gitleaksoutput,omitempty" json:"gitleaksoutput,omitempty"`
+}
+
+// HclResults represents all HCL security tests results.
+type HclResults struct {
+	HuskyCITFSecOutput HuskyCISecurityTestOutput `bson:"tfsecoutput,omitempty" json:"tfsecoutput,omitempty"`
 }
 
 // HuskyCISecurityTestOutput stores all Low, Medium and High vulnerabilities for a sec test
