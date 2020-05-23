@@ -78,10 +78,13 @@ func (tfsecScan *SecTestScanInfo) prepareTFSecVulns() {
 
 		switch tfsecVuln.Severity {
 		case "INFO":
+			tfsecVuln.Severity = "Low"
 			huskyCItfsecResults.LowVulns = append(huskyCItfsecResults.LowVulns, tfsecVuln)
 		case "WARNING":
+			tfsecVuln.Severity = "Medium"
 			huskyCItfsecResults.MediumVulns = append(huskyCItfsecResults.MediumVulns, tfsecVuln)
 		case "ERROR":
+			tfsecVuln.Severity = "High"
 			huskyCItfsecResults.HighVulns = append(huskyCItfsecResults.HighVulns, tfsecVuln)
 		}
 	}
