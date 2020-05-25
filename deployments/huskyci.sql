@@ -23,13 +23,6 @@ SET row_security = off;
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA public;
 
 
---
--- Name: EXTENSION "uuid-ossp"; Type: COMMENT; Schema: -; Owner: 
---
-
-COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UUIDs)';
-
-
 SET default_tablespace = '';
 
 SET default_with_oids = false;
@@ -38,7 +31,7 @@ SET default_with_oids = false;
 -- Name: accessToken; Type: TABLE; Schema: public; Owner: huskyCIUser
 --
 
-CREATE TABLE public."accessToken" (
+CREATE TABLE IF NOT EXISTS public."accessToken" (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     huskytoken text NOT NULL,
     "repositoryURL" text NOT NULL,
@@ -55,7 +48,7 @@ ALTER TABLE public."accessToken" OWNER TO "huskyCIUser";
 -- Name: analysis; Type: TABLE; Schema: public; Owner: huskyCIUser
 --
 
-CREATE TABLE public.analysis (
+CREATE TABLE IF NOT EXISTS public.analysis (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     "RID" text NOT NULL,
     "repositoryURL" text NOT NULL,
@@ -78,7 +71,7 @@ ALTER TABLE public.analysis OWNER TO "huskyCIUser";
 -- Name: repository; Type: TABLE; Schema: public; Owner: huskyCIUser
 --
 
-CREATE TABLE public.repository (
+CREATE TABLE IF NOT EXISTS public.repository (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     "repositoryURL" text NOT NULL,
     "repositoryBranch" text,
@@ -92,7 +85,7 @@ ALTER TABLE public.repository OWNER TO "huskyCIUser";
 -- Name: securityTest; Type: TABLE; Schema: public; Owner: huskyCIUser
 --
 
-CREATE TABLE public."securityTest" (
+CREATE TABLE IF NOT EXISTS public."securityTest" (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     name text NOT NULL,
     image text NOT NULL,
@@ -111,7 +104,7 @@ ALTER TABLE public."securityTest" OWNER TO "huskyCIUser";
 -- Name: user; Type: TABLE; Schema: public; Owner: huskyCIUser
 --
 
-CREATE TABLE public."user" (
+CREATE TABLE IF NOT EXISTS public."user" (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     username text NOT NULL,
     password text NOT NULL,
@@ -170,83 +163,162 @@ COPY public."user" (id, username, password, salt, iterations, keylen, hashfuncti
 -- Name: accessToken accessToken_huskytoken_key; Type: CONSTRAINT; Schema: public; Owner: huskyCIUser
 --
 
-ALTER TABLE ONLY public."accessToken"
-    ADD CONSTRAINT "accessToken_huskytoken_key" UNIQUE (huskytoken);
+DO $$
+BEGIN
+    IF NOT EXISTS ( SELECT NULL
+            FROM information_schema.table_constraints
+           WHERE table_name='accessToken' 
+             AND constraint_name = 'accessToken_huskytoken_key') THEN
+        ALTER TABLE ONLY public."accessToken" 
+            ADD CONSTRAINT "accessToken_huskytoken_key" UNIQUE (huskytoken);
+    END IF;
+END $$;
 
 
 --
 -- Name: accessToken accessToken_pkey; Type: CONSTRAINT; Schema: public; Owner: huskyCIUser
 --
 
-ALTER TABLE ONLY public."accessToken"
-    ADD CONSTRAINT "accessToken_pkey" PRIMARY KEY (id);
+DO $$
+BEGIN
+    IF NOT EXISTS ( SELECT NULL
+            FROM information_schema.table_constraints
+           WHERE table_name='accessToken' 
+             AND constraint_name = 'accessToken_pkey') THEN
+        ALTER TABLE ONLY public."accessToken"
+            ADD CONSTRAINT "accessToken_pkey" PRIMARY KEY (id);
+    END IF;
+END $$;
 
 
 --
 -- Name: analysis analysis_RID_key; Type: CONSTRAINT; Schema: public; Owner: huskyCIUser
 --
 
-ALTER TABLE ONLY public.analysis
-    ADD CONSTRAINT "analysis_RID_key" UNIQUE ("RID");
+DO $$
+BEGIN
+    IF NOT EXISTS ( SELECT NULL
+            FROM information_schema.table_constraints
+           WHERE table_name='analysis' 
+             AND constraint_name = 'analysis_RID_key') THEN
+        ALTER TABLE ONLY public.analysis
+            ADD CONSTRAINT "analysis_RID_key" UNIQUE ("RID");
+    END IF;
+END $$;
 
 
 --
 -- Name: analysis analysis_pkey; Type: CONSTRAINT; Schema: public; Owner: huskyCIUser
 --
 
-ALTER TABLE ONLY public.analysis
-    ADD CONSTRAINT analysis_pkey PRIMARY KEY (id);
+DO $$
+BEGIN
+    IF NOT EXISTS ( SELECT NULL
+            FROM information_schema.table_constraints
+           WHERE table_name='analysis' 
+             AND constraint_name = 'analysis_pkey') THEN
+        ALTER TABLE ONLY public.analysis
+            ADD CONSTRAINT analysis_pkey PRIMARY KEY (id);
+    END IF;
+END $$;
 
 
 --
 -- Name: repository repository_pkey; Type: CONSTRAINT; Schema: public; Owner: huskyCIUser
 --
 
-ALTER TABLE ONLY public.repository
-    ADD CONSTRAINT repository_pkey PRIMARY KEY (id);
+DO $$
+BEGIN
+    IF NOT EXISTS ( SELECT NULL
+            FROM information_schema.table_constraints
+           WHERE table_name='repository' 
+             AND constraint_name = 'repository_pkey') THEN
+        ALTER TABLE ONLY public.repository
+            ADD CONSTRAINT repository_pkey PRIMARY KEY (id);
+    END IF;
+END $$;
 
 
 --
 -- Name: repository repository_repositoryURL_key; Type: CONSTRAINT; Schema: public; Owner: huskyCIUser
 --
 
-ALTER TABLE ONLY public.repository
-    ADD CONSTRAINT "repository_repositoryURL_key" UNIQUE ("repositoryURL");
+DO $$
+BEGIN
+    IF NOT EXISTS ( SELECT NULL
+            FROM information_schema.table_constraints
+           WHERE table_name='repository' 
+             AND constraint_name = 'repository_repositoryURL_key') THEN
+        ALTER TABLE ONLY public.repository
+            ADD CONSTRAINT "repository_repositoryURL_key" UNIQUE ("repositoryURL");
+    END IF;
+END $$;
 
 
 --
 -- Name: securityTest securityTest_name_key; Type: CONSTRAINT; Schema: public; Owner: huskyCIUser
 --
 
-ALTER TABLE ONLY public."securityTest"
-    ADD CONSTRAINT "securityTest_name_key" UNIQUE (name);
+DO $$
+BEGIN
+    IF NOT EXISTS ( SELECT NULL
+            FROM information_schema.table_constraints
+           WHERE table_name='securityTest' 
+             AND constraint_name = 'securityTest_name_key') THEN
+        ALTER TABLE ONLY public."securityTest"
+            ADD CONSTRAINT "securityTest_name_key" UNIQUE (name);
+    END IF;
+END $$;
 
 
 --
 -- Name: securityTest securityTest_pkey; Type: CONSTRAINT; Schema: public; Owner: huskyCIUser
 --
 
-ALTER TABLE ONLY public."securityTest"
-    ADD CONSTRAINT "securityTest_pkey" PRIMARY KEY (id);
+DO $$
+BEGIN
+    IF NOT EXISTS ( SELECT NULL
+            FROM information_schema.table_constraints
+           WHERE table_name='securityTest' 
+             AND constraint_name = 'securityTest_pkey') THEN
+        ALTER TABLE ONLY public."securityTest"
+            ADD CONSTRAINT "securityTest_pkey" PRIMARY KEY (id);
+    END IF;
+END $$;
 
 
 --
 -- Name: user user_pkey; Type: CONSTRAINT; Schema: public; Owner: huskyCIUser
 --
 
-ALTER TABLE ONLY public."user"
-    ADD CONSTRAINT user_pkey PRIMARY KEY (id);
+DO $$
+BEGIN
+    IF NOT EXISTS ( SELECT NULL
+            FROM information_schema.table_constraints
+           WHERE table_name='user' 
+             AND constraint_name = 'user_pkey') THEN
+        ALTER TABLE ONLY public."user"
+            ADD CONSTRAINT user_pkey PRIMARY KEY (id);
+    END IF;
+END $$;
 
 
 --
 -- Name: user user_username_key; Type: CONSTRAINT; Schema: public; Owner: huskyCIUser
 --
 
-ALTER TABLE ONLY public."user"
-    ADD CONSTRAINT user_username_key UNIQUE (username);
+DO $$
+BEGIN
+    IF NOT EXISTS ( SELECT NULL
+            FROM information_schema.table_constraints
+           WHERE table_name='user' 
+             AND constraint_name = 'user_username_key') THEN
+        ALTER TABLE ONLY public."user"
+            ADD CONSTRAINT user_username_key UNIQUE (username);
+    END IF;
+END $$;
 
 
 --
 -- PostgreSQL database dump complete
 --
-
