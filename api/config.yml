@@ -1,0 +1,339 @@
+securityTests:
+  - name: enry
+    image: huskyci/enry:dev-697929e
+    command: |+
+        mkdir -p ~/.ssh &&
+        echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
+        chmod 600 ~/.ssh/huskyci_id_rsa &&
+        echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
+        echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
+        GIT_TERMINAL_PROMPT=0 git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneEnry
+        if [ $? -eq 0 ]; then
+        cd code
+        enry --json | tr -d '\r\n'
+        else
+        echo "ERROR_CLONING"
+        cat /tmp/errorGitCloneEnry
+        fi
+    type: Enry
+    default: true
+    timeOutInSeconds: 60
+
+  - name: gitauthors
+    image: huskyci/gitauthors:2.18.2
+    command: |+
+      mkdir -p ~/.ssh &&
+      echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
+      chmod 600 ~/.ssh/huskyci_id_rsa &&
+      echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
+      echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
+      GIT_TERMINAL_PROMPT=0 git clone %GIT_REPO% code --quiet 2> /tmp/errorGitCloneEnry
+      cd code
+      git branch -a | egrep 'remotes/origin/master' 1> /dev/null 2> /dev/null
+      if [ $? -ne 0 ]; then
+        echo "{\"authors\":[]}"
+        exit 0
+      fi
+      git checkout %GIT_BRANCH% --quiet
+      if [ $? -eq 0 ]; then
+        for i in $(git log origin/master.. --pretty="%ae" | sort -u); do
+          jsonMiddle="\"$i\",$jsonMiddle"
+        done
+        length=${#jsonMiddle}
+        endindex=$(expr $length - 1)
+        authors="${jsonMiddle:0:$endindex}"
+        echo "{\"authors\":[$authors]}"
+      else
+        echo "ERROR_CLONING"
+        cat /tmp/errorGitCloneEnry
+      fi
+    type: Generic
+    default: true
+    timeOutInSeconds: 60
+
+  - name: gosec
+    image: huskyci/gosec:v2.2.0
+    command: |+
+      mkdir -p ~/.ssh &&
+      echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
+      chmod 600 ~/.ssh/huskyci_id_rsa &&
+      echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
+      echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
+      cd src
+      GIT_TERMINAL_PROMPT=0 git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneGosec
+      if [ $? -eq 0 ]; then
+        cd code
+        touch results.json
+        $(which gosec) -quiet -fmt=json -nosec-tag nohusky -log=log.txt -out=results.json ./... 2> /dev/null
+        jq -j -M -c . results.json
+      else
+        echo "ERROR_CLONING"
+        cat /tmp/errorGitCloneGosec
+      fi
+    type: Language
+    language: Go
+    default: true
+    timeOutInSeconds: 360
+
+  - name: bandit
+    image: huskyci/bandit:1.6.2
+    command: |+
+      mkdir -p ~/.ssh &&
+      echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
+      chmod 600 ~/.ssh/huskyci_id_rsa &&
+      echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
+      echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
+      GIT_TERMINAL_PROMPT=0 git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneBandit
+      if [ $? -eq 0 ]; then
+        cd code
+        chmod +x /usr/local/bin/husky-file-ignore.sh
+        husky-file-ignore.sh 2> /tmp/errorBanditIgnoreScript 1> /dev/null
+        bandit -r . -f json 2> /dev/null > results.json
+        jq -j -M -c . results.json
+      else
+        echo "ERROR_CLONING"
+        cat /tmp/errorGitCloneBandit
+      fi
+    type: Language
+    language: Python
+    default: true
+    timeOutInSeconds: 360
+
+  - name: brakeman
+    image: huskyci/brakeman:4.8.0
+    command: |+
+      mkdir -p ~/.ssh &&
+      echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
+      chmod 600 ~/.ssh/huskyci_id_rsa &&
+      echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
+      echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
+      GIT_TERMINAL_PROMPT=0 git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneBrakeman
+      if [ $? -eq 0 ]; then
+        if [ -d /code/app ]; then
+          brakeman -q -o results.json /code
+          jq -j -M -c . results.json
+        else
+          mv code app
+          brakeman -q -o results.json .
+          jq -j -M -c . results.json
+        fi
+      else
+        echo "ERROR_CLONING"
+        cat /tmp/errorGitCloneBrakeman
+      fi
+    type: Language
+    language: Ruby
+    default: true
+    timeOutInSeconds: 360
+
+  - name: safety
+    image: huskyci/safety:1.8.5
+    command: |+
+      mkdir -p ~/.ssh &&
+      echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
+      chmod 600 ~/.ssh/huskyci_id_rsa &&
+      echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
+      echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
+      GIT_TERMINAL_PROMPT=0 git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneSafety
+      if [ $? -eq 0 ]; then
+        cd code
+        if [ -f Pipfile.lock ]; then
+          jq -r '.default | to_entries[] | if (.value.version | length) > 0 then "\(.key)\(.value.version)" else "\(.key)" end' Pipfile.lock >> requirements.txt
+          sort -u -o requirements.txt requirements.txt
+        fi
+        find . -maxdepth 3 -name requirements.txt -exec cat {} \; > safety_huskyci_analysis_all_requirements.txt
+        if [ -s safety_huskyci_analysis_all_requirements.txt ]; then
+          cat safety_huskyci_analysis_all_requirements.txt | grep '=' | grep -v '#' 1> safety_huskyci_analysis_requirements_raw.txt
+          sed -i -e 's/>=/==/g; s/<=/==/g' safety_huskyci_analysis_requirements_raw.txt
+          cat safety_huskyci_analysis_requirements_raw.txt | cut -f1 -d "," > safety_huskyci_analysis_requirements.txt
+          safety check -r safety_huskyci_analysis_requirements.txt --json > /tmp/safety_huskyci_analysis_output.json 2> /tmp/errorRunning
+          safety check -r safety_huskyci_analysis_requirements_raw.txt --json > /dev/null 2> /tmp/warning
+          if [ -f /tmp/warning ]; then
+            if grep -q "unpinned requirement" "/tmp/warning"; then
+              cat /tmp/warning
+            fi
+            jq -c '{"issues":map({"dependency": .[0], "vulnerable_below": .[1], "installed_verson": .[2], "description": .[3], "id": .[4]})}' /tmp/safety_huskyci_analysis_output.json > /tmp/output.json
+            cat /tmp/output.json
+          else
+            echo "ERROR_RUNNING_SAFETY"
+            cat /tmp/errorRunning
+          fi
+        else
+          echo "ERROR_REQ_NOT_FOUND"
+        fi
+      else
+        echo "ERROR_CLONING"
+        cat /tmp/errorGitCloneSafety
+      fi
+    type: Language
+    language: Python
+    default: true
+    timeOutInSeconds: 360
+
+  - name: npmaudit
+    image: huskyci/npmaudit:6.13.6
+    command: |+
+      mkdir -p ~/.ssh &&
+      echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
+      chmod 600 ~/.ssh/huskyci_id_rsa &&
+      echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
+      echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
+      GIT_TERMINAL_PROMPT=0 git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneNpmAudit
+      if [ $? -eq 0 ]; then
+        cd code
+        if [ -f package-lock.json ]; then
+          npm audit --only=prod --json > /tmp/results.json 2> /tmp/errorNpmaudit
+          jq -j -M -c . /tmp/results.json
+        else
+          if [ ! -f yarn.lock ]; then
+            echo 'ERROR_PACKAGE_LOCK_NOT_FOUND'
+          fi
+        fi
+      else
+        echo "ERROR_CLONING"
+        cat /tmp/errorGitCloneNpmAudit
+      fi
+    type: Language
+    language: JavaScript
+    default: true
+    timeOutInSeconds: 360
+
+  - name: yarnaudit
+    image: huskyci/yarnaudit:1.21.1
+    command: |+
+      mkdir -p ~/.ssh &&
+      echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
+      chmod 600 ~/.ssh/huskyci_id_rsa &&
+      echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
+      echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
+      GIT_TERMINAL_PROMPT=0 git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneYarnAudit
+      if [ $? -eq 0 ]; then
+          cd code
+          if [ -f yarn.lock ]; then
+              yarn audit --level moderate --prod --groups dependencies --json > /tmp/results.json 2> /tmp/errorYarnAudit
+              if [ ! -s /tmp/errorYarnAudit ]; then
+                  jq -c -M -j --slurp '{advisories: (. | map(select(.type == "auditAdvisory") | .data.advisory)), metadata: (. | map(select(.type == "auditSummary") | .data) | add)}' /tmp/results.json > /tmp/output.json
+                  cat /tmp/output.json
+              else
+                  echo -n 'ERROR_RUNNING_YARN_AUDIT'
+                  cat /tmp/errorYarnAudit
+              fi
+          else
+              if [ ! -f package-lock.json ]; then
+                  echo 'ERROR_YARN_LOCK_NOT_FOUND'
+              fi
+          fi
+      else
+          echo "ERROR_CLONING"
+          cat /tmp/errorGitCloneYarnAudit
+      fi
+    type: Language
+    language: JavaScript
+    default: true
+    timeOutInSeconds: 360
+
+  - name: spotbugs
+    image: huskyci/spotbugs:4.0.0-beta4
+    command: |+
+      mkdir -p ~/.ssh &&
+      echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
+      chmod 600 ~/.ssh/huskyci_id_rsa &&
+      echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
+      echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
+      GIT_TERMINAL_PROMPT=0 git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneSpotBugs
+      if [ $? -eq 0 ]; then
+        cd code
+        if [ -f "pom.xml" ]; then
+            mv ../code /tmp/code
+            cd /tmp/code
+            project_type=$(cat pom.xml|grep packaging|cut -d'<' -f2|cut -d'>' -f2)
+            bash /usr/local/bin/mvn-entrypoint.sh 2> /tmp/errorMavenBuild 1> /dev/null
+            if [ $? -eq 0 ]; then
+                if [[ "$project_type" = "war" ]]; then
+                    # WAR
+                    war_file=$(ls -lS target/*.war|head -n1|cut -d'/' -f2|sed -e "s/.war//")
+                    mv target/$war_file /tmp/needToBeScanned
+                else
+                    # JAR
+                    mkdir /tmp/needToBeScanned
+                    cp target/*.jar /tmp/needToBeScanned/
+                fi
+                java -jar /opt/spotbugs/lib/spotbugs.jar -textui -quiet -xml -bugCategories SECURITY -exclude /opt/spotbugs/exclude.xml -pluginList /opt/findsecbugs-plugin-1.9.0.jar /tmp/needToBeScanned
+            else
+                echo "ERROR_RUNNING_MAVEN_BUILD"
+                cat /tmp/errorMavenBuild
+            fi
+        elif [ -f "build.gradle" ]; then
+            mv ../code /tmp/code
+            cd /tmp/code
+            /opt/gradle/bin/gradle -p /tmp/code build 2> /tmp/errorGradleBuild 1> /dev/null
+              if [ $? -eq 0 ]; then
+                mv build /tmp/needToBeScanned
+                java -jar /opt/spotbugs/lib/spotbugs.jar -textui -quiet -xml -bugCategories SECURITY -exclude /opt/spotbugs/exclude.xml -pluginList /opt/findsecbugs-plugin-1.9.0.jar /tmp/needToBeScanned
+              else
+                echo "ERROR_RUNNING_GRADLE_BUILD"
+                cat /tmp/errorGradleBuild
+              fi
+        else
+            echo "ERROR_UNSUPPORTED_JAVA_PROJECT"
+        fi
+      else
+          echo "ERROR_CLONING"
+          cat /tmp/errorGitCloneSpotBugs
+      fi
+    type: Language
+    language: Java
+    default: false
+    timeOutInSeconds: 3600
+
+  - name: gitleaks
+    image: huskyci/gitleaks:2.1.0
+    command: |+
+      mkdir -p ~/.ssh &&
+      echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
+      chmod 600 ~/.ssh/huskyci_id_rsa &&
+      echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
+      echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
+      GIT_TERMINAL_PROMPT=0 git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneGitleaks
+      if [ $? -eq 0 ]; then
+          touch /tmp/results.json
+          timeout -t 360 $(which gitleaks) --log=warn --report=/tmp/results.json --repo-path=./code --branch=%GIT_BRANCH% --repo-config &> /tmp/errorGitleaks
+          if [[ $? -eq 124 || $? -eq 143 ]]; then #timeout exit codes
+              echo 'ERROR_TIMEOUT_GITLEAKS'
+              cat /tmp/errorGitleaks
+          elif [ $? -eq 2 ]; then
+              echo 'ERROR_RUNNING_GITLEAKS'
+              cat /tmp/errorGitleaks
+          else
+              jq -j -M -c . /tmp/results.json
+          fi
+      else
+          echo "ERROR_CLONING"
+          cat /tmp/errorGitCloneGitleaks
+      fi
+    type: Generic
+    default: true
+    timeOutInSeconds: 360
+
+  - name: tfsec
+    image: huskyci/tfsec:v0.19.0
+    command: |+
+        mkdir -p ~/.ssh &&
+        echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
+        chmod 600 ~/.ssh/huskyci_id_rsa &&
+        echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
+        echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
+        GIT_TERMINAL_PROMPT=0 git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneTFSec
+        if [ $? -eq 0 ]; then
+            ./tfsec code --format=json | grep -v "WARNING: skipped" > pre-results.json
+            cat pre-results.json | grep -v "WARNING: skipped" > results.json
+            echo "{\"warnings\":\"$(cat pre-results.json | grep "WARNING: skipped")\"}" >> warning.json
+            cat results.json warning.json | jq -s add | jq -j -M -c .
+        else
+        echo "ERROR_CLONING"
+        cat /tmp/errorGitCloneTFSec
+        fi
+    type: Language
+    language: HCL
+    default: true
+    timeOutInSeconds: 360
