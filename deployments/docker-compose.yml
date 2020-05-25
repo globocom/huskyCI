@@ -26,13 +26,12 @@ services:
             HUSKYCI_DATABASE_DB_PASSWORD: huskyCIPassword
             HUSKYCI_API_DEFAULT_USERNAME: huskyCIUser
             HUSKYCI_API_DEFAULT_PASSWORD: huskyCIPassword
-            HUSKYCI_API_ALLOW_ORIGIN_CORS: "*"
             HUSKYCI_DOCKERAPI_ADDR: dockerapi
             HUSKYCI_DOCKERAPI_CERT_PATH: /go/src/github.com/globocom/huskyCI/
         build:
             context: ../
             dockerfile: deployments/dockerfiles/api.Dockerfile
-        command: "go run server.go"
+        command: "go run main.go"
         volumes:
             - docker_vol:/var/lib/docker
             - ../deployments/certs/client-huskyapi-cert.pem:/go/src/github.com/globocom/huskyCI/cert.pem:ro

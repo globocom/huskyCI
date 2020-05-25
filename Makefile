@@ -120,7 +120,7 @@ help:
 	printf "\n"
 
 ## Installs a development environment using docker-compose
-install: create-certs prepare-local-mongodb compose generate-passwords generate-local-token
+install: create-certs prepare-local-mongodb compose generate-passwords #generate-local-token
 
 ## Runs all huskyCI lint
 lint:
