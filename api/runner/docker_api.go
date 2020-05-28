@@ -29,7 +29,7 @@ func NewDockerAPISession(lc fx.Lifecycle, settings *viper.Viper) (*DockerAPI, er
 
 	dockerAPIHost := fmt.Sprintf("https://%s", settings.GetString("HUSKYCI_DOCKERAPI_ADDR"))
 	dockerAPICertPath := settings.GetString("HUSKYCI_DOCKERAPI_CERT_PATH")
-	dockerAPIVerifyTLS := settings.GetBool("HUSKYCI_DOCKERAPI_TLS_VERIFY")
+	dockerAPIVerifyTLS := settings.GetString("HUSKYCI_DOCKERAPI_TLS_VERIFY")
 
 	// env vars needed by docker/docker library to create a new client:
 	if err := os.Setenv("DOCKER_HOST", dockerAPIHost); err != nil {
@@ -38,7 +38,7 @@ func NewDockerAPISession(lc fx.Lifecycle, settings *viper.Viper) (*DockerAPI, er
 	if err := os.Setenv("DOCKER_CERT_PATH", dockerAPICertPath); err != nil {
 		return &DockerAPI{}, err
 	}
-	if err := os.Setenv("DOCKER_TLS_VERIFY", fmt.Sprintf("%t", dockerAPIVerifyTLS)); err != nil {
+	if err := os.Setenv("DOCKER_TLS_VERIFY", dockerAPIVerifyTLS); err != nil {
 		return &DockerAPI{}, err
 	}
 
@@ -54,12 +54,23 @@ func NewDockerAPISession(lc fx.Lifecycle, settings *viper.Viper) (*DockerAPI, er
 	}
 
 	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			return dockerAPISession.Ping()
+		},
 		OnStop: func(ctx context.Context) error {
 			return dockerAPISession.Close()
 		},
 	})
 
 	return dockerAPISession, nil
+}
+
+// Ping checks the DockerAPI session
+func (d *DockerAPI) Ping() error {
+	ctx := goContext.Background()
+	fmt.Println("Checking DockerAPI Session...")
+	_, err := d.Session.Ping(ctx)
+	return err
 }
 
 // Close closes the DockerAPI session

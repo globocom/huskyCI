@@ -27,16 +27,16 @@ services:
             HUSKYCI_API_DEFAULT_USERNAME: huskyCIUser
             HUSKYCI_API_DEFAULT_PASSWORD: huskyCIPassword
             HUSKYCI_DOCKERAPI_ADDR: dockerapi
-            HUSKYCI_DOCKERAPI_CERT_PATH: /go/src/github.com/globocom/huskyCI/
+            HUSKYCI_DOCKERAPI_CERT_PATH: /go/src/github.com/globocom/huskyCI/api/
         build:
             context: ../
             dockerfile: deployments/dockerfiles/api.Dockerfile
         command: "go run main.go"
         volumes:
             - docker_vol:/var/lib/docker
-            - ../deployments/certs/client-huskyapi-cert.pem:/go/src/github.com/globocom/huskyCI/cert.pem:ro
-            - ../deployments/certs/client-huskyapi-key.pem:/go/src/github.com/globocom/huskyCI/key.pem:ro
-            - ../deployments/certs/ca.pem:/go/src/github.com/globocom/huskyCI/ca.pem:ro
+            - ../deployments/certs/client-huskyapi-cert.pem:/go/src/github.com/globocom/huskyCI/api/cert.pem:ro
+            - ../deployments/certs/client-huskyapi-key.pem:/go/src/github.com/globocom/huskyCI/api/key.pem:ro
+            - ../deployments/certs/ca.pem:/go/src/github.com/globocom/huskyCI/api/ca.pem:ro
         ports:
           - "8888:8888"
         networks:
@@ -64,30 +64,30 @@ services:
         networks:
             - huskyCI_net
 
-    fe:
-        container_name: huskyCI_Dashboard
-        image: "huskyci/dashboard:latest"
-        environment:
-            REACT_APP_HUSKYCI_FE_API_ADDRESS: "http://127.0.0.1:8888"
-        ports:
-          - "10080:80"
-        networks:
-            - huskyCI_net
+    # fe:
+    #     container_name: huskyCI_Dashboard
+    #     image: "huskyci/dashboard:latest"
+    #     environment:
+    #         REACT_APP_HUSKYCI_FE_API_ADDRESS: "http://127.0.0.1:8888"
+    #     ports:
+    #       - "10080:80"
+    #     networks:
+    #         - huskyCI_net
 
-    postgres:
-        container_name: huskyCI_Postgres
-        environment:
-            POSTGRES_USER: huskyCIUser
-            POSTGRES_PASSWORD: huskyCIPassword
-            POSTGRES_DB: huskyCIDB
-        build:
-            context: ../
-            dockerfile: deployments/dockerfiles/postgres.Dockerfile
-        ports:
-            - "5432:5432"
-        networks:
-            - huskyCI_net
-    
+    # postgres:
+    #     container_name: huskyCI_Postgres
+    #     environment:
+    #         POSTGRES_USER: huskyCIUser
+    #         POSTGRES_PASSWORD: huskyCIPassword
+    #         POSTGRES_DB: huskyCIDB
+    #     build:
+    #         context: ../
+    #         dockerfile: deployments/dockerfiles/postgres.Dockerfile
+    #     ports:
+    #         - "5432:5432"
+    #     networks:
+    #         - huskyCI_net
+
 networks:
     huskyCI_net:
 

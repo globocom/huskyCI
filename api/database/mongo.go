@@ -40,6 +40,9 @@ func NewMongoSession(lc fx.Lifecycle, settings *viper.Viper) (*MongoDB, error) {
 	}
 
 	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			return databaseSession.Ping()
+		},
 		OnStop: func(ctx context.Context) error {
 			databaseSession.Close()
 			return nil
@@ -47,6 +50,12 @@ func NewMongoSession(lc fx.Lifecycle, settings *viper.Viper) (*MongoDB, error) {
 	})
 
 	return databaseSession, nil
+}
+
+// Ping checks the MongoDB session
+func (m *MongoDB) Ping() error {
+	fmt.Println("Checking MongoDB Session...")
+	return m.Session.Ping()
 }
 
 // Close closes the MongoDB session

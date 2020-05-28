@@ -40,12 +40,21 @@ func NewPostgresSession(lc fx.Lifecycle, settings *viper.Viper) (*Postgres, erro
 	}
 
 	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			return databaseSession.Ping()
+		},
 		OnStop: func(ctx context.Context) error {
 			return databaseSession.Close()
 		},
 	})
 
 	return databaseSession, nil
+}
+
+// Ping checks the Postgres session
+func (p *Postgres) Ping() error {
+	fmt.Println("Checking MongoDB Session...")
+	return p.Session.Ping()
 }
 
 // Close closes the Postgres session

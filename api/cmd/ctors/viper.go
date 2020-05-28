@@ -28,7 +28,7 @@ func NewSettings() (*viper.Viper, error) {
 	viperInstance.SetDefault("HUSKYCI_DATABASE_DB_FAIL_FAST", true)
 	viperInstance.SetDefault("HUSKYCI_DATABASE_DB_POOL_LIMIT", 1000)
 	viperInstance.SetDefault("HUSKYCI_DOCKERAPI_PORT", 2376)
-	viperInstance.SetDefault("HUSKYCI_DOCKERAPI_TLS_VERIFY", true)
+	viperInstance.SetDefault("HUSKYCI_DOCKERAPI_TLS_VERIFY", "1")
 	viperInstance.SetDefault("HUSKYCI_DATABASE_TYPE", "mongo")
 	viperInstance.SetDefault("HUSKYCI_RUNNER_TYPE", "dockerapi")
 
