@@ -57,11 +57,11 @@ ALTER TABLE public."accessToken" OWNER TO "huskyCIUser";
 
 CREATE TABLE public.analysis (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
-    "RID" text NOT NULL,
-    "repositoryURL" text NOT NULL,
-    "repositoryBranch" text NOT NULL,
+    "ID" text NOT NULL,
+    "repository" text NOT NULL,
+    "branch" text NOT NULL,
     "commitAuthors" text[],
-    status text NOT NULL,
+    status text,
     result text,
     "errorFound" text,
     containers jsonb,
@@ -138,7 +138,7 @@ COPY public."accessToken" (id, huskytoken, "repositoryURL", "isValid", "createdA
 -- Data for Name: analysis; Type: TABLE DATA; Schema: public; Owner: huskyCIUser
 --
 
-COPY public.analysis (id, "RID", "repositoryURL", "repositoryBranch", "commitAuthors", status, result, "errorFound", containers, "startedAt", "finishedAt", codes, huskyciresults) FROM stdin;
+COPY public.analysis (id, "ID", "repository", "branch", "commitAuthors", status, result, "errorFound", containers, "startedAt", "finishedAt", codes, huskyciresults) FROM stdin;
 \.
 
 
@@ -187,7 +187,7 @@ ALTER TABLE ONLY public."accessToken"
 --
 
 ALTER TABLE ONLY public.analysis
-    ADD CONSTRAINT "analysis_RID_key" UNIQUE ("RID");
+    ADD CONSTRAINT "analysis_ID_key" UNIQUE ("ID");
 
 
 --

@@ -64,3 +64,11 @@ func (m *MongoDB) Close() error {
 	m.Session.Close()
 	return nil
 }
+
+// Insert inserts a new document
+func (m *MongoDB) Insert(obj interface{}, collection string) error {
+	session := m.Session.Clone()
+	c := session.DB("").C(collection)
+	defer session.Close()
+	return c.Insert(obj)
+}

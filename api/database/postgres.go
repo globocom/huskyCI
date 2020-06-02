@@ -53,7 +53,7 @@ func NewPostgresSession(lc fx.Lifecycle, settings *viper.Viper) (*Postgres, erro
 
 // Ping checks the Postgres session
 func (p *Postgres) Ping() error {
-	fmt.Println("Checking MongoDB Session...")
+	fmt.Println("Checking Postgres Session...")
 	return p.Session.Ping()
 }
 
