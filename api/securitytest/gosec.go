@@ -71,6 +71,7 @@ func (gosecScan *SecTestScanInfo) prepareGosecVulns() {
 		gosecVuln := types.HuskyCIVulnerability{}
 		gosecVuln.Language = "Go"
 		gosecVuln.SecurityTool = "GoSec"
+		gosecVuln.Title = issue.Details + " - rule " + issue.RuleID
 		gosecVuln.Severity = issue.Severity
 		gosecVuln.Confidence = issue.Confidence
 		gosecVuln.Details = issue.Details
