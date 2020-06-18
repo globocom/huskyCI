@@ -127,6 +127,7 @@ func (safetyScan *SecTestScanInfo) prepareSafetyVulns() {
 		safetyVuln.Severity = "high"
 		safetyVuln.Details = issue.Comment
 		safetyVuln.Code = issue.Dependency + " " + issue.Version
+		safetyVuln.Title = issue.Dependency + " (" + issue.Below + ")"
 		safetyVuln.VunerableBelow = issue.Below
 
 		huskyCIsafetyResults.HighVulns = append(huskyCIsafetyResults.HighVulns, safetyVuln)
