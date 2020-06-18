@@ -61,6 +61,7 @@ func (brakemanScan *SecTestScanInfo) prepareBrakemanVulns() {
 		brakemanVuln.Language = "Ruby"
 		brakemanVuln.SecurityTool = "Brakeman"
 		brakemanVuln.Confidence = warning.Confidence
+		brakemanVuln.Title = warning.Type + ". " + warning.Message
 		brakemanVuln.Details = warning.Details + warning.Message
 		brakemanVuln.File = warning.File
 		brakemanVuln.Line = strconv.Itoa(warning.Line)
