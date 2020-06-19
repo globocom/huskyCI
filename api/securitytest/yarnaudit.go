@@ -28,6 +28,7 @@ type YarnIssue struct {
 	VulnerableVersions string        `json:"vulnerable_versions"`
 	Severity           string        `json:"severity"`
 	Overview           string        `json:"overview"`
+	Title              string        `json:"title"`
 }
 
 // YarnFinding holds the version of a given yarn security issue found
@@ -123,6 +124,7 @@ func (yarnAuditScan *SecTestScanInfo) prepareYarnAuditVulns() {
 		yarnauditVuln.Language = "JavaScript"
 		yarnauditVuln.SecurityTool = "YarnAudit"
 		yarnauditVuln.Details = issue.Overview
+		yarnauditVuln.Title = issue.Title + " - " + "(" + issue.ModuleName + ", " + issue.VulnerableVersions + ")"
 		yarnauditVuln.VunerableBelow = issue.VulnerableVersions
 		yarnauditVuln.Code = issue.ModuleName
 		yarnauditVuln.Occurrences = 1
