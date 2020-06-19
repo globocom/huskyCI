@@ -27,6 +27,7 @@ type Vulnerability struct {
 	VulnerableVersions string    `json:"vulnerable_versions"`
 	Severity           string    `json:"severity"`
 	Overview           string    `json:"overview"`
+	Title              string    `json:"title"`
 }
 
 // Finding holds the version of a given security issue found
@@ -101,6 +102,7 @@ func (npmAuditScan *SecTestScanInfo) prepareNpmAuditVulns() {
 		npmauditVuln := types.HuskyCIVulnerability{}
 		npmauditVuln.Language = "JavaScript"
 		npmauditVuln.SecurityTool = "NpmAudit"
+		npmauditVuln.Title = issue.Title + " - " + "(" + issue.ModuleName + ", " + issue.VulnerableVersions + ")"
 		npmauditVuln.Details = issue.Overview
 		npmauditVuln.VunerableBelow = issue.VulnerableVersions
 		npmauditVuln.Code = issue.ModuleName
