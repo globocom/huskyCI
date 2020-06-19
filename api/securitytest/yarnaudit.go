@@ -102,6 +102,7 @@ func (yarnAuditScan *SecTestScanInfo) prepareYarnAuditVulns() {
 		yarnauditVuln.Language = "JavaScript"
 		yarnauditVuln.SecurityTool = "YarnAudit"
 		yarnauditVuln.Severity = "low"
+		yarnauditVuln.Title = "No yarn.lock found."
 		yarnauditVuln.Details = "It looks like your project doesn't have a yarn.lock file. If you use Yarn to handle your dependencies, it would be a good idea to commit it so huskyCI can check for vulnerabilities."
 
 		yarnAuditScan.Vulnerabilities.LowVulns = append(yarnAuditScan.Vulnerabilities.LowVulns, yarnauditVuln)
@@ -113,6 +114,7 @@ func (yarnAuditScan *SecTestScanInfo) prepareYarnAuditVulns() {
 		yarnauditVuln.Language = "JavaScript"
 		yarnauditVuln.SecurityTool = "YarnAudit"
 		yarnauditVuln.Severity = "low"
+		yarnauditVuln.Title = "Error while running yarn audit scan."
 		yarnauditVuln.Details = "Yarn returned an error"
 
 		yarnAuditScan.Vulnerabilities.LowVulns = append(yarnAuditScan.Vulnerabilities.LowVulns, yarnauditVuln)

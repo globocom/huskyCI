@@ -84,6 +84,7 @@ func (gitleaksScan *SecTestScanInfo) prepareGitleaksVulns() {
 		gitleaksVuln.Language = "Generic"
 		gitleaksVuln.SecurityTool = "Gitleaks"
 		gitleaksVuln.Severity = "low"
+		gitleaksVuln.Title = "Too big project for Gitleaks scan"
 		gitleaksVuln.Details = "It looks like your project is too big and huskyCI was not able to run Gitleaks."
 
 		gitleaksScan.Vulnerabilities.LowVulns = append(gitleaksScan.Vulnerabilities.LowVulns, gitleaksVuln)
@@ -95,6 +96,7 @@ func (gitleaksScan *SecTestScanInfo) prepareGitleaksVulns() {
 		gitleaksVuln.Language = "Generic"
 		gitleaksVuln.SecurityTool = "Gitleaks"
 		gitleaksVuln.Severity = "low"
+		gitleaksVuln.Title = "Gitleaks internal error"
 		gitleaksVuln.Details = "Internal error running Gitleaks."
 
 		gitleaksScan.Vulnerabilities.LowVulns = append(gitleaksScan.Vulnerabilities.LowVulns, gitleaksVuln)

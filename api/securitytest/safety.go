@@ -94,6 +94,7 @@ func (safetyScan *SecTestScanInfo) prepareSafetyVulns() {
 		safetyVuln.Language = "Python"
 		safetyVuln.SecurityTool = "Safety"
 		safetyVuln.Severity = "low"
+		safetyVuln.Title = "No requirements.txt found."
 		safetyVuln.Details = "It looks like your project doesn't have a requirements.txt file. huskyCI was not able to run safety properly."
 
 		huskyCIsafetyResults.LowVulns = append(huskyCIsafetyResults.LowVulns, safetyVuln)
@@ -110,6 +111,7 @@ func (safetyScan *SecTestScanInfo) prepareSafetyVulns() {
 			safetyVuln.Language = "Python"
 			safetyVuln.SecurityTool = "Safety"
 			safetyVuln.Severity = "low"
+			safetyVuln.Title = "Safety scan warning."
 			safetyVuln.Details = util.AdjustWarningMessage(warning)
 
 			huskyCIsafetyResults.LowVulns = append(huskyCIsafetyResults.LowVulns, safetyVuln)
