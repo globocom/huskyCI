@@ -84,6 +84,7 @@ func (gitleaksScan *SecTestScanInfo) prepareGitleaksVulns() {
 		gitleaksVuln.Language = "Generic"
 		gitleaksVuln.SecurityTool = "Gitleaks"
 		gitleaksVuln.Severity = "low"
+		gitleaksVuln.Title = "Too big project for Gitleaks scan"
 		gitleaksVuln.Details = "It looks like your project is too big and huskyCI was not able to run Gitleaks."
 
 		gitleaksScan.Vulnerabilities.LowVulns = append(gitleaksScan.Vulnerabilities.LowVulns, gitleaksVuln)
@@ -95,6 +96,7 @@ func (gitleaksScan *SecTestScanInfo) prepareGitleaksVulns() {
 		gitleaksVuln.Language = "Generic"
 		gitleaksVuln.SecurityTool = "Gitleaks"
 		gitleaksVuln.Severity = "low"
+		gitleaksVuln.Title = "Gitleaks internal error"
 		gitleaksVuln.Details = "Internal error running Gitleaks."
 
 		gitleaksScan.Vulnerabilities.LowVulns = append(gitleaksScan.Vulnerabilities.LowVulns, gitleaksVuln)
@@ -109,9 +111,10 @@ func (gitleaksScan *SecTestScanInfo) prepareGitleaksVulns() {
 
 		gitleaksVuln := types.HuskyCIVulnerability{}
 		gitleaksVuln.SecurityTool = "GitLeaks"
-		gitleaksVuln.Details = issue.Rule + " @ [" + issue.Commit + "]"
+		gitleaksVuln.Title = issue.Rule + " sensitive data found"
 		gitleaksVuln.File = issue.File
 		gitleaksVuln.Code = issue.Line
+		gitleaksVuln.Title = "Hard Coded " + issue.Rule + " in: " + issue.File
 
 		switch issue.Rule {
 		case "PKCS8", "RSA", "SSH", "PGP", "EC":

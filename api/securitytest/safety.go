@@ -7,6 +7,7 @@ package securitytest
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/globocom/huskyCI/api/log"
@@ -94,6 +95,7 @@ func (safetyScan *SecTestScanInfo) prepareSafetyVulns() {
 		safetyVuln.Language = "Python"
 		safetyVuln.SecurityTool = "Safety"
 		safetyVuln.Severity = "low"
+		safetyVuln.Title = "No requirements.txt found."
 		safetyVuln.Details = "It looks like your project doesn't have a requirements.txt file. huskyCI was not able to run safety properly."
 
 		huskyCIsafetyResults.LowVulns = append(huskyCIsafetyResults.LowVulns, safetyVuln)
@@ -110,6 +112,7 @@ func (safetyScan *SecTestScanInfo) prepareSafetyVulns() {
 			safetyVuln.Language = "Python"
 			safetyVuln.SecurityTool = "Safety"
 			safetyVuln.Severity = "low"
+			safetyVuln.Title = "Safety scan warning."
 			safetyVuln.Details = util.AdjustWarningMessage(warning)
 
 			huskyCIsafetyResults.LowVulns = append(huskyCIsafetyResults.LowVulns, safetyVuln)
@@ -127,6 +130,7 @@ func (safetyScan *SecTestScanInfo) prepareSafetyVulns() {
 		safetyVuln.Severity = "high"
 		safetyVuln.Details = issue.Comment
 		safetyVuln.Code = issue.Dependency + " " + issue.Version
+		safetyVuln.Title = fmt.Sprintf("Vulnerable Dependency: %s (%s)", issue.Dependency, issue.Below)
 		safetyVuln.VunerableBelow = issue.Below
 
 		huskyCIsafetyResults.HighVulns = append(huskyCIsafetyResults.HighVulns, safetyVuln)

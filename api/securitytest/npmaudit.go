@@ -6,6 +6,7 @@ package securitytest
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/globocom/huskyCI/api/log"
@@ -27,6 +28,7 @@ type Vulnerability struct {
 	VulnerableVersions string    `json:"vulnerable_versions"`
 	Severity           string    `json:"severity"`
 	Overview           string    `json:"overview"`
+	Title              string    `json:"title"`
 }
 
 // Finding holds the version of a given security issue found
@@ -91,6 +93,7 @@ func (npmAuditScan *SecTestScanInfo) prepareNpmAuditVulns() {
 		npmauditVuln.Language = "JavaScript"
 		npmauditVuln.SecurityTool = "NpmAudit"
 		npmauditVuln.Severity = "low"
+		npmauditVuln.Title = "No package-lock.json found."
 		npmauditVuln.Details = "It looks like your project doesn't have a package-lock.json file. If you use NPM to handle your dependencies, it would be a good idea to commit it so huskyCI can check for vulnerabilities."
 
 		npmAuditScan.Vulnerabilities.LowVulns = append(npmAuditScan.Vulnerabilities.LowVulns, npmauditVuln)
@@ -101,6 +104,7 @@ func (npmAuditScan *SecTestScanInfo) prepareNpmAuditVulns() {
 		npmauditVuln := types.HuskyCIVulnerability{}
 		npmauditVuln.Language = "JavaScript"
 		npmauditVuln.SecurityTool = "NpmAudit"
+		npmauditVuln.Title = fmt.Sprintf("Vulnerable Dependency: %s %s (%s)", issue.ModuleName, issue.VulnerableVersions, issue.Title)
 		npmauditVuln.Details = issue.Overview
 		npmauditVuln.VunerableBelow = issue.VulnerableVersions
 		npmauditVuln.Code = issue.ModuleName

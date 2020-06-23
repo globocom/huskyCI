@@ -45,6 +45,7 @@ type SpotBugsIssue struct {
 	Abbreviation string       `xml:"abbrev,attr"`
 	Category     string       `xml:"category,attr"`
 	SourceLine   []SourceLine `xml:"SourceLine"`
+	ShortMessage string       `xml:"ShortMessage"`
 }
 
 // Error is the struct that holds errors that happened in analysis
@@ -150,6 +151,7 @@ func (spotbugsScan *SecTestScanInfo) prepareSpotBugsVulns() {
 		spotbugsVuln := types.HuskyCIVulnerability{}
 		spotbugsVuln.Language = "Java"
 		spotbugsVuln.SecurityTool = "SpotBugs"
+		spotbugsVuln.Title = "Error while running SpotBugs scan."
 		spotbugsVuln.Details = fmt.Sprintf("An error occured running huskyCI scan on your Java project: %s", spotbugsScan.ErrorFound.Error())
 		spotbugsVuln.Severity = "LOW"
 		spotbugsVuln.Confidence = "HIGH"
@@ -170,6 +172,7 @@ func (spotbugsScan *SecTestScanInfo) prepareSpotBugsVulns() {
 			spotbugsVuln.Code = fmt.Sprintf("Code beetween Line %s and Line %s.", startLine, endLine)
 			spotbugsVuln.Line = startLine
 			spotbugsVuln.File = spotbugsOutput.SpotBugsIssue[i].SourceLine[j].SourcePath
+			spotbugsVuln.Title = spotbugsVuln.Details
 
 			switch spotbugsOutput.SpotBugsIssue[i].Priority {
 			case "1":

@@ -18,6 +18,7 @@ type Vulnerability struct {
 	VulnerableVersions string    `json:"vulnerable_versions"`
 	Severity           string    `json:"severity"`
 	Overview           string    `json:"overview"`
+	Title              string    `json:"title"`
 }
 
 // Finding holds the version of a given security issue found

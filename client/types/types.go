@@ -101,6 +101,7 @@ type HuskyCIVulnerability struct {
 	Code           string `json:"code,omitempty"`
 	Details        string `json:"details,omitempty"`
 	Type           string `json:"type,omitempty"`
+	Title          string `json:"title,omitempty"`
 	VunerableBelow string `json:"vulnerablebelow,omitempty"`
 	Version        string `json:"version,omitempty"`
 	Occurrences    int    `json:"occurrences,omitempty"`

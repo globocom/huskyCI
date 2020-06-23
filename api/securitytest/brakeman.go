@@ -6,6 +6,7 @@ package securitytest
 
 import (
 	"encoding/json"
+	"fmt"
 	"strconv"
 
 	"github.com/globocom/huskyCI/api/log"
@@ -61,7 +62,8 @@ func (brakemanScan *SecTestScanInfo) prepareBrakemanVulns() {
 		brakemanVuln.Language = "Ruby"
 		brakemanVuln.SecurityTool = "Brakeman"
 		brakemanVuln.Confidence = warning.Confidence
-		brakemanVuln.Details = warning.Details + warning.Message
+		brakemanVuln.Title = fmt.Sprintf("Vulnerable Dependency: %s %s", warning.Type, warning.Message)
+		brakemanVuln.Details = warning.Details
 		brakemanVuln.File = warning.File
 		brakemanVuln.Line = strconv.Itoa(warning.Line)
 		brakemanVuln.Code = warning.Code

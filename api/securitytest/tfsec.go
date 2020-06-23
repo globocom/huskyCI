@@ -69,6 +69,7 @@ func (tfsecScan *SecTestScanInfo) prepareTFSecVulns() {
 		tfsecVuln.Language = "HCL"
 		tfsecVuln.SecurityTool = "TFSec"
 		tfsecVuln.Severity = result.Severity
+		tfsecVuln.Title = result.Description
 		tfsecVuln.Details = result.RuleID + " @ [" + result.Description + "]"
 		startLine := strconv.Itoa(result.Location.StartLine)
 		endLine := strconv.Itoa(result.Location.EndLine)

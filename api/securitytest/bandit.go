@@ -69,6 +69,7 @@ func (banditScan *SecTestScanInfo) prepareBanditVulns() {
 		}
 		banditVuln.Severity = issue.IssueSeverity
 		banditVuln.Confidence = issue.IssueConfidence
+		banditVuln.Title = issue.IssueText
 		banditVuln.Details = issue.IssueText
 		banditVuln.File = issue.Filename
 		banditVuln.Line = strconv.Itoa(issue.LineNumber)
