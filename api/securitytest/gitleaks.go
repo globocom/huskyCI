@@ -111,7 +111,7 @@ func (gitleaksScan *SecTestScanInfo) prepareGitleaksVulns() {
 
 		gitleaksVuln := types.HuskyCIVulnerability{}
 		gitleaksVuln.SecurityTool = "GitLeaks"
-		gitleaksVuln.Details = issue.Rule + " @ [" + issue.Commit + "]"
+		gitleaksVuln.Title = issue.Rule + " sensitive data found"
 		gitleaksVuln.File = issue.File
 		gitleaksVuln.Code = issue.Line
 		gitleaksVuln.Title = "Hard Coded " + issue.Rule + " in: " + issue.File

@@ -6,6 +6,7 @@ package securitytest
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/globocom/huskyCI/api/log"
@@ -103,7 +104,7 @@ func (npmAuditScan *SecTestScanInfo) prepareNpmAuditVulns() {
 		npmauditVuln := types.HuskyCIVulnerability{}
 		npmauditVuln.Language = "JavaScript"
 		npmauditVuln.SecurityTool = "NpmAudit"
-		npmauditVuln.Title = issue.Title + " - " + "(" + issue.ModuleName + ", " + issue.VulnerableVersions + ")"
+		npmauditVuln.Title = fmt.Sprintf("Vulnerable Dependency: %s %s (%s)", issue.ModuleName, issue.VulnerableVersions, issue.Title)
 		npmauditVuln.Details = issue.Overview
 		npmauditVuln.VunerableBelow = issue.VulnerableVersions
 		npmauditVuln.Code = issue.ModuleName

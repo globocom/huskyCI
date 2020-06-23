@@ -7,6 +7,7 @@ package securitytest
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/globocom/huskyCI/api/log"
@@ -129,7 +130,7 @@ func (safetyScan *SecTestScanInfo) prepareSafetyVulns() {
 		safetyVuln.Severity = "high"
 		safetyVuln.Details = issue.Comment
 		safetyVuln.Code = issue.Dependency + " " + issue.Version
-		safetyVuln.Title = issue.Dependency + " (" + issue.Below + ")"
+		safetyVuln.Title = fmt.Sprintf("Vulnerable Dependency: %s (%s)", issue.Dependency, issue.Below)
 		safetyVuln.VunerableBelow = issue.Below
 
 		huskyCIsafetyResults.HighVulns = append(huskyCIsafetyResults.HighVulns, safetyVuln)

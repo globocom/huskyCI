@@ -6,6 +6,7 @@ package securitytest
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/globocom/huskyCI/api/log"
@@ -126,7 +127,7 @@ func (yarnAuditScan *SecTestScanInfo) prepareYarnAuditVulns() {
 		yarnauditVuln.Language = "JavaScript"
 		yarnauditVuln.SecurityTool = "YarnAudit"
 		yarnauditVuln.Details = issue.Overview
-		yarnauditVuln.Title = issue.Title + " - " + "(" + issue.ModuleName + ", " + issue.VulnerableVersions + ")"
+		yarnauditVuln.Title = fmt.Sprintf("Vulnerable Dependency: %s %s (%s)", issue.ModuleName, issue.VulnerableVersions, issue.Title)
 		yarnauditVuln.VunerableBelow = issue.VulnerableVersions
 		yarnauditVuln.Code = issue.ModuleName
 		yarnauditVuln.Occurrences = 1
