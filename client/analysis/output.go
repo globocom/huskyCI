@@ -303,15 +303,6 @@ func printAllSummary(analysis types.Analysis) {
 		fmt.Printf("[HUSKYCI][SUMMARY] NoSecHusky: %d\n", outputJSON.Summary.SpotBugsSummary.NoSecVuln)
 	}
 
-	if outputJSON.Summary.GitleaksSummary.FoundVuln || outputJSON.Summary.GitleaksSummary.FoundInfo {
-		fmt.Println()
-		fmt.Printf("[HUSKYCI][SUMMARY] Generic -> %s\n", gitleaksVersion)
-		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", outputJSON.Summary.GitleaksSummary.HighVuln)
-		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", outputJSON.Summary.GitleaksSummary.MediumVuln)
-		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", outputJSON.Summary.GitleaksSummary.LowVuln)
-		fmt.Printf("[HUSKYCI][SUMMARY] NoSecHusky: %d\n", outputJSON.Summary.GitleaksSummary.NoSecVuln)
-	}
-
 	if outputJSON.Summary.TFSecSummary.FoundVuln || outputJSON.Summary.TFSecSummary.FoundInfo {
 		fmt.Println()
 		fmt.Printf("[HUSKYCI][SUMMARY] HCL -> %s\n", tfsecVersion)
@@ -319,6 +310,15 @@ func printAllSummary(analysis types.Analysis) {
 		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", outputJSON.Summary.TFSecSummary.MediumVuln)
 		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", outputJSON.Summary.TFSecSummary.LowVuln)
 		fmt.Printf("[HUSKYCI][SUMMARY] NoSecHusky: %d\n", outputJSON.Summary.TFSecSummary.NoSecVuln)
+	}
+
+	if outputJSON.Summary.GitleaksSummary.FoundVuln || outputJSON.Summary.GitleaksSummary.FoundInfo {
+		fmt.Println()
+		fmt.Printf("[HUSKYCI][SUMMARY] Generic -> %s\n", gitleaksVersion)
+		fmt.Printf("[HUSKYCI][SUMMARY] High: %d\n", outputJSON.Summary.GitleaksSummary.HighVuln)
+		fmt.Printf("[HUSKYCI][SUMMARY] Medium: %d\n", outputJSON.Summary.GitleaksSummary.MediumVuln)
+		fmt.Printf("[HUSKYCI][SUMMARY] Low: %d\n", outputJSON.Summary.GitleaksSummary.LowVuln)
+		fmt.Printf("[HUSKYCI][SUMMARY] NoSecHusky: %d\n", outputJSON.Summary.GitleaksSummary.NoSecVuln)
 	}
 
 	if outputJSON.Summary.TotalSummary.FoundVuln || outputJSON.Summary.TotalSummary.FoundInfo {
@@ -336,11 +336,11 @@ func printAllSummary(analysis types.Analysis) {
 func printSTDOUTOutputGosec(issues []types.HuskyCIVulnerability) {
 	for _, issue := range issues {
 		fmt.Println()
+		fmt.Printf("[HUSKYCI][!] Title: %s\n", issue.Title)
 		fmt.Printf("[HUSKYCI][!] Language: %s\n", issue.Language)
 		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
 		fmt.Printf("[HUSKYCI][!] Severity: %s\n", issue.Severity)
 		fmt.Printf("[HUSKYCI][!] Confidence: %s\n", issue.Confidence)
-		fmt.Printf("[HUSKYCI][!] Title: %s\n", issue.Title)
 		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
 		fmt.Printf("[HUSKYCI][!] File: %s\n", issue.File)
 		fmt.Printf("[HUSKYCI][!] Line: %s\n", issue.Line)
@@ -351,11 +351,11 @@ func printSTDOUTOutputGosec(issues []types.HuskyCIVulnerability) {
 func printSTDOUTOutputBandit(issues []types.HuskyCIVulnerability) {
 	for _, issue := range issues {
 		fmt.Println()
+		fmt.Printf("[HUSKYCI][!] Title: %s\n", issue.Title)
 		fmt.Printf("[HUSKYCI][!] Language: %s\n", issue.Language)
 		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
 		fmt.Printf("[HUSKYCI][!] Severity: %s\n", issue.Severity)
 		fmt.Printf("[HUSKYCI][!] Confidence: %s\n", issue.Confidence)
-		fmt.Printf("[HUSKYCI][!] Title: %s\n", issue.Title)
 		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
 		fmt.Printf("[HUSKYCI][!] File: %s\n", issue.File)
 		fmt.Printf("[HUSKYCI][!] Line: %s\n", issue.Line)
@@ -366,6 +366,7 @@ func printSTDOUTOutputBandit(issues []types.HuskyCIVulnerability) {
 func printSTDOUTOutputSafety(issues []types.HuskyCIVulnerability) {
 	for _, issue := range issues {
 		fmt.Println()
+		fmt.Printf("[HUSKYCI][!] Title: %s\n", issue.Title)
 		fmt.Printf("[HUSKYCI][!] Language: %s\n", issue.Language)
 		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
 		fmt.Printf("[HUSKYCI][!] Severity: %s\n", issue.Severity)
@@ -373,7 +374,6 @@ func printSTDOUTOutputSafety(issues []types.HuskyCIVulnerability) {
 			fmt.Printf("[HUSKYCI][!] Code: %s\n", issue.Code)
 			fmt.Printf("[HUSKYCI][!] Vulnerable Below: %s\n", issue.VunerableBelow)
 		}
-		fmt.Printf("[HUSKYCI][!] Title: %s\n", issue.Title)
 		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
 	}
 }
@@ -381,10 +381,10 @@ func printSTDOUTOutputSafety(issues []types.HuskyCIVulnerability) {
 func printSTDOUTOutputBrakeman(issues []types.HuskyCIVulnerability) {
 	for _, issue := range issues {
 		fmt.Println()
+		fmt.Printf("[HUSKYCI][!] Title: %s\n", issue.Title)
 		fmt.Printf("[HUSKYCI][!] Language: %s\n", issue.Language)
 		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
 		fmt.Printf("[HUSKYCI][!] Confidence: %s\n", issue.Confidence)
-		fmt.Printf("[HUSKYCI][!] Title: %s\n", issue.Title)
 		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
 		fmt.Printf("[HUSKYCI][!] File: %s\n", issue.File)
 		fmt.Printf("[HUSKYCI][!] Line: %s\n", issue.Line)
@@ -396,6 +396,7 @@ func printSTDOUTOutputBrakeman(issues []types.HuskyCIVulnerability) {
 func printSTDOUTOutputNpmAudit(issues []types.HuskyCIVulnerability) {
 	for _, issue := range issues {
 		fmt.Println()
+		fmt.Printf("[HUSKYCI][!] Title: %s\n", issue.Title)
 		fmt.Printf("[HUSKYCI][!] Language: %s\n", issue.Language)
 		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
 		fmt.Printf("[HUSKYCI][!] Severity: %s\n", issue.Severity)
@@ -404,7 +405,6 @@ func printSTDOUTOutputNpmAudit(issues []types.HuskyCIVulnerability) {
 			fmt.Printf("[HUSKYCI][!] Version: %s\n", issue.Version)
 			fmt.Printf("[HUSKYCI][!] Vulnerable Below: %s\n", issue.VunerableBelow)
 		}
-		fmt.Printf("[HUSKYCI][!] Title: %s\n", issue.Title)
 		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
 	}
 }
@@ -412,6 +412,7 @@ func printSTDOUTOutputNpmAudit(issues []types.HuskyCIVulnerability) {
 func printSTDOUTOutputYarnAudit(issues []types.HuskyCIVulnerability) {
 	for _, issue := range issues {
 		fmt.Println()
+		fmt.Printf("[HUSKYCI][!] Title: %s\n", issue.Title)
 		fmt.Printf("[HUSKYCI][!] Language: %s\n", issue.Language)
 		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
 		fmt.Printf("[HUSKYCI][!] Severity: %s\n", issue.Severity)
@@ -421,7 +422,6 @@ func printSTDOUTOutputYarnAudit(issues []types.HuskyCIVulnerability) {
 			fmt.Printf("[HUSKYCI][!] Version: %s\n", issue.Version)
 			fmt.Printf("[HUSKYCI][!] Vulnerable Below: %s\n", issue.VunerableBelow)
 		}
-		fmt.Printf("[HUSKYCI][!] Title: %s\n", issue.Title)
 		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
 	}
 }
@@ -429,11 +429,11 @@ func printSTDOUTOutputYarnAudit(issues []types.HuskyCIVulnerability) {
 func printSTDOUTOutputSpotBugs(issues []types.HuskyCIVulnerability) {
 	for _, issue := range issues {
 		fmt.Println()
+		fmt.Printf("[HUSKYCI][!] Title: %s\n", issue.Title)
 		fmt.Printf("[HUSKYCI][!] Language: %s\n", issue.Language)
 		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
 		fmt.Printf("[HUSKYCI][!] Severity: %s\n", issue.Severity)
 		fmt.Printf("[HUSKYCI][!] Confidence: %s\n", issue.Confidence)
-		fmt.Printf("[HUSKYCI][!] Title: %s\n", issue.Title)
 		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
 		fmt.Printf("[HUSKYCI][!] File: %s\n", issue.File)
 		fmt.Printf("[HUSKYCI][!] Line: %s\n", issue.Line)
@@ -444,10 +444,10 @@ func printSTDOUTOutputSpotBugs(issues []types.HuskyCIVulnerability) {
 func printSTDOUTOutputTFSec(issues []types.HuskyCIVulnerability) {
 	for _, issue := range issues {
 		fmt.Println()
+		fmt.Printf("[HUSKYCI][!] Title: %s\n", issue.Title)
 		fmt.Printf("[HUSKYCI][!] Language: %s\n", issue.Language)
 		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
 		fmt.Printf("[HUSKYCI][!] Severity: %s\n", issue.Severity)
-		fmt.Printf("[HUSKYCI][!] Title: %s\n", issue.Title)
 		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
 		fmt.Printf("[HUSKYCI][!] File: %s\n", issue.File)
 		fmt.Printf("[HUSKYCI][!] Line: %s\n", issue.Line)
@@ -458,9 +458,9 @@ func printSTDOUTOutputTFSec(issues []types.HuskyCIVulnerability) {
 func printSTDOUTOutputGitleaks(issues []types.HuskyCIVulnerability) {
 	for _, issue := range issues {
 		fmt.Println()
+		fmt.Printf("[HUSKYCI][!] Title: %s\n", issue.Title)
 		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
 		fmt.Printf("[HUSKYCI][!] Severity: %s\n", issue.Severity)
-		fmt.Printf("[HUSKYCI][!] Title: %s\n", issue.Title)
 		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
 		fmt.Printf("[HUSKYCI][!] File: %s\n", issue.File)
 		fmt.Printf("[HUSKYCI][!] Code: %s\n", issue.Code)
