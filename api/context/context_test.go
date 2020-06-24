@@ -296,8 +296,8 @@ var _ = Describe("Context", func() {
 				apiConfig, err := config.GetAPIConfig()
 				expectedConfig := &APIConfig{
 					Port:             fakeCaller.expectedIntegerValue,
-					Version:          "0.13.0",
-					ReleaseDate:      "2020-02-28",
+					Version:          "0.14.0",
+					ReleaseDate:      "2020-06-24",
 					AllowOriginValue: fakeCaller.expectedEnvVar,
 					UseTLS:           true,
 					GitPrivateSSHKey: fakeCaller.expectedEnvVar,
