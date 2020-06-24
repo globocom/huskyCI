@@ -26,6 +26,7 @@ If security issues are found in the code, the severity, the confidence, the file
 [HUSKYCI][*] poc-python-bandit -> https://github.com/globocom/huskyCI.git
 [HUSKYCI][*] huskyCI analysis started! yDS9tb9mdt4QnnyvOBp3eVAXE1nWpTRQ
 
+[HUSKYCI][!] Title: Use of exec detected.
 [HUSKYCI][!] Language: Python
 [HUSKYCI][!] Tool: Bandit
 [HUSKYCI][!] Severity: MEDIUM
@@ -38,20 +39,37 @@ If security issues are found in the code, the severity, the confidence, the file
 7 exec(command)
 8
 
+[HUSKYCI][!] Title: Possible hardcoded password: 'password123!'
+[HUSKYCI][!] Language: Python
+[HUSKYCI][!] Tool: Bandit
+[HUSKYCI][!] Severity: LOW
+[HUSKYCI][!] Confidence: MEDIUM
+[HUSKYCI][!] Details: Possible hardcoded password: 'password123!'
+[HUSKYCI][!] File: ./main.py
+[HUSKYCI][!] Line: 1
+[HUSKYCI][!] Code:
+1 secret = 'password123!'
+2
+3 password = 'thisisnotapassword' #nohusky
+4
+
 [HUSKYCI][SUMMARY] Python -> huskyci/bandit:1.6.2
 [HUSKYCI][SUMMARY] High: 0
 [HUSKYCI][SUMMARY] Medium: 1
-[HUSKYCI][SUMMARY] Low: 0
-[HUSKYCI][SUMMARY] NoSecHusky: 0
+[HUSKYCI][SUMMARY] Low: 1
+[HUSKYCI][SUMMARY] NoSecHusky: 1
 
 [HUSKYCI][SUMMARY] Total
 [HUSKYCI][SUMMARY] High: 0
 [HUSKYCI][SUMMARY] Medium: 1
-[HUSKYCI][SUMMARY] Low: 0
-[HUSKYCI][SUMMARY] NoSecHusky: 0
+[HUSKYCI][SUMMARY] Low: 1
+[HUSKYCI][SUMMARY] NoSecHusky: 1
 
-[HUSKYCI][*] Some HIGH/MEDIUM issues were found :(
-ERROR: Job failed: exit code 1
+[HUSKYCI][*] The following securityTests were executed and no blocking vulnerabilities were found:
+[HUSKYCI][*] [huskyci/gitleaks:2.1.0]
+[HUSKYCI][*] Some HIGH/MEDIUM issues were found in these securityTests:
+[HUSKYCI][*] [huskyci/bandit:1.6.2]
+ERROR: Job failed: exit code 190
 ```
 
 ## Getting Started
