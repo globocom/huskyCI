@@ -337,7 +337,7 @@ gitleaks:
 tfsec:
   name: tfsec
   image: huskyci/tfsec
-  imageTag: "v0.19.0"
+  imageTag: "v0.21.0"
   cmd: |+
     mkdir -p ~/.ssh &&
     echo 'GIT_PRIVATE_SSH_KEY' > ~/.ssh/huskyci_id_rsa &&
