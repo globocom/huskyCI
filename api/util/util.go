@@ -44,17 +44,22 @@ func HandleCmd(repositoryURL, repositoryBranch, cmd string) string {
 // HandleGitURLSubstitution will extract GIT_SSH_URL and GIT_URL_TO_SUBSTITUTE from cmd and replace it with the SSH equivalent.
 func HandleGitURLSubstitution(rawString string) string {
 	gitSSHURL := os.Getenv("HUSKYCI_API_GIT_SSH_URL")
-	gitURLToSubstitue := os.Getenv("HUSKYCI_API_GIT_URL_TO_SUBSTITUTE")
-	cmdReplaced := strings.Replace(rawString, "GIT_SSH_URL", gitSSHURL, -1)
-	cmdReplaced = strings.Replace(rawString, "GIT_URL_TO_SUBSTITUTE", gitURLToSubstitue, -1)
+	gitURLToSubstitute := os.Getenv("HUSKYCI_API_GIT_URL_TO_SUBSTITUTE")
+
+	if gitSSHURL == "" || gitURLToSubstitute == "" {
+		gitSSHURL = ""
+		gitURLToSubstitute = ""
+	}
+	cmdReplaced := strings.Replace(rawString, "%GIT_SSH_URL%", gitSSHURL, -1)
+	cmdReplaced = strings.Replace(cmdReplaced, "%GIT_URL_TO_SUBSTITUTE%", gitURLToSubstitute, -1)
 
 	return cmdReplaced
 }
 
-// HandlePrivateSSHKey will extract GIT_PRIVATE_SSH_KEY from cmd and replace it with the proper private SSH key.
+// HandlePrivateSSHKey will extract %GIT_PRIVATE_SSH_KEY% from cmd and replace it with the proper private SSH key.
 func HandlePrivateSSHKey(rawString string) string {
 	privKey := os.Getenv("HUSKYCI_API_GIT_PRIVATE_SSH_KEY")
-	cmdReplaced := strings.Replace(rawString, "GIT_PRIVATE_SSH_KEY", privKey, -1)
+	cmdReplaced := strings.Replace(rawString, "%GIT_PRIVATE_SSH_KEY%", privKey, -1)
 	return cmdReplaced
 }
 
