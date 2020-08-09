@@ -60,11 +60,15 @@ gosec:
   imageTag: v2.3.0
   cmd: |+
     mkdir -p ~/.ssh &&
-    echo '%GIT_PRIVATE_SSH_KEY%' > ~/.ssh/huskyci_id_rsa &&
-    chmod 600 ~/.ssh/huskyci_id_rsa &&
-    echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
-    echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
-    git config --global url."%GIT_SSH_URL%:".insteadOf "%GIT_URL_TO_SUBSTITUTE%"
+    echo '%GIT_PRIVATE_SSH_KEY%' > ~/.ssh/id_rsa &&
+    chmod 600 ~/.ssh/id_rsa &&
+    echo "IdentityFile ~/.ssh/id_rsa" >> /etc/ssh/ssh_config &&
+    echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
+    gitURL="%GIT_SSH_URL%"
+    gitURLSubtitute="%GIT_URL_TO_SUBSTITUTE%"
+    if [ $gitURL != "nil" ] && [ $gitURLSubtitute != "nil" ]; then
+      git config --global url."$gitURL:".insteadOf "$gitURLSubtitute"
+    fi
     cd src
     GIT_TERMINAL_PROMPT=0 git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneGosec
     if [ $? -eq 0 ]; then

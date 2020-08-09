@@ -47,8 +47,8 @@ func HandleGitURLSubstitution(rawString string) string {
 	gitURLToSubstitute := os.Getenv("HUSKYCI_API_GIT_URL_TO_SUBSTITUTE")
 
 	if gitSSHURL == "" || gitURLToSubstitute == "" {
-		gitSSHURL = ""
-		gitURLToSubstitute = ""
+		gitSSHURL = "nil"
+		gitURLToSubstitute = "nil"
 	}
 	cmdReplaced := strings.Replace(rawString, "%GIT_SSH_URL%", gitSSHURL, -1)
 	cmdReplaced = strings.Replace(cmdReplaced, "%GIT_URL_TO_SUBSTITUTE%", gitURLToSubstitute, -1)
