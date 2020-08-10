@@ -52,9 +52,9 @@ var _ = Describe("Util", func() {
 	Describe("HandleGitURLSubstitution", func() {
 
 		rawString := "git config --global url.\"%GIT_SSH_URL%:\".insteadOf \"%GIT_URL_TO_SUBSTITUTE%\""
-		expectedURLToSubstituteNotEmpty := "git config --global url.\":\".insteadOf \"\""
-		expectedSSHURLNotEmpty := "git config --global url.\":\".insteadOf \"\""
-		expectedBothVarsEmpty := "git config --global url.\":\".insteadOf \"\""
+		expectedURLToSubstituteNotEmpty := "git config --global url.\"nil:\".insteadOf \"nil\""
+		expectedSSHURLNotEmpty := "git config --global url.\"nil:\".insteadOf \"nil\""
+		expectedBothVarsEmpty := "git config --global url.\"nil:\".insteadOf \"nil\""
 		expectedNotEmpty := "git config --global url.\"gitlab@gitlab.example.com:\".insteadOf \"https://gitlab.example.com/\""
 
 		Context("When rawString is not empty, HUSKYCI_API_GIT_SSH_URL is empty, but HUSKYCI_API_GIT_URL_TO_SUBSTITUTE is not empty", func() {
