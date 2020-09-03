@@ -22,14 +22,13 @@ type GitLeaksIssue struct {
 	Offender      string `json:"offender"`
 	Rule          string `json:"rule"`
 	Info          string `json:"info"`
-	CommitMessage string `json:"commitMsg"`
+	CommitMessage string `json:"commitMessage"`
 	Author        string `json:"author"`
 	Email         string `json:"email"`
 	File          string `json:"file"`
 	Repository    string `json:"repo"`
 	Date          string `json:"date"`
 	Tags          string `json:"tags"`
-	Severity      string `json:"severity"`
 }
 
 func analyseGitleaks(gitleaksScan *SecTestScanInfo) error {
@@ -38,15 +37,6 @@ func analyseGitleaks(gitleaksScan *SecTestScanInfo) error {
 
 	// nil cOutput states that no Issues were found.
 	if gitleaksScan.Container.COutput == "" {
-		gitleaksScan.prepareContainerAfterScan()
-		return nil
-	}
-
-	// if gitleaks timeout, a warning will be generated as a low vuln
-	gitleaksTimeout := strings.Contains(gitleaksScan.Container.COutput, "ERROR_TIMEOUT_GITLEAKS")
-	if gitleaksTimeout {
-		gitleaksScan.GitleaksTimeout = true
-		gitleaksScan.prepareGitleaksVulns()
 		gitleaksScan.prepareContainerAfterScan()
 		return nil
 	}
@@ -79,18 +69,6 @@ func (gitleaksScan *SecTestScanInfo) prepareGitleaksVulns() {
 	huskyCIgitleaksResults := types.HuskyCISecurityTestOutput{}
 	gitleaksOutput := gitleaksScan.FinalOutput.(GitleaksOutput)
 
-	if gitleaksScan.GitleaksTimeout {
-		gitleaksVuln := types.HuskyCIVulnerability{}
-		gitleaksVuln.Language = "Generic"
-		gitleaksVuln.SecurityTool = "Gitleaks"
-		gitleaksVuln.Severity = "low"
-		gitleaksVuln.Title = "Too big project for Gitleaks scan"
-		gitleaksVuln.Details = "It looks like your project is too big and huskyCI was not able to run Gitleaks."
-
-		gitleaksScan.Vulnerabilities.LowVulns = append(gitleaksScan.Vulnerabilities.LowVulns, gitleaksVuln)
-		return
-	}
-
 	if gitleaksScan.GitleaksErrorRunning {
 		gitleaksVuln := types.HuskyCIVulnerability{}
 		gitleaksVuln.Language = "Generic"
@@ -114,6 +92,7 @@ func (gitleaksScan *SecTestScanInfo) prepareGitleaksVulns() {
 		gitleaksVuln.Title = issue.Rule + " sensitive data found"
 		gitleaksVuln.File = issue.File
 		gitleaksVuln.Code = issue.Line
+		gitleaksVuln.Details = issue.Commit
 		gitleaksVuln.Title = "Hard Coded " + issue.Rule + " in: " + issue.File
 
 		switch issue.Rule {

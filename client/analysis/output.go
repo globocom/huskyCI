@@ -461,7 +461,7 @@ func printSTDOUTOutputGitleaks(issues []types.HuskyCIVulnerability) {
 		fmt.Printf("[HUSKYCI][!] Title: %s\n", issue.Title)
 		fmt.Printf("[HUSKYCI][!] Tool: %s\n", issue.SecurityTool)
 		fmt.Printf("[HUSKYCI][!] Severity: %s\n", issue.Severity)
-		fmt.Printf("[HUSKYCI][!] Details: %s\n", issue.Details)
+		fmt.Printf("[HUSKYCI][!] Details: Commit hash %s\n", issue.Details)
 		fmt.Printf("[HUSKYCI][!] File: %s\n", issue.File)
 		fmt.Printf("[HUSKYCI][!] Code: %s\n", issue.Code)
 	}

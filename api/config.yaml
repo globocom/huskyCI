@@ -311,7 +311,7 @@ spotbugs:
 gitleaks:
   name: gitleaks
   image: huskyci/gitleaks
-  imageTag: "2.1.0"
+  imageTag: "v6.1.2"
   cmd: |+
     mkdir -p ~/.ssh &&
     echo '%GIT_PRIVATE_SSH_KEY%' > ~/.ssh/huskyci_id_rsa &&
@@ -321,13 +321,15 @@ gitleaks:
     GIT_TERMINAL_PROMPT=0 git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneGitleaks
     if [ $? -eq 0 ]; then
         touch /tmp/results.json
-        timeout -t 360 $(which gitleaks) --log=warn --report=/tmp/results.json --repo-path=./code --branch=%GIT_BRANCH% --repo-config &> /tmp/errorGitleaks
-        if [[ $? -eq 124 || $? -eq 143 ]]; then #timeout exit codes
-            echo 'ERROR_TIMEOUT_GITLEAKS'
-            cat /tmp/errorGitleaks
-        elif [ $? -eq 2 ]; then
-            echo 'ERROR_RUNNING_GITLEAKS'
-            cat /tmp/errorGitleaks
+        $(which gitleaks) --timeout 5m --report=/tmp/results.json --repo-path=./code --branch=%GIT_BRANCH% --repo-config &> /tmp/errorGitleaks
+        if [ $? -eq 2 ]; then #no gitleaks config file found
+            $(which gitleaks) --timeout 5m --report=/tmp/results.json --repo-path=./code --branch=%GIT_BRANCH% &> /tmp/errorGitleaks
+            if [ $? -eq 2 ]; then
+                echo 'ERROR_RUNNING_GITLEAKS'
+                cat /tmp/errorGitleaks
+            else
+                jq -j -M -c . /tmp/results.json
+            fi
         else
             jq -j -M -c . /tmp/results.json
         fi
