@@ -92,6 +92,7 @@ func (gitleaksScan *SecTestScanInfo) prepareGitleaksVulns() {
 		gitleaksVuln.Title = issue.Rule + " sensitive data found"
 		gitleaksVuln.File = issue.File
 		gitleaksVuln.Code = issue.Line
+		gitleaksVuln.Details = issue.Commit
 		gitleaksVuln.Title = "Hard Coded " + issue.Rule + " in: " + issue.File
 
 		switch issue.Rule {
