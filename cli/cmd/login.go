@@ -50,7 +50,7 @@ Log in to the GitHub.
 			return fmt.Errorf("error getting access token: %w", err)
 		}
 
-		if err := ioutil.WriteFile(".huskyci", []byte(resp.AccessToken), 0644); err != nil {
+		if err := ioutil.WriteFile(".huskyci", []byte(resp.AccessToken), 0600); err != nil {
 			return fmt.Errorf("error saving access token: %w", err)
 		}
 
