@@ -34,7 +34,7 @@ func SetConfigs() {
 	RepositoryBranch = os.Getenv(`HUSKYCI_CLIENT_REPO_BRANCH`)
 	HuskyAPI = os.Getenv(`HUSKYCI_CLIENT_API_ADDR`)
 	HuskyToken = os.Getenv(`HUSKYCI_CLIENT_TOKEN`)
-	EnvTimeout = strconv.ParseInt(os.Getenv(`HUSKYCI_CLIENT_TESTS_TIMEOUT`))
+	EnvTimeout = strconv.Atoi(os.Getenv(`HUSKYCI_CLIENT_TESTS_TIMEOUT`))
 	HuskyUseTLS = getUseTLS()
 }
 

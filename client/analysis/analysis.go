@@ -122,7 +122,7 @@ func MonitorAnalysis(RID string) (types.Analysis, error) {
 	huskyTimeOut := config.EnvTimeout
 
 	analysis := types.Analysis{}
-	timeout := time.After(strconv.Atoi(huskyTimeOut) * time.Minute)
+	timeout := time.After(huskyTimeOut * time.Minute)
 	retryTick := time.NewTicker(60 * time.Second)
 
 	for {
