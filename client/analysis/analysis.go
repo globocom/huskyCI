@@ -118,8 +118,10 @@ func GetAnalysis(RID string) (types.Analysis, error) {
 // MonitorAnalysis will keep monitoring an analysis until it has finished or timed out.
 func MonitorAnalysis(RID string) (types.Analysis, error) {
 
+	huskyTimeOut := config.EnvTimeout
+
 	analysis := types.Analysis{}
-	timeout := time.After(60 * time.Minute)
+	timeout := time.After(huskyTimeOut * time.Minute)
 	retryTick := time.NewTicker(60 * time.Second)
 
 	for {

@@ -12,9 +12,11 @@ HUSKYCI_CLIENT_REPO_URL="https://github.com/globocom/huskyCI.git"
 HUSKYCI_CLIENT_REPO_BRANCH="poc-golang-gosec"
 HUSKYCI_CLIENT_API_ADDR="http://localhost:8888"
 HUSKYCI_CLIENT_API_USE_HTTPS="false"
+HUSKYCI_CLIENT_TESTS_TIMEOUT=60
 
 # Adding default envs vars to run be used by make run-client
 echo "export HUSKYCI_CLIENT_REPO_URL=\"$HUSKYCI_CLIENT_REPO_URL\"" > .env
 echo "export HUSKYCI_CLIENT_REPO_BRANCH=\"$HUSKYCI_CLIENT_REPO_BRANCH\"" >> .env
 echo "export HUSKYCI_CLIENT_API_ADDR=\"$HUSKYCI_CLIENT_API_ADDR\"" >> .env
 echo "export HUSKYCI_CLIENT_API_USE_HTTPS=\"$HUSKYCI_CLIENT_API_USE_HTTPS\"" >> .env
+echo "export HUSKYCI_CLIENT_TESTS_TIMEOUT=\"$HUSKYCI_CLIENT_TESTS_TIMEOUT\"" >> .env
