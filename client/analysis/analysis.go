@@ -12,6 +12,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"time"
+	"strconv"
 
 	"github.com/globocom/huskyCI/client/config"
 	"github.com/globocom/huskyCI/client/types"
@@ -121,7 +122,7 @@ func MonitorAnalysis(RID string) (types.Analysis, error) {
 	huskyTimeOut := config.EnvTimeout
 
 	analysis := types.Analysis{}
-	timeout := time.After(huskyTimeOut * time.Minute)
+	timeout := time.After(strconv.FormatInt(huskyTimeOut) * time.Minute)
 	retryTick := time.NewTicker(60 * time.Second)
 
 	for {
