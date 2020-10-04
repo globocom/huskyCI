@@ -7,6 +7,7 @@ package config
 import (
 	"errors"
 	"os"
+	"strconv"
 )
 
 // RepositoryURL stores the repository URL of the project to be analyzed.
