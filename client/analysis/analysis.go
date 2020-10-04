@@ -124,7 +124,7 @@ func MonitorAnalysis(RID string) (types.Analysis, error) {
 	analysis := types.Analysis{}
 	
 	if err != nil {
-		timeout := time.After(huskyTimeOut * time.Minute)
+		timeout := time.After(time.Duration(huskyTimeOut) * time.Minute)
 		retryTick := time.NewTicker(60 * time.Second)
 	}
 
