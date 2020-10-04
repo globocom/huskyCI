@@ -24,6 +24,9 @@ var HuskyToken string
 // HuskyUseTLS stores if huskyCI is to use an HTTPS connection.
 var HuskyUseTLS bool
 
+// EnvTimeout is the variable to set TimeOut configurable
+var EnvTimeout int
+
 // SetConfigs sets all configuration needed to start the client.
 func SetConfigs() {
 	RepositoryURL = os.Getenv(`HUSKYCI_CLIENT_REPO_URL`)
