@@ -1,11 +1,11 @@
 package context_test
 
 import (
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-
 	"errors"
 	"time"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 
 	. "github.com/globocom/huskyCI/api/context"
 	"github.com/globocom/huskyCI/api/db"
@@ -438,6 +438,7 @@ var _ = Describe("Context", func() {
 						TimeOutInSeconds: fakeCaller.expectedIntFromConfig,
 					},
 					DBInstance: &db.MongoRequests{},
+					Cache:      apiConfig.Cache, // cannot be compared due to channels inside the structure
 				}
 				Expect(apiConfig).To(Equal(expectedConfig))
 				Expect(err).To(BeNil())

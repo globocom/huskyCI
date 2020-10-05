@@ -9,14 +9,15 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
+
 	"github.com/globocom/huskyCI/api/auth"
 	apiContext "github.com/globocom/huskyCI/api/context"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/routes"
 	"github.com/globocom/huskyCI/api/util"
 	apiUtil "github.com/globocom/huskyCI/api/util/api"
-	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
 )
 
 func main() {

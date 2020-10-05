@@ -8,9 +8,11 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/labstack/echo"
+	"github.com/patrickmn/go-cache"
+
 	apiContext "github.com/globocom/huskyCI/api/context"
 	"github.com/globocom/huskyCI/api/log"
-	"github.com/labstack/echo"
 )
 
 const logActionGetMetric = "GetMetric"
@@ -18,13 +20,22 @@ const logInfoStats = "STATS"
 
 // GetMetric returns data about the metric received
 func GetMetric(c echo.Context) error {
+	url := c.Request().URL.String()
 	metricType := strings.ToLower(c.Param("metric_type"))
 	queryParams := c.QueryParams()
+
+	if result, ok := apiContext.APIConfiguration.Cache.Get(url); ok {
+		return c.JSON(http.StatusOK, result)
+	}
+
 	result, err := apiContext.APIConfiguration.DBInstance.GetMetricByType(metricType, queryParams)
 	if err != nil {
 		httpStatus, reply := checkError(err, metricType)
 		return c.JSON(httpStatus, reply)
 	}
+
+	apiContext.APIConfiguration.Cache.Set(url, result, cache.DefaultExpiration)
+
 	return c.JSON(http.StatusOK, result)
 }
 
