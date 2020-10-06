@@ -1,3 +1,7 @@
+// Copyright 2020 Globo.com authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package github
 
 import (
@@ -23,7 +27,7 @@ func NewDeviceFlow(baseURL *url.URL, client *http.Client) DeviceFlow {
 
 // GetCodes requests the device and user verification codes from GitHub.
 func (df DeviceFlow) GetCodes(req *GetCodesRequest) (*GetCodesResponse, error) {
-	uri := df.uri("login/device/code")
+	uri := df.uri(LoginDeviceCodePath)
 	resp := new(GetCodesResponse)
 	if err := df.do(http.MethodPost, uri, req, resp); err != nil {
 		return nil, err
@@ -52,7 +56,7 @@ type GetCodesResponse struct {
 func (df DeviceFlow) GetAccessToken(
 	req *GetAccessTokenRequest,
 ) (*GetAccessTokenResponse, error) {
-	uri := df.uri("login/oauth/access_token")
+	uri := df.uri(LoginOAuthAccessTokenPath)
 	resp := new(GetAccessTokenResponse)
 	if err := df.do(http.MethodPost, uri, req, resp); err != nil {
 		return nil, err

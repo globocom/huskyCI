@@ -1,3 +1,7 @@
+// Copyright 2020 Globo.com authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package cmd
 
 import (
@@ -16,7 +20,7 @@ import (
 
 var loginCmd = &cobra.Command{
 	Use:   "login",
-	Short: "Log in to GitHub",
+	Short: "Log in with GitHub",
 	Long: `
 Log in to the GitHub.
 `,
@@ -53,6 +57,8 @@ Log in to the GitHub.
 		if err := ioutil.WriteFile(".huskyci", []byte(resp.AccessToken), 0600); err != nil {
 			return fmt.Errorf("error saving access token: %w", err)
 		}
+
+		fmt.Println("Login successful!🚀")
 
 		return nil
 	},
