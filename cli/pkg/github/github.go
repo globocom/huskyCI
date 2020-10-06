@@ -19,7 +19,7 @@ const (
 // GitHub API paths.
 const (
 	LoginDeviceCodePath       = "login/device/code"
-	LoginOAuthAccessTokenPath = "login/oauth/access_token"
+	LoginOAuthAccessTokenPath = "login/oauth/access_token" // #nosec - just a GitHub API path
 )
 
 // DefaultBaseURI is a default GitHub base URI.
