@@ -67,7 +67,12 @@ gosec:
     gitURL="%GIT_SSH_URL%"
     gitURLSubtitute="%GIT_URL_TO_SUBSTITUTE%"
     if [ $gitURL != "nil" ] && [ $gitURLSubtitute != "nil" ]; then
-      git config --global url."$gitURL:".insteadOf "$gitURLSubtitute"
+      if [ "${#gitURL[@]}" == "${#gitURLSubtitute[@]}" ]; then
+        for (( i=0; i<${#gitURL[@]}; i++ ));
+        do
+          git config --global url."${gitURL[$i]}:".insteadOf "${gitURLSubtitute[$i]}"
+        done
+      fi
     fi
     cd src
     GIT_TERMINAL_PROMPT=0 git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneGosec
