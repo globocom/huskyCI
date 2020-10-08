@@ -10,6 +10,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/patrickmn/go-cache"
+
 	"github.com/globocom/huskyCI/api/db"
 	postgres "github.com/globocom/huskyCI/api/db/postgres"
 	"github.com/globocom/huskyCI/api/types"
@@ -83,6 +85,7 @@ type APIConfig struct {
 	SafetySecurityTest     *types.SecurityTest
 	TFSecSecurityTest      *types.SecurityTest
 	DBInstance             db.Requests
+	Cache                  *cache.Cache
 }
 
 // DefaultConfig is the struct that stores the caller for testing.
@@ -127,6 +130,7 @@ func (dF DefaultConfig) SetOnceConfig() {
 			SafetySecurityTest:     dF.getSecurityTestConfig("safety"),
 			TFSecSecurityTest:      dF.getSecurityTestConfig("tfsec"),
 			DBInstance:             dF.GetDB(),
+			Cache:                  dF.GetCache(),
 		}
 	})
 }
@@ -252,7 +256,7 @@ func (dF DefaultConfig) GetConnMaxLifetime() time.Duration {
 	return time.Hour * time.Duration(connMaxLifetime)
 }
 
-//GetDBPort returns the port where DB
+// GetDBPort returns the port where DB
 // will be listening to. It depends on an env
 // called HUSKYCI_DATABASE_DB_PORT.
 func (dF DefaultConfig) GetDBPort() int {
@@ -360,4 +364,30 @@ func (dF DefaultConfig) GetDB() db.Requests {
 		return &postgres
 	}
 	return &db.MongoRequests{}
+}
+
+// GetCache returns a new cache based on the HUSKYCI_CACHE_DEFAULT_EXPIRATION
+// and HUSKYCI_CACHE_CLEANUP_INTERVAL environment variables.
+func (dF DefaultConfig) GetCache() *cache.Cache {
+	var (
+		defaultExpiration time.Duration
+		cleanupInterval   time.Duration
+		err               error
+	)
+
+	defaultExpiration, err = time.ParseDuration(
+		dF.Caller.GetEnvironmentVariable("HUSKYCI_CACHE_DEFAULT_EXPIRATION"),
+	)
+	if err != nil {
+		defaultExpiration = 5 * time.Minute
+	}
+
+	cleanupInterval, err = time.ParseDuration(
+		dF.Caller.GetEnvironmentVariable("HUSKYCI_CACHE_CLEANUP_INTERVAL"),
+	)
+	if err != nil {
+		cleanupInterval = 10 * time.Minute
+	}
+
+	return cache.New(defaultExpiration, cleanupInterval)
 }
