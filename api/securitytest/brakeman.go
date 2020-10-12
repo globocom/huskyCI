@@ -11,6 +11,7 @@ import (
 
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
+	"github.com/globocom/huskyCI/api/util"
 )
 
 // BrakemanOutput is the struct that holds issues and stats found on a Brakeman scan.
@@ -61,6 +62,10 @@ func (brakemanScan *SecTestScanInfo) prepareBrakemanVulns() {
 		brakemanVuln := types.HuskyCIVulnerability{}
 		brakemanVuln.Language = "Ruby"
 		brakemanVuln.SecurityTool = "Brakeman"
+		noHuskyInLine := util.VerifyNoHusky(warning.Code, warning.Line, brakemanVuln.SecurityTool)
+		if noHuskyInLine {
+			warning.Confidence = "NoSec"
+		}
 		brakemanVuln.Confidence = warning.Confidence
 		brakemanVuln.Title = fmt.Sprintf("Vulnerable Dependency: %s %s", warning.Type, warning.Message)
 		brakemanVuln.Details = warning.Details
@@ -70,6 +75,8 @@ func (brakemanScan *SecTestScanInfo) prepareBrakemanVulns() {
 		brakemanVuln.Type = warning.Type
 
 		switch brakemanVuln.Confidence {
+		case "NoSec":
+			huskyCIbrakemanResults.NoSecVulns = append(huskyCIbrakemanResults.NoSecVulns, brakemanVuln)
 		case "High":
 			huskyCIbrakemanResults.HighVulns = append(huskyCIbrakemanResults.HighVulns, brakemanVuln)
 		case "Medium":
