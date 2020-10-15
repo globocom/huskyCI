@@ -68,9 +68,11 @@ gosec:
     gitURLSubtitute="%GIT_URL_TO_SUBSTITUTE%"
     if [ $gitURL != "nil" ] && [ $gitURLSubtitute != "nil" ]; then
       if [ "${#gitURL[@]}" == "${#gitURLSubtitute[@]}" ]; then
-        for (( i=0; i<${#gitURL[@]}; i++ ));
+        i=0
+        while [ "$i" -lt ${#gitURL[@]} ];
         do
           git config --global url."${gitURL[$i]}:".insteadOf "${gitURLSubtitute[$i]}"
+          i=$((i+1))
         done
       fi
     fi
