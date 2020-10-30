@@ -66,13 +66,13 @@ gosec:
     echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
     gitURL="%GIT_SSH_URL%"
     gitURLSubtitute="%GIT_URL_TO_SUBSTITUTE%"
-    if [ $gitURL != "nil" ] && [ $gitURLSubtitute != "nil" ]; then
-      if [ "${#gitURL[@]}" == "${#gitURLSubtitute[@]}" ]; then
-        for (( i=0; i<${#gitURL[@]}; i++ ));
-        do
-          git config --global url."${gitURL[$i]}:".insteadOf "${gitURLSubtitute[$i]}"
-        done
-      fi
+    if [ "$gitURL" != "nil" ] && [ "$gitURLSubstitute" != "nil" ]; then
+      i=1
+      for eachGitURL in $gitURL; do
+          eachGitURLSubstitute=`echo $gitURLSubtitute | awk -v position=$i '{print $position}'`
+          git config --global url."$eachGitURL:".insteadOf "$eachGitURLSubstitute"
+          i=$((i+1))
+      done
     fi
     cd src
     GIT_TERMINAL_PROMPT=0 git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneGosec
