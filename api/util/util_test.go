@@ -304,6 +304,9 @@ Line4`
 		rawLineNumberSliceInteger := []int{1, 2}
 		rawSecurityToolSliceString := []string{"Bandit"}
 
+		rawBrakemanCodeSliceString := []string{"1 def test(options)\n2 system('ls #{options}') # #nohusky"}
+		rawBrakemanSecurityToolSliceString := []string{"Brakeman"}
+
 		Context("Bandit: When line number doesn't match the one in the code string", func() {
 			It("Should return false.", func() {
 				Expect(util.VerifyNoHusky(rawBanditCodeSliceString[0], rawLineNumberSliceInteger[0], rawSecurityToolSliceString[0])).To(BeFalse())
@@ -321,5 +324,24 @@ Line4`
 				Expect(util.VerifyNoHusky(rawBanditCodeSliceString[0], rawLineNumberSliceInteger[0], rawSecurityToolSliceString[0])).To(BeFalse())
 			})
 		})
+
+		Context("Brakeman: When line number doesn't match the one in the code string", func() {
+			It("Should return false.", func() {
+				Expect(util.VerifyNoHusky(rawBrakemanCodeSliceString[0], rawLineNumberSliceInteger[0], rawBrakemanSecurityToolSliceString[0])).To(BeFalse())
+			})
+		})
+
+		Context("Brakeman: When line number matches the one in the code string", func() {
+			It("Should return true.", func() {
+				Expect(util.VerifyNoHusky(rawBrakemanCodeSliceString[0], rawLineNumberSliceInteger[1], rawBrakemanSecurityToolSliceString[0])).To(BeTrue())
+			})
+		})
+
+		Context("Brakeman: When line number doesn't match the one in the code string", func() {
+			It("Should return false.", func() {
+				Expect(util.VerifyNoHusky(rawBrakemanCodeSliceString[0], rawLineNumberSliceInteger[0], rawBrakemanSecurityToolSliceString[0])).To(BeFalse())
+			})
+		})
+
 	})
 })

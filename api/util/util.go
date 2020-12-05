@@ -239,7 +239,8 @@ func banditCase(code string, lineNumber int) bool {
 // VerifyNoHusky verifies if the code string is marked with the #nohusky tag.
 func VerifyNoHusky(code string, lineNumber int, securityTool string) bool {
 	m := map[string]types.NohuskyFunction{
-		"Bandit": banditCase,
+		"Bandit":   banditCase,
+		"Brakeman": banditCase,
 	}
 
 	return m[securityTool](code, lineNumber)
