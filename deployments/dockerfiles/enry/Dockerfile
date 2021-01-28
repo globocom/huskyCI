@@ -6,7 +6,7 @@ FROM golang:alpine as builder
 RUN apk update && apk upgrade \
 	&& apk add --no-cache alpine-sdk bash make git 
 
-RUN git clone https://github.com/src-d/enry.git && cd enry && make build 
+RUN git clone https://github.com/go-enry/go-enry.git enry && cd enry && make build 
 
 # From the base image
 FROM alpine:3.8
