@@ -129,8 +129,13 @@ brakeman:
     GIT_TERMINAL_PROMPT=0 git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneBrakeman
     if [ $? -eq 0 ]; then
       if [ -d /code/app ]; then
-        brakeman -q -o results.json /code
-        jq -j -M -c . results.json
+        if [ -f /code/brakeman.ignore ]; then
+          brakeman -q -i /code/brakeman.ignore -o results.json /code
+          jq -j -M -c . results.json
+        else
+          brakeman -q -o results.json /code
+          jq -j -M -c . results.json
+        fi
       else
         mv code app
         brakeman -q -o results.json .
