@@ -23,6 +23,7 @@ var IsJSONoutput bool
 type JSONPayload struct {
 	RepositoryURL    string `json:"repositoryURL"`
 	RepositoryBranch string `json:"repositoryBranch"`
+	LanguageExclusions map[string]bool `json:"languageExclusions"`
 }
 
 // Target is the struct that represents HuskyCI API target

@@ -12,6 +12,7 @@ import (
 type Repository struct {
 	URL       string    `bson:"repositoryURL" json:"repositoryURL"`
 	Branch    string    `json:"repositoryBranch"`
+	LanguageExclusions map[string]bool	`json:"languageExclusions"`
 	CreatedAt time.Time `bson:"createdAt" json:"createdAt"`
 }
 

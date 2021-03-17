@@ -32,6 +32,7 @@ type SecTestScanInfo struct {
 	URL                   string
 	Branch                string
 	SecurityTestName      string
+	LanguageExclusions	map[string]bool 
 	ErrorFound            error
 	ReqNotFound           bool
 	WarningFound          bool
@@ -49,10 +50,11 @@ type SecTestScanInfo struct {
 }
 
 // New creates a new huskyCI scan based given RID, URL, Branch and a securityTest name and returns an error.
-func (scanInfo *SecTestScanInfo) New(RID, URL, branch, securityTestName string) error {
+func (scanInfo *SecTestScanInfo) New(RID, URL, branch, securityTestName string, languageExclusions map[string]bool) error {
 	scanInfo.RID = RID
 	scanInfo.URL = URL
 	scanInfo.Branch = branch
+	scanInfo.LanguageExclusions = languageExclusions
 	scanInfo.SecurityTestName = securityTestName
 	return scanInfo.setSecurityTestContainer(securityTestName)
 }

@@ -7,6 +7,7 @@ package config
 import (
 	"errors"
 	"os"
+	"strings"
 )
 
 // RepositoryURL stores the repository URL of the project to be analyzed.
@@ -21,6 +22,7 @@ var RepositoryBranch string
 // HuskyToken is the token used to scan a repository.
 var HuskyToken string
 
+var LanguageExclusions map[string]bool
 // HuskyUseTLS stores if huskyCI is to use an HTTPS connection.
 var HuskyUseTLS bool
 
@@ -29,6 +31,11 @@ func SetConfigs() {
 	RepositoryURL = os.Getenv(`HUSKYCI_CLIENT_REPO_URL`)
 	RepositoryBranch = os.Getenv(`HUSKYCI_CLIENT_REPO_BRANCH`)
 	HuskyAPI = os.Getenv(`HUSKYCI_CLIENT_API_ADDR`)
+	languagesToExclude := strings.Split(os.Getenv(`HUSKYCI_LANGUAGE_EXCLUSIONS`), ",")
+	LanguageExclusions = make(map[string]bool)
+	for _, lang := range languagesToExclude {
+		LanguageExclusions[lang] = true
+	}
 	HuskyToken = os.Getenv(`HUSKYCI_CLIENT_TOKEN`)
 	HuskyUseTLS = getUseTLS()
 }
