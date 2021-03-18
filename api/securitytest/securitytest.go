@@ -32,7 +32,7 @@ type SecTestScanInfo struct {
 	URL                   string
 	Branch                string
 	SecurityTestName      string
-	LanguageExclusions	map[string]bool 
+	LanguageExclusions    map[string]bool
 	ErrorFound            error
 	ReqNotFound           bool
 	WarningFound          bool
