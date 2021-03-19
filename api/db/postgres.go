@@ -132,7 +132,7 @@ func (pR *PostgresRequests) FindAllDBAnalysis(
 
 // InsertDBRepository inserts a new repository into repository table.
 func (pR *PostgresRequests) InsertDBRepository(repository types.Repository) error {
-	if "" == repository.URL || time.Time.IsZero(repository.CreatedAt) {
+	if repository.URL == "" || time.Time.IsZero(repository.CreatedAt) {
 		return errors.New("Empty repository data")
 	}
 	repositoryMap := map[string]interface{}{

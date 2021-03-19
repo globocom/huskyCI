@@ -103,7 +103,8 @@ func (results *RunAllInfo) runGenericScans(enryScan SecTestScanInfo) error {
 		go func(genericTest *types.SecurityTest) {
 			defer wg.Done()
 			newGenericScan := SecTestScanInfo{}
-			if err := newGenericScan.New(enryScan.RID, enryScan.URL, enryScan.Branch, genericTest.Name, nil); err != nil {
+			languangesToExclude := nil
+			if err := newGenericScan.New(enryScan.RID, enryScan.URL, enryScan.Branch, genericTest.Name, languangesToExclude); err != nil {
 				select {
 				case <-syncChan:
 					return
