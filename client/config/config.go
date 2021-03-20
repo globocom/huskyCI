@@ -31,10 +31,13 @@ func SetConfigs() {
 	RepositoryURL = os.Getenv(`HUSKYCI_CLIENT_REPO_URL`)
 	RepositoryBranch = os.Getenv(`HUSKYCI_CLIENT_REPO_BRANCH`)
 	HuskyAPI = os.Getenv(`HUSKYCI_CLIENT_API_ADDR`)
-	languagesToExclude := strings.Split(os.Getenv(`HUSKYCI_LANGUAGE_EXCLUSIONS`), ",")
-	LanguageExclusions = make(map[string]bool)
-	for _, lang := range languagesToExclude {
-		LanguageExclusions[lang] = true
+	exclusionsEnv := os.Getenv(`HUSKYCI_LANGUAGE_EXCLUSIONS`)
+	if exclusionsEnv != "" {
+		languagesToExclude := strings.Split(exclusionsEnv, ",")
+		LanguageExclusions = make(map[string]bool)
+		for _, lang := range languagesToExclude {
+			LanguageExclusions[lang] = true
+		}
 	}
 	HuskyToken = os.Getenv(`HUSKYCI_CLIENT_TOKEN`)
 	HuskyUseTLS = getUseTLS()

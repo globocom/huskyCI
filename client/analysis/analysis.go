@@ -29,7 +29,7 @@ func StartAnalysis() (string, error) {
 		RepositoryBranch: config.RepositoryBranch,
 		LanguageExclusions: config.LanguageExclusions,
 	}
-	
+
 	marshalPayload, err := json.Marshal(requestPayload)
 	if err != nil {
 		return "", err

@@ -103,8 +103,9 @@ func (results *RunAllInfo) runGenericScans(enryScan SecTestScanInfo) error {
 		go func(genericTest *types.SecurityTest) {
 			defer wg.Done()
 			newGenericScan := SecTestScanInfo{}
-			languangesToExclude := nil
-			if err := newGenericScan.New(enryScan.RID, enryScan.URL, enryScan.Branch, genericTest.Name, languangesToExclude); err != nil {
+			// LanguageExclusions is only utilized on first scan (enryScan) therefore set as nil 
+			enryScan.LanguageExclusions = nil
+			if err := newGenericScan.New(enryScan.RID, enryScan.URL, enryScan.Branch, genericTest.Name, enryScan.LanguageExclusions); err != nil {
 				select {
 				case <-syncChan:
 					return
@@ -167,7 +168,9 @@ func (results *RunAllInfo) runLanguageScans(enryScan SecTestScanInfo) error {
 		go func(languageTest *types.SecurityTest) {
 			defer wg.Done()
 			newLanguageScan := SecTestScanInfo{}
-			if err := newLanguageScan.New(enryScan.RID, enryScan.URL, enryScan.Branch, languageTest.Name, nil); err != nil {
+			// LanguageExclusions is only utilized on first scan (enryScan) therefore set as nil 
+			enryScan.LanguageExclusions = nil
+			if err := newLanguageScan.New(enryScan.RID, enryScan.URL, enryScan.Branch, languageTest.Name, enryScan.LanguageExclusions); err != nil {
 				select {
 				case <-syncChan:
 					return
