@@ -141,6 +141,7 @@ brakeman:
           brakeman -q -i /app/brakeman.ignore -o results.json .
         else
           brakeman -q -o results.json .
+        fi
         jq -j -M -c . results.json
       fi
     else
