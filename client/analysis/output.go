@@ -123,6 +123,7 @@ func prepareAllSummary(analysis types.Analysis) {
 	}
 
 	// Brakeman summary
+	outputJSON.Summary.BrakemanSummary.NoSecVuln = len(outputJSON.RubyResults.HuskyCIBrakemanOutput.NoSecVulns)
 	outputJSON.Summary.BrakemanSummary.LowVuln = len(outputJSON.RubyResults.HuskyCIBrakemanOutput.LowVulns)
 	outputJSON.Summary.BrakemanSummary.MediumVuln = len(outputJSON.RubyResults.HuskyCIBrakemanOutput.MediumVulns)
 	outputJSON.Summary.BrakemanSummary.HighVuln = len(outputJSON.RubyResults.HuskyCIBrakemanOutput.HighVulns)

@@ -137,7 +137,10 @@ brakeman:
         jq -j -M -c . results.json
       else
         mv code app
-        brakeman -q -o results.json .
+        if [ -f /app/brakeman.ignore ]; then
+          brakeman -q -i /app/brakeman.ignore -o results.json .
+        else
+          brakeman -q -o results.json .
         jq -j -M -c . results.json
       fi
     else

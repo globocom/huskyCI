@@ -16,6 +16,7 @@ import (
 // BrakemanOutput is the struct that holds issues and stats found on a Brakeman scan.
 type BrakemanOutput struct {
 	Warnings []WarningItem `json:"warnings"`
+	IgnoredWarnings []WarningItem `json:"ignored_warnings"`
 }
 
 // WarningItem is the struct that holds all detailed information of a vulnerability found.
@@ -77,6 +78,20 @@ func (brakemanScan *SecTestScanInfo) prepareBrakemanVulns() {
 		case "Low":
 			huskyCIbrakemanResults.LowVulns = append(huskyCIbrakemanResults.LowVulns, brakemanVuln)
 		}
+	}
+	for _, ignoredWarning := range brakemanOutput.IgnoredWarnings {
+		brakemanVuln := types.HuskyCIVulnerability{}
+		brakemanVuln.Language = "Ruby"
+		brakemanVuln.SecurityTool = "Brakeman"
+		brakemanVuln.Confidence = ignoredWarning.Confidence
+		brakemanVuln.Title = fmt.Sprintf("Vulnerable Dependency: %s %s", ignoredWarning.Type, ignoredWarning.Message)
+		brakemanVuln.Severity = "NOSEC"
+		brakemanVuln.Details = ignoredWarning.Details
+		brakemanVuln.File = ignoredWarning.File
+		brakemanVuln.Line = strconv.Itoa(ignoredWarning.Line)
+		brakemanVuln.Code = ignoredWarning.Code
+		brakemanVuln.Type = ignoredWarning.Type
+		huskyCIbrakemanResults.NoSecVulns = append(huskyCIbrakemanResults.NoSecVulns, brakemanVuln)
 	}
 
 	brakemanScan.Vulnerabilities = huskyCIbrakemanResults
