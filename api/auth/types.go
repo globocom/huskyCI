@@ -20,7 +20,7 @@ type UserCredsHandler interface {
 type Pbkdf2Generator interface {
 	GetCredsFromDB(username string) (types.User, error)
 	DecodeSaltValue(salt string) ([]byte, error)
-	GenHashValue(value, salt []byte, iter, keyLen int, hashFund func() hash.Hash) string
+	GenHashValue(value, salt []byte, iter, keyLen int, hashFunc func() hash.Hash) string
 	GenerateSalt() (string, error)
 	GetHashName() string
 	GetIterations() int
