@@ -123,6 +123,7 @@ func prepareAllSummary(analysis types.Analysis) {
 	}
 
 	// Brakeman summary
+	outputJSON.Summary.BrakemanSummary.NoSecVuln = len(outputJSON.RubyResults.HuskyCIBrakemanOutput.NoSecVulns)
 	outputJSON.Summary.BrakemanSummary.LowVuln = len(outputJSON.RubyResults.HuskyCIBrakemanOutput.LowVulns)
 	outputJSON.Summary.BrakemanSummary.MediumVuln = len(outputJSON.RubyResults.HuskyCIBrakemanOutput.MediumVulns)
 	outputJSON.Summary.BrakemanSummary.HighVuln = len(outputJSON.RubyResults.HuskyCIBrakemanOutput.HighVulns)
@@ -198,7 +199,7 @@ func prepareAllSummary(analysis types.Analysis) {
 		types.FoundInfo = true
 	}
 
-	totalNoSec = outputJSON.Summary.BanditSummary.NoSecVuln + outputJSON.Summary.GosecSummary.NoSecVuln + outputJSON.Summary.GitleaksSummary.NoSecVuln
+	totalNoSec = outputJSON.Summary.BrakemanSummary.NoSecVuln + outputJSON.Summary.BanditSummary.NoSecVuln + outputJSON.Summary.GosecSummary.NoSecVuln + outputJSON.Summary.GitleaksSummary.NoSecVuln
 
 	totalLow = outputJSON.Summary.BrakemanSummary.LowVuln + outputJSON.Summary.SafetySummary.LowVuln + outputJSON.Summary.BanditSummary.LowVuln + outputJSON.Summary.GosecSummary.LowVuln + outputJSON.Summary.NpmAuditSummary.LowVuln + outputJSON.Summary.YarnAuditSummary.LowVuln + outputJSON.Summary.GitleaksSummary.LowVuln + outputJSON.Summary.SpotBugsSummary.LowVuln + outputJSON.Summary.TFSecSummary.LowVuln
 
