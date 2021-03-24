@@ -66,7 +66,7 @@ func TestLog(t *testing.T) {
 		},
 		{
 			name:         "Testing log.Error fail",
-			logger:      &stubLogger{err: errors.New("server is down!")},
+			logger:       &stubLogger{err: errors.New("server is down!")},
 			wantAction:   "action",
 			wantInfo:     "err",
 			wantMsgCode:  11,
@@ -87,7 +87,7 @@ func TestLog(t *testing.T) {
 		},
 		{
 			name:         "Testing log.Warning fail",
-			logger:      &stubLogger{err: errors.New("server is down!")},
+			logger:       &stubLogger{err: errors.New("server is down!")},
 			wantAction:   "action",
 			wantInfo:     "err",
 			wantMsgCode:  11,

@@ -10,9 +10,10 @@ import (
 
 // Repository is the struct that stores all data from repository to be analyzed.
 type Repository struct {
-	URL       string    `bson:"repositoryURL" json:"repositoryURL"`
-	Branch    string    `json:"repositoryBranch"`
-	CreatedAt time.Time `bson:"createdAt" json:"createdAt"`
+	URL                string          `bson:"repositoryURL" json:"repositoryURL"`
+	Branch             string          `json:"repositoryBranch"`
+	LanguageExclusions map[string]bool `json:"languageExclusions"`
+	CreatedAt          time.Time       `bson:"createdAt" json:"createdAt"`
 }
 
 // SecurityTest is the struct that stores all data from the security tests to be executed.

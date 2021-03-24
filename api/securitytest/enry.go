@@ -52,12 +52,16 @@ func (enryScan *SecTestScanInfo) prepareEnryOutput() error {
 				return errMsg
 			}
 		}
-		newLanguage := types.Code{
-			Language: name,
-			Files:    fs,
+
+		if !enryScan.LanguageExclusions[name] {
+			newLanguage := types.Code{
+				Language: name,
+				Files:    fs,
+			}
+			repositoryLanguages = append(repositoryLanguages, newLanguage)
 		}
-		repositoryLanguages = append(repositoryLanguages, newLanguage)
 	}
+
 	enryScan.Codes = repositoryLanguages
 	return nil
 }

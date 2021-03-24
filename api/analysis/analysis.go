@@ -38,7 +38,7 @@ func StartAnalysis(RID string, repository types.Repository) {
 		}
 	}()
 
-	if err := enryScan.New(RID, repository.URL, repository.Branch, enryScan.SecurityTestName); err != nil {
+	if err := enryScan.New(RID, repository.URL, repository.Branch, enryScan.SecurityTestName, repository.LanguageExclusions); err != nil {
 		log.Error(logActionStart, logInfoAnalysis, 2011, err)
 		return
 	}
