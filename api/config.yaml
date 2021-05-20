@@ -213,7 +213,7 @@ npmaudit:
     if [ $? -eq 0 ]; then
       cd code
       if [ -f package-lock.json ]; then
-        npm audit --only=prod --json > /tmp/results.json 2> /tmp/errorNpmaudit
+        npm audit --production --json > /tmp/results.json 2> /tmp/errorNpmaudit
         jq -j -M -c . /tmp/results.json
       else
         if [ ! -f yarn.lock ]; then
