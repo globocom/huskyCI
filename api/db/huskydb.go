@@ -270,3 +270,11 @@ func (mR *MongoRequests) UpdateOneDBAccessToken(mapParams map[string]interface{}
 	err := mongoHuskyCI.Conn.Update(aTokenFinalQuery, updatedAccessToken, mongoHuskyCI.AccessTokenCollection)
 	return err
 }
+
+func (mR *MongoRequests) FindAndModifyDockerAPIAddresses() ([]types.DockerAPIAddresses, error) {
+	findQuery := bson.M{}
+	updateQuery := bson.M{"$inc": bson.M{"currentHostIndex": 1}}
+	result := []types.DockerAPIAddresses{}
+	err := mongoHuskyCI.Conn.FindAndModify(findQuery, updateQuery, mongoHuskyCI.DockerAPIAddressesCollection, &result)
+	return result, err
+}

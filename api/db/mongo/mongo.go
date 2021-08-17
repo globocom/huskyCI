@@ -18,11 +18,12 @@ var Conn *DB
 
 // Collections names used in MongoDB.
 var (
-	RepositoryCollection   = "repository"
-	SecurityTestCollection = "securityTest"
-	AnalysisCollection     = "analysis"
-	UserCollection         = "user"
-	AccessTokenCollection  = "accessToken"
+	RepositoryCollection         = "repository"
+	SecurityTestCollection       = "securityTest"
+	AnalysisCollection           = "analysis"
+	UserCollection               = "user"
+	AccessTokenCollection        = "accessToken"
+	DockerAPIAddressesCollection = "dockerAPIAddresses"
 )
 
 // DB is the struct that represents mongo session.
@@ -40,6 +41,7 @@ type Database interface {
 	Search(query bson.M, selectors []string, collection string, obj interface{}) error
 	Update(query bson.M, updateQuery interface{}, collection string) error
 	UpdateAll(query, updateQuery bson.M, collection string) error
+	FindAndModify(findQuery, updateQuery interface{}, collection string, obj interface{}) error
 	Upsert(query bson.M, obj interface{}, collection string) (*mgo.ChangeInfo, error)
 	SearchOne(query bson.M, selectors []string, collection string, obj interface{}) error
 }
@@ -120,6 +122,21 @@ func (db *DB) UpdateAll(query, updateQuery interface{}, collection string) error
 	c := session.DB("").C(collection)
 	defer session.Close()
 	_, err := c.UpdateAll(query, updateQuery)
+	return err
+}
+
+func (db *DB) FindAndModify(findQuery, updateQuery interface{}, collection string, obj interface{}) error {
+	session := db.Session.Clone()
+	col := session.DB("").C(collection)
+	defer session.Close()
+
+	change := mgo.Change{
+		Update:    updateQuery,
+		Upsert:    false,
+		Remove:    false,
+		ReturnNew: false,
+	}
+	_, err := col.Find(findQuery).Apply(change, &obj)
 	return err
 }
 

@@ -169,5 +169,11 @@ type DBToken struct {
 	UUID       string    `bson:"uuid" json:"uuid"`
 }
 
+// DockerAPIAddresses defines the struct that stores information about docker API hosts
+type DockerAPIAddresses struct {
+	MaxHosts         int `bson:"maxHosts"`
+	CurrentHostIndex int `bson:"currentHostIndex"`
+}
+
 // NohuskyFunction represents all the #nohusky verifier methods.
 type NohuskyFunction func(string, int) bool

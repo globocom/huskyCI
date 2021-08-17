@@ -33,6 +33,7 @@ type Requests interface {
 	UpdateOneDBUser(mapParams map[string]interface{}, updatedUser types.User) error
 	UpdateOneDBAnalysisContainer(mapParams, updateQuery map[string]interface{}) error
 	UpdateOneDBAccessToken(mapParams map[string]interface{}, updatedAccessToken types.DBToken) error
+	FindAndModifyDockerAPIAddresses() ([]types.DockerAPIAddresses, error)
 	GetMetricByType(metricType string, queryStringParams map[string][]string) (interface{}, error)
 }
 

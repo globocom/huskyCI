@@ -42,6 +42,10 @@ func NewDocker() (*Docker, error) {
 		log.Error(logActionNew, logInfoAPI, 3026, err)
 		return nil, err
 	}
+
+	host, err := apiContext.APIConfiguration.DBInstance.FindAndModifyDockerAPIAddresses()
+	fmt.Printf("%+v", host)
+
 	dockerHost := fmt.Sprintf("https://%s", configAPI.DockerHostsConfig.Host)
 
 	// env vars needed by docker/docker library to create a NewEnvClient:

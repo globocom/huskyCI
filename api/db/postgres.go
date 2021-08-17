@@ -421,6 +421,10 @@ func (pR *PostgresRequests) UpdateOneDBAccessToken(
 	return nil
 }
 
+func (pR *PostgresRequests) FindAndModifyDockerAPIAddresses() ([]types.DockerAPIAddresses, error) {
+	return nil, nil
+}
+
 // GetMetricByType returns data about the metric received
 func (pR *PostgresRequests) GetMetricByType(
 	metricType string, queryStringParams map[string][]string) (interface{}, error) {
