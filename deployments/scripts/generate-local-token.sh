@@ -7,7 +7,7 @@
 # This script will generate a local huskyCI token using default local credentials
 #
 
-printf "Generating Local Token      ..." && sleep 60
+printf "Generating Local Token      ..." && sleep 30
 
 token=$(curl -s -H "Content-Type: application/json" -H "Authorization: Basic aHVza3lDSVVzZXI6aHVza3lDSVBhc3N3b3Jk" http://localhost:8888/api/1.0/token -X POST -d '{"repositoryURL": "https://github.com/globocom/huskyCI.git"}' | awk -F '"' '{print $4}')
 

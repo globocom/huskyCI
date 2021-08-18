@@ -107,8 +107,10 @@ function createServerCert {
     openssl x509 -passin pass:$PASSWORD -req -days $EXPIRATIONDAYS -in $TARGETDIR/server.csr -CA $TARGETDIR/ca.pem -CAkey $TARGETDIR/ca-key.pem -CAcreateserial -out $TARGETDIR/server-cert.pem -extfile $TARGETDIR/extfile.cnf
 
     rm $TARGETDIR/server.csr $TARGETDIR/extfile.cnf $TARGETDIR/ca.srl
-    chmod 0400 $TARGETDIR/server-key.pem
-    chmod 0444 $TARGETDIR/server-cert.pem
+    mv $TARGETDIR/server-key.pem $TARGETDIR/server-$NAME-key.pem
+    mv $TARGETDIR/server-cert.pem $TARGETDIR/server-$NAME-cert.pem
+    chmod 0400 $TARGETDIR/server-$NAME-key.pem
+    chmod 0444 $TARGETDIR/server-$NAME-cert.pem
 }
 
 function createClientCert {

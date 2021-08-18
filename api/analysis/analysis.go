@@ -5,12 +5,14 @@
 package analysis
 
 import (
+	"fmt"
 	"time"
 
 	apiContext "github.com/globocom/huskyCI/api/context"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/securitytest"
 	"github.com/globocom/huskyCI/api/types"
+	apiUtil "github.com/globocom/huskyCI/api/util/api"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -38,7 +40,21 @@ func StartAnalysis(RID string, repository types.Repository) {
 		}
 	}()
 
-	if err := enryScan.New(RID, repository.URL, repository.Branch, enryScan.SecurityTestName, repository.LanguageExclusions); err != nil {
+	dockerAPIHostIndex, err := apiContext.APIConfiguration.DBInstance.FindAndModifyDockerAPIAddresses()
+	if err != nil {
+		log.Error(logActionStart, logInfoAnalysis, 2011, err)
+	}
+
+	configAPI, err := apiContext.DefaultConf.GetAPIConfig()
+	if err != nil {
+		log.Error(logActionStart, logInfoAnalysis, 2011, err)
+	}
+
+	dockerHost := apiUtil.FormatDockerHostAddress(dockerAPIHostIndex, configAPI)
+
+	log.Info("StartAnalysisTest", fmt.Sprintf("%s", dockerHost), 2012, RID)
+
+	if err := enryScan.New(RID, repository.URL, repository.Branch, enryScan.SecurityTestName, repository.LanguageExclusions, dockerHost); err != nil {
 		log.Error(logActionStart, logInfoAnalysis, 2011, err)
 		return
 	}

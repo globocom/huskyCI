@@ -18,4 +18,12 @@ db.createUser(
         roles: [{ role: "userAdminAnyDatabase", db: "admin" }]
     }
 );
+
+db.createCollection('dockerAPIAddresses');
+
+db.getCollection('dockerAPIAddresses').insertOne({
+    maxHosts: 3,
+    currentHostIndex: 1
+});
+
 EOF

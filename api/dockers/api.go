@@ -36,17 +36,12 @@ const logActionNew = "NewDocker"
 const logInfoAPI = "DOCKERAPI"
 
 // NewDocker returns a new docker.
-func NewDocker() (*Docker, error) {
+func NewDocker(dockerHost string) (*Docker, error) {
 	configAPI, err := apiContext.DefaultConf.GetAPIConfig()
 	if err != nil {
 		log.Error(logActionNew, logInfoAPI, 3026, err)
 		return nil, err
 	}
-
-	host, err := apiContext.APIConfiguration.DBInstance.FindAndModifyDockerAPIAddresses()
-	fmt.Printf("%+v", host)
-
-	dockerHost := fmt.Sprintf("https://%s", configAPI.DockerHostsConfig.Host)
 
 	// env vars needed by docker/docker library to create a NewEnvClient:
 	err = os.Setenv("DOCKER_HOST", dockerHost)
@@ -257,8 +252,8 @@ func (d Docker) RemoveImage(imageID string) ([]dockerTypes.ImageDelete, error) {
 }
 
 // HealthCheckDockerAPI returns true if a 200 status code is received from dockerAddress or false otherwise.
-func HealthCheckDockerAPI() error {
-	d, err := NewDocker()
+func HealthCheckDockerAPI(dockerHost string) error {
+	d, err := NewDocker(dockerHost)
 	if err != nil {
 		log.Error("HealthCheckDockerAPI", logInfoAPI, 3011, err)
 		return err

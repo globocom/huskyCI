@@ -47,15 +47,18 @@ type SecTestScanInfo struct {
 	Container             types.Container
 	FinalOutput           interface{}
 	Vulnerabilities       types.HuskyCISecurityTestOutput
+	DockerHost            string
 }
 
 // New creates a new huskyCI scan based given RID, URL, Branch and a securityTest name and returns an error.
-func (scanInfo *SecTestScanInfo) New(RID, URL, branch, securityTestName string, languageExclusions map[string]bool) error {
+func (scanInfo *SecTestScanInfo) New(RID, URL, branch, securityTestName string, languageExclusions map[string]bool, dockerHost string) error {
 	scanInfo.RID = RID
 	scanInfo.URL = URL
 	scanInfo.Branch = branch
 	scanInfo.LanguageExclusions = languageExclusions
 	scanInfo.SecurityTestName = securityTestName
+	scanInfo.DockerHost = dockerHost
+
 	return scanInfo.setSecurityTestContainer(securityTestName)
 }
 
@@ -93,7 +96,7 @@ func (scanInfo *SecTestScanInfo) dockerRun(timeOutInSeconds int) error {
 	cmd := util.HandleCmd(scanInfo.URL, scanInfo.Branch, scanInfo.Container.SecurityTest.Cmd)
 	cmd = util.HandleGitURLSubstitution(cmd)
 	finalCMD := util.HandlePrivateSSHKey(cmd)
-	CID, cOutput, err := huskydocker.DockerRun(image, imageTag, finalCMD, timeOutInSeconds)
+	CID, cOutput, err := huskydocker.DockerRun(image, imageTag, finalCMD, scanInfo.DockerHost, timeOutInSeconds)
 	if err != nil {
 		return err
 	}

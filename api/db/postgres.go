@@ -421,8 +421,8 @@ func (pR *PostgresRequests) UpdateOneDBAccessToken(
 	return nil
 }
 
-func (pR *PostgresRequests) FindAndModifyDockerAPIAddresses() ([]types.DockerAPIAddresses, error) {
-	return nil, nil
+func (pR *PostgresRequests) FindAndModifyDockerAPIAddresses() (types.DockerAPIAddresses, error) {
+	return types.DockerAPIAddresses{}, nil
 }
 
 // GetMetricByType returns data about the metric received

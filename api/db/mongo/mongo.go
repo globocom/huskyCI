@@ -136,7 +136,7 @@ func (db *DB) FindAndModify(findQuery, updateQuery interface{}, collection strin
 		Remove:    false,
 		ReturnNew: false,
 	}
-	_, err := col.Find(findQuery).Apply(change, &obj)
+	_, err := col.Find(findQuery).Apply(change, obj)
 	return err
 }
 
