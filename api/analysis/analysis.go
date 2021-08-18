@@ -5,7 +5,6 @@
 package analysis
 
 import (
-	"fmt"
 	"time"
 
 	apiContext "github.com/globocom/huskyCI/api/context"
@@ -40,7 +39,7 @@ func StartAnalysis(RID string, repository types.Repository) {
 		}
 	}()
 
-	dockerAPIHostIndex, err := apiContext.APIConfiguration.DBInstance.FindAndModifyDockerAPIAddresses()
+	dockerAPIHost, err := apiContext.APIConfiguration.DBInstance.FindAndModifyDockerAPIAddresses()
 	if err != nil {
 		log.Error(logActionStart, logInfoAnalysis, 2011, err)
 	}
@@ -50,9 +49,9 @@ func StartAnalysis(RID string, repository types.Repository) {
 		log.Error(logActionStart, logInfoAnalysis, 2011, err)
 	}
 
-	dockerHost := apiUtil.FormatDockerHostAddress(dockerAPIHostIndex, configAPI)
+	dockerHost := apiUtil.FormatDockerHostAddress(dockerAPIHost, configAPI)
 
-	log.Info("StartAnalysisTest", fmt.Sprintf("%s", dockerHost), 2012, RID)
+	log.Info("StartAnalysisTest", dockerHost, 2012, RID)
 
 	if err := enryScan.New(RID, repository.URL, repository.Branch, enryScan.SecurityTestName, repository.LanguageExclusions, dockerHost); err != nil {
 		log.Error(logActionStart, logInfoAnalysis, 2011, err)

@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strconv"
 
 	apiContext "github.com/globocom/huskyCI/api/context"
 	docker "github.com/globocom/huskyCI/api/dockers"
@@ -149,9 +148,10 @@ func (cH *CheckUtils) checkDefaultUser(configAPI *apiContext.APIConfig) error {
 	return nil
 }
 
-func FormatDockerHostAddress(dockerHostIndex types.DockerAPIAddresses, configAPI *apiContext.APIConfig) string {
-	hostIndex := (dockerHostIndex.CurrentHostIndex % dockerHostIndex.MaxHosts) + 1
-	return fmt.Sprintf("https://%s/%s", configAPI.DockerHostsConfig.Host, strconv.Itoa(hostIndex))
+func FormatDockerHostAddress(dockerHost types.DockerAPIAddresses, configAPI *apiContext.APIConfig) string {
+	hostIndex := dockerHost.CurrentHostIndex % len(dockerHost.HostList)
+	host := dockerHost.HostList[hostIndex]
+	return fmt.Sprintf("https://%s:%d", host, configAPI.DockerHostsConfig.DockerAPIPort)
 }
 
 func checkSecurityTest(securityTestName string, configAPI *apiContext.APIConfig) error {

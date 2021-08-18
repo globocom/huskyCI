@@ -22,8 +22,8 @@ db.createUser(
 db.createCollection('dockerAPIAddresses');
 
 db.getCollection('dockerAPIAddresses').insertOne({
-    maxHosts: 3,
-    currentHostIndex: 1
+    currentHostIndex: 0,
+    hostList: ["dockerapi","dockerapi2"]
 });
 
 EOF

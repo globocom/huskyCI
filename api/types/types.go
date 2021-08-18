@@ -171,8 +171,8 @@ type DBToken struct {
 
 // DockerAPIAddresses defines the struct that stores information about docker API hosts
 type DockerAPIAddresses struct {
-	MaxHosts         int `bson:"maxHosts"`
-	CurrentHostIndex int `bson:"currentHostIndex"`
+	CurrentHostIndex int      `bson:"currentHostIndex"`
+	HostList         []string `bson:"hostList"`
 }
 
 // NohuskyFunction represents all the #nohusky verifier methods.
