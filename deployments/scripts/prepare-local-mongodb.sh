@@ -23,7 +23,7 @@ db.createCollection('dockerAPIAddresses');
 
 db.getCollection('dockerAPIAddresses').insertOne({
     currentHostIndex: 0,
-    hostList: ["dockerapi","dockerapi2"]
+    hostList: ["dockerapi"]
 });
 
 EOF

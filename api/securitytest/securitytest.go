@@ -6,7 +6,8 @@ import (
 	"time"
 
 	apiContext "github.com/globocom/huskyCI/api/context"
-	huskydocker "github.com/globocom/huskyCI/api/dockers"
+	// huskydocker "github.com/globocom/huskyCI/api/dockers"
+	huskykube "github.com/globocom/huskyCI/api/kubernetes"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
 	"github.com/globocom/huskyCI/api/util"
@@ -76,7 +77,7 @@ func (scanInfo *SecTestScanInfo) setSecurityTestContainer(securityTestName strin
 
 // Start starts a new huskyCI scan!
 func (scanInfo *SecTestScanInfo) Start() error {
-	if err := scanInfo.dockerRun(scanInfo.Container.SecurityTest.TimeOutInSeconds); err != nil {
+	if err := scanInfo.kubeRun(scanInfo.Container.SecurityTest.TimeOutInSeconds); err != nil {
 		scanInfo.ErrorFound = err
 		scanInfo.prepareContainerAfterScan()
 		return err
@@ -90,13 +91,13 @@ func (scanInfo *SecTestScanInfo) Start() error {
 	return nil
 }
 
-func (scanInfo *SecTestScanInfo) dockerRun(timeOutInSeconds int) error {
+func (scanInfo *SecTestScanInfo) kubeRun(timeOutInSeconds int) error {
 	image := scanInfo.Container.SecurityTest.Image
 	imageTag := scanInfo.Container.SecurityTest.ImageTag
 	cmd := util.HandleCmd(scanInfo.URL, scanInfo.Branch, scanInfo.Container.SecurityTest.Cmd)
 	cmd = util.HandleGitURLSubstitution(cmd)
 	finalCMD := util.HandlePrivateSSHKey(cmd)
-	CID, cOutput, err := huskydocker.DockerRun(image, imageTag, finalCMD, scanInfo.DockerHost, timeOutInSeconds)
+	CID, cOutput, err := huskykube.KubeRun(image, imageTag, finalCMD, scanInfo.SecurityTestName, scanInfo.RID, timeOutInSeconds)
 	if err != nil {
 		return err
 	}

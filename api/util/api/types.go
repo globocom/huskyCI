@@ -8,6 +8,7 @@ import (
 type CheckInterface interface {
 	checkEnvVars() error
 	checkDockerHosts(configAPI *apiContext.APIConfig) error
+	checkKubernetesHosts(configAPI *apiContext.APIConfig) error
 	checkDB(configAPI *apiContext.APIConfig) error
 	checkEachSecurityTest(configAPI *apiContext.APIConfig) error
 	checkDefaultUser(configAPI *apiContext.APIConfig) error
@@ -25,6 +26,7 @@ type HuskyUtils struct {
 type FakeCheck struct {
 	EnvVarsError          error
 	DockerHostsError      error
+	KubernetesHostsError  error
 	MongoDBError          error
 	EachSecurityTestError error
 	DefaultUserError      error
@@ -36,6 +38,10 @@ func (fC *FakeCheck) checkEnvVars() error {
 
 func (fC *FakeCheck) checkDockerHosts(configAPI *apiContext.APIConfig) error {
 	return fC.DockerHostsError
+}
+
+func (fC *FakeCheck) checkKubernetesHosts(configAPI *apiContext.APIConfig) error {
+	return fC.KubernetesHostsError
 }
 
 func (fC *FakeCheck) checkDB(configAPI *apiContext.APIConfig) error {

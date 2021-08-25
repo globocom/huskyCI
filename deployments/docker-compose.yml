@@ -15,32 +15,6 @@ services:
         networks:
             - huskyCI_net
 
-    dockerapi2:
-        privileged: true
-        image: docker:stable-dind
-        container_name: huskyCI_Docker_API_2
-        command: "dockerd --host=unix:///var/run/docker.sock --host=tcp://0.0.0.0:2377"
-        ports:
-            - "2377:2377"
-        volumes:
-            - docker_vol2:/var/lib/docker
-            - ../deployments/daemon.json:/etc/docker/daemon.json:ro
-            - ../deployments/certs/:/data/certs/
-        networks:
-            - huskyCI_net
-
-    nginx:
-        image: nginx:1.17
-        container_name: nginx
-        volumes:
-            - ../deployments/nginx.conf:/etc/nginx/nginx.conf
-            - ../deployments/certs/:/data/certs/
-        ports:
-            - 80:80
-            - 443:443
-        networks:
-            - huskyCI_net
-
     api:
         container_name: huskyCI_API
         environment:
@@ -66,6 +40,7 @@ services:
             - ../deployments/certs/client-huskyapi-cert.pem:/go/src/github.com/globocom/huskyCI/cert.pem:ro
             - ../deployments/certs/client-huskyapi-key.pem:/go/src/github.com/globocom/huskyCI/key.pem:ro
             - ../deployments/certs/ca.pem:/go/src/github.com/globocom/huskyCI/ca.pem:ro
+            - ../deployments/kubeconfig:/go/src/github.com/globocom/huskyCI/kubeconfig
         ports:
           - "8888:8888"
         networks:

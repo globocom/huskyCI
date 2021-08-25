@@ -7,6 +7,7 @@ import (
 
 	apiContext "github.com/globocom/huskyCI/api/context"
 	docker "github.com/globocom/huskyCI/api/dockers"
+	kube "github.com/globocom/huskyCI/api/kubernetes"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
 	"github.com/globocom/huskyCI/api/user"
@@ -27,6 +28,12 @@ func (hU HuskyUtils) CheckHuskyRequirements(configAPI *apiContext.APIConfig) err
 
 	// check if all docker hosts are up and running docker API.
 	if err := hU.CheckHandler.checkDockerHosts(configAPI); err != nil {
+		return err
+	}
+	log.Info(logActionCheckReqs, logInfoAPIUtil, 13)
+
+	// check if all kubernetes hosts are up and running Kubernetes API.
+	if err := hU.CheckHandler.checkKubernetesHosts(configAPI); err != nil {
 		return err
 	}
 	log.Info(logActionCheckReqs, logInfoAPIUtil, 13)
@@ -98,6 +105,11 @@ func (cH *CheckUtils) checkDockerHosts(configAPI *apiContext.APIConfig) error {
 	dockerHost := fmt.Sprintf("https://%s", configAPI.DockerHostsConfig.Host)
 
 	return docker.HealthCheckDockerAPI(dockerHost)
+}
+
+func (cH *CheckUtils) checkKubernetesHosts(configAPI *apiContext.APIConfig) error {
+
+	return kube.HealthCheckKubernetesAPI()
 }
 
 func (cH *CheckUtils) checkDB(configAPI *apiContext.APIConfig) error {
