@@ -44,8 +44,7 @@ func KubeRun(image, imageTag, cmd, name, id string, timeOutInSeconds int) (strin
 	podName := fmt.Sprintf("%s-%s", name, strings.ToLower(id))
 
 	// step 3: create a new container given an image and it's cmd
-	// CID, err := d.CreateContainer(fullContainerImage, cmd)
-	podUID, err := k.CreatePod(id, fullContainerImage, cmd, podName)
+	podUID, err := k.CreatePod(fullContainerImage, cmd, podName)
 	if err != nil {
 		log.Error(logActionRun, logInfoHuskyKube, 32, fullContainerImage, k.PID, "Error creating Pod: "+err.Error())
 		return "", "", err
@@ -55,7 +54,7 @@ func KubeRun(image, imageTag, cmd, name, id string, timeOutInSeconds int) (strin
 	log.Info(logActionRun, logInfoHuskyKube, 32, fullContainerImage, k.PID, "Pod created")
 
 	// step 5: wait container finish
-	_, err = k.WaitPod(id, podName, timeOutInSeconds)
+	_, err = k.WaitPod(podName, timeOutInSeconds)
 	if err != nil {
 		log.Error(logActionRun, logInfoHuskyKube, 3016, fullContainerImage, k.PID, "Error waiting for Pod to complete: "+err.Error())
 		return "", "", err
@@ -69,6 +68,7 @@ func KubeRun(image, imageTag, cmd, name, id string, timeOutInSeconds int) (strin
 		log.Error(logActionRun, logInfoHuskyKube, 3016, fullContainerImage, k.PID, "Error reading Pod output: "+err.Error())
 		return "", "", err
 	}
+
 	log.Info(logActionRun, logInfoHuskyKube, 34, fullContainerImage, k.PID, "Pod output read")
 
 	// step 7: remove container from docker API

@@ -5,10 +5,9 @@
 package kubernetes
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
-	"io"
+	"io/ioutil"
 
 	"github.com/globocom/huskyCI/api/log"
 	goContext "golang.org/x/net/context"
@@ -79,7 +78,7 @@ func NewKubernetes() (*Kubernetes, error) {
 
 }
 
-func (k Kubernetes) CreatePod(id, image, cmd, name string) (string, error) {
+func (k Kubernetes) CreatePod(image, cmd, name string) (string, error) {
 
 	ctx := goContext.Background()
 
@@ -87,7 +86,7 @@ func (k Kubernetes) CreatePod(id, image, cmd, name string) (string, error) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
 			Labels: map[string]string{
-				id: id,
+				"name": name,
 			},
 		},
 		Spec: core.PodSpec{
@@ -115,14 +114,14 @@ func (k Kubernetes) CreatePod(id, image, cmd, name string) (string, error) {
 	return string(pod.UID), nil
 }
 
-func (k Kubernetes) WaitPod(id, name string, timeOutInSeconds int) (string, error) {
+func (k Kubernetes) WaitPod(name string, timeOutInSeconds int) (string, error) {
 
 	ctx := goContext.Background()
 
 	timeout := func(i int64) *int64 { return &i }(int64(timeOutInSeconds))
 
 	watch, err := k.client.CoreV1().Pods("default").Watch(ctx, metav1.ListOptions{
-		LabelSelector:  id,
+		LabelSelector:  fmt.Sprintf("name=%s", name),
 		Watch:          true,
 		TimeoutSeconds: timeout,
 	})
@@ -133,9 +132,9 @@ func (k Kubernetes) WaitPod(id, name string, timeOutInSeconds int) (string, erro
 	for event := range watch.ResultChan() {
 		p, ok := event.Object.(*core.Pod)
 		if !ok {
-			return "", errors.New("Unexpected Event Type while waiting for Pod")
+			return "", errors.New("Unexpected Event while waiting for Pod")
 		}
-		fmt.Println(p.Status.Phase)
+
 		switch p.Status.Phase {
 		case "Succeeded":
 			return string(p.Status.Phase), nil
@@ -168,17 +167,16 @@ func (k Kubernetes) ReadOutput(name string) (string, error) {
 	}
 	defer podLogs.Close()
 
-	buf := new(bytes.Buffer)
-	_, err = io.Copy(buf, podLogs)
+	result, err := ioutil.ReadAll(podLogs)
 	if err != nil {
 		errRemovePod := k.RemovePod(name)
 		if errRemovePod != nil {
 			return "", errRemovePod
 		}
-		return "", nil
+		return "", err
 	}
-	return buf.String(), nil
 
+	return string(result), nil
 }
 
 func (k Kubernetes) RemovePod(name string) error {
