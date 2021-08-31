@@ -53,6 +53,12 @@ type DockerHostsConfig struct {
 	TLSVerify       int
 }
 
+// KubernetesConfig represents Kubernetes API configuration.
+type KubernetesConfig struct {
+	ConfigFilePath string
+	Namespace      string
+}
+
 // GraylogConfig represents Graylog configuration.
 type GraylogConfig struct {
 	Address        string
@@ -73,6 +79,7 @@ type APIConfig struct {
 	GraylogConfig          *GraylogConfig
 	DBConfig               *DBConfig
 	DockerHostsConfig      *DockerHostsConfig
+	KubernetesConfig       *KubernetesConfig
 	EnrySecurityTest       *types.SecurityTest
 	GitAuthorsSecurityTest *types.SecurityTest
 	GosecSecurityTest      *types.SecurityTest
@@ -118,6 +125,7 @@ func (dF DefaultConfig) SetOnceConfig() {
 			GraylogConfig:          dF.getGraylogConfig(),
 			DBConfig:               dF.getDBConfig(),
 			DockerHostsConfig:      dF.getDockerHostsConfig(),
+			KubernetesConfig:       dF.getKubernetesConfig(),
 			EnrySecurityTest:       dF.getSecurityTestConfig("enry"),
 			GitAuthorsSecurityTest: dF.getSecurityTestConfig("gitauthors"),
 			GosecSecurityTest:      dF.getSecurityTestConfig("gosec"),
@@ -301,6 +309,15 @@ func (dF DefaultConfig) getDockerHostsConfig() *DockerHostsConfig {
 		PathCertificate: dockerHostsPathCertificates,
 		Host:            fmt.Sprintf("%s:%d", dockerHostsAddresses[0], dockerAPIPort),
 		TLSVerify:       dF.GetDockerAPITLSVerify(),
+	}
+}
+
+func (dF DefaultConfig) getKubernetesConfig() *KubernetesConfig {
+	configFilePath := dF.Caller.GetEnvironmentVariable("HUSKYCI_KUBERNETES_CONFIG_FILE_PATH")
+	namespace := dF.Caller.GetEnvironmentVariable("HUSKYCI_KUBERNETES_NAMESPACE")
+	return &KubernetesConfig{
+		ConfigFilePath: configFilePath,
+		Namespace:      namespace,
 	}
 }
 

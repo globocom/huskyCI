@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	apiContext "github.com/globocom/huskyCI/api/context"
 	"github.com/globocom/huskyCI/api/log"
 	goContext "golang.org/x/net/context"
 
@@ -20,28 +21,20 @@ import (
 
 // Kubernetes is the Kubernetes struct
 type Kubernetes struct {
-	PID    string `json:"Id"`
-	client *kube.Clientset
-}
-
-// CreatePodPayload is a struct that represents all data needed to create a kubernetes Pod.
-type CreatePodPayload struct {
-	Image     string   `json:"Image"`
-	Tty       bool     `json:"Tty,omitempty"`
-	Cmd       []string `json:"Cmd"`
-	Name      string   `json:"Name"`
-	Namespace string   `json:"Namspace"`
+	PID       string `json:"Id"`
+	client    *kube.Clientset
+	Namespace string
 }
 
 const logActionNew = "NewKubernetes"
 const logInfoAPI = "KUBERNETES"
 
 func NewKubernetes() (*Kubernetes, error) {
-	// configAPI, err := apiContext.DefaultConf.GetAPIConfig()
-	// if err != nil {
-	// 	log.Error(logActionNew, logInfoAPI, 3026, err)
-	// 	return nil, err
-	// }
+	configAPI, err := apiContext.DefaultConf.GetAPIConfig()
+	if err != nil {
+		log.Error(logActionNew, logInfoAPI, 3026, err)
+		return nil, err
+	}
 
 	// kubeClusterAddress := "kubernetes.docker.internal"
 
@@ -56,7 +49,7 @@ func NewKubernetes() (*Kubernetes, error) {
 	// flag.Parse()
 
 	// use the current context in kubeconfig
-	config, err := clientcmd.BuildConfigFromFlags("", "/go/src/github.com/globocom/huskyCI/kubeconfig")
+	config, err := clientcmd.BuildConfigFromFlags("", configAPI.KubernetesConfig.ConfigFilePath)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +64,8 @@ func NewKubernetes() (*Kubernetes, error) {
 	}
 
 	kubernetes := &Kubernetes{
-		client: clientset,
+		client:    clientset,
+		Namespace: configAPI.KubernetesConfig.Namespace,
 	}
 
 	return kubernetes, nil
@@ -106,7 +100,7 @@ func (k Kubernetes) CreatePod(image, cmd, name string) (string, error) {
 		},
 	}
 
-	pod, err := k.client.CoreV1().Pods("default").Create(ctx, podToCreate, metav1.CreateOptions{})
+	pod, err := k.client.CoreV1().Pods(k.Namespace).Create(ctx, podToCreate, metav1.CreateOptions{})
 	if err != nil {
 		return "", err
 	}
@@ -120,7 +114,7 @@ func (k Kubernetes) WaitPod(name string, timeOutInSeconds int) (string, error) {
 
 	timeout := func(i int64) *int64 { return &i }(int64(timeOutInSeconds))
 
-	watch, err := k.client.CoreV1().Pods("default").Watch(ctx, metav1.ListOptions{
+	watch, err := k.client.CoreV1().Pods(k.Namespace).Watch(ctx, metav1.ListOptions{
 		LabelSelector:  fmt.Sprintf("name=%s", name),
 		Watch:          true,
 		TimeoutSeconds: timeout,
@@ -156,7 +150,7 @@ func (k Kubernetes) WaitPod(name string, timeOutInSeconds int) (string, error) {
 func (k Kubernetes) ReadOutput(name string) (string, error) {
 	ctx := goContext.Background()
 
-	req := k.client.CoreV1().Pods("default").GetLogs(name, &core.PodLogOptions{})
+	req := k.client.CoreV1().Pods(k.Namespace).GetLogs(name, &core.PodLogOptions{})
 	podLogs, err := req.Stream(ctx)
 	if err != nil {
 		errRemovePod := k.RemovePod(name)
@@ -182,7 +176,7 @@ func (k Kubernetes) ReadOutput(name string) (string, error) {
 func (k Kubernetes) RemovePod(name string) error {
 	ctx := goContext.Background()
 
-	return k.client.CoreV1().Pods("default").Delete(ctx, name, metav1.DeleteOptions{})
+	return k.client.CoreV1().Pods(k.Namespace).Delete(ctx, name, metav1.DeleteOptions{})
 }
 
 // HealthCheckKubernetesAPI returns true if a 200 status code is received from kubernetes or false otherwise.
