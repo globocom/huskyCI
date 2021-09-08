@@ -26,11 +26,11 @@ func (hU HuskyUtils) CheckHuskyRequirements(configAPI *apiContext.APIConfig) err
 	}
 	log.Info(logActionCheckReqs, logInfoAPIUtil, 12)
 
-	// check if all docker hosts are up and running docker API.
-	if err := hU.CheckHandler.checkDockerHosts(configAPI); err != nil {
-		return err
-	}
-	log.Info(logActionCheckReqs, logInfoAPIUtil, 13)
+	// // check if all docker hosts are up and running docker API.
+	// if err := hU.CheckHandler.checkDockerHosts(configAPI); err != nil {
+	// 	return err
+	// }
+	// log.Info(logActionCheckReqs, logInfoAPIUtil, 13)
 
 	// check if all kubernetes hosts are up and running Kubernetes API.
 	if err := hU.CheckHandler.checkKubernetesHosts(configAPI); err != nil {
