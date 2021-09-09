@@ -327,6 +327,10 @@ var _ = Describe("Context", func() {
 						Host:            "1:1234",
 						TLSVerify:       1,
 					},
+					KubernetesConfig: &KubernetesConfig{
+						ConfigFilePath: fakeCaller.expectedEnvVar,
+						Namespace:      fakeCaller.expectedEnvVar,
+					},
 					EnrySecurityTest: &types.SecurityTest{
 						Name:             fakeCaller.expectedStringFromConfig,
 						Image:            fakeCaller.expectedStringFromConfig,
