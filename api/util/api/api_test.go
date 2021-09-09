@@ -2,6 +2,7 @@ package util_test
 
 import (
 	"errors"
+
 	"github.com/globocom/glbgelf"
 	apiContext "github.com/globocom/huskyCI/api/context"
 	apiUtil "github.com/globocom/huskyCI/api/util/api"
@@ -22,7 +23,7 @@ var checkHuskyTests = []CheckHuskyData{
 	// Scenario #1: checkEnvVars returns an error
 	{&apiContext.APIConfig{}, errors.New("Failed verifying environment variables"), nil, nil, nil, errors.New("Failed verifying environment variables")},
 	// Scenario #2: checkDockerHosts returns an error
-	{&apiContext.APIConfig{}, nil, errors.New("Failed verifying docker API"), nil, nil, errors.New("Failed verifying docker API")},
+	{&apiContext.APIConfig{}, nil, errors.New("Failed verifying Kubernetes API"), nil, nil, errors.New("Failed verifying Kubernetes API")},
 	// Scenario #3: checkMongoDB returns an error
 	{&apiContext.APIConfig{}, nil, nil, errors.New("Error verifying mongoDB"), nil, errors.New("Error verifying mongoDB")},
 	// Scenario #4: checkEachSecurityTest returns an error
@@ -48,10 +49,10 @@ var _ = Describe("Util API", func() {
 				Expect(huskyCheck.CheckHuskyRequirements(checkHuskyTests[0].configApi)).To(Equal(checkHuskyTests[0].expectedError))
 			})
 		})
-		Context("When checkDockerHosts returns an error", func() {
+		Context("When checkKubernetesHosts returns an error", func() {
 			fakeCheck := &apiUtil.FakeCheck{
 				EnvVarsError:          checkHuskyTests[1].envVarsError,
-				DockerHostsError:      checkHuskyTests[1].dockerHostsError,
+				KubernetesHostsError:  checkHuskyTests[1].dockerHostsError,
 				MongoDBError:          checkHuskyTests[1].mongoDBError,
 				EachSecurityTestError: checkHuskyTests[1].eachSecurityTestError,
 			}
