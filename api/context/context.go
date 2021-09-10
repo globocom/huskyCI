@@ -55,8 +55,10 @@ type DockerHostsConfig struct {
 
 // KubernetesConfig represents Kubernetes API configuration.
 type KubernetesConfig struct {
-	ConfigFilePath string
-	Namespace      string
+	ConfigFilePath   string
+	Namespace        string
+	ProxyAddress     string
+	NoProxyAddresses string
 }
 
 // GraylogConfig represents Graylog configuration.
@@ -315,9 +317,13 @@ func (dF DefaultConfig) getDockerHostsConfig() *DockerHostsConfig {
 func (dF DefaultConfig) getKubernetesConfig() *KubernetesConfig {
 	configFilePath := dF.Caller.GetEnvironmentVariable("HUSKYCI_KUBERNETES_CONFIG_FILE_PATH")
 	namespace := dF.Caller.GetEnvironmentVariable("HUSKYCI_KUBERNETES_NAMESPACE")
+	proxyAddress := dF.Caller.GetEnvironmentVariable("HUSKYCI_KUBERNETES_PROXY_ADDRESS")
+	noProxyAddresses := dF.Caller.GetEnvironmentVariable("HUSKYCI_KUBERNETES_NO_PROXY_ADDRESSES")
 	return &KubernetesConfig{
-		ConfigFilePath: configFilePath,
-		Namespace:      namespace,
+		ConfigFilePath:   configFilePath,
+		Namespace:        namespace,
+		ProxyAddress:     proxyAddress,
+		NoProxyAddresses: noProxyAddresses,
 	}
 }
 

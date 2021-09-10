@@ -21,9 +21,11 @@ import (
 
 // Kubernetes is the Kubernetes struct
 type Kubernetes struct {
-	PID       string `json:"Id"`
-	client    *kube.Clientset
-	Namespace string
+	PID              string `json:"Id"`
+	client           *kube.Clientset
+	Namespace        string
+	ProxyAddress     string
+	NoProxyAddresses string
 }
 
 const logActionNew = "NewKubernetes"
@@ -36,26 +38,11 @@ func NewKubernetes() (*Kubernetes, error) {
 		return nil, err
 	}
 
-	// kubeClusterAddress := "kubernetes.docker.internal"
-
-	// kubeconfig := "~/.kube/config"
-	// var kubeconfig *string
-	// if home := homedir.HomeDir(); home != "" {
-	// 	kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
-	// 	} else {
-	// 		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
-	// 	}
-	// kubeconfig = flag.String("kubeconfig", "/go/src/github.com/globocom/huskyCI/kubeconfig", "(optional) absolute path to the kubeconfig file")
-	// flag.Parse()
-
 	// use the current context in kubeconfig
 	config, err := clientcmd.BuildConfigFromFlags("", configAPI.KubernetesConfig.ConfigFilePath)
 	if err != nil {
 		return nil, err
 	}
-	// kubeConfig := &rest.Config{
-	// 	Host: "kubernetes.docker.internal"
-	// }
 
 	// create the clientset
 	clientset, err := kube.NewForConfig(config)
@@ -64,8 +51,10 @@ func NewKubernetes() (*Kubernetes, error) {
 	}
 
 	kubernetes := &Kubernetes{
-		client:    clientset,
-		Namespace: configAPI.KubernetesConfig.Namespace,
+		client:           clientset,
+		Namespace:        configAPI.KubernetesConfig.Namespace,
+		ProxyAddress:     configAPI.KubernetesConfig.ProxyAddress,
+		NoProxyAddresses: configAPI.KubernetesConfig.NoProxyAddresses,
 	}
 
 	return kubernetes, nil
@@ -93,6 +82,20 @@ func (k Kubernetes) CreatePod(image, cmd, name string) (string, error) {
 						"/bin/sh",
 						"-c",
 						cmd,
+					},
+					Env: []core.EnvVar{
+						{
+							Name:  "HTTP_PROXY",
+							Value: k.ProxyAddress,
+						},
+						{
+							Name:  "HTTPS_PROXY",
+							Value: k.ProxyAddress,
+						},
+						{
+							Name:  "NO_PROXY",
+							Value: k.NoProxyAddresses,
+						},
 					},
 				},
 			},
