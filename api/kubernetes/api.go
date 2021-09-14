@@ -85,15 +85,15 @@ func (k Kubernetes) CreatePod(image, cmd, name string) (string, error) {
 					},
 					Env: []core.EnvVar{
 						{
-							Name:  "HTTP_PROXY",
+							Name:  "http_proxy",
 							Value: k.ProxyAddress,
 						},
 						{
-							Name:  "HTTPS_PROXY",
+							Name:  "https_proxy",
 							Value: k.ProxyAddress,
 						},
 						{
-							Name:  "NO_PROXY",
+							Name:  "no_proxy",
 							Value: k.NoProxyAddresses,
 						},
 					},
