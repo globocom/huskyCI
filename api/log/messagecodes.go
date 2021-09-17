@@ -115,6 +115,13 @@ var MsgCode = map[int]string{
 	35: "Container image has been pulled successfully: ",
 	36: "Container cOutput read sucessfully for CID: ",
 
+	// Kubernetes info
+	41: "Kubernetes API client created",
+	42: "Pod started successfully: ",
+	43: "Pod completed execution successfully",
+	44: "Pod cOutput read successfully for CID: ",
+	45: "Pod removed successfully",
+
 	// Docker API warning
 	301: "",
 
@@ -148,4 +155,11 @@ var MsgCode = map[int]string{
 	// Util package errors
 	4001: "Could not read certificate file: ",
 	4002: "Could not append ceritificates: ",
+
+	// Kubernetes errors
+	5001: "Could not start a new Kubernetes API client: ",
+	5002: "Could not create a new pod: ",
+	5003: "Could not wait for pod to finish: ",
+	5004: "Could not get pod logs: ",
+	5005: "Could not remove pod via huskyCI: ",
 }
