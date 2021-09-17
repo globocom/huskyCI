@@ -61,21 +61,22 @@ func NewKubernetes() (*Kubernetes, error) {
 
 }
 
-func (k Kubernetes) CreatePod(image, cmd, name string) (string, error) {
+func (k Kubernetes) CreatePod(image, cmd, podName, securityTestName string) (string, error) {
 
 	ctx := goContext.Background()
 
 	podToCreate := &core.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: name,
+			Name: podName,
 			Labels: map[string]string{
-				"name": name,
+				"name":    podName,
+				"huskyCI": securityTestName,
 			},
 		},
 		Spec: core.PodSpec{
 			Containers: []core.Container{
 				{
-					Name:            name,
+					Name:            podName,
 					Image:           image,
 					ImagePullPolicy: core.PullIfNotPresent,
 					Command: []string{
@@ -95,6 +96,18 @@ func (k Kubernetes) CreatePod(image, cmd, name string) (string, error) {
 						{
 							Name:  "no_proxy",
 							Value: k.NoProxyAddresses,
+						},
+					},
+				},
+			},
+			TopologySpreadConstraints: []core.TopologySpreadConstraint{
+				{
+					MaxSkew:           1,
+					TopologyKey:       "kubernetes.io/hostname",
+					WhenUnsatisfiable: "ScheduleAnyway",
+					LabelSelector: &metav1.LabelSelector{
+						MatchLabels: map[string]string{
+							"huskyCI": securityTestName,
 						},
 					},
 				},
