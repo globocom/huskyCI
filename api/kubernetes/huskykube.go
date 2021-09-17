@@ -32,7 +32,7 @@ func configureImagePath(image, tag string) (string, string) {
 }
 
 // KubeRun starts a new pod and returns its output and an error.
-func KubeRun(image, imageTag, cmd, name, id string, timeOutInSeconds int) (string, string, error) {
+func KubeRun(image, imageTag, cmd, securityTestName, id string, timeOutInSeconds int) (string, string, error) {
 
 	// step 1: create a new Kubernetes API client
 	k, err := NewKubernetes()
@@ -41,10 +41,10 @@ func KubeRun(image, imageTag, cmd, name, id string, timeOutInSeconds int) (strin
 	}
 
 	_, fullContainerImage := configureImagePath(image, imageTag)
-	podName := fmt.Sprintf("%s-%s", name, strings.ToLower(id))
+	podName := fmt.Sprintf("%s-%s", strings.ToLower(id), securityTestName)
 
 	// step 3: create a new container given an image and it's cmd
-	podUID, err := k.CreatePod(fullContainerImage, cmd, podName)
+	podUID, err := k.CreatePod(fullContainerImage, cmd, podName, securityTestName)
 	if err != nil {
 		log.Error(logActionRun, logInfoHuskyKube, 32, fullContainerImage, k.PID, "Error creating Pod: "+err.Error())
 		return "", "", err
