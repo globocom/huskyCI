@@ -37,8 +37,10 @@ func KubeRun(image, imageTag, cmd, securityTestName, id string, timeOutInSeconds
 	// step 1: create a new Kubernetes API client
 	k, err := NewKubernetes()
 	if err != nil {
+		log.Error(logActionRun, logInfoHuskyKube, 5001, k.PID, err.Error())
 		return "", "", err
 	}
+	log.Info(logActionRun, logInfoHuskyKube, 41, k.PID)
 
 	_, fullContainerImage := configureImagePath(image, imageTag)
 	podName := fmt.Sprintf("%s-%s", strings.ToLower(id), securityTestName)
@@ -46,36 +48,38 @@ func KubeRun(image, imageTag, cmd, securityTestName, id string, timeOutInSeconds
 	// step 3: create a new container given an image and it's cmd
 	podUID, err := k.CreatePod(fullContainerImage, cmd, podName, securityTestName)
 	if err != nil {
-		log.Error(logActionRun, logInfoHuskyKube, 32, fullContainerImage, k.PID, "Error creating Pod: "+err.Error())
+		log.Error(logActionRun, logInfoHuskyKube, 5002, fullContainerImage, k.PID, err.Error())
 		return "", "", err
 	}
 	k.PID = podUID
 
-	log.Info(logActionRun, logInfoHuskyKube, 32, fullContainerImage, k.PID, "Pod created")
+	log.Info(logActionRun, logInfoHuskyKube, 42, fullContainerImage, k.PID)
 
 	// step 5: wait container finish
 	_, err = k.WaitPod(podName, timeOutInSeconds)
 	if err != nil {
-		log.Error(logActionRun, logInfoHuskyKube, 3016, fullContainerImage, k.PID, "Error waiting for Pod to complete: "+err.Error())
+		log.Error(logActionRun, logInfoHuskyKube, 5003, fullContainerImage, k.PID, err.Error())
 		return "", "", err
 	}
 
-	log.Info(logActionRun, logInfoHuskyKube, 34, fullContainerImage, k.PID, "Pod completed execution")
+	log.Info(logActionRun, logInfoHuskyKube, 43, fullContainerImage, k.PID)
 
 	// step 6: read container's output when it finishes
 	cOutput, err := k.ReadOutput(podName)
 	if err != nil {
-		log.Error(logActionRun, logInfoHuskyKube, 3016, fullContainerImage, k.PID, "Error reading Pod output: "+err.Error())
+		log.Error(logActionRun, logInfoHuskyKube, 5004, fullContainerImage, k.PID, err.Error())
 		return "", "", err
 	}
 
-	log.Info(logActionRun, logInfoHuskyKube, 34, fullContainerImage, k.PID, "Pod output read")
+	log.Info(logActionRun, logInfoHuskyKube, 44, fullContainerImage, k.PID)
 
 	// step 7: remove container from docker API
 	if err := k.RemovePod(podName); err != nil {
-		log.Error(logActionRun, logInfoHuskyKube, 3016, fullContainerImage, k.PID, "Error removing Pod: "+err.Error())
+		log.Error(logActionRun, logInfoHuskyKube, 5005, fullContainerImage, k.PID, err.Error())
 		return "", "", err
 	}
+
+	log.Info(logActionRun, logInfoHuskyKube, 45, fullContainerImage, k.PID)
 
 	return podUID, cOutput, nil
 }
