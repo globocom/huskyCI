@@ -324,7 +324,7 @@ spotbugs:
 gitleaks:
   name: gitleaks
   image: docker-hub.artifactory.globoi.com/huskyci/gitleaks
-  imageTag: "2.1.0"
+  imageTag: "v.7.6.1"
   cmd: |+
     mkdir -p ~/.ssh &&
     echo '%GIT_PRIVATE_SSH_KEY%' > ~/.ssh/huskyci_id_rsa &&
@@ -334,7 +334,7 @@ gitleaks:
     GIT_TERMINAL_PROMPT=0 git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneGitleaks
     if [ $? -eq 0 ]; then
         touch /tmp/results.json
-        timeout -t 360 $(which gitleaks) --log=warn --report=/tmp/results.json --repo-path=./code --branch=%GIT_BRANCH% --repo-config &> /tmp/errorGitleaks
+        $(which gitleaks) --no-git --report=/tmp/results.json --path=./code --branch=%GIT_BRANCH% --append-repo-config --threads=2 --format=json &> /tmp/errorGitleaks
         if [[ $? -eq 124 || $? -eq 143 ]]; then #timeout exit codes
             echo 'ERROR_TIMEOUT_GITLEAKS'
             cat /tmp/errorGitleaks
@@ -349,7 +349,7 @@ gitleaks:
         cat /tmp/errorGitCloneGitleaks
     fi
   type: Generic
-  default: false
+  default: true
   timeOutInSeconds: 360
 
 tfsec:
