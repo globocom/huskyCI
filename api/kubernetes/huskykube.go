@@ -32,7 +32,7 @@ func configureImagePath(image, tag string) (string, string) {
 }
 
 // KubeRun starts a new pod and returns its output and an error.
-func KubeRun(image, imageTag, cmd, securityTestName, id string, timeOutInSeconds int) (string, string, error) {
+func KubeRun(image, imageTag, cmd, securityTestName, id string, podSchedulingTimeoutInSeconds, timeOutInSeconds int) (string, string, error) {
 
 	// step 1: create a new Kubernetes API client
 	k, err := NewKubernetes()
@@ -56,7 +56,7 @@ func KubeRun(image, imageTag, cmd, securityTestName, id string, timeOutInSeconds
 	log.Info(logActionRun, logInfoHuskyKube, 42, fullContainerImage, k.PID)
 
 	// step 5: wait container finish
-	_, err = k.WaitPod(podName, timeOutInSeconds)
+	_, err = k.WaitPod(podName, podSchedulingTimeoutInSeconds, timeOutInSeconds)
 	if err != nil {
 		log.Error(logActionRun, logInfoHuskyKube, 5003, fullContainerImage, k.PID, err.Error())
 		return "", "", err

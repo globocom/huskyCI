@@ -124,13 +124,48 @@ func (k Kubernetes) CreatePod(image, cmd, podName, securityTestName string) (str
 	return string(pod.UID), nil
 }
 
-func (k Kubernetes) WaitPod(name string, timeOutInSeconds int) (string, error) {
+func (k Kubernetes) WaitPod(name string, podSchedulingTimeoutInSeconds, testTimeOutInSeconds int) (string, error) {
 
 	ctx := goContext.Background()
 
-	timeout := func(i int64) *int64 { return &i }(int64(timeOutInSeconds))
+	timeout := func(i int64) *int64 { return &i }(int64(podSchedulingTimeoutInSeconds))
+	schedulingTimeout := true
 
 	watch, err := k.client.CoreV1().Pods(k.Namespace).Watch(ctx, metav1.ListOptions{
+		LabelSelector:  fmt.Sprintf("name=%s", name),
+		Watch:          true,
+		TimeoutSeconds: timeout,
+	})
+	if err != nil {
+		return "", err
+	}
+
+schedulingLoop:
+	for event := range watch.ResultChan() {
+		p, ok := event.Object.(*core.Pod)
+		if !ok {
+			return "", errors.New("Unexpected Event while waiting for Pod")
+		}
+
+		switch p.Status.Phase {
+		case "Running":
+			schedulingTimeout = false
+			break schedulingLoop
+		}
+	}
+
+	if schedulingTimeout {
+		err = k.RemovePod(name)
+		if err != nil {
+			return "", err
+		}
+
+		return "", errors.New(fmt.Sprintf("Timed-out waiting for pod scheduling: %s", name))
+	}
+
+	timeout = func(i int64) *int64 { return &i }(int64(testTimeOutInSeconds))
+
+	watch, err = k.client.CoreV1().Pods(k.Namespace).Watch(ctx, metav1.ListOptions{
 		LabelSelector:  fmt.Sprintf("name=%s", name),
 		Watch:          true,
 		TimeoutSeconds: timeout,
@@ -160,7 +195,7 @@ func (k Kubernetes) WaitPod(name string, timeOutInSeconds int) (string, error) {
 		return "", err
 	}
 
-	return "", errors.New(fmt.Sprintf("Timed-out waiting for pod: %s", name))
+	return "", errors.New(fmt.Sprintf("Timed-out waiting for pod to finish: %s", name))
 }
 
 func (k Kubernetes) ReadOutput(name string) (string, error) {
