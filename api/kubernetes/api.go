@@ -160,7 +160,7 @@ func (k Kubernetes) WaitPod(name string, timeOutInSeconds int) (string, error) {
 		return "", err
 	}
 
-	return "", errors.New("Timed-out waiting for pod!")
+	return "", errors.New(fmt.Sprintf("Timed-out waiting for pod: %s", name))
 }
 
 func (k Kubernetes) ReadOutput(name string) (string, error) {
