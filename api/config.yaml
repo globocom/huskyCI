@@ -349,7 +349,7 @@ gitleaks:
         cat /tmp/errorGitCloneGitleaks
     fi
   type: Generic
-  default: true
+  default: false
   timeOutInSeconds: 360
 
 tfsec:
