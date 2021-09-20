@@ -97,7 +97,8 @@ func (scanInfo *SecTestScanInfo) kubeRun(timeOutInSeconds int) error {
 	cmd := util.HandleCmd(scanInfo.URL, scanInfo.Branch, scanInfo.Container.SecurityTest.Cmd)
 	cmd = util.HandleGitURLSubstitution(cmd)
 	finalCMD := util.HandlePrivateSSHKey(cmd)
-	CID, cOutput, err := huskykube.KubeRun(image, imageTag, finalCMD, scanInfo.SecurityTestName, scanInfo.RID, timeOutInSeconds)
+	podSchedulingTimeoutInSeconds := apiContext.APIConfiguration.KubernetesConfig.PodSchedulingTimeout
+	CID, cOutput, err := huskykube.KubeRun(image, imageTag, finalCMD, scanInfo.SecurityTestName, scanInfo.RID, podSchedulingTimeoutInSeconds, timeOutInSeconds)
 	if err != nil {
 		return err
 	}

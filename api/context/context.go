@@ -55,10 +55,11 @@ type DockerHostsConfig struct {
 
 // KubernetesConfig represents Kubernetes API configuration.
 type KubernetesConfig struct {
-	ConfigFilePath   string
-	Namespace        string
-	ProxyAddress     string
-	NoProxyAddresses string
+	ConfigFilePath       string
+	Namespace            string
+	ProxyAddress         string
+	NoProxyAddresses     string
+	PodSchedulingTimeout int
 }
 
 // GraylogConfig represents Graylog configuration.
@@ -319,11 +320,16 @@ func (dF DefaultConfig) getKubernetesConfig() *KubernetesConfig {
 	namespace := dF.Caller.GetEnvironmentVariable("HUSKYCI_KUBERNETES_NAMESPACE")
 	proxyAddress := dF.Caller.GetEnvironmentVariable("HUSKYCI_KUBERNETES_PROXY_ADDRESS")
 	noProxyAddresses := dF.Caller.GetEnvironmentVariable("HUSKYCI_KUBERNETES_NO_PROXY_ADDRESSES")
+	podSchedulingTimeout, err := dF.Caller.ConvertStrToInt(dF.Caller.GetEnvironmentVariable("HUSKYCI_KUBERNETES_POD_SCHEDULING_TIMEOUT"))
+	if err != nil {
+		podSchedulingTimeout = 60
+	}
 	return &KubernetesConfig{
-		ConfigFilePath:   configFilePath,
-		Namespace:        namespace,
-		ProxyAddress:     proxyAddress,
-		NoProxyAddresses: noProxyAddresses,
+		ConfigFilePath:       configFilePath,
+		Namespace:            namespace,
+		ProxyAddress:         proxyAddress,
+		NoProxyAddresses:     noProxyAddresses,
+		PodSchedulingTimeout: podSchedulingTimeout,
 	}
 }
 
