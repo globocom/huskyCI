@@ -151,6 +151,12 @@ schedulingLoop:
 		case "Running":
 			schedulingTimeout = false
 			break schedulingLoop
+		case "Succeeded":
+			return string(p.Status.Phase), nil
+		case "Failed":
+			return "", errors.New("Pod execution failed")
+		case "Unknown":
+			return "", errors.New("Pod terminated with Unknown status")
 		}
 	}
 
