@@ -25,7 +25,7 @@ huskyCI is an open source tool that orchestrates security tests and
 centralizes all results into a database for further analysis and metrics.
 It can perform static security analysis in Python (Bandit and Safety),
 Ruby (Brakeman), JavaScript (Npm Audit and Yarn Audit), Golang (Gosec), 
-Java (SpotBugs plus Find Sec Bugs) and HCL (TFSec). It can also audit repositories
+Java (SpotBugs plus Find Sec Bugs and Infer) and HCL (TFSec). It can also audit repositories
 for secrets like AWS Secret Keys, Private SSH Keys, and many others using
 GitLeaks.
 		`,
