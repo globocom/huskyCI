@@ -29,6 +29,7 @@ const yarnaudit = "yarnaudit"
 const spotbugs = "spotbugs"
 const gitleaks = "gitleaks"
 const tfsec = "tfsec"
+const infer = "infer"
 
 // Start runs both generic and language security
 func (results *RunAllInfo) Start(enryScan SecTestScanInfo) error {
@@ -103,7 +104,7 @@ func (results *RunAllInfo) runGenericScans(enryScan SecTestScanInfo) error {
 		go func(genericTest *types.SecurityTest) {
 			defer wg.Done()
 			newGenericScan := SecTestScanInfo{}
-			// LanguageExclusions is only utilized on first scan (enryScan) therefore set as nil 
+			// LanguageExclusions is only utilized on first scan (enryScan) therefore set as nil
 			enryScan.LanguageExclusions = nil
 			if err := newGenericScan.New(enryScan.RID, enryScan.URL, enryScan.Branch, genericTest.Name, enryScan.LanguageExclusions); err != nil {
 				select {
@@ -168,7 +169,7 @@ func (results *RunAllInfo) runLanguageScans(enryScan SecTestScanInfo) error {
 		go func(languageTest *types.SecurityTest) {
 			defer wg.Done()
 			newLanguageScan := SecTestScanInfo{}
-			// LanguageExclusions is only utilized on first scan (enryScan) therefore set as nil 
+			// LanguageExclusions is only utilized on first scan (enryScan) therefore set as nil
 			enryScan.LanguageExclusions = nil
 			if err := newLanguageScan.New(enryScan.RID, enryScan.URL, enryScan.Branch, languageTest.Name, enryScan.LanguageExclusions); err != nil {
 				select {
@@ -228,6 +229,8 @@ func (results *RunAllInfo) setVulns(securityTestScan SecTestScanInfo) {
 			results.HuskyCIResults.GenericResults.HuskyCIGitleaksOutput.HighVulns = append(results.HuskyCIResults.GenericResults.HuskyCIGitleaksOutput.HighVulns, highVuln)
 		case tfsec:
 			results.HuskyCIResults.HclResults.HuskyCITFSecOutput.HighVulns = append(results.HuskyCIResults.HclResults.HuskyCITFSecOutput.HighVulns, highVuln)
+		case infer:
+			results.HuskyCIResults.JavaResults.HuskyCIInferOutput.HighVulns = append(results.HuskyCIResults.JavaResults.HuskyCIInferOutput.HighVulns, highVuln)
 		}
 	}
 
@@ -251,6 +254,8 @@ func (results *RunAllInfo) setVulns(securityTestScan SecTestScanInfo) {
 			results.HuskyCIResults.GenericResults.HuskyCIGitleaksOutput.MediumVulns = append(results.HuskyCIResults.GenericResults.HuskyCIGitleaksOutput.MediumVulns, mediumVuln)
 		case tfsec:
 			results.HuskyCIResults.HclResults.HuskyCITFSecOutput.MediumVulns = append(results.HuskyCIResults.HclResults.HuskyCITFSecOutput.MediumVulns, mediumVuln)
+		case infer:
+			results.HuskyCIResults.JavaResults.HuskyCIInferOutput.MediumVulns = append(results.HuskyCIResults.JavaResults.HuskyCIInferOutput.MediumVulns, mediumVuln)
 		}
 	}
 
@@ -274,6 +279,8 @@ func (results *RunAllInfo) setVulns(securityTestScan SecTestScanInfo) {
 			results.HuskyCIResults.GenericResults.HuskyCIGitleaksOutput.LowVulns = append(results.HuskyCIResults.GenericResults.HuskyCIGitleaksOutput.LowVulns, lowVuln)
 		case tfsec:
 			results.HuskyCIResults.HclResults.HuskyCITFSecOutput.LowVulns = append(results.HuskyCIResults.HclResults.HuskyCITFSecOutput.LowVulns, lowVuln)
+		case infer:
+			results.HuskyCIResults.JavaResults.HuskyCIInferOutput.LowVulns = append(results.HuskyCIResults.JavaResults.HuskyCIInferOutput.LowVulns, lowVuln)
 		}
 	}
 
@@ -297,6 +304,8 @@ func (results *RunAllInfo) setVulns(securityTestScan SecTestScanInfo) {
 			results.HuskyCIResults.GenericResults.HuskyCIGitleaksOutput.NoSecVulns = append(results.HuskyCIResults.GenericResults.HuskyCIGitleaksOutput.NoSecVulns, noSec)
 		case tfsec:
 			results.HuskyCIResults.HclResults.HuskyCITFSecOutput.NoSecVulns = append(results.HuskyCIResults.HclResults.HuskyCITFSecOutput.NoSecVulns, noSec)
+		case infer:
+			results.HuskyCIResults.JavaResults.HuskyCIInferOutput.NoSecVulns = append(results.HuskyCIResults.JavaResults.HuskyCIInferOutput.NoSecVulns, noSec)
 		}
 	}
 }
