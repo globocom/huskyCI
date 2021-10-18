@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"time"
 
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
@@ -319,6 +320,26 @@ Line4`
 		Context("Bandit: When line number doesn't match the one in the code string", func() {
 			It("Should return false.", func() {
 				Expect(util.VerifyNoHusky(rawBanditCodeSliceString[0], rawLineNumberSliceInteger[0], rawSecurityToolSliceString[0])).To(BeFalse())
+			})
+		})
+	})
+
+	Describe("EndOfTheDay", func() {
+		input := time.Date(2021, 1, 2, 3, 4, 5, 0, time.UTC)
+		expect := time.Date(2021, 1, 2, 23, 59, 59, 0, time.UTC)
+		Context("When a valid date is given", func() {
+			It("Should return the date expected.", func() {
+				Expect(util.EndOfTheDay(input)).To(Equal(expect))
+			})
+		})
+	})
+
+	Describe("BeginningOfTheDay", func() {
+		input := time.Date(2021, 1, 2, 3, 4, 5, 0, time.UTC)
+		expect := time.Date(2021, 1, 2, 0, 0, 0, 0, time.UTC)
+		Context("When a valid date is given", func() {
+			It("Should return the date expected.", func() {
+				Expect(util.BeginningOfTheDay(input)).To(Equal(expect))
 			})
 		})
 	})

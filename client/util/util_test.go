@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 
 	"github.com/globocom/huskyCI/client/util"
 	. "github.com/onsi/ginkgo"
@@ -23,8 +24,7 @@ var _ = Describe("Util", func() {
 		if err != nil {
 			Fail(fmt.Sprintf("error trying to read fixture file: %s", err.Error()))
 		}
-		bytesInput := []byte(fileString)
-		err = util.CreateFile(bytesInput, testOutputFilesPath, outputFileName)
+		err = util.CreateFile(fileString, testOutputFilesPath, outputFileName)
 		if err != nil {
 			Fail(fmt.Sprintf("eror trying to execute util.CreateFile: %s", err.Error()))
 		}
@@ -41,6 +41,28 @@ var _ = Describe("Util", func() {
 				Fail(fmt.Sprintf("error trying to read test output file: %s", err.Error()))
 			}
 			Expect(outputString).To(Equal(fileString))
+		})
+	})
+
+	Describe("GetAllLinesButLast", func() {
+		rawString := strings.Join([]string{"A", "B", "C", "D"}, "\n")
+		expected := []string{"A", "B", "C"}
+
+		Context("When rawString is not empty", func() {
+			It("Should return the slice of strings except the last line", func() {
+				Expect(util.GetAllLinesButLast(rawString)).To(Equal(expected))
+			})
+		})
+	})
+
+	Describe("GetLastLine", func() {
+		rawString := strings.Join([]string{"A", "B", "C", "D"}, "\n")
+		expected := "D"
+
+		Context("When rawString is not empty", func() {
+			It("Should return the string that is in the last position", func() {
+				Expect(util.GetLastLine(rawString)).To(Equal(expected))
+			})
 		})
 	})
 })
