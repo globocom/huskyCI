@@ -122,6 +122,7 @@ type JavaScriptResults struct {
 // JavaResults represents all Java security tests results.
 type JavaResults struct {
 	HuskyCISpotBugsOutput HuskyCISecurityTestOutput `bson:"spotbugsoutput,omitempty" json:"spotbugsoutput,omitempty"`
+	HuskyCIInferOutput    HuskyCISecurityTestOutput `bson:"inferoutput,omitempty" json:"inferoutput,omitempty"`
 }
 
 // RubyResults represents all Ruby security tests results.

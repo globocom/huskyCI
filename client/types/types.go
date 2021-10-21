@@ -21,8 +21,8 @@ var IsJSONoutput bool
 
 // JSONPayload is a struct that represents the JSON payload needed to make a HuskyCI API request.
 type JSONPayload struct {
-	RepositoryURL    string `json:"repositoryURL"`
-	RepositoryBranch string `json:"repositoryBranch"`
+	RepositoryURL      string          `json:"repositoryURL"`
+	RepositoryBranch   string          `json:"repositoryBranch"`
 	LanguageExclusions map[string]bool `json:"languageExclusions"`
 }
 
@@ -140,6 +140,7 @@ type JavaScriptResults struct {
 // JavaResults represents all Java security tests results.
 type JavaResults struct {
 	HuskyCISpotBugsOutput HuskyCISecurityTestOutput `bson:"spotbugsoutput,omitempty" json:"spotbugsoutput,omitempty"`
+	HuskyCIInferOutput    HuskyCISecurityTestOutput `bson:"inferoutput,omitempty" json:"inferoutput,omitempty"`
 }
 
 // RubyResults represents all Ruby security tests results.
@@ -179,6 +180,7 @@ type Summary struct {
 	SpotBugsSummary  HuskyCISummary `json:"spotbugssummary,omitempty"`
 	GitleaksSummary  HuskyCISummary `json:"gitleakssummary,omitempty"`
 	TFSecSummary     HuskyCISummary `json:"tfsecsummary,omitempty"`
+	InferSummary     HuskyCISummary `json:"infersummary,omitempty"`
 	TotalSummary     HuskyCISummary `json:"totalsummary,omitempty"`
 }
 
