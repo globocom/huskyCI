@@ -328,10 +328,11 @@ var _ = Describe("Context", func() {
 						TLSVerify:       1,
 					},
 					KubernetesConfig: &KubernetesConfig{
-						ConfigFilePath:   fakeCaller.expectedEnvVar,
-						Namespace:        fakeCaller.expectedEnvVar,
-						ProxyAddress:     fakeCaller.expectedEnvVar,
-						NoProxyAddresses: fakeCaller.expectedEnvVar,
+						ConfigFilePath:       fakeCaller.expectedEnvVar,
+						Namespace:            fakeCaller.expectedEnvVar,
+						ProxyAddress:         fakeCaller.expectedEnvVar,
+						NoProxyAddresses:     fakeCaller.expectedEnvVar,
+						PodSchedulingTimeout: fakeCaller.expectedIntegerValue,
 					},
 					EnrySecurityTest: &types.SecurityTest{
 						Name:             fakeCaller.expectedStringFromConfig,
