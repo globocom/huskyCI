@@ -78,13 +78,13 @@ func (tfsecScan *SecTestScanInfo) prepareTFSecVulns() {
 		tfsecVuln.File = result.Location.Filename
 
 		switch tfsecVuln.Severity {
-		case "INFO":
+		case "LOW":
 			tfsecVuln.Severity = "Low"
 			huskyCItfsecResults.LowVulns = append(huskyCItfsecResults.LowVulns, tfsecVuln)
-		case "WARNING":
+		case "MEDIUM":
 			tfsecVuln.Severity = "Medium"
 			huskyCItfsecResults.MediumVulns = append(huskyCItfsecResults.MediumVulns, tfsecVuln)
-		case "ERROR":
+		case "HIGH":
 			tfsecVuln.Severity = "High"
 			huskyCItfsecResults.HighVulns = append(huskyCItfsecResults.HighVulns, tfsecVuln)
 		}
