@@ -8,17 +8,17 @@
 #
 
 
-banditVersion=$(docker run --rm docker-hub.artifactory.globoi.com/huskyci/bandit:latest bandit --version | grep bandit | awk -F " " '{print $2}')
-brakemanVersion=$(docker run --rm docker-hub.artifactory.globoi.com/huskyci/brakeman:latest brakeman --version | awk -F " " '{print $2}')
-enryVersion=$(docker run --rm docker-hub.artifactory.globoi.com/huskyci/enry:latest enry --version)
-gitAuthorsVersion=$(docker run --rm docker-hub.artifactory.globoi.com/huskyci/gitauthors:latest git --version | awk -F " " '{print $3}')
-gosecVersion=$(docker run --rm docker-hub.artifactory.globoi.com/huskyci/gosec:latest gosec --version | grep Version | awk -F " " '{print $2}')
-npmAuditVersion=$(docker run --rm docker-hub.artifactory.globoi.com/huskyci/npmaudit:latest npm audit --version)
-yarnAuditVersion=$(docker run --rm docker-hub.artifactory.globoi.com/huskyci/yarnaudit:latest yarn audit --version )
-safetyVersion=$(docker run --rm docker-hub.artifactory.globoi.com/huskyci/safety:latest safety --version | awk -F " " '{print $3}')
-gitleaksVersion=$(docker run --rm docker-hub.artifactory.globoi.com/huskyci/gitleaks:latest gitleaks --version)
-spotbugsVersion=$(docker run --rm docker-hub.artifactory.globoi.com/huskyci/spotbugs:latest cat /opt/spotbugs/version)
-tfsecVersion=$(docker run --rm docker-hub.artifactory.globoi.com/huskyci/tfsec:latest ./tfsec -v)
+banditVersion=$(docker run --rm huskyci/bandit:latest bandit --version | grep bandit | awk -F " " '{print $2}')
+brakemanVersion=$(docker run --rm huskyci/brakeman:latest brakeman --version | awk -F " " '{print $2}')
+enryVersion=$(docker run --rm huskyci/enry:latest enry --version)
+gitAuthorsVersion=$(docker run --rm huskyci/gitauthors:latest git --version | awk -F " " '{print $3}')
+gosecVersion=$(docker run --rm huskyci/gosec:latest gosec --version | grep Version | awk -F " " '{print $2}')
+npmAuditVersion=$(docker run --rm huskyci/npmaudit:latest npm audit --version)
+yarnAuditVersion=$(docker run --rm huskyci/yarnaudit:latest yarn audit --version )
+safetyVersion=$(docker run --rm huskyci/safety:latest safety --version | awk -F " " '{print $3}')
+gitleaksVersion=$(docker run --rm huskyci/gitleaks:latest gitleaks --version)
+spotbugsVersion=$(docker run --rm huskyci/spotbugs:latest cat /opt/spotbugs/version)
+tfsecVersion=$(docker run --rm huskyci/tfsec:latest tfsec -v)
 
 echo "bandit: $banditVersion"
 echo "brakeman: $brakemanVersion"

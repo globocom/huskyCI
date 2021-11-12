@@ -7,14 +7,14 @@
 # This script will build every securityTest container based on all dockerfiles from huskyCI repository
 #
 
-docker build deployments/dockerfiles/bandit/ -t docker-hub.artifactory.globoi.com/huskyci/bandit:latest
-docker build deployments/dockerfiles/brakeman/ -t docker-hub.artifactory.globoi.com/huskyci/brakeman:latest
-docker build deployments/dockerfiles/enry/ -t docker-hub.artifactory.globoi.com/huskyci/enry:latest
-docker build deployments/dockerfiles/gitauthors/ -t docker-hub.artifactory.globoi.com/huskyci/gitauthors:latest
-docker build deployments/dockerfiles/gosec/ -t docker-hub.artifactory.globoi.com/huskyci/gosec:latest
-docker build deployments/dockerfiles/npmaudit/ -t docker-hub.artifactory.globoi.com/huskyci/npmaudit:latest
-docker build deployments/dockerfiles/npmaudit/ -t docker-hub.artifactory.globoi.com/huskyci/yarnaudit:latest
-docker build deployments/dockerfiles/safety/ -t docker-hub.artifactory.globoi.com/huskyci/safety:latest
-docker build deployments/dockerfiles/gitleaks/ -t docker-hub.artifactory.globoi.com/huskyci/gitleaks:latest
-docker build deployments/dockerfiles/spotbugs/ -t docker-hub.artifactory.globoi.com/huskyci/spotbugs:latest
-docker build deployments/dockerfiles/tfsec/ -t docker-hub.artifactory.globoi.com/huskyci/tfsec:latest
+docker build deployments/dockerfiles/bandit/ -t huskyci/bandit:latest
+docker build deployments/dockerfiles/brakeman/ -t huskyci/brakeman:latest
+docker build deployments/dockerfiles/enry/ -t huskyci/enry:latest
+docker build deployments/dockerfiles/gitauthors/ -t huskyci/gitauthors:latest
+docker build deployments/dockerfiles/gosec/ -t huskyci/gosec:latest
+docker build deployments/dockerfiles/npmaudit/ -t huskyci/npmaudit:latest
+docker build deployments/dockerfiles/npmaudit/ -t huskyci/yarnaudit:latest
+docker build deployments/dockerfiles/safety/ -t huskyci/safety:latest
+docker build deployments/dockerfiles/gitleaks/ -t huskyci/gitleaks:latest
+docker build deployments/dockerfiles/spotbugs/ -t huskyci/spotbugs:latest
+docker build deployments/dockerfiles/tfsec/ -t huskyci/tfsec:latest
