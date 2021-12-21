@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/patrickmn/go-cache"
+	cache "github.com/patrickmn/go-cache"
 
 	"github.com/globocom/huskyCI/api/db"
 	postgres "github.com/globocom/huskyCI/api/db/postgres"
@@ -73,29 +73,29 @@ type GraylogConfig struct {
 
 // APIConfig represents API configuration.
 type APIConfig struct {
-	Port                   int
-	Version                string
-	ReleaseDate            string
-	AllowOriginValue       string
-	UseTLS                 bool
-	GitPrivateSSHKey       string
-	GraylogConfig          *GraylogConfig
-	DBConfig               *DBConfig
-	DockerHostsConfig      *DockerHostsConfig
-	KubernetesConfig       *KubernetesConfig
-	EnrySecurityTest       *types.SecurityTest
-	GitAuthorsSecurityTest *types.SecurityTest
-	GosecSecurityTest      *types.SecurityTest
-	BanditSecurityTest     *types.SecurityTest
-	BrakemanSecurityTest   *types.SecurityTest
-	NpmAuditSecurityTest   *types.SecurityTest
-	YarnAuditSecurityTest  *types.SecurityTest
-	SpotBugsSecurityTest   *types.SecurityTest
-	GitleaksSecurityTest   *types.SecurityTest
-	SafetySecurityTest     *types.SecurityTest
-	TFSecSecurityTest      *types.SecurityTest
-	DBInstance             db.Requests
-	Cache                  *cache.Cache
+	Port                         int
+	Version                      string
+	ReleaseDate                  string
+	AllowOriginValue             string
+	UseTLS                       bool
+	GitPrivateSSHKey             string
+	GraylogConfig                *GraylogConfig
+	DBConfig                     *DBConfig
+	DockerHostsConfig            *DockerHostsConfig
+	EnrySecurityTest             *types.SecurityTest
+	GitAuthorsSecurityTest       *types.SecurityTest
+	GosecSecurityTest            *types.SecurityTest
+	BanditSecurityTest           *types.SecurityTest
+	BrakemanSecurityTest         *types.SecurityTest
+	NpmAuditSecurityTest         *types.SecurityTest
+	YarnAuditSecurityTest        *types.SecurityTest
+	SpotBugsSecurityTest         *types.SecurityTest
+	GitleaksSecurityTest         *types.SecurityTest
+	SafetySecurityTest           *types.SecurityTest
+	TFSecSecurityTest            *types.SecurityTest
+	SecurityCodeScanSecurityTest *types.SecurityTest
+	DBInstance                   db.Requests
+	Cache                        *cache.Cache
 }
 
 // DefaultConfig is the struct that stores the caller for testing.
@@ -119,29 +119,29 @@ func (dF DefaultConfig) GetAPIConfig() (*APIConfig, error) {
 func (dF DefaultConfig) SetOnceConfig() {
 	onceConfig.Do(func() {
 		APIConfiguration = &APIConfig{
-			Port:                   dF.GetAPIPort(),
-			Version:                dF.GetAPIVersion(),
-			ReleaseDate:            dF.GetAPIReleaseDate(),
-			AllowOriginValue:       dF.GetAllowOriginValue(),
-			UseTLS:                 dF.GetAPIUseTLS(),
-			GitPrivateSSHKey:       dF.getGitPrivateSSHKey(),
-			GraylogConfig:          dF.getGraylogConfig(),
-			DBConfig:               dF.getDBConfig(),
-			DockerHostsConfig:      dF.getDockerHostsConfig(),
-			KubernetesConfig:       dF.getKubernetesConfig(),
-			EnrySecurityTest:       dF.getSecurityTestConfig("enry"),
-			GitAuthorsSecurityTest: dF.getSecurityTestConfig("gitauthors"),
-			GosecSecurityTest:      dF.getSecurityTestConfig("gosec"),
-			BanditSecurityTest:     dF.getSecurityTestConfig("bandit"),
-			BrakemanSecurityTest:   dF.getSecurityTestConfig("brakeman"),
-			NpmAuditSecurityTest:   dF.getSecurityTestConfig("npmaudit"),
-			YarnAuditSecurityTest:  dF.getSecurityTestConfig("yarnaudit"),
-			SpotBugsSecurityTest:   dF.getSecurityTestConfig("spotbugs"),
-			GitleaksSecurityTest:   dF.getSecurityTestConfig("gitleaks"),
-			SafetySecurityTest:     dF.getSecurityTestConfig("safety"),
-			TFSecSecurityTest:      dF.getSecurityTestConfig("tfsec"),
-			DBInstance:             dF.GetDB(),
-			Cache:                  dF.GetCache(),
+			Port:                         dF.GetAPIPort(),
+			Version:                      dF.GetAPIVersion(),
+			ReleaseDate:                  dF.GetAPIReleaseDate(),
+			AllowOriginValue:             dF.GetAllowOriginValue(),
+			UseTLS:                       dF.GetAPIUseTLS(),
+			GitPrivateSSHKey:             dF.getGitPrivateSSHKey(),
+			GraylogConfig:                dF.getGraylogConfig(),
+			DBConfig:                     dF.getDBConfig(),
+			DockerHostsConfig:            dF.getDockerHostsConfig(),
+			EnrySecurityTest:             dF.getSecurityTestConfig("enry"),
+			GitAuthorsSecurityTest:       dF.getSecurityTestConfig("gitauthors"),
+			GosecSecurityTest:            dF.getSecurityTestConfig("gosec"),
+			BanditSecurityTest:           dF.getSecurityTestConfig("bandit"),
+			BrakemanSecurityTest:         dF.getSecurityTestConfig("brakeman"),
+			NpmAuditSecurityTest:         dF.getSecurityTestConfig("npmaudit"),
+			YarnAuditSecurityTest:        dF.getSecurityTestConfig("yarnaudit"),
+			SpotBugsSecurityTest:         dF.getSecurityTestConfig("spotbugs"),
+			GitleaksSecurityTest:         dF.getSecurityTestConfig("gitleaks"),
+			SafetySecurityTest:           dF.getSecurityTestConfig("safety"),
+			TFSecSecurityTest:            dF.getSecurityTestConfig("tfsec"),
+			SecurityCodeScanSecurityTest: dF.getSecurityTestConfig("securitycodescan"),
+			DBInstance:                   dF.GetDB(),
+			Cache:                        dF.GetCache(),
 		}
 	})
 }

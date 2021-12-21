@@ -29,6 +29,7 @@ const yarnaudit = "yarnaudit"
 const spotbugs = "spotbugs"
 const gitleaks = "gitleaks"
 const tfsec = "tfsec"
+const securitycodescan = "securitycodescan"
 
 // Start runs both generic and language security
 func (results *RunAllInfo) Start(enryScan SecTestScanInfo) error {
@@ -228,6 +229,8 @@ func (results *RunAllInfo) setVulns(securityTestScan SecTestScanInfo) {
 			results.HuskyCIResults.GenericResults.HuskyCIGitleaksOutput.HighVulns = append(results.HuskyCIResults.GenericResults.HuskyCIGitleaksOutput.HighVulns, highVuln)
 		case tfsec:
 			results.HuskyCIResults.HclResults.HuskyCITFSecOutput.HighVulns = append(results.HuskyCIResults.HclResults.HuskyCITFSecOutput.HighVulns, highVuln)
+		case securitycodescan:
+			results.HuskyCIResults.CSharpResults.HuskyCISecurityCodeScanOutput.HighVulns = append(results.HuskyCIResults.CSharpResults.HuskyCISecurityCodeScanOutput.HighVulns, highVuln)
 		}
 	}
 
@@ -251,6 +254,8 @@ func (results *RunAllInfo) setVulns(securityTestScan SecTestScanInfo) {
 			results.HuskyCIResults.GenericResults.HuskyCIGitleaksOutput.MediumVulns = append(results.HuskyCIResults.GenericResults.HuskyCIGitleaksOutput.MediumVulns, mediumVuln)
 		case tfsec:
 			results.HuskyCIResults.HclResults.HuskyCITFSecOutput.MediumVulns = append(results.HuskyCIResults.HclResults.HuskyCITFSecOutput.MediumVulns, mediumVuln)
+		case securitycodescan:
+			results.HuskyCIResults.CSharpResults.HuskyCISecurityCodeScanOutput.MediumVulns = append(results.HuskyCIResults.CSharpResults.HuskyCISecurityCodeScanOutput.MediumVulns, mediumVuln)
 		}
 	}
 
@@ -274,6 +279,8 @@ func (results *RunAllInfo) setVulns(securityTestScan SecTestScanInfo) {
 			results.HuskyCIResults.GenericResults.HuskyCIGitleaksOutput.LowVulns = append(results.HuskyCIResults.GenericResults.HuskyCIGitleaksOutput.LowVulns, lowVuln)
 		case tfsec:
 			results.HuskyCIResults.HclResults.HuskyCITFSecOutput.LowVulns = append(results.HuskyCIResults.HclResults.HuskyCITFSecOutput.LowVulns, lowVuln)
+		case securitycodescan:
+			results.HuskyCIResults.CSharpResults.HuskyCISecurityCodeScanOutput.LowVulns = append(results.HuskyCIResults.CSharpResults.HuskyCISecurityCodeScanOutput.LowVulns, lowVuln)
 		}
 	}
 
@@ -297,6 +304,8 @@ func (results *RunAllInfo) setVulns(securityTestScan SecTestScanInfo) {
 			results.HuskyCIResults.GenericResults.HuskyCIGitleaksOutput.NoSecVulns = append(results.HuskyCIResults.GenericResults.HuskyCIGitleaksOutput.NoSecVulns, noSec)
 		case tfsec:
 			results.HuskyCIResults.HclResults.HuskyCITFSecOutput.NoSecVulns = append(results.HuskyCIResults.HclResults.HuskyCITFSecOutput.NoSecVulns, noSec)
+		case securitycodescan:
+			results.HuskyCIResults.CSharpResults.HuskyCISecurityCodeScanOutput.NoSecVulns = append(results.HuskyCIResults.CSharpResults.HuskyCISecurityCodeScanOutput.NoSecVulns, noSec)
 		}
 	}
 }

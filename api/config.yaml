@@ -379,3 +379,32 @@ tfsec:
   language: HCL
   default: true
   timeOutInSeconds: 360
+
+securitycodescan:
+  name: securitycodescan
+  image: huskyci/securitycodescan
+  imageTag: "v5.6.0"
+  cmd: |+
+    mkdir -p ~/.ssh &&
+    echo '%GIT_PRIVATE_SSH_KEY%' > ~/.ssh/huskyci_id_rsa &&
+    chmod 600 ~/.ssh/huskyci_id_rsa &&
+    echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
+    echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
+    GIT_TERMINAL_PROMPT=0 git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneSecurityCodeScan
+    if [ $? -eq 0 ]; then
+        cd code
+        security-scan `find . -type f -name "*.sln"` --no-banner --export=/tmp/securityCodeScanResults.json > /tmp/securityCodeScanOutput 2>&1
+        if [ -f /tmp/securityCodeScanResults.json ]; then
+            cat /tmp/securityCodeScanResults.json
+        else
+            echo "ERROR_SECURITY_CODE_SCAN_RUNNING"
+            cat /tmp/securityCodeScanOutput
+        fi
+    else
+      echo "ERROR_CLONING"
+      cat /tmp/errorGitCloneSecurityCodeScan
+    fi
+  type: Language
+  language: C#
+  default: true
+  timeOutInSeconds: 360

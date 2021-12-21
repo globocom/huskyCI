@@ -18,3 +18,4 @@ docker build deployments/dockerfiles/safety/ -t huskyci/safety:latest
 docker build deployments/dockerfiles/gitleaks/ -t huskyci/gitleaks:latest
 docker build deployments/dockerfiles/spotbugs/ -t huskyci/spotbugs:latest
 docker build deployments/dockerfiles/tfsec/ -t huskyci/tfsec:latest
+docker build deployments/dockerfiles/securitycodescan/ -t huskyci/securitycodescan:latest
