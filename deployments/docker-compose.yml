@@ -11,7 +11,7 @@ services:
         volumes:
             - docker_vol:/var/lib/docker
             - ../deployments/daemon.json:/etc/docker/daemon.json:ro
-            - ../deployments/certs/:/data/certs/
+            - ../deployments/certs:/data/certs
         networks:
             - huskyCI_net
 

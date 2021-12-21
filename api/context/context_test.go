@@ -444,6 +444,16 @@ var _ = Describe("Context", func() {
 						Default:          fakeCaller.expectedBoolFromConfig,
 						TimeOutInSeconds: fakeCaller.expectedIntFromConfig,
 					},
+					SecurityCodeScanSecurityTest: &types.SecurityTest{
+						Name:             fakeCaller.expectedStringFromConfig,
+						Image:            fakeCaller.expectedStringFromConfig,
+						ImageTag:         fakeCaller.expectedStringFromConfig,
+						Cmd:              fakeCaller.expectedStringFromConfig,
+						Type:             fakeCaller.expectedStringFromConfig,
+						Language:         fakeCaller.expectedStringFromConfig,
+						Default:          fakeCaller.expectedBoolFromConfig,
+						TimeOutInSeconds: fakeCaller.expectedIntFromConfig,
+					},
 					DBInstance: &db.MongoRequests{},
 					Cache:      apiConfig.Cache, // cannot be compared due to channels inside the structure
 				}

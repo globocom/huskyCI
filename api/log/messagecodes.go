@@ -74,7 +74,7 @@ var MsgCode = map[int]string{
 	1038: "Could not Unmarshall the following gitleaksOutput: ",
 	1039: "Could not Unmarshall the following spotbugsOutput: ",
 	1040: "Could not Unmarshall the following tfsecOutput: ",
-	1041: "Could not initialize default configurations: ",
+	1041: "Could not Unmarshall the following securitycodescanOutput: ",
 
 	// MongoDB infos
 	21: "Connecting to MongoDB.",

@@ -99,6 +99,7 @@ type HuskyCIResults struct {
 	RubyResults       RubyResults       `bson:"rubyresults,omitempty" json:"rubyresults,omitempty"`
 	JavaResults       JavaResults       `bson:"javaresults,omitempty" json:"javaresults,omitempty"`
 	HclResults        HclResults        `bson:"hclresults,omitempty" json:"hclresults,omitempty"`
+	CSharpResults     CsharpResults     `bson:"csharpresults,omitempty" json:"csharpresults,omitempty"`
 	GenericResults    GenericResults    `bson:"genericresults,omitempty" json:"genericresults,omitempty"`
 }
 
@@ -137,6 +138,11 @@ type GenericResults struct {
 // HclResults represents all HCL security tests results.
 type HclResults struct {
 	HuskyCITFSecOutput HuskyCISecurityTestOutput `bson:"tfsecoutput,omitempty" json:"tfsecoutput,omitempty"`
+}
+
+// CsharpResults represents all C# security tests results.
+type CsharpResults struct {
+	HuskyCISecurityCodeScanOutput HuskyCISecurityTestOutput `bson:"securitycodescanoutput,omitempty" json:"securitycodescanoutput,omitempty"`
 }
 
 // HuskyCISecurityTestOutput stores all Low, Medium and High vulnerabilities for a sec test

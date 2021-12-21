@@ -14,34 +14,37 @@ import (
 )
 
 var securityTestAnalyze = map[string]func(scanInfo *SecTestScanInfo) error{
-	"bandit":     analyzeBandit,
-	"brakeman":   analyzeBrakeman,
-	"enry":       analyzeEnry,
-	"gitauthors": analyzeGitAuthors,
-	"gosec":      analyzeGosec,
-	"npmaudit":   analyzeNpmaudit,
-	"yarnaudit":  analyzeYarnaudit,
-	"spotbugs":   analyzeSpotBugs,
-	"gitleaks":   analyseGitleaks,
-	"safety":     analyzeSafety,
-	"tfsec":      analyzeTFSec,
+	"bandit":           analyzeBandit,
+	"brakeman":         analyzeBrakeman,
+	"enry":             analyzeEnry,
+	"gitauthors":       analyzeGitAuthors,
+	"gosec":            analyzeGosec,
+	"npmaudit":         analyzeNpmaudit,
+	"yarnaudit":        analyzeYarnaudit,
+	"spotbugs":         analyzeSpotBugs,
+	"gitleaks":         analyseGitleaks,
+	"safety":           analyzeSafety,
+	"tfsec":            analyzeTFSec,
+	"securitycodescan": analyzeSecurityCodeScan,
 }
 
 // SecTestScanInfo holds all information of securityTest scan.
 type SecTestScanInfo struct {
-	RID                   string
-	URL                   string
-	Branch                string
-	SecurityTestName      string
-	LanguageExclusions    map[string]bool
-	ErrorFound            error
-	ReqNotFound           bool
-	WarningFound          bool
-	PackageNotFound       bool
-	YarnLockNotFound      bool
-	YarnErrorRunning      bool
-	GitleaksErrorRunning  bool
-	GitleaksTimeout       bool
+	RID                          string
+	URL                          string
+	Branch                       string
+	SecurityTestName             string
+	LanguageExclusions           map[string]bool
+	ErrorFound                   error
+	ReqNotFound                  bool
+	WarningFound                 bool
+	PackageNotFound              bool
+	YarnLockNotFound             bool
+	YarnErrorRunning             bool
+	GitleaksErrorRunning         bool
+	GitleaksTimeout              bool
+	SecurityCodeScanErrorRunning bool
+	// SecurityCodeScanErrorRestore bool
 	CommitAuthorsNotFound bool
 	CommitAuthors         GitAuthorsOutput
 	Codes                 []types.Code
@@ -159,6 +162,13 @@ func (scanInfo *SecTestScanInfo) prepareContainerAfterScan() {
 
 	if scanInfo.CommitAuthorsNotFound {
 		scanInfo.Container.CInfo = "Could not get authors. Probably master branch is being analyzed."
+		return
+	}
+
+	if scanInfo.SecurityCodeScanErrorRunning {
+		scanInfo.Container.CInfo = "Could not run 'security-scan' tool. No .sln file was found or an invalid file extension is loaded."
+		scanInfo.Container.CResult = "warning"
+		scanInfo.Container.CStatus = "error running"
 		return
 	}
 

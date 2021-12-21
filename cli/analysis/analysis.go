@@ -177,6 +177,8 @@ func (a *Analysis) getAvailableSecurityTests(languages []string) map[string][]st
 			list[language] = []string{"huskyci/spotbugs"}
 		case "HCL":
 			list[language] = []string{"huskyci/tfsec"}
+		case "C#":
+			list[language] = []string{"huskyci/securitycodescan"}
 		}
 	}
 
