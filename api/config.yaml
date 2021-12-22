@@ -362,12 +362,11 @@ tfsec:
     chmod 600 ~/.ssh/huskyci_id_rsa &&
     echo "IdentityFile ~/.ssh/huskyci_id_rsa" >> /etc/ssh/ssh_config &&
     echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config &&
-    cd ~ &&
     GIT_TERMINAL_PROMPT=0 git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneTFSec
     if [ $? -eq 0 ]; then
-        tfsec code --format=json | grep -v "WARNING: skipped" > pre-results.json
-        cat pre-results.json | grep -v "WARNING: skipped" > results.json
-        echo "{\"warnings\":\"$(cat pre-results.json | grep "WARNING: skipped")\"}" >> warning.json
+        tfsec code --format=json > pre-results.json 2>&1
+        cat pre-results.json | grep -v "WARNING" > results.json
+        echo "{\"warnings\":\"$(cat pre-results.json | grep "WARNING")\"}" >> warning.json
         cat results.json warning.json | jq -s add | jq -j -M -c .
     else
       echo "ERROR_CLONING"
