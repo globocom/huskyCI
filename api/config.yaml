@@ -366,7 +366,7 @@ tfsec:
     if [ $? -eq 0 ]; then
         tfsec code --format=json > pre-results.json 2>&1
         cat pre-results.json | grep -v "WARNING" > results.json
-        echo "{\"warnings\":\"$(cat pre-results.json | grep "WARNING")\"}" >> warning.json
+        grep "WARNING" pre-results.json | jq -R . | jq -s '{"warnings": .}' > warning.json
         cat results.json warning.json | jq -s add | jq -j -M -c .
     else
       echo "ERROR_CLONING"
