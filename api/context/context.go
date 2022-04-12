@@ -82,6 +82,7 @@ type APIConfig struct {
 	GraylogConfig                *GraylogConfig
 	DBConfig                     *DBConfig
 	DockerHostsConfig            *DockerHostsConfig
+	KubernetesConfig             *KubernetesConfig
 	EnrySecurityTest             *types.SecurityTest
 	GitAuthorsSecurityTest       *types.SecurityTest
 	GosecSecurityTest            *types.SecurityTest
@@ -128,6 +129,7 @@ func (dF DefaultConfig) SetOnceConfig() {
 			GraylogConfig:                dF.getGraylogConfig(),
 			DBConfig:                     dF.getDBConfig(),
 			DockerHostsConfig:            dF.getDockerHostsConfig(),
+			KubernetesConfig:             dF.getKubernetesConfig(),
 			EnrySecurityTest:             dF.getSecurityTestConfig("enry"),
 			GitAuthorsSecurityTest:       dF.getSecurityTestConfig("gitauthors"),
 			GosecSecurityTest:            dF.getSecurityTestConfig("gosec"),
