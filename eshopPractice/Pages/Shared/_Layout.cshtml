@@ -1,0 +1,40 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <link href="~/lib/bootstrap/dist/css/bootstrap.css" rel="stylesheet" />
+    <script src="~/lib/jquery/jquery.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
+    <link href="~/content/site.css?104" rel="stylesheet" />
+    <title>@ViewBag.Title</title>
+</head>
+<body>
+    <div class="esh-app-wrapper">
+        <header class="esh-app-header">
+            <div class="container">
+                <article class="row">
+                    <section class="col-lg-7 col-md-6 col-12">
+                        <a asp-area="" asp-page="/Index">
+                            <img src="~/images/brand.png" />
+                        </a>
+                    </section>
+                    <partial name="_LoginPartial" />
+                </article>
+            </div>
+        </header>
+        @RenderBody()
+        <footer class="esh-app-footer">
+            <div class="container">
+                <article class="row">
+                    <section class="col-sm-6"></section>
+                    <section class="col-sm-6">
+                        <div class="esh-app-footer-brand overflow-hidden">All rights reserved </div>
+                    </section>
+                </article>
+            </div>
+        </footer>
+    </div>
+    @RenderSection("scripts", required: false)
+</body>
+</html>

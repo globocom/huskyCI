@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\images\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Ardalis.GuardClauses" Version="3.1.0" />
+    <PackageReference Include="Ardalis.Specification" Version="5.0.3" />
+    <PackageReference Include="Ardalis.Specification.EntityFrameworkCore" Version="5.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="5.0.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="5.0.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.4" />
+  </ItemGroup>
+
+</Project>
