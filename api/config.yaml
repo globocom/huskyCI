@@ -393,7 +393,7 @@ securitycodescan:
     GIT_TERMINAL_PROMPT=0 git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneSecurityCodeScan
     if [ $? -eq 0 ]; then
         cd code
-        security-scan `find . -type f -name "*.sln"` --no-banner --export=/tmp/securityCodeScanResults.json > /tmp/securityCodeScanOutput 2>&1
+        security-scan `find . -type f -name "*.sln"` --ignore-msbuild-errors --no-banner --export=/tmp/securityCodeScanResults.json > /tmp/securityCodeScanOutput 2>&1
         if [ -f /tmp/securityCodeScanResults.json ]; then
             cat /tmp/securityCodeScanResults.json
         else
