@@ -383,7 +383,7 @@ tfsec:
 securitycodescan:
   name: securitycodescan
   image: huskyci/securitycodescan
-  imageTag: "v5.6.0"
+  imageTag: "v5.6.2"
   cmd: |+
     mkdir -p ~/.ssh &&
     echo '%GIT_PRIVATE_SSH_KEY%' > ~/.ssh/huskyci_id_rsa &&
