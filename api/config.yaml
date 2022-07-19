@@ -18,7 +18,7 @@ enry:
     fi
   type: Enry
   default: true
-  timeOutInSeconds: 60
+  timeOutInSeconds: 180
 
 gitauthors:
   name: gitauthors
