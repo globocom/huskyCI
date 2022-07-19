@@ -147,11 +147,13 @@ schedulingLoop:
 			return "", errors.New("Unexpected Event while waiting for Pod")
 		}
 
+		fmt.Printf("Scheduling loop - Container %s changed status to: %s\n", name, p.Status.Phase)
+
 		switch p.Status.Phase {
 		case "Running":
 			schedulingTimeout = false
 			break schedulingLoop
-		case "Succeeded":
+		case "Succeeded", "Completed":
 			return string(p.Status.Phase), nil
 		case "Failed":
 			return "", errors.New("Pod execution failed")
@@ -186,8 +188,9 @@ schedulingLoop:
 			return "", errors.New("Unexpected Event while waiting for Pod")
 		}
 
+		fmt.Printf("Waiting result - Container %s changed status to: %s\n", name, p.Status.Phase)
 		switch p.Status.Phase {
-		case "Succeeded":
+		case "Succeeded", "Completed":
 			return string(p.Status.Phase), nil
 		case "Failed":
 			return "", errors.New("Pod execution failed")
