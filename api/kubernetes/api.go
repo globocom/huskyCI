@@ -127,13 +127,19 @@ func (k Kubernetes) CreatePod(image, cmd, podName, securityTestName string) (str
 
 func (k Kubernetes) WaitPod(name string, podSchedulingTimeoutInSeconds, testTimeOutInSeconds int) (string, error) {
 
+	fmt.Printf("Start WaitPod %s - time: %+v\n", name, time.Now())
+	f := func() {
+		fmt.Printf("End WaitPod %s - time: %+v\n", name, time.Now())
+	}
+	defer f()
+
 	ctx := goContext.Background()
 
 	timeout := func(i int64) *int64 { return &i }(int64(podSchedulingTimeoutInSeconds))
 	fmt.Printf("Timeout 1 %s - %+v\n", name, *timeout)
 	schedulingTimeout := true
 
-	watch, err := k.client.CoreV1().Pods(k.Namespace).Watch(ctx, metav1.ListOptions{
+	watchScheduling, err := k.client.CoreV1().Pods(k.Namespace).Watch(ctx, metav1.ListOptions{
 		LabelSelector:  fmt.Sprintf("name=%s", name),
 		Watch:          true,
 		TimeoutSeconds: timeout,
@@ -145,14 +151,14 @@ func (k Kubernetes) WaitPod(name string, podSchedulingTimeoutInSeconds, testTime
 
 	fmt.Printf("Start %s scheduling - %+v\n", name, time.Now())
 schedulingLoop:
-	for event := range watch.ResultChan() {
+	for event := range watchScheduling.ResultChan() {
 		p, ok := event.Object.(*core.Pod)
 		if !ok {
 			fmt.Printf("Error %s\n", name)
 			return "", errors.New("Unexpected Event while waiting for Pod")
 		}
 
-		fmt.Printf("Scheduling loop %s - %+v\n", name, p)
+		fmt.Printf("Scheduling loop %s - %+v\n", name, p.Status)
 
 		switch p.Status.Phase {
 		case "Running":
@@ -181,7 +187,8 @@ schedulingLoop:
 
 	fmt.Printf("Timeout 2 %s - %+v\n", name, *timeout_result)
 
-	watch, err = k.client.CoreV1().Pods(k.Namespace).Watch(ctx, metav1.ListOptions{
+	ctxRunning := goContext.Background()
+	watchRunning, err := k.client.CoreV1().Pods(k.Namespace).Watch(ctxRunning, metav1.ListOptions{
 		LabelSelector:  fmt.Sprintf("name=%s", name),
 		Watch:          true,
 		TimeoutSeconds: timeout_result,
@@ -191,15 +198,14 @@ schedulingLoop:
 		return "", err
 	}
 
-	fmt.Printf("Watch 2 - %+v\n", watch)
-	for event := range watch.ResultChan() {
+	for event := range watchRunning.ResultChan() {
 		p, ok := event.Object.(*core.Pod)
 		if !ok {
 			fmt.Printf("Error %s\n", name)
 			return "", errors.New("Unexpected Event while waiting for Pod")
 		}
 
-		fmt.Printf("Waiting result %s - %+v\n", name, p)
+		fmt.Printf("Waiting result %s - %+v\n", name, p.Status)
 		switch p.Status.Phase {
 		case "Succeeded", "Completed":
 			return string(p.Status.Phase), nil
