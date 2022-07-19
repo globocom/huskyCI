@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"time"
 
 	apiContext "github.com/globocom/huskyCI/api/context"
 	"github.com/globocom/huskyCI/api/log"
@@ -129,6 +130,7 @@ func (k Kubernetes) WaitPod(name string, podSchedulingTimeoutInSeconds, testTime
 	ctx := goContext.Background()
 
 	timeout := func(i int64) *int64 { return &i }(int64(podSchedulingTimeoutInSeconds))
+	fmt.Printf("Timeout 1 %s - %+v", name, timeout)
 	schedulingTimeout := true
 
 	watch, err := k.client.CoreV1().Pods(k.Namespace).Watch(ctx, metav1.ListOptions{
@@ -137,17 +139,20 @@ func (k Kubernetes) WaitPod(name string, podSchedulingTimeoutInSeconds, testTime
 		TimeoutSeconds: timeout,
 	})
 	if err != nil {
+		fmt.Printf("Error watch 1 %s\n", name)
 		return "", err
 	}
 
+	fmt.Printf("Start %s scheduling - %+v", name, time.Now())
 schedulingLoop:
 	for event := range watch.ResultChan() {
 		p, ok := event.Object.(*core.Pod)
 		if !ok {
+			fmt.Printf("Error %s\n", name)
 			return "", errors.New("Unexpected Event while waiting for Pod")
 		}
 
-		fmt.Printf("Scheduling loop - Container %s changed status to: %s\n", name, p.Status.Phase)
+		fmt.Printf("Scheduling loop %s - %+v\n", name, p)
 
 		switch p.Status.Phase {
 		case "Running":
@@ -162,6 +167,7 @@ schedulingLoop:
 		}
 	}
 
+	fmt.Printf("schedulingTimeout %s - %+v - time %+v\n", name, schedulingTimeout, time.Now())
 	if schedulingTimeout {
 		err = k.RemovePod(name)
 		if err != nil {
@@ -173,22 +179,27 @@ schedulingLoop:
 
 	timeout = func(i int64) *int64 { return &i }(int64(testTimeOutInSeconds))
 
+	fmt.Printf("Timeout 2 %s - %+v", name, timeout)
+
 	watch, err = k.client.CoreV1().Pods(k.Namespace).Watch(ctx, metav1.ListOptions{
 		LabelSelector:  fmt.Sprintf("name=%s", name),
 		Watch:          true,
 		TimeoutSeconds: timeout,
 	})
 	if err != nil {
+		fmt.Printf("Error watch 2 %s\n", name)
 		return "", err
 	}
 
+	fmt.Printf("Watch 2 - %+v\n", watch)
 	for event := range watch.ResultChan() {
 		p, ok := event.Object.(*core.Pod)
 		if !ok {
+			fmt.Printf("Error %s\n", name)
 			return "", errors.New("Unexpected Event while waiting for Pod")
 		}
 
-		fmt.Printf("Waiting result - Container %s changed status to: %s\n", name, p.Status.Phase)
+		fmt.Printf("Waiting result %s - %+v\n", name, p)
 		switch p.Status.Phase {
 		case "Succeeded", "Completed":
 			return string(p.Status.Phase), nil
@@ -199,8 +210,10 @@ schedulingLoop:
 		}
 	}
 
+	fmt.Printf("waiting result timeout %s - time %+v\n", name, time.Now())
 	err = k.RemovePod(name)
 	if err != nil {
+		fmt.Printf("Error removing pod %s\n", name)
 		return "", err
 	}
 
