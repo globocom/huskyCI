@@ -16,6 +16,7 @@ import (
 
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/watch"
 	kube "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -163,6 +164,7 @@ schedulingLoop:
 		switch p.Status.Phase {
 		case "Running":
 			schedulingTimeout = false
+			watchScheduling.Stop()
 			break schedulingLoop
 		case "Succeeded", "Completed":
 			return string(p.Status.Phase), nil
@@ -198,7 +200,8 @@ schedulingLoop:
 		return "", err
 	}
 
-	for event := range watchRunning.ResultChan() {
+	var event watch.Event
+	for event = range watchRunning.ResultChan() {
 		p, ok := event.Object.(*core.Pod)
 		if !ok {
 			fmt.Printf("Error %s\n", name)
@@ -208,6 +211,7 @@ schedulingLoop:
 		fmt.Printf("Waiting result %s - %+v\n", name, p.Status)
 		switch p.Status.Phase {
 		case "Succeeded", "Completed":
+			watchRunning.Stop()
 			return string(p.Status.Phase), nil
 		case "Failed":
 			return "", errors.New("Pod execution failed")
@@ -216,6 +220,7 @@ schedulingLoop:
 		}
 	}
 
+	fmt.Printf("event %s: %v\n", name, event)
 	fmt.Printf("waiting result timeout %s - time %+v\n", name, time.Now())
 	err = k.RemovePod(name)
 	if err != nil {
