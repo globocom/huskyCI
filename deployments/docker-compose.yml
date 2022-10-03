@@ -3,7 +3,7 @@ services:
 
     dockerapi:
         privileged: true
-        image: docker:stable-dind
+        image: docker:20.10.0-dind
         container_name: huskyCI_Docker_API
         command: "dockerd --host=unix:///var/run/docker.sock --host=tcp://0.0.0.0:2376"
         ports:
@@ -28,10 +28,11 @@ services:
             HUSKYCI_API_DEFAULT_PASSWORD: huskyCIPassword
             HUSKYCI_API_ALLOW_ORIGIN_CORS: "*"
             HUSKYCI_DOCKERAPI_ADDR: dockerapi
-            HUSKYCI_KUBERNETES_CONFIG_FILE_PATH: /go/src/github.com/globocom/huskyCI/kubeconfig
+            HUSKYCI_KUBERNETES_CONFIG_FILE_PATH: /go/src/github.com/globocom/huskyCI/kubeconfig/config.yaml
             HUSKYCI_KUBERNETES_NAMESPACE: default
             HUSKYCI_DOCKERAPI_TLS_VERIFY: 0
             HUSKYCI_DOCKERAPI_CERT_PATH: /go/src/github.com/globocom/huskyCI/
+            HUSKYCI_INFRASTRUCTURE_USE: docker
         build:
             context: ../
             dockerfile: deployments/dockerfiles/api.Dockerfile

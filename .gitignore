@@ -27,3 +27,5 @@ coverage.html
 huskyci-api-bin
 huskyci-client-bin
 huskyci-cli-bin
+
+deployments/kubeconfig/config.yaml

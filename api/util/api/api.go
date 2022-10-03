@@ -27,14 +27,19 @@ func (hU HuskyUtils) CheckHuskyRequirements(configAPI *apiContext.APIConfig) err
 	log.Info(logActionCheckReqs, logInfoAPIUtil, 12)
 
 	// check if all docker hosts are up and running docker API.
-	if err := hU.CheckHandler.checkDockerHosts(configAPI); err != nil {
-		return err
+	infrastructureSelected, hasSelected := os.LookupEnv("HUSKYCI_INFRASTRUCTURE_USE")
+	if hasSelected && infrastructureSelected == "docker" {
+		if err := hU.CheckHandler.checkDockerHosts(configAPI); err != nil {
+			return err
+		}
 	}
 	log.Info(logActionCheckReqs, logInfoAPIUtil, 13)
 
 	// check if all kubernetes hosts are up and running Kubernetes API.
-	if err := hU.CheckHandler.checkKubernetesHosts(configAPI); err != nil {
-		return err
+	if hasSelected && infrastructureSelected == "kubernetes" {
+		if err := hU.CheckHandler.checkKubernetesHosts(configAPI); err != nil {
+			return err
+		}
 	}
 	log.Info(logActionCheckReqs, logInfoAPIUtil, 13)
 
@@ -70,6 +75,10 @@ func (cH *CheckUtils) checkEnvVars() error {
 		"HUSKYCI_API_DEFAULT_USERNAME",
 		"HUSKYCI_API_DEFAULT_PASSWORD",
 		"HUSKYCI_API_ALLOW_ORIGIN_CORS",
+		"HUSKYCI_INFRASTRUCTURE_USE",
+	}
+
+	dockerEnvVars := []string{
 		"HUSKYCI_DOCKERAPI_ADDR",
 		"HUSKYCI_DOCKERAPI_CERT_PATH",
 	}
@@ -85,6 +94,17 @@ func (cH *CheckUtils) checkEnvVars() error {
 		if !envIsSet {
 			errorString = errorString + envVars[i] + " "
 			allEnvIsSet = false
+		}
+	}
+
+	infrastructureSelected, hasSelected := os.LookupEnv("HUSKYCI_INFRASTRUCTURE_USE")
+	if hasSelected && infrastructureSelected == "docker" {
+		for i := 0; i < len(dockerEnvVars); i++ {
+			env[dockerEnvVars[i]], envIsSet = os.LookupEnv(dockerEnvVars[i])
+			if !envIsSet {
+				errorString = errorString + dockerEnvVars[i] + " "
+				allEnvIsSet = false
+			}
 		}
 	}
 
