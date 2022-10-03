@@ -2,11 +2,12 @@ package securitytest
 
 import (
 	"errors"
+	"os"
 	"strings"
 	"time"
 
 	apiContext "github.com/globocom/huskyCI/api/context"
-	// huskydocker "github.com/globocom/huskyCI/api/dockers"
+	huskydocker "github.com/globocom/huskyCI/api/dockers"
 	huskykube "github.com/globocom/huskyCI/api/kubernetes"
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
@@ -80,10 +81,19 @@ func (scanInfo *SecTestScanInfo) setSecurityTestContainer(securityTestName strin
 
 // Start starts a new huskyCI scan!
 func (scanInfo *SecTestScanInfo) Start() error {
-	if err := scanInfo.kubeRun(scanInfo.Container.SecurityTest.TimeOutInSeconds); err != nil {
-		scanInfo.ErrorFound = err
-		scanInfo.prepareContainerAfterScan()
-		return err
+	if os.Getenv("HUSKYCI_INFRASTRUCTURE_USE") == "kubernetes" {
+		if err := scanInfo.kubeRun(scanInfo.Container.SecurityTest.TimeOutInSeconds); err != nil {
+			scanInfo.ErrorFound = err
+			scanInfo.prepareContainerAfterScan()
+			return err
+		}
+	} else {
+		if err := scanInfo.dockerRun(scanInfo.Container.SecurityTest.TimeOutInSeconds); err != nil {
+			scanInfo.ErrorFound = err
+			scanInfo.prepareContainerAfterScan()
+			return err
+		}
+
 	}
 	if err := scanInfo.analyze(); err != nil {
 		scanInfo.ErrorFound = err
@@ -91,6 +101,21 @@ func (scanInfo *SecTestScanInfo) Start() error {
 		return err
 	}
 	scanInfo.prepareContainerAfterScan()
+	return nil
+}
+
+func (scanInfo *SecTestScanInfo) dockerRun(timeOutInSeconds int) error {
+	image := scanInfo.Container.SecurityTest.Image
+	imageTag := scanInfo.Container.SecurityTest.ImageTag
+	cmd := util.HandleCmd(scanInfo.URL, scanInfo.Branch, scanInfo.Container.SecurityTest.Cmd)
+	cmd = util.HandleGitURLSubstitution(cmd)
+	finalCMD := util.HandlePrivateSSHKey(cmd)
+	CID, cOutput, err := huskydocker.DockerRun(image, imageTag, finalCMD, scanInfo.DockerHost, timeOutInSeconds)
+	if err != nil {
+		return err
+	}
+	scanInfo.Container.CID = CID
+	scanInfo.Container.COutput = cOutput
 	return nil
 }
 

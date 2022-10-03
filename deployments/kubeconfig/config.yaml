@@ -1,0 +1,19 @@
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: <KUBERNETES_CERT_AUTHORITY_DATA>
+    server: <KUBERNETES_SERVER_HOST>
+  name: <CLUSTER_NAME>
+contexts:
+- context:
+    cluster: <CLUSTER_NAME>
+    user: <CLUSTER_USER>
+  name: <CONTEXT_NAME>
+current-context: <CONTEXT_NAME>
+kind: Config
+preferences: {}
+users:
+- name: <CLUSTER_USER>
+  user:
+    client-certificate-data: <CLIENT_CERTIFICATE_DATA>
+    client-key-data: <CLIENT_KEY_DATA>

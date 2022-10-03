@@ -1,7 +1,7 @@
 {
     "tls": true,
     "tlscacert": "/data/certs/ca.pem",
-    "tlscert": "/data/certs/server-cert.pem",
-    "tlskey": "/data/certs/server-key.pem",
+    "tlscert": "/data/certs/server-dockerapi-cert.pem",
+    "tlskey": "/data/certs/server-dockerapi-key.pem",
     "tlsverify": true
 }

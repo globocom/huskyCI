@@ -34,7 +34,7 @@ func configureImagePath(image, tag string) (string, string) {
 }
 
 // DockerRun starts a new container and returns its output and an error.
-func DockerRun(image, imageTag, cmd, dockerHost string, timeOutInSeconds int) (string, string, error) {
+func DockerRun(image string, imageTag string, cmd string, dockerHost string, timeOutInSeconds int) (string, string, error) {
 
 	// step 1: create a new docker API client
 	d, err := NewDocker(dockerHost)

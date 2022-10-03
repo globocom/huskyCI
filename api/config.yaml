@@ -1,6 +1,6 @@
 enry:
   name: enry
-  image: docker-hub.artifactory.globoi.com/huskyci/enry
+  image: huskyci/enry
   imageTag: dev-b78a58c
   cmd: |+
     mkdir -p ~/.ssh &&
@@ -22,7 +22,7 @@ enry:
 
 gitauthors:
   name: gitauthors
-  image: docker-hub.artifactory.globoi.com/huskyci/gitauthors
+  image: huskyci/gitauthors
   imageTag: "2.18.4"
   cmd: |+
     mkdir -p ~/.ssh &&
@@ -56,7 +56,7 @@ gitauthors:
 
 gosec:
   name: gosec
-  image: docker-hub.artifactory.globoi.com/huskyci/gosec
+  image: huskyci/gosec
   imageTag: v2.3.0
   cmd: |+
     mkdir -p ~/.ssh &&
@@ -92,7 +92,7 @@ gosec:
 
 bandit:
   name: bandit
-  image: docker-hub.artifactory.globoi.com/huskyci/bandit
+  image: huskyci/bandit
   imageTag: "1.6.2"
   cmd: |+
      mkdir -p ~/.ssh &&
@@ -118,7 +118,7 @@ bandit:
 
 brakeman:
   name: brakeman
-  image: docker-hub.artifactory.globoi.com/huskyci/brakeman
+  image: huskyci/brakeman
   imageTag: "4.8.2"
   cmd: |+
     mkdir -p ~/.ssh &&
@@ -155,7 +155,7 @@ brakeman:
 
 safety:
   name: safety
-  image: docker-hub.artifactory.globoi.com/huskyci/safety
+  image: huskyci/safety
   imageTag: "1.9.0"
   cmd: |+
     mkdir -p ~/.ssh &&
@@ -201,7 +201,7 @@ safety:
 
 npmaudit:
   name: npmaudit
-  image: docker-hub.artifactory.globoi.com/huskyci/npmaudit
+  image: huskyci/npmaudit
   imageTag: "6.14.5"
   cmd: |+
     mkdir -p ~/.ssh &&
@@ -234,7 +234,7 @@ npmaudit:
 
 yarnaudit:
   name: yarnaudit
-  image: docker-hub.artifactory.globoi.com/huskyci/yarnaudit
+  image: huskyci/yarnaudit
   imageTag: "1.22.4"
   cmd: |+
     mkdir -p ~/.ssh &&
@@ -270,7 +270,7 @@ yarnaudit:
 
 spotbugs:
   name: spotbugs
-  image: docker-hub.artifactory.globoi.com/huskyci/spotbugs
+  image: huskyci/spotbugs
   imageTag: "4.0.0-beta4"
   cmd: |+
     mkdir -p ~/.ssh &&
@@ -326,7 +326,7 @@ spotbugs:
 
 gitleaks:
   name: gitleaks
-  image: docker-hub.artifactory.globoi.com/huskyci/gitleaks
+  image: huskyci/gitleaks
   imageTag: "v.7.6.1"
   cmd: |+
     mkdir -p ~/.ssh &&
@@ -357,7 +357,7 @@ gitleaks:
 
 tfsec:
   name: tfsec
-  image: docker-hub.artifactory.globoi.com/huskyci/tfsec
+  image: huskyci/tfsec
   imageTag: "0.58.15"
   cmd: |+
     mkdir -p ~/.ssh &&
@@ -382,7 +382,7 @@ tfsec:
 
 securitycodescan:
   name: securitycodescan
-  image: docker-hub.artifactory.globoi.com/huskyci/securitycodescan
+  image: huskyci/securitycodescan
   imageTag: "v5.6.2"
   cmd: |+
     mkdir -p ~/.ssh &&
