@@ -12,15 +12,15 @@
 
 ## Introduction
 
-huskyCI is an open source tool that orchestrates security tests and centralizes all results into a database for further analysis and metrics. It can perform static security analysis in Python ([Bandit][Bandit] and [Safety][Safety]), Ruby ([Brakeman][Brakeman]), JavaScript ([Npm Audit][NpmAudit] and [Yarn Audit][YarnAudit]), Golang ([Gosec][Gosec]), Java ([SpotBugs][SpotBugs] plus [Find Sec Bugs][FindSec]), and HCL ([TFSec][TFSec]). It can also audit repositories for secrets like AWS Secret Keys, Private SSH Keys, and many others using [GitLeaks][Gitleaks].
+huskyCI is an open-source tool that orchestrates security tests and centralizes all results into a database for further analysis and metrics. It can perform static security analysis in Python ([Bandit][Bandit] and [Safety][Safety]), Ruby ([Brakeman][Brakeman]), JavaScript ([Npm Audit][NpmAudit] and [Yarn Audit][YarnAudit]), Golang ([Gosec][Gosec]), Java ([SpotBugs][SpotBugs] plus [Find Sec Bugs][FindSec]), and HCL ([TFSec][TFSec]). It can also audit repositories for secrets like AWS Secret Keys, Private SSH Keys, and many others using [GitLeaks][Gitleaks].
 
 ## How does it work?
 
-Developers can set up a new stage into their CI pipelines to check for vulnerabilities:
+Developers can set up a new stage in their CI pipelines to check for vulnerabilities:
 
 <p align="center"><img src="huskyCI-stage.png"/></p>
 
-If security issues are found in the code, the severity, the confidence, the file, the line, and many more useful information can be shown, as exemplified:
+If security issues are found in the code, the severity, the confidence, the file, the line, and much more useful information can be shown, as exemplified:
 
 ```
 [HUSKYCI][*] poc-python-bandit -> https://github.com/globocom/huskyCI.git
@@ -78,7 +78,7 @@ You can try huskyCI by setting up a local environment using Docker Compose follo
 
 ## Documentation
 
-All guides and the full documentation can be found in the [official documentation page](https://huskyci.opensource.globo.com/docs/quickstart/overview).
+All guides and the full documentation can be found on the [official documentation page](https://huskyci.opensource.globo.com/docs/quickstart/overview).
 
 ## Contributing
 
