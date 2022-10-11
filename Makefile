@@ -124,7 +124,7 @@ install: create-certs prepare-local-mongodb compose generate-passwords generate-
 
 ## Runs all huskyCI lint
 lint:
-	$(GO) get -u golang.org/x/lint/golint
+	$(GO) install -u golang.org/x/lint/golint
 	$(GOLINT) ./...
 
 ## Set up local mongoDB settings file
