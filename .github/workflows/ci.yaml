@@ -27,8 +27,5 @@ jobs:
     - name: Test
       run: make test
 
-    - name: Check Security
-      run: make check-sec
-
     - name: Lint
       run: make lint
