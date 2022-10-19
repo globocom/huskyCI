@@ -94,7 +94,7 @@ We have a few channels for contact, feel free to reach out to us at:
 
 ## Contributors
 
-This project exists thanks to all the [contributors]((https://github.com/globocom/huskyCI/graphs/contributors)). You rock!   ❤️🚀
+This project exists thanks to all the [contributors](https://github.com/globocom/huskyCI/graphs/contributors). You rock!   ❤️🚀
 
 ## License
 
