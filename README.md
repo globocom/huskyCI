@@ -1,5 +1,7 @@
 <p align="center">
+  <a href="https://huskyci.opensource.globo.com">
   <img src="https://raw.githubusercontent.com/wiki/globocom/huskyCI/images/huskyCI-logo.png" align="center" height="" />
+  </a>
   <!-- logo font: Anton -->
 </p>
 
