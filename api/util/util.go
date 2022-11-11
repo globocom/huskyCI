@@ -154,7 +154,7 @@ func CheckMaliciousRepoURL(repositoryURL string) (string, error) {
 
 // CheckMaliciousRepoBranch verifies if a given branch is "malicious" or not
 func CheckMaliciousRepoBranch(repositoryBranch string, c echo.Context) error {
-	regexpBranch := `^[a-zA-Z0-9_\/.-]*$`
+	regexpBranch := `^[a-zA-Z0-9_\/.\-\+À-ÿ]*$`
 	valid, err := regexp.MatchString(regexpBranch, repositoryBranch)
 	if err != nil {
 		log.Error(logActionReceiveRequest, logInfoAnalysis, 1008, "Repository Branch regexp ", err)
