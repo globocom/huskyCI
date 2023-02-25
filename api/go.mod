@@ -19,8 +19,8 @@ require (
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/spf13/viper v1.7.0
 	github.com/valyala/fasttemplate v1.1.0 // indirect
-	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37
-	golang.org/x/net v0.0.0-20200520004742-59133d7f0dd7
+	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
+	golang.org/x/net v0.7.0
 	gopkg.in/Graylog2/go-gelf.v2 v2.0.0-20191017102106-1550ee647df0 // indirect
 	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22
 )
