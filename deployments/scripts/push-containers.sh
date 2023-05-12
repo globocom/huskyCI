@@ -9,7 +9,7 @@
 
 banditVersion=$(docker run --rm huskyci/bandit:latest bandit --version | grep bandit | awk -F " " '{print $2}')
 brakemanVersion=$(docker run --rm huskyci/brakeman:latest brakeman --version | awk -F " " '{print $2}')
-enryVersion=$(docker run --rm huskyci/enry:latest enry --version)
+enryVersion=$(docker run --rm huskyci/enry:latest enry --version | cut -d'/' -f3)
 gitAuthorsVersion=$(docker run --rm huskyci/gitauthors:latest git --version | awk -F " " '{print $3}')
 gosecVersion=$(curl -s https://api.github.com/repos/securego/gosec/releases/latest | grep "tag_name" | awk -F '"' '{print $4}')
 npmAuditVersion=$(docker run --rm huskyci/npmaudit:latest npm audit --version)

@@ -11,6 +11,7 @@ import (
 
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
+	"github.com/globocom/huskyCI/api/util"
 )
 
 // YarnAuditOutput is the struct that stores all yarn audit output
@@ -83,7 +84,9 @@ func analyzeYarnaudit(yarnAuditScan *SecTestScanInfo) error {
 	// Unmarshall rawOutput into finalOutput, that is a YarnAuditOutput struct.
 	if err := json.Unmarshal([]byte(yarnAuditScan.Container.COutput), &yarnAuditOutput); err != nil {
 		log.Error("analyzeYarnaudit", "YARNAUDIT", 1036, yarnAuditScan.Container.COutput, err)
-		return err
+		yarnAuditScan.ErrorFound = util.HandleScanError(yarnAuditScan.Container.COutput, err)
+		yarnAuditScan.prepareContainerAfterScan()
+		return yarnAuditScan.ErrorFound
 	}
 	yarnAuditScan.FinalOutput = yarnAuditOutput
 

@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/globocom/huskyCI/api/util"
+
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
 )
@@ -68,8 +70,8 @@ func analyzeSecurityCodeScan(securitycodescanScan *SecTestScanInfo) error {
 	// Unmarshall rawOutput into finalOutput, that is a SecurityCodeScanOutput struct.
 	if err := json.Unmarshal([]byte(securitycodescanScan.Container.COutput), &securitycodescanOutput); err != nil {
 		log.Error("analyzeSecurityCodeScan", "SecurityCodeScan", 1041, securitycodescanScan.Container.COutput, err)
-		securitycodescanScan.ErrorFound = err
-		return err
+		securitycodescanScan.ErrorFound = util.HandleScanError(securitycodescanScan.Container.COutput, err)
+		return securitycodescanScan.ErrorFound
 	}
 	securitycodescanScan.FinalOutput = securitycodescanOutput
 

@@ -38,8 +38,8 @@ func analyzeBandit(banditScan *SecTestScanInfo) error {
 	// Unmarshall rawOutput into finalOutput, that is a Bandit struct.
 	if err := json.Unmarshal([]byte(banditScan.Container.COutput), &banditOutput); err != nil {
 		log.Error("analyzeBandit", "BANDIT", 1006, banditScan.Container.COutput, err)
-		banditScan.ErrorFound = err
-		return err
+		banditScan.ErrorFound = util.HandleScanError(banditScan.Container.COutput, err)
+		return banditScan.ErrorFound
 	}
 	banditScan.FinalOutput = banditOutput
 

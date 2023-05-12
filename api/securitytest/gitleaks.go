@@ -10,6 +10,7 @@ import (
 
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
+	"github.com/globocom/huskyCI/api/util"
 )
 
 // GitleaksOutput is the struct that holds all data from Gitleaks output.
@@ -62,9 +63,9 @@ func analyseGitleaks(gitleaksScan *SecTestScanInfo) error {
 	// Unmarshall rawOutput into finalOutput, that is a GitleaksOutput struct.
 	if err := json.Unmarshal([]byte(gitleaksScan.Container.COutput), &gitLeaksOutput); err != nil {
 		log.Error("analyzeGitleaks", "GITLEAKS", 1038, gitleaksScan.Container.COutput, err)
-		gitleaksScan.ErrorFound = err
+		gitleaksScan.ErrorFound = util.HandleScanError(gitleaksScan.Container.COutput, err)
 		gitleaksScan.prepareContainerAfterScan()
-		return err
+		return gitleaksScan.ErrorFound
 	}
 	gitleaksScan.FinalOutput = gitLeaksOutput
 

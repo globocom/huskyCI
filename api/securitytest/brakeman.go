@@ -11,6 +11,7 @@ import (
 
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
+	"github.com/globocom/huskyCI/api/util"
 )
 
 // BrakemanOutput is the struct that holds issues and stats found on a Brakeman scan.
@@ -42,8 +43,8 @@ func analyzeBrakeman(brakemanScan *SecTestScanInfo) error {
 	// Unmarshall rawOutput into finalOutput, that is a Brakeman struct.
 	if err := json.Unmarshal([]byte(brakemanScan.Container.COutput), &brakemanOutput); err != nil {
 		log.Error("analyzeBrakeman", "BRAKEMAN", 1005, brakemanScan.Container.COutput, err)
-		brakemanScan.ErrorFound = err
-		return err
+		brakemanScan.ErrorFound = util.HandleScanError(brakemanScan.Container.COutput, err)
+		return brakemanScan.ErrorFound
 	}
 	brakemanScan.FinalOutput = brakemanOutput
 

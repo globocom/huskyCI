@@ -13,6 +13,7 @@ import (
 
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
+	"github.com/globocom/huskyCI/api/util"
 )
 
 const (
@@ -109,9 +110,9 @@ func analyzeSpotBugs(spotbugsScan *SecTestScanInfo) error {
 	spotBugsOutput, err := parseXMLtoJSON([]byte(spotbugsScan.Container.COutput))
 	if err != nil {
 		log.Error("analyzeSpotBugs", "SPOTBUGS", 1039, spotbugsScan.Container.COutput, err)
-		spotbugsScan.ErrorFound = err
+		spotbugsScan.ErrorFound = util.HandleScanError(spotbugsScan.Container.COutput, err)
 		spotbugsScan.prepareContainerAfterScan()
-		return err
+		return spotbugsScan.ErrorFound
 	}
 
 	spotbugsScan.FinalOutput = spotBugsOutput

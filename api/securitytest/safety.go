@@ -72,9 +72,9 @@ func analyzeSafety(safetyScan *SecTestScanInfo) error {
 	// Unmarshall rawOutput into finalOutput, that is a Safety struct.
 	if err := json.Unmarshal([]byte(safetyScan.Container.COutput), &safetyOutput); err != nil {
 		log.Error("analyzeSafety", "SAFETY", 1018, safetyScan.Container.COutput, err)
-		safetyScan.ErrorFound = err
+		safetyScan.ErrorFound = util.HandleScanError(safetyScan.Container.COutput, err)
 		safetyScan.prepareContainerAfterScan()
-		return err
+		return safetyScan.ErrorFound
 	}
 	safetyScan.FinalOutput = safetyOutput
 

@@ -11,6 +11,7 @@ import (
 
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
+	"github.com/globocom/huskyCI/api/util"
 )
 
 // TFSecOutput is the struct that holds all data from TFSec output.
@@ -42,8 +43,8 @@ func analyzeTFSec(tfsecScan *SecTestScanInfo) error {
 	// Unmarshall rawOutput into finalOutput, that is a TFSec struct.
 	if err := json.Unmarshal([]byte(tfsecScan.Container.COutput), &tfsecOutput); err != nil {
 		log.Error("analyzeTFSec", "TFSEC", 1040, tfsecScan.Container.COutput, err)
-		tfsecScan.ErrorFound = err
-		return err
+		tfsecScan.ErrorFound = util.HandleScanError(tfsecScan.Container.COutput, err)
+		return tfsecScan.ErrorFound
 	}
 	tfsecScan.FinalOutput = tfsecOutput
 

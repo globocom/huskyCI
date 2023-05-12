@@ -1,7 +1,7 @@
 enry:
   name: enry
   image: huskyci/enry
-  imageTag: dev-b78a58c
+  imageTag: v1.2.0
   cmd: |+
     mkdir -p ~/.ssh &&
     echo '%GIT_PRIVATE_SSH_KEY%' > ~/.ssh/huskyci_id_rsa &&
@@ -11,7 +11,11 @@ enry:
     GIT_TERMINAL_PROMPT=0 git clone -b %GIT_BRANCH% --single-branch %GIT_REPO% code --quiet 2> /tmp/errorGitCloneEnry
     if [ $? -eq 0 ]; then
       cd code
-      enry --json | tr -d '\r\n'
+      enry --json | tr -d '\r\n' 2> /tmp/errorRunEnry
+      if [ $? -ne 0 ]; then
+        echo "ERROR_RUNNING_ENRY"
+        cat /tmp/errorRunEnry
+      fi
     else
       echo "ERROR_CLONING"
       cat /tmp/errorGitCloneEnry
@@ -199,7 +203,7 @@ safety:
 npmaudit:
   name: npmaudit
   image: huskyci/npmaudit
-  imageTag: "6.14.5"
+  imageTag: "9.6.6"
   cmd: |+
     mkdir -p ~/.ssh &&
     echo '%GIT_PRIVATE_SSH_KEY%' > ~/.ssh/huskyci_id_rsa &&
@@ -213,8 +217,13 @@ npmaudit:
         rm -f .npmrc
       fi
       if [ -f package-lock.json ]; then
-        npm audit --production --json > /tmp/results.json 2> /tmp/errorNpmaudit
-        jq -j -M -c . /tmp/results.json
+        npm audit --production --json --audit-level none > /tmp/results.json 2> /tmp/errorNpmaudit
+        if [ $? -eq 0 ]; then
+          jq -j -M -c . /tmp/results.json
+        else
+          echo 'ERROR_RUNNING_NPM_AUDIT'
+          cat /tmp/errorNpmaudit
+        fi
       else
         if [ ! -f yarn.lock ]; then
           echo 'ERROR_PACKAGE_LOCK_NOT_FOUND'
@@ -232,7 +241,7 @@ npmaudit:
 yarnaudit:
   name: yarnaudit
   image: huskyci/yarnaudit
-  imageTag: "1.22.4"
+  imageTag: "1.22.19"
   cmd: |+
     mkdir -p ~/.ssh &&
     echo '%GIT_PRIVATE_SSH_KEY%' > ~/.ssh/huskyci_id_rsa &&

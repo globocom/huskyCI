@@ -85,21 +85,21 @@ func (scanInfo *SecTestScanInfo) Start() error {
 		if err := scanInfo.kubeRun(scanInfo.Container.SecurityTest.TimeOutInSeconds); err != nil {
 			scanInfo.ErrorFound = err
 			scanInfo.prepareContainerAfterScan()
-			return err
+			return scanInfo.ErrorFound
 		}
 	}
 	if os.Getenv("HUSKYCI_INFRASTRUCTURE_USE") == "docker" {
 		if err := scanInfo.dockerRun(scanInfo.Container.SecurityTest.TimeOutInSeconds); err != nil {
 			scanInfo.ErrorFound = err
 			scanInfo.prepareContainerAfterScan()
-			return err
+			return scanInfo.ErrorFound
 		}
 	}
 
 	if err := scanInfo.analyze(); err != nil {
 		scanInfo.ErrorFound = err
 		scanInfo.prepareContainerAfterScan()
-		return err
+		return scanInfo.ErrorFound
 	}
 
 	scanInfo.prepareContainerAfterScan()

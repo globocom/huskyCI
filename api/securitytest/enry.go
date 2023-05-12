@@ -11,6 +11,7 @@ import (
 
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
+	"github.com/globocom/huskyCI/api/util"
 )
 
 // EnryOutput is the struct that holds all data from Gosec output.
@@ -22,13 +23,13 @@ func analyzeEnry(enryScan *SecTestScanInfo) error {
 	// Unmarshall rawOutput into finalOutput, that is a EnryOutput struct.
 	if err := json.Unmarshal([]byte(enryScan.Container.COutput), &enryScan.FinalOutput); err != nil {
 		log.Error("analyzeEnry", "ENRY", 1003, enryScan.Container.COutput, err)
-		enryScan.ErrorFound = err
-		return err
+		enryScan.ErrorFound = util.HandleScanError(enryScan.Container.COutput, err)
+		return enryScan.ErrorFound
 	}
 	// get all languages and files found based on Enry output
 	if err := enryScan.prepareEnryOutput(); err != nil {
-		enryScan.ErrorFound = err
-		return err
+		enryScan.ErrorFound = util.HandleScanError(enryScan.Container.COutput, err)
+		return enryScan.ErrorFound
 	}
 	return nil
 }

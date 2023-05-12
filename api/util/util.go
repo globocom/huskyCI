@@ -115,6 +115,11 @@ func RemoveDuplicates(s []string) []string {
 	return s[:i]
 }
 
+// HandleScanError show the right error when json is not expected as output of scan
+func HandleScanError(containerOutput string, otherErr error) error {
+	return fmt.Errorf("%s\nError from top: %v\n", containerOutput, otherErr)
+}
+
 // CheckValidInput checks if an user's input is "malicious" or not
 func CheckValidInput(repository types.Repository, c echo.Context) (string, error) {
 

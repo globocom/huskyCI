@@ -9,6 +9,7 @@ import (
 
 	"github.com/globocom/huskyCI/api/log"
 	"github.com/globocom/huskyCI/api/types"
+	"github.com/globocom/huskyCI/api/util"
 )
 
 // GosecOutput is the struct that holds all data from Gosec output.
@@ -50,9 +51,9 @@ func analyzeGosec(gosecScan *SecTestScanInfo) error {
 	// Unmarshall rawOutput into finalOutput, that is a GosecOutput struct.
 	if err := json.Unmarshal([]byte(gosecScan.Container.COutput), &goSecOutput); err != nil {
 		log.Error("analyzeGosec", "GOSEC", 1002, gosecScan.Container.COutput, err)
-		gosecScan.ErrorFound = err
+		gosecScan.ErrorFound = util.HandleScanError(gosecScan.Container.COutput, err)
 		gosecScan.prepareContainerAfterScan()
-		return err
+		return gosecScan.ErrorFound
 	}
 	gosecScan.FinalOutput = goSecOutput
 
