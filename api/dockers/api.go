@@ -81,7 +81,7 @@ func (d Docker) CreateContainer(image, cmd string) (string, error) {
 		Image: image,
 		Tty:   true,
 		Cmd:   []string{"/bin/sh", "-c", cmd},
-	}, nil, nil, "")
+	}, nil, nil, nil, "")
 
 	if err != nil {
 		log.Error("CreateContainer", logInfoAPI, 3005, err)
@@ -99,19 +99,26 @@ func (d Docker) StartContainer() error {
 // WaitContainer returns when container finishes executing cmd.
 func (d Docker) WaitContainer(timeOutInSeconds int) error {
 	ctx := goContext.Background()
-	statusCode, err := d.client.ContainerWait(ctx, d.CID)
+	containerWaitC, errC := d.client.ContainerWait(ctx, d.CID, container.WaitConditionNotRunning)
 
-	if statusCode != 0 {
-		return fmt.Errorf("Error in POST to wait the container with statusCode %d", statusCode)
+	select {
+	case err := <-errC:
+		if err != nil {
+			return err
+		}
+	case containerWait := <-containerWaitC:
+		if containerWait.StatusCode != 0 {
+			return fmt.Errorf("Error in POST to wait the container with statusCode %d", containerWait.StatusCode)
+		}
 	}
 
-	return err
+	return nil
 }
 
 // StopContainer stops an active container by it's CID
 func (d Docker) StopContainer() error {
 	ctx := goContext.Background()
-	err := d.client.ContainerStop(ctx, d.CID, nil)
+	err := d.client.ContainerStop(ctx, d.CID, container.StopOptions{})
 	if err != nil {
 		log.Error("StopContainer", logInfoAPI, 3022, err)
 	}
@@ -135,7 +142,6 @@ func (d Docker) ListStoppedContainers() ([]Docker, error) {
 	dockerFilters := filters.NewArgs()
 	dockerFilters.Add("status", "exited")
 	options := dockerTypes.ContainerListOptions{
-		Quiet:   true,
 		All:     true,
 		Filters: dockerFilters,
 	}
@@ -246,7 +252,7 @@ func (d Docker) ListImages() ([]dockerTypes.ImageSummary, error) {
 }
 
 // RemoveImage removes an image.
-func (d Docker) RemoveImage(imageID string) ([]dockerTypes.ImageDelete, error) {
+func (d Docker) RemoveImage(imageID string) ([]dockerTypes.ImageDeleteResponseItem, error) {
 	ctx := goContext.Background()
 	return d.client.ImageRemove(ctx, imageID, dockerTypes.ImageRemoveOptions{Force: true})
 }

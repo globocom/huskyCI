@@ -5,13 +5,12 @@
 package user
 
 import (
+	"io"
 	"os"
 
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/base64"
-	"errors"
-	"hash"
-	"io"
 
 	"github.com/globocom/huskyCI/api/auth"
 	apiContext "github.com/globocom/huskyCI/api/context"
@@ -40,10 +39,6 @@ func InsertDefaultUser() error {
 	keyLength := pbkdf2Caller.GetKeyLength()
 	iterations := pbkdf2Caller.GetIterations()
 
-	hashFunction, isValid := auth.GetValidHashFunction(defaultHashFunction)
-	if !isValid {
-		return errors.New("Invalid hash function")
-	}
 	salt := make([]byte, 64)
 	_, err := io.ReadFull(rand.Reader, salt)
 	if err != nil {
@@ -55,9 +50,7 @@ func InsertDefaultUser() error {
 	newUser.Iterations = iterations
 	newUser.KeyLen = keyLength
 	newUser.Salt = base64.StdEncoding.EncodeToString(salt)
-	hashedPass := pbkdf2.Key([]byte(DefaultAPIPassword), salt, iterations, keyLength, func() hash.Hash {
-		return hashFunction
-	})
+	hashedPass := pbkdf2.Key([]byte(DefaultAPIPassword), salt, iterations, keyLength, sha256.New)
 	newUser.Password = base64.StdEncoding.EncodeToString(hashedPass)
 	return apiContext.APIConfiguration.DBInstance.InsertDBUser(newUser)
 }
