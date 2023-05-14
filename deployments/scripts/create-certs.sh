@@ -89,7 +89,7 @@ function checkCAFilesExist {
 }
 
 function createTLSCert {
-    openssl req -x509 -newkey rsa:4096 -keyout $TARGETDIR/api-tls-key.pem -out $TARGETDIR/api-tls-cert.pem -days 365 -nodes -subj '/CN=localhost'
+    openssl req -x509 -newkey rsa:4096 -keyout $TARGETDIR/api-tls-key.pem -sha256 -out $TARGETDIR/api-tls-cert.pem -days 365 -nodes -subj '/CN=localhost'
 }
 
 function createServerCert {
@@ -104,11 +104,11 @@ function createServerCert {
     openssl genrsa -out $TARGETDIR/server-key.pem 4096
     openssl req -subj "/CN=$NAME" -new -key $TARGETDIR/server-key.pem -out $TARGETDIR/server.csr
     echo "subjectAltName = DNS:$NAME$IPSTRING" > $TARGETDIR/extfile.cnf
-    openssl x509 -passin pass:$PASSWORD -req -days $EXPIRATIONDAYS -in $TARGETDIR/server.csr -CA $TARGETDIR/ca.pem -CAkey $TARGETDIR/ca-key.pem -CAcreateserial -out $TARGETDIR/server-dockerapi-cert.pem -extfile $TARGETDIR/extfile.cnf
+    openssl x509 -passin pass:$PASSWORD -req -days $EXPIRATIONDAYS -in $TARGETDIR/server.csr -CA $TARGETDIR/ca.pem -CAkey $TARGETDIR/ca-key.pem -CAcreateserial -sha256 -out $TARGETDIR/server-cert.pem -extfile $TARGETDIR/extfile.cnf
 
     rm $TARGETDIR/server.csr $TARGETDIR/extfile.cnf $TARGETDIR/ca.srl
-    mv $TARGETDIR/server-dockerapi-key.pem $TARGETDIR/server-$NAME-key.pem
-    mv $TARGETDIR/server-dockerapi-cert.pem $TARGETDIR/server-$NAME-cert.pem
+    mv $TARGETDIR/server-key.pem $TARGETDIR/server-$NAME-key.pem
+    mv $TARGETDIR/server-cert.pem $TARGETDIR/server-$NAME-cert.pem
     chmod 0400 $TARGETDIR/server-$NAME-key.pem
     chmod 0444 $TARGETDIR/server-$NAME-cert.pem
 }

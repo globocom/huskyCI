@@ -5,6 +5,7 @@
 package token
 
 import (
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"strings"
@@ -41,14 +42,9 @@ func (tH *THandler) GenerateAccessToken(repo types.TokenRequest) (string, error)
 	if err != nil {
 		return "", err
 	}
-	hashFunction := tH.HashGen.GetHashName()
 	keyLength := tH.HashGen.GetKeyLength()
 	iterations := tH.HashGen.GetIterations()
-	h, isOk := auth.GetValidHashFunction(hashFunction)
-	if !isOk {
-		return "", errors.New("Invalid hash function")
-	}
-	accessToken.HuskyToken = tH.HashGen.GenHashValue([]byte(token), bSalt, iterations, keyLength, h)
+	accessToken.HuskyToken = tH.HashGen.GenHashValue([]byte(token), bSalt, iterations, keyLength, sha256.New())
 	accessToken.URL = validatedURL
 	accessToken.IsValid = true
 	accessToken.CreatedAt = tH.External.GetTimeNow()
@@ -76,7 +72,7 @@ func (tH *THandler) GetSplitted(rcvToken string) (string, string, error) {
 	return parsed[0], parsed[1], nil
 }
 
-//ValidateRandomData will calculate the hash from the
+// ValidateRandomData will calculate the hash from the
 // received data and compare with hashdata passed in
 // the argument. The hash calculated uses the salt
 // passed in the argument.

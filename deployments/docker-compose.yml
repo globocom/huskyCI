@@ -3,7 +3,7 @@ services:
 
     dockerapi:
         privileged: true
-        image: docker:20.10.0-dind
+        image: docker:24-rc-dind
         container_name: huskyCI_Docker_API
         command: "dockerd --host=unix:///var/run/docker.sock --host=tcp://0.0.0.0:2376"
         ports:
@@ -39,8 +39,8 @@ services:
         command: "go run server.go"
         volumes:
             - docker_vol:/var/lib/docker
-            - ../deployments/certs/client-huskyapi-cert.pem:/go/src/github.com/globocom/huskyCI/cert.pem:ro
-            - ../deployments/certs/client-huskyapi-key.pem:/go/src/github.com/globocom/huskyCI/key.pem:ro
+            - ../deployments/certs/server-dockerapi-cert.pem:/go/src/github.com/globocom/huskyCI/cert.pem:ro
+            - ../deployments/certs/server-dockerapi-key.pem:/go/src/github.com/globocom/huskyCI/key.pem:ro
             - ../deployments/certs/ca.pem:/go/src/github.com/globocom/huskyCI/ca.pem:ro
             - ../deployments/kubeconfig:/go/src/github.com/globocom/huskyCI/kubeconfig
         ports:
