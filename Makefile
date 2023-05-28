@@ -85,15 +85,19 @@ compose:
 	docker-compose -f deployments/docker-compose.yml down -v
 	docker-compose -f deployments/docker-compose.yml up -d --build --force-recreate
 
+## Composes down
+compose-down:
+	docker-compose -f deployments/docker-compose.yml down -v
+
 ## Creates certs and sets all config to huskyCI_Docker_API
 create-certs:
 	chmod +x deployments/scripts/run-create-certs.sh
 	./deployments/scripts/run-create-certs.sh
 
 ## Generates a local token to be used in a local environment
-generate-local-token:
-	chmod +x deployments/scripts/generate-local-token.sh
-	./deployments/scripts/generate-local-token.sh
+# generate-local-token:
+#     chmod +x deployments/scripts/generate-local-token.sh
+#     ./deployments/scripts/generate-local-token.sh
 
 ## Generates passwords and set them as environment variables
 generate-passwords:
@@ -120,17 +124,13 @@ help:
 	printf "\n"
 
 ## Installs a development environment using docker-compose
-install: create-certs prepare-local-mongodb compose generate-passwords generate-local-token
+# generate-local-token has removed
+install: create-certs compose generate-passwords
 
 ## Runs all huskyCI lint
 lint:
 	$(GO) install -u golang.org/x/lint/golint
 	$(GOLINT) ./...
-
-## Set up local mongoDB settings file
-prepare-local-mongodb:
-	chmod +x deployments/scripts/prepare-local-mongodb.sh
-	./deployments/scripts/prepare-local-mongodb.sh
 
 ## Push securityTest containers to hub.docker
 push-containers:

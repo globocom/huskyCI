@@ -1,4 +1,4 @@
-version: '3'
+version: '3.8'
 services:
 
     dockerapi:
@@ -18,7 +18,6 @@ services:
     api:
         container_name: huskyCI_API
         environment:
-            GOPATH: /go/
             # required envs
             HUSKYCI_DATABASE_DB_ADDR: mongodb
             HUSKYCI_DATABASE_DB_NAME: huskyCIDB
@@ -28,15 +27,13 @@ services:
             HUSKYCI_API_DEFAULT_PASSWORD: huskyCIPassword
             HUSKYCI_API_ALLOW_ORIGIN_CORS: "*"
             HUSKYCI_DOCKERAPI_ADDR: dockerapi
-            HUSKYCI_KUBERNETES_CONFIG_FILE_PATH: /go/src/github.com/globocom/huskyCI/kubeconfig/config.yaml
-            HUSKYCI_KUBERNETES_NAMESPACE: default
             HUSKYCI_DOCKERAPI_TLS_VERIFY: 0
             HUSKYCI_DOCKERAPI_CERT_PATH: /go/src/github.com/globocom/huskyCI/
             HUSKYCI_INFRASTRUCTURE_USE: docker
         build:
             context: ../
             dockerfile: deployments/dockerfiles/api.Dockerfile
-        command: "go run server.go"
+        command: ./huskyci-api-bin
         volumes:
             - docker_vol:/var/lib/docker
             - ../deployments/certs/server-dockerapi-cert.pem:/go/src/github.com/globocom/huskyCI/cert.pem:ro
@@ -48,56 +45,62 @@ services:
         networks:
             - huskyCI_net
         depends_on:
-            - mongodb
-            - dockerapi
+            mongodb:
+                condition: service_healthy
+            dockerapi:
+                condition: service_started
         external_links:
             - dockerapi:dockerapi
 
     mongodb:
         container_name: huskyCI_MongoDB
+        image: mongo:4.2.2
         environment:
-            DATABASE: huskyCIDB
-            DATABASE_USER: huskyCIUser
-            DATABASE_PASS: huskyCIPassword
-        build:
-            context: ../
-            dockerfile: deployments/dockerfiles/db.Dockerfile
+            MONGO_INITDB_ROOT_USERNAME: huskyCIUser
+            MONGO_INITDB_ROOT_PASSWORD: huskyCIPassword
+            MONGO_INITDB_DATABASE: huskyCIDB
         ports:
           - "27017:27017"
           - "27018:27018"
         volumes:
             - mongo_vol:/data/db
+            - ./mongo-init.sh:/docker-entrypoint-initdb.d/mongo-init.sh
         networks:
             - huskyCI_net
+        healthcheck:
+            test: ["CMD-SHELL", "echo 'db.stats().ok' | mongo localhost:27017/huskyDB --quiet"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+    # TODO: Fix dashboard repository before usinging it.
+    # fe:
+    #     container_name: huskyCI_Dashboard
+    #     image: "huskyci/dashboard:latest"
+    #     environment:
+    #         REACT_APP_HUSKYCI_FE_API_ADDRESS: "http://127.0.0.1:8888"
+    #     ports:
+    #       - "10080:80"
+    #     networks:
+    #         - huskyCI_net
 
-    fe:
-        container_name: huskyCI_Dashboard
-        image: "huskyci/dashboard:latest"
-        environment:
-            REACT_APP_HUSKYCI_FE_API_ADDRESS: "http://127.0.0.1:8888"
-        ports:
-          - "10080:80"
-        networks:
-            - huskyCI_net
-
-    postgres:
-        container_name: huskyCI_Postgres
-        environment:
-            POSTGRES_USER: huskyCIUser
-            POSTGRES_PASSWORD: huskyCIPassword
-            POSTGRES_DB: huskyCIDB
-        build:
-            context: ../
-            dockerfile: deployments/dockerfiles/postgres.Dockerfile
-        ports:
-            - "5432:5432"
-        networks:
-            - huskyCI_net
+    # TODO: Finish postgres APIs integration before ussing it. 
+    # postgres:
+    #     container_name: huskyCI_Postgres
+    #     environment:
+    #         POSTGRES_USER: huskyCIUser
+    #         POSTGRES_PASSWORD: huskyCIPassword
+    #         POSTGRES_DB: huskyCIDB
+    #     build:
+    #         context: ../
+    #         dockerfile: deployments/dockerfiles/postgres.Dockerfile
+    #     ports:
+    #         - "5432:5432"
+    #     networks:
+    #         - huskyCI_net
 
 networks:
     huskyCI_net:
 
 volumes:
     docker_vol:
-    docker_vol2:
     mongo_vol:
