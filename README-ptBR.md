@@ -10,19 +10,18 @@
 <a href="https://defectdojo.readthedocs.io/en/latest/integrations.html#huskyci-report"><img src="https://img.shields.io/badge/DefectDojo-Compatible-brightgreen"/></a>
 </p>
 
-*This article can also be read in [Brazilian Portuguese](README-ptBR.md).*
+## Introdução
 
-## Introduction
+O huskyCI é uma ferramenta de código aberto que orquestra testes de segurança e centraliza todos os resultados em um banco de dados para análises e métricas posteriores. Ele pode realizar análises de segurança estática em Python ([Bandit][Bandit] e [Safety][Safety]), Ruby ([Brakeman][Brakeman]), JavaScript ([Npm Audit][NpmAudit] e [Yarn Audit][YarnAudit]), Golang ([Gosec][Gosec]), Java ([SpotBugs][SpotBugs] mais [Find Sec Bugs][FindSec]), e HCL ([TFSec][TFSec]). Também pode auditar repositórios em busca de segredos como Chaves Secretas da AWS, Chaves SSH Privadas e muitos outros usando [GitLeaks][Gitleaks].
 
-huskyCI is an open source tool that orchestrates security tests and centralizes all results into a database for further analysis and metrics. It can perform static security analysis in Python ([Bandit][Bandit] and [Safety][Safety]), Ruby ([Brakeman][Brakeman]), JavaScript ([Npm Audit][NpmAudit] and [Yarn Audit][YarnAudit]), Golang ([Gosec][Gosec]), Java ([SpotBugs][SpotBugs] plus [Find Sec Bugs][FindSec]), and HCL ([TFSec][TFSec]). It can also audit repositories for secrets like AWS Secret Keys, Private SSH Keys, and many others using [GitLeaks][Gitleaks].
+## Como ele funciona?
 
-## How does it work?
-
-Developers can set up a new stage into their CI pipelines to check for vulnerabilities:
+Os desenvolvedores podem configurar um novo estágio em seus pipelines de CI para verificar vulnerabilidades:
 
 <p align="center"><img src="huskyCI-stage.png"/></p>
 
-If security issues are found in the code, the severity, the confidence, the file, the line, and many more useful information can be shown, as exemplified:
+Se forem encontrados problemas de segurança no código, informações como a severidade, a confiabilidade, o arquivo, a linha e muitas outras informações úteis podem ser exibidas, conforme exemplificado:
+
 
 ```
 [HUSKYCI][*] poc-python-bandit -> https://github.com/globocom/huskyCI.git
@@ -74,36 +73,33 @@ If security issues are found in the code, the severity, the confidence, the file
 ERROR: Job failed: exit code 190
 ```
 
-## Getting Started
+## Primeiros Passos
 
-You can try huskyCI by setting up a local environment using Docker Compose following [this guide](https://huskyci.opensource.globo.com/docs/development/set-up-environment).
+Você pode experimentar o huskyCI configurando um ambiente local usando o Docker Compose seguindo [este guia](https://huskyci.opensource.globo.com/docs/development/set-up-environment).
 
-## Documentation
+## Documentação
 
-All guides and the full documentation can be found in the [official documentation page](https://huskyci.opensource.globo.com/docs/quickstart/overview).
+Todos os guias e a documentação completa podem ser encontrados na [página oficial de documentação](https://huskyci.opensource.globo.com/docs/quickstart/overview).
 
-## Contributing
+## Como contribuir?
 
-Read our [contributing guide](https://github.com/globocom/huskyCI/blob/master/CONTRIBUTING.md) to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to huskyCI.
+Leia nosso [guia de contribuições](https://github.com/globocom/huskyCI/blob/master/CONTRIBUTING.md) para aprender sobre nosso processo de desenvolvimento, como propor correções de bugs e melhorias, e como construir e testar suas mudanças no huskyCI.
 
-## Communication
+## Comunicação
 
-We have a few channels for contact, feel free to reach out to us at:
+Temos alguns canais de contato, sinta-se à vontade para nos contatar em:
 
 - [GitHub Issues](https://github.com/globocom/huskyCI/issues)
 - [Gitter](https://gitter.im/globocom/huskyCI)
 - [Twitter](https://twitter.com/huskyCI)
 
-## Contributors
+## Contribuições
 
-<!-- CONTRIBUTORS_START -->
-<!-- CONTRIBUTORS_END -->
+Este projeto existe graças a todos os [contribuidores]((https://github.com/globocom/huskyCI/graphs/contributors)). Vocês são incríveis!   ❤️🚀
 
-This project exists thanks to all the [contributors]((https://github.com/globocom/huskyCI/graphs/contributors)). You rock!   ❤️🚀
+## Licença
 
-## License
-
-huskyCI is licensed under the [BSD 3-Clause "New" or "Revised" License](https://github.com/globocom/huskyCI/blob/master/LICENSE.md).
+O huskyCI está licenciado sob a [Licença BSD 3-Clause "Nova" ou "Revisada"](https://github.com/globocom/huskyCI/blob/master/LICENSE.md).
 
 [Bandit]: https://github.com/PyCQA/bandit
 [Safety]: https://github.com/pyupio/safety
