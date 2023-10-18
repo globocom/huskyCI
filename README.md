@@ -10,6 +10,8 @@
 <a href="https://defectdojo.readthedocs.io/en/latest/integrations.html#huskyci-report"><img src="https://img.shields.io/badge/DefectDojo-Compatible-brightgreen"/></a>
 </p>
 
+*This article can also be read in [Brazilian Portuguese](README-ptBR.md).*
+
 ## Introduction
 
 huskyCI is an open source tool that orchestrates security tests and centralizes all results into a database for further analysis and metrics. It can perform static security analysis in Python ([Bandit][Bandit] and [Safety][Safety]), Ruby ([Brakeman][Brakeman]), JavaScript ([Npm Audit][NpmAudit] and [Yarn Audit][YarnAudit]), Golang ([Gosec][Gosec]), Java ([SpotBugs][SpotBugs] plus [Find Sec Bugs][FindSec]), and HCL ([TFSec][TFSec]). It can also audit repositories for secrets like AWS Secret Keys, Private SSH Keys, and many others using [GitLeaks][Gitleaks].
@@ -99,8 +101,6 @@ This project exists thanks to all the [contributors]((https://github.com/globoco
 ## License
 
 huskyCI is licensed under the [BSD 3-Clause "New" or "Revised" License](https://github.com/globocom/huskyCI/blob/master/LICENSE.md).
-
-*This article can also be read in [Brazilian Portuguese](README-ptBR.md).*
 
 [Bandit]: https://github.com/PyCQA/bandit
 [Safety]: https://github.com/pyupio/safety

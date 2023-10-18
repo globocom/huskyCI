@@ -20,7 +20,7 @@ Os desenvolvedores podem configurar um novo estágio em seus pipelines de CI par
 
 <p align="center"><img src="huskyCI-stage.png"/></p>
 
-Se forem encontrados problemas de segurança no código, informações como a gravidade, a confiança, o arquivo, a linha e muitas outras informações úteis podem ser exibidas, conforme exemplificado:
+Se forem encontrados problemas de segurança no código, informações como a severidade, a confiabilidade, o arquivo, a linha e muitas outras informações úteis podem ser exibidas, conforme exemplificado:
 
 
 ```
