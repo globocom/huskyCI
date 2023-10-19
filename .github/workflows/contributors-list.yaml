@@ -1,0 +1,59 @@
+name: Update Contributors List
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  update-contributors:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      
+      - name: Fetch all contributors from the GitHub API
+        id: fetch-contributors
+        run: |
+          CONTRIBUTORS_DATA=$(curl -s https://api.github.com/repos/${{ github.repository }}/contributors)
+          USERNAMES=$(echo "$CONTRIBUTORS_DATA" | jq -r '.[] | .login')
+          AVATARS=$(echo "$CONTRIBUTORS_DATA" | jq -r '.[] | .avatar_url')
+          echo "USERNAMES=$(echo "$USERNAMES" | base64 | tr -d '\n')" >> $GITHUB_ENV
+          echo "AVATARS=$(echo "$AVATARS" | base64 | tr -d '\n')" >> $GITHUB_ENV
+
+      - name: Update README.md with contributors list
+        run: |
+          USERNAMES_ARRAY=($(echo "$USERNAMES" | base64 --decode))
+          AVATARS_ARRAY=($(echo "$AVATARS" | base64 --decode))
+          CONTRIBUTORS_SECTION="<table>"
+          ROW_ENTRIES=0
+          for index in "${!USERNAMES_ARRAY[@]}"; do
+              if [ $ROW_ENTRIES -eq 0 ]; then
+                  CONTRIBUTORS_SECTION+="<tr>"
+              fi
+              CONTRIBUTORS_SECTION+="<td align=\"center\"><a href=\"https://github.com/${USERNAMES_ARRAY[$index]}\"><img src=\"${AVATARS_ARRAY[$index]}\" width=\"100\" style=\"border-radius: 50%;\"><br>${USERNAMES_ARRAY[$index]}</a></td>"
+              ROW_ENTRIES=$((ROW_ENTRIES+1))
+              if [ $ROW_ENTRIES -eq 5 ]; then
+                  CONTRIBUTORS_SECTION+="</tr>"
+                  ROW_ENTRIES=0
+              fi
+          done
+          if [ $ROW_ENTRIES -ne 0 ]; then
+              CONTRIBUTORS_SECTION+="</tr>"
+          fi
+          CONTRIBUTORS_SECTION+="</table>"
+          sed -i '/<!-- CONTRIBUTORS_START -->/,/<!-- CONTRIBUTORS_END -->/{//!d;}' README.md
+          sed -i '/<!-- CONTRIBUTORS_START -->/a '"$CONTRIBUTORS_SECTION" README.md
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add README.md
+          if git diff --staged --exit-code; then
+            echo "No changes in README.md. Nothing to commit."
+            exit 0
+          fi
+          git commit -m "Update contributors list in README.md"
+          git push
