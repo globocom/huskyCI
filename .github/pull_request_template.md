@@ -1,6 +1,6 @@
 ## Pull Request Details
 
-Please provide a brief about the problem this PR is solving.
+Please provide a brief summary about the problem this PR is solving.
 
 ### Related Issue(s)
 
