@@ -3,6 +3,7 @@ name: Tools Version Checker
 on:
   schedule:
     - cron: '0 0 * * *' # This will run every day at midnight
+  workflow_dispatch:
 
 jobs:
   check-versions:
