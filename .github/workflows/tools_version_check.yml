@@ -1,6 +1,8 @@
 name: Tools Version Checker
 
-on: [push, pull_request]
+on:
+  schedule:
+    - cron: '0 0 * * *' # This will run every day at midnight
 
 jobs:
   check-versions:
