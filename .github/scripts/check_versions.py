@@ -1,6 +1,7 @@
 import yaml
 import requests
 import os
+import sys
 
 print("Current Directory:", os.getcwd())
 
@@ -16,6 +17,8 @@ def get_latest_docker_image_version(repo_name):
 
 
 def main():
+    dependencies_are_outdated = False
+
     with open('api/config.yaml', 'r') as f:
         config = yaml.safe_load(f)
 
@@ -27,8 +30,12 @@ def main():
         if current_version != latest_version:
             print(
                 f"[WARNING] {tool} is outdated. Current: {current_version}, Latest: {latest_version}")
+            dependencies_are_outdated = True
         else:
             print(f"{tool} is up-to-date with version {current_version}.")
+
+    if dependencies_are_outdated:
+        sys.exit(1)
 
 
 if __name__ == "__main__":
