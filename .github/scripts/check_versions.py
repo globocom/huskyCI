@@ -1,5 +1,8 @@
 import yaml
 import requests
+import os
+
+print("Current Directory:", os.getcwd())
 
 
 def get_latest_docker_image_version(repo_name):
@@ -13,7 +16,7 @@ def get_latest_docker_image_version(repo_name):
 
 
 def main():
-    with open('config.yaml', 'r') as f:
+    with open('api/config.yaml', 'r') as f:
         config = yaml.safe_load(f)
 
     for tool, tool_info in config.items():
