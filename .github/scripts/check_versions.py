@@ -29,7 +29,7 @@ def main():
 
         if current_version != latest_version:
             print(
-                f"[WARNING] {tool} is outdated. Current: {current_version}, Latest: {latest_version}")
+                f"::error::{tool} is outdated. Current: {current_version}, Latest: {latest_version}")
             dependencies_are_outdated = True
         else:
             print(f"{tool} is up-to-date with version {current_version}.")
