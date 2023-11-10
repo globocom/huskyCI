@@ -1,0 +1,27 @@
+version: '3.8'
+services:
+    mongodb:
+        container_name: huskyCI_MongoDB
+        image: mongo:4.2.2
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: huskyCIUser
+            MONGO_INITDB_ROOT_PASSWORD: huskyCIPassword
+            MONGO_INITDB_DATABASE: huskyCIDB
+        ports:
+          - "27017:27017"
+          - "27018:27018"
+        volumes:
+            - mongo_vol:/data/db
+            - ./mongo-init.sh:/docker-entrypoint-initdb.d/mongo-init.sh
+        networks:
+            - huskyCI_net
+        healthcheck:
+            test: ["CMD-SHELL", "echo 'db.stats().ok' | mongo localhost:27017/huskyDB --quiet"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+networks:
+    huskyCI_net:
+
+volumes:
+    mongo_vol:
