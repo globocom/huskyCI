@@ -6,7 +6,6 @@ package db
 
 import (
 	"os"
-	"strconv"
 	"testing"
 	"time"
 
@@ -35,16 +34,11 @@ func TestMongoIntegration(t *testing.T) {
 
 var _ = BeforeSuite(func() {
 	mongoAddress := os.Getenv("HUSKYCI_DATABASE_DB_ADDR")
-	dbName := os.Getenv("HUSKYCI_DATABASE_DB_NAME")
-	username := os.Getenv("HUSKYCI_DATABASE_DB_USERNAME")
-	password := os.Getenv("HUSKYCI_DATABASE_DB_PASSWORD")
-	dbPort, err := strconv.Atoi(os.Getenv("HUSKYCI_DATABASE_DB_PORT"))
-	Expect(err).To(BeNil())
-
+	dbPort := 27017
 	connectionPool := 10
 	connectionTimeout := time.Duration(1 * time.Second)
 
-	errConnect := Connect(mongoAddress, dbName, username, password, connectionPool, dbPort, connectionTimeout)
+	errConnect := Connect(mongoAddress, "integration-test", "", "", connectionPool, dbPort, connectionTimeout)
 	Expect(errConnect).To(BeNil())
 	Expect(Conn).To(Not(BeNil()))
 })
