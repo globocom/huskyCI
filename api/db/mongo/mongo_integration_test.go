@@ -107,7 +107,7 @@ var _ = Describe("Update", func() {
 
 			expectedResult := []mongoTestObj{
 				{
-					Attr1: "update-2",
+					Attr1: "update-21",
 					Attr2: 111,
 				},
 			}
