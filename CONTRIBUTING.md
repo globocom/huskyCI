@@ -16,6 +16,62 @@ Please note we have a code of conduct, please follow it in all your interactions
 4. You may merge the Pull Request in once you have the sign-off of two other developers, or if you
    do not have permission to do that, you may request the second reviewer to merge it for you.
 
+## Testing
+
+### Adding new integration tests
+
+Integration tests play a crucial role in validating the correct integration of our codebase with its dependencies. To ensure the effectiveness of our testing suite, we encourage contributors to adhere to the following guidelines when adding new integration tests:
+
+1. **Identification in Test Names:**
+   - All new integration tests should be clearly identifiable by having the word `Integration` in their names. For example:
+     ```go
+     func TestMongoIntegration(t *testing.T) {
+       // Test implementation
+     }
+     ```
+
+2. **Short Test Skip:**
+   - Each integration test should begin with a specific check to skip the test if it is being run in short mode:
+     ```go
+     func TestMongoIntegration(t *testing.T) {
+       if testing.Short() {
+         t.Skip()
+       }
+       // Test implementation
+     }
+     ```
+
+3. **Conditional Execution with Makefile:**
+   - Integration tests are designed to be executed explicitly. To run integration tests, use the Makefile target `integration-test`. This ensures that these tests are separate from unit tests and are run independently when needed. Unit tests are executed with the `-short` tag.
+     ```bash
+     make integration-test
+     ```
+
+By following these guidelines, you contribute to a testing environment that accurately assesses the integration of our project with its dependencies. This separation of unit and integration tests allows for efficient testing and ensures that integration tests are only run when explicitly triggered, promoting a focused and effective testing strategy.
+
+### Running Database Integration Tests Locally
+
+To execute the database integration tests locally, follow these steps:
+
+1. Start the Docker containers configured in the `docker-compose-integration-test.yml` file located in the `deployments` directory:
+
+    ```bash
+    $ make integration-test-compose-up
+    ```
+
+    This command initializes the required environment for running the integration tests.
+
+2. Run the tests using the following command:
+
+    ```bash
+    $ make integration-test
+    ```
+
+    This Makefile target executes the database integration tests.
+
+Ensure that you have Docker installed on your machine before running the tests.
+
+
 ## Code of Conduct
 
 ### Our Pledge
