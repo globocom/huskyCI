@@ -2,9 +2,8 @@ name: "Database integration tests"
 
 on:
   push:
-    branches: [ add_mongo_integration_tests ]
   pull_request:
-    branches: [ add_mongo_integration_tests ]
+    branches: [ main ]
 
 jobs:
   mongodb-integration-test:
