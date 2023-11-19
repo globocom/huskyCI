@@ -88,7 +88,80 @@ func prepareGetMetricByTypeData() {
 				Files:    []string{"gofile1", "gofile2"},
 			},
 		},
-		HuskyCIResults: types.HuskyCIResults{},
+		HuskyCIResults: types.HuskyCIResults{
+			GoResults: types.GoResults{
+				HuskyCIGosecOutput: types.HuskyCISecurityTestOutput{
+					NoSecVulns: []types.HuskyCIVulnerability{
+						{
+							Language:       "NoSecVulns.Language",
+							SecurityTool:   "NoSecVulns.SecurityTool",
+							Severity:       "NoSecVulns.Severity",
+							Confidence:     "NoSecVulns.Confidence",
+							File:           "NoSecVulns.File",
+							Line:           "NoSecVulns.Line",
+							Code:           "NoSecVulns.Code",
+							Details:        "NoSecVulns.Details",
+							Type:           "NoSecVulns.Type",
+							Title:          "NoSecVulns.Title",
+							VunerableBelow: "NoSecVulns.VunerableBelow",
+							Version:        "NoSecVulns.Version",
+							Occurrences:    1,
+						},
+					},
+					LowVulns: []types.HuskyCIVulnerability{
+						{
+							Language:       "LowVulns.Language",
+							SecurityTool:   "LowVulns.SecurityTool",
+							Severity:       "LowVulns.Severity",
+							Confidence:     "LowVulns.Confidence",
+							File:           "LowVulns.File",
+							Line:           "LowVulns.Line",
+							Code:           "LowVulns.Code",
+							Details:        "LowVulns.Details",
+							Type:           "LowVulns.Type",
+							Title:          "LowVulns.Title",
+							VunerableBelow: "LowVulns.VunerableBelow",
+							Version:        "LowVulns.Version",
+							Occurrences:    2,
+						},
+					},
+					MediumVulns: []types.HuskyCIVulnerability{
+						{
+							Language:       "MediumVulns.Language",
+							SecurityTool:   "MediumVulns.SecurityTool",
+							Severity:       "MediumVulns.Severity",
+							Confidence:     "MediumVulns.Confidence",
+							File:           "MediumVulns.File",
+							Line:           "MediumVulns.Line",
+							Code:           "MediumVulns.Code",
+							Details:        "MediumVulns.Details",
+							Type:           "MediumVulns.Type",
+							Title:          "MediumVulns.Title",
+							VunerableBelow: "MediumVulns.VunerableBelow",
+							Version:        "MediumVulns.Version",
+							Occurrences:    3,
+						},
+					},
+					HighVulns: []types.HuskyCIVulnerability{
+						{
+							Language:       "HighVulns.Language",
+							SecurityTool:   "HighVulns.SecurityTool",
+							Severity:       "HighVulns.Severity",
+							Confidence:     "HighVulns.Confidence",
+							File:           "HighVulns.File",
+							Line:           "HighVulns.Line",
+							Code:           "HighVulns.Code",
+							Details:        "HighVulns.Details",
+							Type:           "HighVulns.Type",
+							Title:          "HighVulns.Title",
+							VunerableBelow: "HighVulns.VunerableBelow",
+							Version:        "HighVulns.Version",
+							Occurrences:    4,
+						},
+					},
+				},
+			},
+		},
 	}
 
 	errInsert := mongoHuskyCI.Conn.Insert(analysisToInsert1, mongoHuskyCI.AnalysisCollection)
@@ -660,7 +733,7 @@ var _ = Describe("DockerAPIAddresses", func() {
 })
 
 var _ = Describe("GetMetricByType", func() {
-	Context("When get language metric", func() {
+	Context("When get 'language' metric", func() {
 		It("Should return correctly", func() {
 			queryStringParams := map[string][]string{
 				"time_range": {"today"},
@@ -673,6 +746,153 @@ var _ = Describe("GetMetricByType", func() {
 			metric, errGet := huskydbMongoRequestsTest.GetMetricByType("language", queryStringParams)
 			Expect(errGet).To(BeNil())
 			Expect(metric).To(Equal(expectedResult))
+		})
+	})
+	Context("When get 'container' metric", func() {
+		It("Should return correctly", func() {
+			queryStringParams := map[string][]string{
+				"time_range": {"today"},
+			}
+
+			expectedResult := []bson.M{
+				{
+					"_id":       "GetMetricByType - Name1",
+					"count":     1,
+					"container": "GetMetricByType - Name1",
+				},
+				{
+					"_id":       "GetMetricByType - Name2",
+					"count":     1,
+					"container": "GetMetricByType - Name2",
+				},
+			}
+
+			metric, errGet := huskydbMongoRequestsTest.GetMetricByType("container", queryStringParams)
+			Expect(errGet).To(BeNil())
+			Expect(metric).To(ConsistOf(expectedResult))
+		})
+	})
+	Context("When get 'analysis' metric", func() {
+		It("Should return correctly", func() {
+			queryStringParams := map[string][]string{
+				"time_range": {"today"},
+			}
+
+			expectedResult := []bson.M{
+				{
+					"_id":    "GetMetricByType - result2",
+					"count":  1,
+					"result": "GetMetricByType - result2",
+				},
+				{
+					"_id":    "GetMetricByType - result1",
+					"count":  1,
+					"result": "GetMetricByType - result1",
+				},
+			}
+
+			metric, errGet := huskydbMongoRequestsTest.GetMetricByType("analysis", queryStringParams)
+			Expect(errGet).To(BeNil())
+			Expect(metric).To(ConsistOf(expectedResult))
+		})
+	})
+	Context("When get 'repository' metric", func() {
+		It("Should return correctly", func() {
+			queryStringParams := map[string][]string{
+				"time_range": {"today"},
+			}
+
+			expectedResult := []bson.M{
+				{
+					"_id":               "repositories",
+					"totalBranches":     2,
+					"totalRepositories": 2,
+				},
+			}
+
+			metric, errGet := huskydbMongoRequestsTest.GetMetricByType("repository", queryStringParams)
+			Expect(errGet).To(BeNil())
+			Expect(metric).To(ConsistOf(expectedResult))
+		})
+	})
+	Context("When get 'author' metric", func() {
+		It("Should return correctly", func() {
+			queryStringParams := map[string][]string{
+				"time_range": {"today"},
+			}
+
+			expectedResult := []bson.M{
+				{
+					"_id":          "commitAuthors",
+					"totalAuthors": 2,
+				},
+			}
+
+			metric, errGet := huskydbMongoRequestsTest.GetMetricByType("author", queryStringParams)
+			Expect(errGet).To(BeNil())
+			Expect(metric).To(ConsistOf(expectedResult))
+		})
+	})
+	Context("When get 'severity' metric", func() {
+		It("Should return correctly", func() {
+			queryStringParams := map[string][]string{
+				"time_range": {"today"},
+			}
+
+			expectedResult := []bson.M{
+				{
+					"_id":      "lowvulns",
+					"count":    1,
+					"severity": "lowvulns",
+				},
+				{
+					"_id":      "highvulns",
+					"count":    1,
+					"severity": "highvulns",
+				},
+				{
+					"severity": "nosecvulns",
+					"_id":      "nosecvulns",
+					"count":    1,
+				},
+				{
+					"count":    1,
+					"severity": "mediumvulns",
+					"_id":      "mediumvulns",
+				},
+			}
+
+			metric, errGet := huskydbMongoRequestsTest.GetMetricByType("severity", queryStringParams)
+			Expect(errGet).To(BeNil())
+			Expect(metric).To(ConsistOf(expectedResult))
+		})
+	})
+	Context("When get 'historyanalysis' metric", func() {
+		It("Should return correctly", func() {
+			queryStringParams := map[string][]string{
+				"time_range": {"today"},
+			}
+
+			expectedResult := []bson.M{
+				{
+					"results": []interface{}{
+						bson.M{
+							"result": "GetMetricByType - result2",
+							"count":  1,
+						},
+						bson.M{
+							"result": "GetMetricByType - result1",
+							"count":  1,
+						},
+					},
+					"total": 2,
+					"date":  time.Date(2023, 11, 19, 19, 0, 0, 0, time.Local),
+				},
+			}
+
+			metric, errGet := huskydbMongoRequestsTest.GetMetricByType("historyanalysis", queryStringParams)
+			Expect(errGet).To(BeNil())
+			Expect(metric).To(ConsistOf(expectedResult))
 		})
 	})
 })
