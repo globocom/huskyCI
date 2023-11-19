@@ -5,6 +5,7 @@
 package db
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -19,7 +20,7 @@ import (
 
 var huskydbMongoRequestsTest MongoRequests
 
-func TestMongoRequestsIntegration(t *testing.T) {
+func TestHuskyDBMongoRequestsIntegration(t *testing.T) {
 	if testing.Short() {
 		t.Skip()
 	}
@@ -27,10 +28,11 @@ func TestMongoRequestsIntegration(t *testing.T) {
 	huskydbMongoRequestsTest = MongoRequests{}
 	log.InitLog(true, "", "", "log_test", "log_test")
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "MongoDB Suite")
+	RunSpecs(t, "MongoRequests Suite")
 }
 
 var _ = BeforeSuite(func() {
+	fmt.Println("BeforeSuite")
 	mongoAddress := "localhost"
 	dbName := "integration-test"
 	username := ""
@@ -44,7 +46,97 @@ var _ = BeforeSuite(func() {
 
 	errConnect := huskydbMongoRequestsTest.ConnectDB(mongoAddress, dbName, username, password, connectionTimeout, connectionPool, dbPort, maxOpenConns, maxIdleConns, connMaxLifetime)
 	Expect(errConnect).To(BeNil())
+
+	prepareGetMetricByTypeData()
 })
+
+func prepareGetMetricByTypeData() {
+	analysisToInsert1 := types.Analysis{
+		RID:           "GetMetricByType - rid1",
+		URL:           "GetMetricByType - url1",
+		Branch:        "GetMetricByType - branch1",
+		CommitAuthors: []string{"author1", "author2"},
+		Status:        "GetMetricByType - status1",
+		Result:        "GetMetricByType - result1",
+		ErrorFound:    "GetMetricByType - errorFound1",
+		Containers: []types.Container{
+			{
+				CID: "GetMetricByType - CID1",
+				SecurityTest: types.SecurityTest{
+					Name:             "GetMetricByType - Name1",
+					Image:            "GetMetricByType - Image1",
+					ImageTag:         "GetMetricByType - ImageTag1",
+					Cmd:              "GetMetricByType - Cmd1",
+					Type:             "GetMetricByType - Type1",
+					Language:         "GetMetricByType - Language1",
+					Default:          true,
+					TimeOutInSeconds: 10,
+				},
+				CStatus:    "GetMetricByType - CStatus1",
+				COutput:    "GetMetricByType - COutput1",
+				CResult:    "GetMetricByType - CResult1",
+				CInfo:      "GetMetricByType - CInfo1",
+				StartedAt:  time.Now(),
+				FinishedAt: time.Now().Add(1 * time.Minute),
+			},
+		},
+		StartedAt:  time.Now(),
+		FinishedAt: time.Now().Add(1 * time.Minute),
+		Codes: []types.Code{
+			{
+				Language: "go",
+				Files:    []string{"gofile1", "gofile2"},
+			},
+		},
+		HuskyCIResults: types.HuskyCIResults{},
+	}
+
+	errInsert := mongoHuskyCI.Conn.Insert(analysisToInsert1, mongoHuskyCI.AnalysisCollection)
+	Expect(errInsert).To(BeNil())
+
+	analysisToInsert2 := types.Analysis{
+		RID:           "GetMetricByType - rid2",
+		URL:           "GetMetricByType - url2",
+		Branch:        "GetMetricByType - branch2",
+		CommitAuthors: []string{"author1", "author2"},
+		Status:        "GetMetricByType - status2",
+		Result:        "GetMetricByType - result2",
+		ErrorFound:    "GetMetricByType - errorFound2",
+		Containers: []types.Container{
+			{
+				CID: "GetMetricByType - CID2",
+				SecurityTest: types.SecurityTest{
+					Name:             "GetMetricByType - Name2",
+					Image:            "GetMetricByType - Image2",
+					ImageTag:         "GetMetricByType - ImageTag2",
+					Cmd:              "GetMetricByType - Cmd2",
+					Type:             "GetMetricByType - Type2",
+					Language:         "GetMetricByType - Language2",
+					Default:          true,
+					TimeOutInSeconds: 20,
+				},
+				CStatus:    "GetMetricByType - CStatus2",
+				COutput:    "GetMetricByType - COutput2",
+				CResult:    "GetMetricByType - CResult2",
+				CInfo:      "GetMetricByType - CInfo2",
+				StartedAt:  time.Now(),
+				FinishedAt: time.Now().Add(1 * time.Minute),
+			},
+		},
+		StartedAt:  time.Now(),
+		FinishedAt: time.Now().Add(1 * time.Minute),
+		Codes: []types.Code{
+			{
+				Language: "go",
+				Files:    []string{"gofile1", "gofile2"},
+			},
+		},
+		HuskyCIResults: types.HuskyCIResults{},
+	}
+
+	errInsert = mongoHuskyCI.Conn.Insert(analysisToInsert2, mongoHuskyCI.AnalysisCollection)
+	Expect(errInsert).To(BeNil())
+}
 
 var _ = AfterSuite(func() {
 	err := mongoHuskyCI.Conn.Session.DB("").DropDatabase()
@@ -563,6 +655,24 @@ var _ = Describe("DockerAPIAddresses", func() {
 			}
 
 			Expect(dockerAPIAddressesFindResult).To(Equal(expectedDockerApiAddress))
+		})
+	})
+})
+
+var _ = Describe("GetMetricByType", func() {
+	Context("When get language metric", func() {
+		It("Should return correctly", func() {
+			queryStringParams := map[string][]string{
+				"time_range": {"today"},
+			}
+
+			expectedResult := []bson.M{
+				{"_id": "go", "count": 2, "language": "go"},
+			}
+
+			metric, errGet := huskydbMongoRequestsTest.GetMetricByType("language", queryStringParams)
+			Expect(errGet).To(BeNil())
+			Expect(metric).To(Equal(expectedResult))
 		})
 	})
 })
