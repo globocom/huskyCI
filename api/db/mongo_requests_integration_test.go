@@ -873,26 +873,30 @@ var _ = Describe("GetMetricByType", func() {
 				"time_range": {"today"},
 			}
 
-			expectedResult := []bson.M{
-				{
-					"results": []interface{}{
-						bson.M{
-							"result": "GetMetricByType - result2",
-							"count":  1,
-						},
-						bson.M{
-							"result": "GetMetricByType - result1",
-							"count":  1,
-						},
+			now := time.Now()
+			expectedResult := bson.M{
+				"results": []interface{}{
+					bson.M{
+						"result": "GetMetricByType - result2",
+						"count":  1,
 					},
-					"total": 2,
-					"date":  time.Date(2023, 11, 19, 19, 0, 0, 0, time.Local),
+					bson.M{
+						"result": "GetMetricByType - result1",
+						"count":  1,
+					},
 				},
+				"total": 2,
+				"date":  time.Date(now.Year(), now.Month(), now.Day(), now.Hour(), 0, 0, 0, time.Local),
 			}
 
 			metric, errGet := huskydbMongoRequestsTest.GetMetricByType("historyanalysis", queryStringParams)
 			Expect(errGet).To(BeNil())
-			Expect(metric).To(ConsistOf(expectedResult))
+
+			firstMetric := metric.([]bson.M)[0]
+
+			Expect(firstMetric["results"]).To(ConsistOf(expectedResult["results"]))
+			Expect(firstMetric["total"]).To(Equal(expectedResult["total"]))
+			Expect(firstMetric["date"]).To(Equal(expectedResult["date"]))
 		})
 	})
 })
