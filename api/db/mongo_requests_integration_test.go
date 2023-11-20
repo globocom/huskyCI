@@ -5,7 +5,6 @@
 package db
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -32,7 +31,10 @@ func TestHuskyDBMongoRequestsIntegration(t *testing.T) {
 }
 
 var _ = BeforeSuite(func() {
-	fmt.Println("BeforeSuite")
+	if testing.Short() {
+		return
+	}
+
 	mongoAddress := "localhost"
 	dbName := "integration-test"
 	username := ""
@@ -212,11 +214,21 @@ func prepareGetMetricByTypeData() {
 }
 
 var _ = AfterSuite(func() {
+	if testing.Short() {
+		return
+	}
+
 	err := mongoHuskyCI.Conn.Session.DB("").DropDatabase()
 	Expect(err).To(BeNil())
 })
 
 var _ = Describe("DBRepository", func() {
+	BeforeEach(func() {
+		if testing.Short() {
+			Skip("Integration tests don't run with 'short' flag")
+		}
+	})
+
 	Context("When try to find one", func() {
 		It("Should return mgo.ErrNotFound and empty types.Repository{} when not found", func() {
 			query := map[string]interface{}{"repositoryURL": "not found URL"}
@@ -312,6 +324,12 @@ var _ = Describe("DBRepository", func() {
 })
 
 var _ = Describe("DBSecurityTest", func() {
+	BeforeEach(func() {
+		if testing.Short() {
+			Skip("Integration tests don't run with 'short' flag")
+		}
+	})
+
 	Context("When try to find one", func() {
 		It("Should return mgo.ErrNotFound and empty  types.SecurityTest{} when not found", func() {
 			query := map[string]interface{}{"name": "security_test_name"}
@@ -428,6 +446,12 @@ var _ = Describe("DBSecurityTest", func() {
 })
 
 var _ = Describe("DBAnalysis", func() {
+	BeforeEach(func() {
+		if testing.Short() {
+			Skip("Integration tests don't run with 'short' flag")
+		}
+	})
+
 	Context("When try to find one", func() {
 		It("Should return mgo.ErrNotFound and empty  types.Analysis{} when not found", func() {
 			query := map[string]interface{}{"RID": "test-id"}
@@ -575,6 +599,12 @@ var _ = Describe("DBAnalysis", func() {
 })
 
 var _ = Describe("DBUser", func() {
+	BeforeEach(func() {
+		if testing.Short() {
+			Skip("Integration tests don't run with 'short' flag")
+		}
+	})
+
 	Context("When try to find one", func() {
 		It("Should return mgo.ErrNotFound and empty  types.User{} when not found", func() {
 			query := map[string]interface{}{"username": "some user name"}
@@ -640,6 +670,12 @@ var _ = Describe("DBUser", func() {
 })
 
 var _ = Describe("DBAccessToken", func() {
+	BeforeEach(func() {
+		if testing.Short() {
+			Skip("Integration tests don't run with 'short' flag")
+		}
+	})
+
 	Context("When try to find one", func() {
 		It("Should return mgo.ErrNotFound and empty  types.DBToken{} when not found", func() {
 			query := map[string]interface{}{"uuid": "some uuid"}
@@ -702,6 +738,12 @@ var _ = Describe("DBAccessToken", func() {
 })
 
 var _ = Describe("DockerAPIAddresses", func() {
+	BeforeEach(func() {
+		if testing.Short() {
+			Skip("Integration tests don't run with 'short' flag")
+		}
+	})
+
 	Context("When update one", func() {
 		It("Should return no error and modify correctly", func() {
 			dockerAPIAddressesToInsert := types.DockerAPIAddresses{
@@ -733,6 +775,12 @@ var _ = Describe("DockerAPIAddresses", func() {
 })
 
 var _ = Describe("GetMetricByType", func() {
+	BeforeEach(func() {
+		if testing.Short() {
+			Skip("Integration tests don't run with 'short' flag")
+		}
+	})
+
 	Context("When get 'language' metric", func() {
 		It("Should return correctly", func() {
 			queryStringParams := map[string][]string{
