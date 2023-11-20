@@ -31,7 +31,7 @@ Integration tests play a crucial role in validating the correct integration of o
      ```
 
 2. **Short Test Skip:**
-   - Each integration test should begin with a specific check to skip the test if it is being run in short mode:
+   - Each integration test should begin with a specific check to skip the test if it is being run in short mode, for example:
      ```go
      func TestMongoIntegration(t *testing.T) {
        if testing.Short() {
@@ -40,6 +40,18 @@ Integration tests play a crucial role in validating the correct integration of o
        // Test implementation
      }
      ```
+     ```go
+     var _ = Describe("Some test", func() {
+      BeforeEach(func() {
+        if testing.Short() {
+          Skip("Integration tests don't run with 'short' flag")
+        }
+        // Test implementation
+      })
+    })
+     ```
+
+     
 
 3. **Conditional Execution with Makefile:**
    - Integration tests are designed to be executed explicitly. To run integration tests, use the Makefile target `integration-test`. This ensures that these tests are separate from unit tests and are run independently when needed. Unit tests are executed with the `-short` tag.
