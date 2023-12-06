@@ -54,7 +54,7 @@ services:
 
     mongodb:
         container_name: huskyCI_MongoDB
-        image: mongo:4.2.2
+        image: mongo:4.2.24
         environment:
             MONGO_INITDB_ROOT_USERNAME: huskyCIUser
             MONGO_INITDB_ROOT_PASSWORD: huskyCIPassword
