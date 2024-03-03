@@ -1,0 +1,7 @@
+version: '3.8'
+services:
+    mongodb:
+        container_name: huskyCI_MongoDB
+        image: mongo:4.2.2
+        ports:
+          - "27017:27017"

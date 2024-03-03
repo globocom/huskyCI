@@ -2,6 +2,7 @@ package util_test
 
 import (
 	"errors"
+	"os"
 
 	"github.com/globocom/glbgelf"
 	apiContext "github.com/globocom/huskyCI/api/context"
@@ -50,6 +51,7 @@ var _ = Describe("Util API", func() {
 			})
 		})
 		Context("When checkKubernetesHosts returns an error", func() {
+
 			fakeCheck := &apiUtil.FakeCheck{
 				EnvVarsError:          checkHuskyTests[1].envVarsError,
 				KubernetesHostsError:  checkHuskyTests[1].dockerHostsError,
@@ -60,7 +62,9 @@ var _ = Describe("Util API", func() {
 				CheckHandler: fakeCheck,
 			}
 			It("Should return the same error", func() {
+				os.Setenv("HUSKYCI_INFRASTRUCTURE_USE", "kubernetes")
 				Expect(huskyCheck.CheckHuskyRequirements(checkHuskyTests[1].configApi)).To(Equal(checkHuskyTests[1].expectedError))
+				os.Unsetenv("HUSKYCI_INFRASTRUCTURE_USE")
 			})
 		})
 		Context("When checkMongoDB returns an error", func() {

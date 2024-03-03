@@ -168,13 +168,26 @@ run-client-linux-json: build-client-linux
 
 ## Performs all unit tests using ginkgo
 test:
-	cd api && $(GO) test -coverprofile=c.out ./...
+	cd api && $(GO) test -coverprofile=c.out ./... -short
 	cd api && $(GO) tool cover -func=c.out
 	cd api && $(GO) tool cover -html=c.out -o coverage.html
-	cd client && $(GO) test -coverprofile=d.out ./...
+	cd client && $(GO) test -coverprofile=d.out ./... -short
 	cd client && $(GO) tool cover -func=d.out
-	cd cli && $(GO) test -coverprofile=e.out ./...
+	cd cli && $(GO) test -coverprofile=e.out ./... -short
 	cd cli && $(GO) tool cover -func=e.out
+
+## Composes huskyCI integration test environment using docker-compose
+integration-test-compose-up:
+	docker-compose -f deployments/docker-compose-integration-test.yml down -v
+	docker-compose -f deployments/docker-compose-integration-test.yml up -d --build --force-recreate
+
+## Composes down the integration test docker compose
+integration-test-compose-down:
+	docker-compose -f deployments/docker-compose-integration-test.yml down -v
+
+## Run all integration tests. The tests must contain the 'Integration' on his name
+integration-test: 
+	cd api && $(GO) test -race  ./... -run Integration
 
 ## Builds and push securityTest containers with the latest tags
 update-containers: build-containers push-containers
