@@ -5,6 +5,44 @@ email, or any other method with the owners of this repository before making a ch
 
 Please note we have a code of conduct, please follow it in all your interactions with the project.
 
+## How to Contribute
+
+Thank you for your interest in improving our project! Whether you're fixing bugs, adding new features, or updating documentation, your contributions are deeply valued. Follow the steps outlined in this section to ensure a seamless contribution process.
+
+### Setting up Your Local Development Environment
+
+1. **Local Setup**:
+   - Start by setting up a local environment. We recommend using Docker Compose. Detailed steps can be found in our [local environment setup guide](https://huskyci.opensource.globo.com/docs/development/set-up-environment).
+2. **Compatibility**:
+   - Ensure your changes are compatible with both the Docker API and Kubernetes. Proper integration with these platforms is vital.
+3. **Common Issues**:
+   - As with any development process, you might face challenges or run into issues. Refer to our [Troubleshooting](README.md#troubleshooting) for tips on addressing common problems at the troubleshooting section.
+
+### Contribution Checklist
+
+- [ ] **Code Changes**:
+  - Follow the coding conventions and style guidelines of the project. Remember to test your changes thoroughly.
+- [ ] **Testing Procedures**:
+  - Make sure existing unit tests pass. Additionally, write tests for your new features or bug fixes. Test compatibility with both Docker and Kubernetes.
+- [ ] **Local Environment Considerations**:
+  - Test your changes in a local environment and make sure your changes work in both Docker and Kubernetes environments.
+
+### Seeking Assistance
+
+If you encounter difficulties or have questions:
+
+1. **Communication Channels**:
+
+   - Reach out to us through our designated communication platforms:
+     - [GitHub Issues](https://github.com/globocom/huskyCI/issues)
+     - [Gitter](https://gitter.im/globocom/huskyCI)
+     - [Twitter](https://twitter.com/huskyCI)
+
+2. **Documentation**:
+   - Our [official documentation page](https://huskyci.opensource.globo.com/docs/quickstart/overview) provides comprehensive guides and resources that might address your queries.
+3. **Community Assistance**:
+   - Engage with our community on forums and chats. Your fellow contributors can offer valuable insights and solutions.
+
 ## Pull Request Process
 
 1. Ensure any install or build dependencies are removed before the end of the layer when doing a
@@ -32,21 +70,21 @@ orientation.
 Examples of behavior that contributes to creating a positive environment
 include:
 
-* Using welcoming and inclusive language
-* Being respectful of differing viewpoints and experiences
-* Gracefully accepting constructive criticism
-* Focusing on what is best for the community
-* Showing empathy towards other community members
+- Using welcoming and inclusive language
+- Being respectful of differing viewpoints and experiences
+- Gracefully accepting constructive criticism
+- Focusing on what is best for the community
+- Showing empathy towards other community members
 
 Examples of unacceptable behavior by participants include:
 
-* The use of sexualized language or imagery and unwelcome sexual attention or
-advances
-* Trolling, insulting/derogatory comments, and personal or political attacks
-* Public or private harassment
-* Publishing others' private information, such as a physical or electronic
+- The use of sexualized language or imagery and unwelcome sexual attention or
+  advances
+- Trolling, insulting/derogatory comments, and personal or political attacks
+- Public or private harassment
+- Publishing others' private information, such as a physical or electronic
   address, without explicit permission
-* Other conduct which could reasonably be considered inappropriate in a
+- Other conduct which could reasonably be considered inappropriate in a
   professional setting
 
 ### Our Responsibilities
